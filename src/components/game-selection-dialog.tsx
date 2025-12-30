@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -10,8 +10,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Slider } from '@/components/ui/slider';
 import { useBoardStore } from '@/lib/store';
-import { Difficulty, DIFFICULTY_DEPTH } from '@/utils/types';
 
 interface GameSelectionDialogProps {
   open: boolean;
@@ -22,12 +22,21 @@ export function GameSelectionDialog({
   open,
   onOpenChange
 }: GameSelectionDialogProps) {
-  const [difficulty, setDifficulty] = useState<Difficulty>('easy');
-  const [playAs, setPlayAs] = useState<'white' | 'black'>('white');
+  const stockfishLevel = useBoardStore((state) => state.stockfishLevel);
+  const currentPlayAs = useBoardStore((state) => state.playAs);
   const startGame = useBoardStore((state) => state.startGame);
 
+  const [depth, setDepth] = useState(stockfishLevel);
+  const [playAs, setPlayAs] = useState<'white' | 'black'>(currentPlayAs);
+
+  useEffect(() => {
+    if (open) {
+      setDepth(stockfishLevel);
+      setPlayAs(currentPlayAs);
+    }
+  }, [open, stockfishLevel, currentPlayAs]);
+
   const handleStart = () => {
-    const depth = DIFFICULTY_DEPTH[difficulty];
     startGame(depth, playAs);
     onOpenChange(false);
   };
@@ -42,31 +51,19 @@ export function GameSelectionDialog({
         </DialogHeader>
         <div className='space-y-6 py-4'>
           <div className='space-y-3'>
-            <Label className='block text-center'>Difficulty</Label>
-            <RadioGroup
-              value={difficulty}
-              onValueChange={(v) => setDifficulty(v as Difficulty)}
-              className='flex justify-center gap-4'
-            >
-              <div className='flex items-center space-x-2'>
-                <RadioGroupItem value='easy' id='easy' />
-                <Label htmlFor='easy' className='cursor-pointer'>
-                  Easy
-                </Label>
-              </div>
-              <div className='flex items-center space-x-2'>
-                <RadioGroupItem value='medium' id='medium' />
-                <Label htmlFor='medium' className='cursor-pointer'>
-                  Medium
-                </Label>
-              </div>
-              <div className='flex items-center space-x-2'>
-                <RadioGroupItem value='hard' id='hard' />
-                <Label htmlFor='hard' className='cursor-pointer'>
-                  Hard
-                </Label>
-              </div>
-            </RadioGroup>
+            <Label className='block text-center'>Engine Depth: {depth}</Label>
+            <Slider
+              value={[depth]}
+              onValueChange={(v) => setDepth(v[0])}
+              min={1}
+              max={20}
+              step={1}
+              className='w-full'
+            />
+            <div className='text-muted-foreground flex justify-between text-xs'>
+              <span>Easier</span>
+              <span>Harder</span>
+            </div>
           </div>
           <div className='space-y-3'>
             <Label className='block text-center'>Play as</Label>

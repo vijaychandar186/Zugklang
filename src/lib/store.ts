@@ -49,7 +49,7 @@ export const useBoardStore = create<BoardStore>((set, get) => ({
   gameOver: false,
   gameStarted: false,
   gameId: 0,
-  stockfishLevel: 2,
+  stockfishLevel: 10,
   playAs: 'white',
   onNewGame: () => {},
   setTheme: (theme) => set({ theme }),

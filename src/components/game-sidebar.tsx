@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import PageContainer from '@/components/page-container';
 import { useBoardStore } from '@/lib/store';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { GameSelectionDialog } from '@/components/game-selection-dialog';
 import {
-  Share2,
+  Copy,
+  Check,
   Settings,
   Flag,
   RotateCcw,
@@ -17,19 +18,25 @@ import {
   ChevronRight,
   ChevronsRight
 } from 'lucide-react';
-import { toast } from 'sonner';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 
 export function GameSidebar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newGameOpen, setNewGameOpen] = useState(false);
+  const [copiedMoves, setCopiedMoves] = useState(false);
+  const [copiedPGN, setCopiedPGN] = useState(false);
 
   const moves = useBoardStore((state) => state.moves);
   const onNewGame = useBoardStore((state) => state.onNewGame);
   const gameOver = useBoardStore((state) => state.gameOver);
   const setGameOver = useBoardStore((state) => state.setGameOver);
   const gameResult = useBoardStore((state) => state.gameResult);
-  const currentFEN = useBoardStore((state) => state.currentFEN);
   const setGameResult = useBoardStore((state) => state.setGameResult);
+  const playAs = useBoardStore((state) => state.playAs);
   const viewingIndex = useBoardStore((state) => state.viewingIndex);
   const positionHistory = useBoardStore((state) => state.positionHistory);
   const goToStart = useBoardStore((state) => state.goToStart);
@@ -41,10 +48,67 @@ export function GameSidebar() {
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
 
-  const handleCopyFEN = () => {
-    navigator.clipboard.writeText(currentFEN).then(() => {
-      toast.success('FEN copied to clipboard!');
-    });
+  // Reset copied states after timeout
+  useEffect(() => {
+    if (copiedMoves) {
+      const timer = setTimeout(() => setCopiedMoves(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [copiedMoves]);
+
+  useEffect(() => {
+    if (copiedPGN) {
+      const timer = setTimeout(() => setCopiedPGN(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [copiedPGN]);
+
+  const formatMovesText = () => {
+    const pairs: string[] = [];
+    for (let i = 0; i < moves.length; i += 2) {
+      const moveNum = Math.floor(i / 2) + 1;
+      const whiteMove = moves[i];
+      const blackMove = moves[i + 1] || '';
+      pairs.push(`${moveNum}. ${whiteMove}${blackMove ? ' ' + blackMove : ''}`);
+    }
+    return pairs.join(' ');
+  };
+
+  const formatPGN = () => {
+    const date = new Date();
+    const dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+    const result = gameOver
+      ? gameResult?.includes('win')
+        ? playAs === 'white'
+          ? '1-0'
+          : '0-1'
+        : gameResult?.includes('resigned')
+          ? playAs === 'white'
+            ? '0-1'
+            : '1-0'
+          : '1/2-1/2'
+      : '*';
+
+    const headers = [
+      '[Event "Casual Game"]',
+      '[Site "Chess Variant"]',
+      `[Date "${dateStr}"]`,
+      `[White "${playAs === 'white' ? 'Player' : 'Stockfish'}"]`,
+      `[Black "${playAs === 'black' ? 'Player' : 'Stockfish'}"]`,
+      `[Result "${result}"]`
+    ].join('\n');
+
+    return `${headers}\n\n${formatMovesText()} ${result}`;
+  };
+
+  const handleCopyMoves = () => {
+    navigator.clipboard.writeText(formatMovesText());
+    setCopiedMoves(true);
+  };
+
+  const handleCopyPGN = () => {
+    navigator.clipboard.writeText(formatPGN());
+    setCopiedPGN(true);
   };
 
   const handleResign = () => {
@@ -61,52 +125,57 @@ export function GameSidebar() {
     <>
       <div className='bg-card flex h-full flex-col rounded-lg border'>
         {/* Moves Section */}
-        <div className='flex flex-1 flex-col overflow-hidden'>
-          <div className='border-b px-4 py-3'>
+        <div className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+          <div className='shrink-0 border-b px-4 py-3'>
             <h3 className='font-semibold'>Moves</h3>
           </div>
-          <ScrollArea className='flex-1 px-4 py-2'>
-            {moves.length === 0 ? (
-              <p className='text-muted-foreground py-4 text-center text-sm'>
-                No moves yet
-              </p>
-            ) : (
-              <ol className='space-y-1'>
-                {moves.map(
-                  (move, index) =>
-                    index % 2 === 0 && (
-                      <li key={index / 2} className='flex items-center text-sm'>
-                        <span className='text-muted-foreground w-6'>
-                          {index / 2 + 1}.
-                        </span>
-                        <button
-                          onClick={() => goToMove(index)}
-                          className={`hover:bg-muted -ml-1 w-16 rounded px-1 text-left font-mono ${
-                            viewingIndex === index + 1
-                              ? 'bg-blue-500/20 text-blue-400'
-                              : 'text-blue-500'
-                          }`}
+          <PageContainer className='h-0 flex-grow'>
+            <div className='px-4 py-2'>
+              {moves.length === 0 ? (
+                <p className='text-muted-foreground py-4 text-center text-sm'>
+                  No moves yet
+                </p>
+              ) : (
+                <ol className='space-y-1'>
+                  {moves.map(
+                    (move, index) =>
+                      index % 2 === 0 && (
+                        <li
+                          key={index / 2}
+                          className='flex items-center text-sm'
                         >
-                          {move}
-                        </button>
-                        {index + 1 < moves.length && (
+                          <span className='text-muted-foreground w-6'>
+                            {index / 2 + 1}.
+                          </span>
                           <button
-                            onClick={() => goToMove(index + 1)}
-                            className={`hover:bg-muted rounded px-1 text-left font-mono ${
-                              viewingIndex === index + 2
-                                ? 'bg-yellow-500/20 text-yellow-400'
-                                : 'text-yellow-500'
+                            onClick={() => goToMove(index)}
+                            className={`hover:bg-muted -ml-1 w-16 rounded px-1 text-left font-mono ${
+                              viewingIndex === index + 1
+                                ? 'bg-blue-500/20 text-blue-400'
+                                : 'text-blue-500'
                             }`}
                           >
-                            {moves[index + 1]}
+                            {move}
                           </button>
-                        )}
-                      </li>
-                    )
-                )}
-              </ol>
-            )}
-          </ScrollArea>
+                          {index + 1 < moves.length && (
+                            <button
+                              onClick={() => goToMove(index + 1)}
+                              className={`hover:bg-muted rounded px-1 text-left font-mono ${
+                                viewingIndex === index + 2
+                                  ? 'bg-yellow-500/20 text-yellow-400'
+                                  : 'text-yellow-500'
+                              }`}
+                            >
+                              {moves[index + 1]}
+                            </button>
+                          )}
+                        </li>
+                      )
+                  )}
+                </ol>
+              )}
+            </div>
+          </PageContainer>
 
           {/* Navigation Controls */}
           <div className='flex items-center justify-center gap-1 border-t px-2 py-2'>
@@ -169,14 +238,41 @@ export function GameSidebar() {
             </div>
           )}
           <div className='flex items-center gap-1'>
-            <Button
-              variant='ghost'
-              size='icon'
-              onClick={handleCopyFEN}
-              title='Copy FEN'
-            >
-              <Share2 className='h-4 w-4' />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  onClick={handleCopyMoves}
+                  disabled={moves.length === 0}
+                >
+                  {copiedMoves ? (
+                    <Check className='h-4 w-4 text-green-500' />
+                  ) : (
+                    <Copy className='h-4 w-4' />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copy Moves</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  onClick={handleCopyPGN}
+                  disabled={moves.length === 0}
+                  className='text-xs'
+                >
+                  {copiedPGN ? (
+                    <Check className='h-4 w-4 text-green-500' />
+                  ) : (
+                    <>PGN</>
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copy PGN</TooltipContent>
+            </Tooltip>
             <Button
               variant='ghost'
               size='icon'

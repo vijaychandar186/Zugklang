@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess, Square } from 'chess.js';

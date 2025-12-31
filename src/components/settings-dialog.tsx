@@ -14,45 +14,13 @@ import {
 } from '@/components/ui/tooltip';
 import { useBoardStore } from '@/lib/store';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Icons } from '@/components/icons';
+import { BOARD_THEMES } from '@/constants/board-themes';
 
 interface SettingsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const BOARD_THEMES = [
-  {
-    dark: { backgroundColor: 'var(--chart-3)' },
-    light: { backgroundColor: 'var(--secondary)' },
-    label: 'Default'
-  },
-  {
-    dark: { backgroundColor: 'var(--chart-1)' },
-    light: { backgroundColor: 'var(--muted)' },
-    label: 'Blue'
-  },
-  {
-    dark: { backgroundColor: 'var(--chart-2)' },
-    light: { backgroundColor: 'var(--card)' },
-    label: 'Teal'
-  },
-  {
-    dark: { backgroundColor: 'var(--chart-4)' },
-    light: { backgroundColor: 'var(--popover)' },
-    label: 'Gold'
-  },
-  {
-    dark: { backgroundColor: 'var(--chart-5)' },
-    light: { backgroundColor: 'var(--accent)' },
-    label: 'Orange'
-  },
-  {
-    dark: { backgroundColor: 'var(--primary)' },
-    light: { backgroundColor: 'var(--secondary)' },
-    label: 'Mono'
-  }
-];
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const setBoardTheme = useBoardStore((state) => state.setTheme);
@@ -118,7 +86,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setTheme('system')}
                 className='flex-1'
               >
-                <Monitor className='mr-2 h-4 w-4' />
+                <Icons.system className='mr-2 h-4 w-4' />
                 System
               </Button>
               <Button
@@ -127,7 +95,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setTheme('light')}
                 className='flex-1'
               >
-                <Sun className='mr-2 h-4 w-4' />
+                <Icons.sun className='mr-2 h-4 w-4' />
                 Light
               </Button>
               <Button
@@ -136,7 +104,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 onClick={() => setTheme('dark')}
                 className='flex-1'
               >
-                <Moon className='mr-2 h-4 w-4' />
+                <Icons.moon className='mr-2 h-4 w-4' />
                 Dark
               </Button>
             </div>

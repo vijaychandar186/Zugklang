@@ -34,10 +34,10 @@ export function CapturedPiecesDisplay({
           return (
             <Icon
               key={`${piece}-${index}`}
-              className={`-ml-1 h-4 w-4 first:ml-0 ${
+              className={`-ml-0.5 h-4 w-4 first:ml-0 ${
                 pieceColor === 'white'
-                  ? 'fill-white stroke-black'
-                  : 'fill-black stroke-black'
+                  ? 'fill-white stroke-black dark:stroke-white'
+                  : 'fill-black stroke-black dark:fill-zinc-800 dark:stroke-zinc-400'
               }`}
               strokeWidth={1.5}
             />

@@ -38,8 +38,8 @@ type BoardStore = {
 
 export const useBoardStore = create<BoardStore>((set, get) => ({
   theme: {
-    darkSquareStyle: { backgroundColor: 'var(--chart-3)' },
-    lightSquareStyle: { backgroundColor: 'var(--secondary)' }
+    darkSquareStyle: { backgroundColor: 'var(--board-default-dark)' },
+    lightSquareStyle: { backgroundColor: 'var(--board-default-light)' }
   },
   moves: [],
   positionHistory: [STARTING_FEN],

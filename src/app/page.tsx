@@ -1,10 +1,11 @@
-import { GameView } from '@/components/game-view';
-import PageContainer from '@/components/page-container';
+import Link from 'next/link';
 
-export default function Home() {
+export default function Page() {
   return (
-    <PageContainer scrollable={true}>
-      <GameView />
-    </PageContainer>
+    <main className='space-y-4'>
+      <h1>Landing Page</h1>
+
+      <Link href='/play/computer'>Play vs Computer</Link>
+    </main>
   );
 }

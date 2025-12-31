@@ -1,21 +1,14 @@
 'use client';
 
 import { PieceType } from '@/utils/types';
-import {
-  ChessRook,
-  ChessPawn,
-  ChessQueen,
-  ChessBishop,
-  ChessKnight,
-  LucideIcon
-} from 'lucide-react';
+import { Icons, type LucideIcon } from '@/components/icons';
 
 const PIECE_ICONS: Record<PieceType, LucideIcon> = {
-  p: ChessPawn,
-  n: ChessKnight,
-  b: ChessBishop,
-  r: ChessRook,
-  q: ChessQueen
+  p: Icons.chessPawn,
+  n: Icons.chessKnight,
+  b: Icons.chessBishop,
+  r: Icons.chessRook,
+  q: Icons.chessQueen
 };
 
 type CapturedPiecesDisplayProps = {

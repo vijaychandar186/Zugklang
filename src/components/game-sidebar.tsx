@@ -6,18 +6,7 @@ import PageContainer from '@/components/page-container';
 import { useBoardStore } from '@/lib/store';
 import { SettingsDialog } from '@/components/settings-dialog';
 import { GameSelectionDialog } from '@/components/game-selection-dialog';
-import {
-  Copy,
-  Check,
-  Settings,
-  Flag,
-  RotateCcw,
-  Plus,
-  ChevronsLeft,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsRight
-} from 'lucide-react';
+import { Icons } from '@/components/icons';
 import {
   Tooltip,
   TooltipContent,
@@ -149,22 +138,28 @@ export function GameSidebar() {
                           </span>
                           <button
                             onClick={() => goToMove(index)}
-                            className={`hover:bg-muted -ml-1 w-16 rounded px-1 text-left font-mono ${
-                              viewingIndex === index + 1
-                                ? 'bg-blue-500/20 text-blue-400'
-                                : 'text-blue-500'
-                            }`}
+                            className='hover:bg-muted -ml-1 w-16 rounded px-1 text-left font-mono'
+                            style={{
+                              color: 'var(--move-white)',
+                              backgroundColor:
+                                viewingIndex === index + 1
+                                  ? 'var(--move-white-active)'
+                                  : undefined
+                            }}
                           >
                             {move}
                           </button>
                           {index + 1 < moves.length && (
                             <button
                               onClick={() => goToMove(index + 1)}
-                              className={`hover:bg-muted rounded px-1 text-left font-mono ${
-                                viewingIndex === index + 2
-                                  ? 'bg-yellow-500/20 text-yellow-400'
-                                  : 'text-yellow-500'
-                              }`}
+                              className='hover:bg-muted rounded px-1 text-left font-mono'
+                              style={{
+                                color: 'var(--move-black)',
+                                backgroundColor:
+                                  viewingIndex === index + 2
+                                    ? 'var(--move-black-active)'
+                                    : undefined
+                              }}
                             >
                               {moves[index + 1]}
                             </button>
@@ -186,7 +181,7 @@ export function GameSidebar() {
               disabled={!canGoBack}
               title='Go to start'
             >
-              <ChevronsLeft className='h-4 w-4' />
+              <Icons.chevronsLeft className='h-4 w-4' />
             </Button>
             <Button
               variant='ghost'
@@ -195,7 +190,7 @@ export function GameSidebar() {
               disabled={!canGoBack}
               title='Previous move'
             >
-              <ChevronLeft className='h-4 w-4' />
+              <Icons.chevronLeft className='h-4 w-4' />
             </Button>
             <span className='text-muted-foreground min-w-[3rem] text-center text-xs'>
               {viewingIndex} / {positionHistory.length - 1}
@@ -207,7 +202,7 @@ export function GameSidebar() {
               disabled={!canGoForward}
               title='Next move'
             >
-              <ChevronRight className='h-4 w-4' />
+              <Icons.chevronRight className='h-4 w-4' />
             </Button>
             <Button
               variant='ghost'
@@ -216,7 +211,7 @@ export function GameSidebar() {
               disabled={!canGoForward}
               title='Go to end'
             >
-              <ChevronsRight className='h-4 w-4' />
+              <Icons.chevronsRight className='h-4 w-4' />
             </Button>
           </div>
         </div>
@@ -232,7 +227,7 @@ export function GameSidebar() {
                 className='w-full'
                 onClick={handleRematch}
               >
-                <RotateCcw className='mr-2 h-4 w-4' />
+                <Icons.rematch className='mr-2 h-4 w-4' />
                 Rematch
               </Button>
             </div>
@@ -247,9 +242,12 @@ export function GameSidebar() {
                   disabled={moves.length === 0}
                 >
                   {copiedMoves ? (
-                    <Check className='h-4 w-4 text-green-500' />
+                    <Icons.check
+                      className='h-4 w-4'
+                      style={{ color: 'var(--success)' }}
+                    />
                   ) : (
-                    <Copy className='h-4 w-4' />
+                    <Icons.copy className='h-4 w-4' />
                   )}
                 </Button>
               </TooltipTrigger>
@@ -265,7 +263,10 @@ export function GameSidebar() {
                   className='text-xs'
                 >
                   {copiedPGN ? (
-                    <Check className='h-4 w-4 text-green-500' />
+                    <Icons.check
+                      className='h-4 w-4'
+                      style={{ color: 'var(--success)' }}
+                    />
                   ) : (
                     <>PGN</>
                   )}
@@ -279,7 +280,7 @@ export function GameSidebar() {
               onClick={() => setSettingsOpen(true)}
               title='Settings'
             >
-              <Settings className='h-4 w-4' />
+              <Icons.settings className='h-4 w-4' />
             </Button>
             <Button
               variant='ghost'
@@ -287,7 +288,7 @@ export function GameSidebar() {
               onClick={() => setNewGameOpen(true)}
               title='New Game'
             >
-              <Plus className='h-4 w-4' />
+              <Icons.newGame className='h-4 w-4' />
             </Button>
             <Button
               variant='ghost'
@@ -296,7 +297,7 @@ export function GameSidebar() {
               onClick={handleResign}
               disabled={gameOver || moves.length === 0}
             >
-              <Flag className='mr-2 h-4 w-4' />
+              <Icons.flag className='mr-2 h-4 w-4' />
               Resign
             </Button>
           </div>

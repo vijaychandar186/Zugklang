@@ -1,0 +1,84 @@
+/* Chess theme colors */
+:root {
+  /* Board highlight colors */
+  --highlight-move-option: rgba(0, 0, 0, 0.1);
+  --highlight-selected: rgba(255, 255, 0, 0.4);
+  --highlight-premove: rgba(0, 150, 255, 0.5);
+  --highlight-right-click: rgba(255, 0, 0, 0.5);
+  --board-shadow: rgba(0, 0, 0, 0.3);
+
+  /* Move list colors */
+  --move-white: oklch(0.623 0.214 259.815);
+  --move-white-active: oklch(0.623 0.214 259.815 / 20%);
+  --move-black: oklch(0.795 0.184 86.047);
+  --move-black-active: oklch(0.795 0.184 86.047 / 20%);
+
+  /* Feedback colors */
+  --success: oklch(0.723 0.219 142.136);
+
+  /* Board theme colors - Default */
+  --board-default-dark: #769656;
+  --board-default-light: #eeeed2;
+
+  /* Board theme colors - Blue */
+  --board-blue-dark: #5a7faa;
+  --board-blue-light: #dee3e6;
+
+  /* Board theme colors - Teal */
+  --board-teal-dark: #4a9b9b;
+  --board-teal-light: #e0f0f0;
+
+  /* Board theme colors - Gold */
+  --board-gold-dark: #b58863;
+  --board-gold-light: #f0d9b5;
+
+  /* Board theme colors - Orange */
+  --board-orange-dark: #d08b45;
+  --board-orange-light: #ffe4c4;
+
+  /* Board theme colors - Mono */
+  --board-mono-dark: #666666;
+  --board-mono-light: #cccccc;
+}
+
+.dark {
+  /* Board highlight colors */
+  --highlight-move-option: rgba(255, 255, 255, 0.15);
+  --highlight-selected: rgba(255, 255, 0, 0.4);
+  --highlight-premove: rgba(0, 150, 255, 0.5);
+  --highlight-right-click: rgba(255, 0, 0, 0.5);
+  --board-shadow: rgba(0, 0, 0, 0.5);
+
+  /* Move list colors */
+  --move-white: oklch(0.707 0.165 254.624);
+  --move-white-active: oklch(0.707 0.165 254.624 / 20%);
+  --move-black: oklch(0.852 0.199 91.936);
+  --move-black-active: oklch(0.852 0.199 91.936 / 20%);
+
+  /* Feedback colors */
+  --success: oklch(0.723 0.219 142.136);
+
+  /* Board theme colors - Default */
+  --board-default-dark: #5d7a3d;
+  --board-default-light: #c8c8a8;
+
+  /* Board theme colors - Blue */
+  --board-blue-dark: #4a6a8a;
+  --board-blue-light: #b8c4d0;
+
+  /* Board theme colors - Teal */
+  --board-teal-dark: #3a7a7a;
+  --board-teal-light: #a8c8c8;
+
+  /* Board theme colors - Gold */
+  --board-gold-dark: #8a6040;
+  --board-gold-light: #c8a880;
+
+  /* Board theme colors - Orange */
+  --board-orange-dark: #a06830;
+  --board-orange-light: #d0a880;
+
+  /* Board theme colors - Mono */
+  --board-mono-dark: #484848;
+  --board-mono-light: #909090;
+}

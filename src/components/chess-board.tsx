@@ -4,6 +4,7 @@ import { Chess, Square } from 'chess.js';
 import { StockfishEngine } from '@/lib/engine';
 import { useBoardStore } from '@/lib/store';
 import { OptionSquares, RightClickedSquares } from '@/utils/types';
+import { BOARD_STYLES } from '@/constants/board-themes';
 
 export function ChessBoard() {
   const engine = useMemo(() => new StockfishEngine(), []);
@@ -204,19 +205,16 @@ export function ChessBoard() {
 
     const newSquares: OptionSquares = {};
     moves.forEach((move) => {
-      const isCapture =
-        game.get(move.to) &&
-        game.get(move.to)!.color !== game.get(square)!.color;
-      newSquares[move.to] = {
-        background: isCapture
-          ? 'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)'
-          : 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)',
-        borderRadius: '50%'
-      };
+      const targetPiece = game.get(move.to);
+      const sourcePiece = game.get(square);
+      const isCapture = !!(
+        targetPiece &&
+        sourcePiece &&
+        targetPiece.color !== sourcePiece.color
+      );
+      newSquares[move.to] = BOARD_STYLES.getMoveOptionStyle(isCapture);
     });
-    newSquares[square] = {
-      background: 'rgba(255, 255, 0, 0.4)'
-    };
+    newSquares[square] = BOARD_STYLES.selectedSquare;
     setOptionSquares(newSquares);
     return true;
   }
@@ -343,13 +341,11 @@ export function ChessBoard() {
     }
 
     const sq = square as Square;
-    const color = 'rgba(255, 0, 0, 0.5)';
     setRightClickedSquares((prev) => ({
       ...prev,
-      [sq]:
-        prev[sq]?.backgroundColor === color
-          ? undefined
-          : { backgroundColor: color }
+      [sq]: prev[sq]?.backgroundColor
+        ? undefined
+        : BOARD_STYLES.rightClickSquare
     }));
   }
 
@@ -360,12 +356,8 @@ export function ChessBoard() {
   };
 
   if (premove) {
-    squareStyles[premove.from] = {
-      background: 'rgba(0, 150, 255, 0.5)'
-    };
-    squareStyles[premove.to] = {
-      background: 'rgba(0, 150, 255, 0.5)'
-    };
+    squareStyles[premove.from] = BOARD_STYLES.premoveSquare;
+    squareStyles[premove.to] = BOARD_STYLES.premoveSquare;
   }
 
   return (
@@ -376,10 +368,7 @@ export function ChessBoard() {
           boardOrientation: playAs,
           allowDragging: true,
           animationDurationInMs: 200,
-          boardStyle: {
-            borderRadius: '4px',
-            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.3)'
-          },
+          boardStyle: BOARD_STYLES.boardStyle,
           squareStyles,
           darkSquareStyle: theme.darkSquareStyle,
           lightSquareStyle: theme.lightSquareStyle,

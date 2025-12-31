@@ -6,7 +6,7 @@ import { GameSidebar } from '@/components/game-sidebar';
 import { CapturedPiecesDisplay } from '@/components/captured-pieces';
 import { useBoardStore } from '@/lib/store';
 import { getCapturedPiecesFromFEN, getMaterialAdvantage } from '@/utils/types';
-import { User, Bot } from 'lucide-react';
+import { Icons } from '@/components/icons';
 
 export function GameView() {
   const gameId = useBoardStore((state) => state.gameId);
@@ -50,7 +50,7 @@ export function GameView() {
         <div className='flex w-full items-center justify-between py-2'>
           <div className='flex items-center gap-2'>
             <div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
-              <Bot className='h-5 w-5' />
+              <Icons.stockfish className='h-5 w-5' />
             </div>
             <div>
               <p className='font-semibold'>Stockfish</p>
@@ -69,7 +69,7 @@ export function GameView() {
         <div className='flex w-full items-center justify-between py-2'>
           <div className='flex items-center gap-2'>
             <div className='bg-muted flex h-10 w-10 items-center justify-center rounded-full'>
-              <User className='h-5 w-5' />
+              <Icons.player className='h-5 w-5' />
             </div>
             <div>
               <p className='font-semibold'>Player</p>

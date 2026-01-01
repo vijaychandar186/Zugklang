@@ -82,7 +82,7 @@ export function GameView() {
           />
         </div>
       </div>
-      <div className='min-h-[300px] w-full flex-1 sm:h-[400px] sm:flex-none lg:h-[560px] lg:w-80'>
+      <div className='h-[300px] w-full sm:h-[400px] sm:flex-none lg:h-[560px] lg:w-80'>
         <GameSidebar />
       </div>
     </div>

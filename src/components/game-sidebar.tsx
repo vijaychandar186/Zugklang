@@ -12,6 +12,17 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
 
 export function GameSidebar() {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -138,7 +149,7 @@ export function GameSidebar() {
                           </span>
                           <button
                             onClick={() => goToMove(index)}
-                            className='hover:bg-muted -ml-1 w-16 rounded px-1 text-left font-mono'
+                            className='hover:bg-muted -ml-1 w-16 cursor-pointer rounded px-1 text-left font-mono'
                             style={{
                               color: 'var(--move-white)',
                               backgroundColor:
@@ -152,7 +163,7 @@ export function GameSidebar() {
                           {index + 1 < moves.length && (
                             <button
                               onClick={() => goToMove(index + 1)}
-                              className='hover:bg-muted rounded px-1 text-left font-mono'
+                              className='hover:bg-muted cursor-pointer rounded px-1 text-left font-mono'
                               style={{
                                 color: 'var(--move-black)',
                                 backgroundColor:
@@ -290,16 +301,37 @@ export function GameSidebar() {
             >
               <Icons.newGame className='h-4 w-4' />
             </Button>
-            <Button
-              variant='ghost'
-              size='sm'
-              className='ml-auto'
-              onClick={handleResign}
-              disabled={gameOver || moves.length === 0}
-            >
-              <Icons.flag className='mr-2 h-4 w-4' />
-              Resign
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='sm'
+                  className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive ml-auto'
+                  disabled={gameOver || moves.length === 0}
+                >
+                  <Icons.flag className='mr-2 h-4 w-4' />
+                  Resign
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Resign Game?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to resign? This will end the game and
+                    count as a loss.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleResign}
+                    className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                  >
+                    Resign
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </div>

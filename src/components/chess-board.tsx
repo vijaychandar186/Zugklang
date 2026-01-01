@@ -20,8 +20,6 @@ export function ChessBoard() {
     promotion?: string;
   } | null>(null);
 
-  // Use a ref to track pending moves to add to store
-  const pendingMoveRef = useRef<{ san: string; fen: string } | null>(null);
   // Use a ref to always get the current game state
   const gameRef = useRef(game);
   gameRef.current = game;
@@ -44,14 +42,22 @@ export function ChessBoard() {
   const playerTurn = playAs === 'white' ? 'w' : 'b';
   const isPlayerTurn = game.turn() === playerTurn;
 
-  // Process pending move after render
+  // Process pending move after render - use state to trigger instead of running every render
+  const [pendingMove, setPendingMove] = useState<{
+    san: string;
+    fen: string;
+  } | null>(null);
+
   useEffect(() => {
-    if (pendingMoveRef.current) {
-      const { san, fen } = pendingMoveRef.current;
-      pendingMoveRef.current = null;
-      addMove(san, fen);
+    if (pendingMove) {
+      // Delay addMove until after animation completes
+      const timer = setTimeout(() => {
+        addMove(pendingMove.san, pendingMove.fen);
+        setPendingMove(null);
+      }, 300);
+      return () => clearTimeout(timer);
     }
-  });
+  }, [pendingMove, addMove]);
 
   // Execute premove when it becomes player's turn
   useEffect(() => {
@@ -107,8 +113,8 @@ export function ChessBoard() {
                 | undefined
             });
             if (move) {
-              // Schedule addMove for after render
-              pendingMoveRef.current = { san: move.san, fen: newGame.fen() };
+              // Schedule addMove for after animation
+              setPendingMove({ san: move.san, fen: newGame.fen() });
               return newGame;
             }
             return gameAtResponse;
@@ -155,7 +161,7 @@ export function ChessBoard() {
     setMoveFrom(null);
     setMoveTo(null);
     setPremove(null);
-    pendingMoveRef.current = null;
+    setPendingMove(null);
     if (playAs === 'black') {
       const startFen = newGame.fen();
       setTimeout(() => {
@@ -173,11 +179,11 @@ export function ChessBoard() {
                   to: bestMove.substring(2, 4) as Square
                 });
                 if (move) {
-                  // Schedule addMove for after render
-                  pendingMoveRef.current = {
+                  // Schedule addMove for after animation
+                  setPendingMove({
                     san: move.san,
                     fen: gameToUpdate.fen()
-                  };
+                  });
                   return gameToUpdate;
                 }
                 return currentGame;
@@ -367,7 +373,7 @@ export function ChessBoard() {
           position: isViewingHistory ? currentFEN : game.fen(),
           boardOrientation: playAs,
           allowDragging: true,
-          animationDurationInMs: 200,
+          animationDurationInMs: 300,
           boardStyle: BOARD_STYLES.boardStyle,
           squareStyles,
           darkSquareStyle: theme.darkSquareStyle,

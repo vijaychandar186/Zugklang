@@ -26,7 +26,7 @@ export default function NotFound() {
           </Button>
 
           <Button onClick={() => router.push('/')} variant='ghost' size='lg'>
-            New Game
+            Home
           </Button>
         </div>
       </div>

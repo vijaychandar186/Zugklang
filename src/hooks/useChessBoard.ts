@@ -5,11 +5,7 @@ import { useGameStore } from '@/hooks/stores/useGameStore';
 import { OptionSquares, RightClickedSquares } from '@/utils/types';
 import { BOARD_STYLES, getBoardTheme } from '@/constants/board-themes';
 import { playSound, getSoundType } from '@/utils/sounds';
-
-// Buffer time after animation to prevent race conditions
-const ANIMATION_DURATION = 300;
-const POST_ANIMATION_BUFFER = 50;
-const MOVE_DELAY = ANIMATION_DURATION + POST_ANIMATION_BUFFER;
+import { MOVE_DELAY } from '@/constants/animation';
 
 export function useChessBoard() {
   const engine = useMemo(() => new StockfishEngine(), []);
@@ -75,8 +71,16 @@ export function useChessBoard() {
     const isCheck = gameAfterMove.isCheck();
     const isCastle = move.san === 'O-O' || move.san === 'O-O-O';
     const isPromotion = move.promotion !== undefined;
+    const isPlayerMove =
+      move.color === (useGameStore.getState().playAs === 'white' ? 'w' : 'b');
 
-    const soundType = getSoundType(isCapture, isCheck, isCastle, isPromotion);
+    const soundType = getSoundType(
+      isCapture,
+      isCheck,
+      isCastle,
+      isPromotion,
+      isPlayerMove
+    );
     playSound(soundType);
   }, []);
 
@@ -85,11 +89,32 @@ export function useChessBoard() {
     if (pendingMove) {
       // Play sound immediately when move is made
       if (soundEnabledRef.current) {
+        const isPlayerMove =
+          pendingMove.fen.split(' ')[1] ===
+          (useGameStore.getState().playAs === 'white' ? 'b' : 'w'); // Logic to check who moved. Pending move has FEN *after* move. So turn is now opponent.
+
+        // Simpler: pendingMove is set by stockfish or premove execution.
+        // Actually pendingMove is mostly used for stockfish moves or buffer.
+        // Let's rely on standard logic.
+
+        // Re-deriving isPlayerMove in pendingMove effect might be tricky without full move object?
+        // pendingMove struct has: san, fen, isCapture... no color.
+        // But we know who moved based on whose turn it is in the NEW fen?
+        // If fen turn is 'b', then 'w' just moved.
+
+        const turnAfterMove = pendingMove.fen.split(' ')[1];
+        const playerColor =
+          useGameStore.getState().playAs === 'white' ? 'w' : 'b';
+        // If it's now 'b's turn, then 'w' moved.
+        const moverColor = turnAfterMove === 'w' ? 'b' : 'w';
+        const isPlayerMoveCheck = moverColor === playerColor;
+
         const soundType = getSoundType(
           pendingMove.isCapture,
           pendingMove.isCheck,
           pendingMove.isCastle,
-          pendingMove.isPromotion
+          pendingMove.isPromotion,
+          isPlayerMoveCheck
         );
         playSound(soundType);
       }
@@ -177,6 +202,11 @@ export function useChessBoard() {
 
   // Initial move for black
   useEffect(() => {
+    // Only play game start sound if it's the very beginning and we haven't played it yet?
+    // Or just play it when component mounts if game is empty?
+    // useGameStore persistence might make this tricky.
+    // Let's just play it when a NEW game starts (onNewGame).
+
     if (playAs === 'black' && game.history().length === 0) {
       makeStockfishMove();
     }
@@ -186,6 +216,8 @@ export function useChessBoard() {
   // Check for game over after each move
   useEffect(() => {
     if (game.isGameOver()) {
+      if (soundEnabled) playSound('game-end'); // Play game end sound
+
       if (game.isCheckmate()) {
         const winner = game.turn() === 'w' ? 'Black' : 'White';
         const isUserWin =
@@ -199,9 +231,11 @@ export function useChessBoard() {
       }
       setGameOver(true);
     }
-  }, [game, playAs, setGameResult, setGameOver]);
+  }, [game, playAs, setGameResult, setGameOver, soundEnabled]);
 
   const onNewGame = useCallback(() => {
+    if (soundEnabledRef.current) playSound('game-start'); // Play game start sound
+
     const newGame = new Chess();
     setGame(newGame);
     resetGame();
@@ -285,6 +319,7 @@ export function useChessBoard() {
 
     if (!isPlayerTurn) {
       setPremove({ from, to, promotion: promotion || 'q' });
+      if (soundEnabledRef.current) playSound('premove'); // Play premove sound
       return true;
     }
 
@@ -308,6 +343,7 @@ export function useChessBoard() {
       }
     } catch {
       // Invalid move
+      if (soundEnabledRef.current) playSound('illegal'); // Play illegal sound
     }
     return false;
   }
@@ -418,12 +454,13 @@ export function useChessBoard() {
 
   // Derive theme styles from theme name (memoized)
   const theme = useMemo(() => {
-    const boardTheme = getBoardTheme(boardThemeName);
+    // We use the generic variables which are set by the data-board-scheme attribute
+    // This allows instant theme switching via CSS without re-render flash
     return {
-      darkSquareStyle: boardTheme.dark,
-      lightSquareStyle: boardTheme.light
+      darkSquareStyle: { backgroundColor: 'var(--board-square-dark)' },
+      lightSquareStyle: { backgroundColor: 'var(--board-square-light)' }
     };
-  }, [boardThemeName]);
+  }, []); // Empty dependency array as these values are static strings pointing to CSS vars
 
   return {
     game,

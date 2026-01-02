@@ -22,7 +22,7 @@ function BoardSchemeSync() {
 
   useEffect(() => {
     // Sync data attribute for SSR on next page load
-    document.body.setAttribute('data-board-scheme', boardThemeName);
+    document.documentElement.setAttribute('data-board-scheme', boardThemeName);
   }, [boardThemeName]);
 
   return null;

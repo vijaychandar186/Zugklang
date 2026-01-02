@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { cookies } from 'next/headers';
 import './globals.css';
 import './theme.css';
-import { Providers } from '@/components/providers';
+import { Providers } from '@/components/layout/Providers';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -36,6 +36,7 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const theme = cookieStore.get('theme')?.value;
+  const boardScheme = cookieStore.get('boardScheme')?.value;
 
   return (
     <html lang='en' suppressHydrationWarning>
@@ -55,6 +56,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} overflow-hidden antialiased`}
         data-theme={theme}
+        data-board-scheme={boardScheme}
       >
         <Providers>
           <main>{children}</main>

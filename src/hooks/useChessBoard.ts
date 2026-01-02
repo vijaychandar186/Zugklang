@@ -1,12 +1,17 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Chessboard } from 'react-chessboard';
-import { Chess, Square } from 'chess.js';
+import { Chess, Square, Move } from 'chess.js';
 import { StockfishEngine } from '@/lib/engine';
-import { useBoardStore } from '@/lib/store';
+import { useGameStore } from '@/hooks/stores/useGameStore';
 import { OptionSquares, RightClickedSquares } from '@/utils/types';
-import { BOARD_STYLES } from '@/constants/board-themes';
+import { BOARD_STYLES, getBoardTheme } from '@/constants/board-themes';
+import { playSound, getSoundType } from '@/utils/sounds';
 
-export function ChessBoard() {
+// Buffer time after animation to prevent race conditions
+const ANIMATION_DURATION = 300;
+const POST_ANIMATION_BUFFER = 50;
+const MOVE_DELAY = ANIMATION_DURATION + POST_ANIMATION_BUFFER;
+
+export function useChessBoard() {
   const engine = useMemo(() => new StockfishEngine(), []);
   const [game, setGame] = useState(new Chess());
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
@@ -19,42 +24,80 @@ export function ChessBoard() {
     to: Square;
     promotion?: string;
   } | null>(null);
-
-  // Use a ref to always get the current game state
-  const gameRef = useRef(game);
-  gameRef.current = game;
-
-  const stockfishLevel = useBoardStore((state) => state.stockfishLevel);
-  const playAs = useBoardStore((state) => state.playAs);
-
-  const theme = useBoardStore((state) => state.theme);
-  const addMove = useBoardStore((state) => state.addMove);
-  const setOnNewGame = useBoardStore((state) => state.setOnNewGame);
-  const setGameOver = useBoardStore((state) => state.setGameOver);
-  const resetGame = useBoardStore((state) => state.resetGame);
-  const setGameResult = useBoardStore((state) => state.setGameResult);
-  const currentFEN = useBoardStore((state) => state.currentFEN);
-  const viewingIndex = useBoardStore((state) => state.viewingIndex);
-  const positionHistory = useBoardStore((state) => state.positionHistory);
-  const goToEnd = useBoardStore((state) => state.goToEnd);
-  const isViewingHistory = viewingIndex < positionHistory.length - 1;
-
-  const playerTurn = playAs === 'white' ? 'w' : 'b';
-  const isPlayerTurn = game.turn() === playerTurn;
-
-  // Process pending move after render - use state to trigger instead of running every render
   const [pendingMove, setPendingMove] = useState<{
     san: string;
     fen: string;
+    isCapture: boolean;
+    isCheck: boolean;
+    isCastle: boolean;
+    isPromotion: boolean;
   } | null>(null);
 
+  const gameRef = useRef(game);
+  gameRef.current = game;
+
+  // Individual selectors for better performance
+  const stockfishLevel = useGameStore((s) => s.stockfishLevel);
+  const playAs = useGameStore((s) => s.playAs);
+  const boardFlipped = useGameStore((s) => s.boardFlipped);
+  const boardThemeName = useGameStore((s) => s.boardThemeName);
+  const soundEnabled = useGameStore((s) => s.soundEnabled);
+  const addMove = useGameStore((s) => s.addMove);
+  const setOnNewGame = useGameStore((s) => s.setOnNewGame);
+  const setGameOver = useGameStore((s) => s.setGameOver);
+  const resetGame = useGameStore((s) => s.resetGame);
+  const setGameResult = useGameStore((s) => s.setGameResult);
+  const currentFEN = useGameStore((s) => s.currentFEN);
+  const viewingIndex = useGameStore((s) => s.viewingIndex);
+  const positionHistory = useGameStore((s) => s.positionHistory);
+  const goToEnd = useGameStore((s) => s.goToEnd);
+
+  const isViewingHistory = viewingIndex < positionHistory.length - 1;
+  const playerTurn = playAs === 'white' ? 'w' : 'b';
+  const isPlayerTurn = game.turn() === playerTurn;
+
+  // Board orientation based on playAs and flip state
+  const boardOrientation = boardFlipped
+    ? playAs === 'white'
+      ? 'black'
+      : 'white'
+    : playAs;
+
+  // Ref to access current sound setting in callbacks
+  const soundEnabledRef = useRef(soundEnabled);
+  soundEnabledRef.current = soundEnabled;
+
+  // Play sound for a chess move
+  const playMoveSound = useCallback((move: Move, gameAfterMove: Chess) => {
+    if (!soundEnabledRef.current) return;
+
+    const isCapture = move.captured !== undefined;
+    const isCheck = gameAfterMove.isCheck();
+    const isCastle = move.san === 'O-O' || move.san === 'O-O-O';
+    const isPromotion = move.promotion !== undefined;
+
+    const soundType = getSoundType(isCapture, isCheck, isCastle, isPromotion);
+    playSound(soundType);
+  }, []);
+
+  // Process pending move after animation completes
   useEffect(() => {
     if (pendingMove) {
-      // Delay addMove until after animation completes
+      // Play sound immediately when move is made
+      if (soundEnabledRef.current) {
+        const soundType = getSoundType(
+          pendingMove.isCapture,
+          pendingMove.isCheck,
+          pendingMove.isCastle,
+          pendingMove.isPromotion
+        );
+        playSound(soundType);
+      }
+
       const timer = setTimeout(() => {
         addMove(pendingMove.san, pendingMove.fen);
         setPendingMove(null);
-      }, 300);
+      }, MOVE_DELAY);
       return () => clearTimeout(timer);
     }
   }, [pendingMove, addMove]);
@@ -73,9 +116,10 @@ export function ChessBoard() {
           promotion: promotion as 'q' | 'r' | 'b' | 'n' | undefined
         });
         if (move) {
+          playMoveSound(move, newGame);
           addMove(move.san, newGame.fen());
           setGame(newGame);
-          setTimeout(makeStockfishMove, 300);
+          setTimeout(makeStockfishMove, MOVE_DELAY);
         }
       } catch {
         // Invalid premove, just clear it
@@ -96,7 +140,6 @@ export function ChessBoard() {
     engine.onMessage(({ bestMove }) => {
       if (bestMove) {
         setGame((gameAtResponse) => {
-          // Only apply if it's still Stockfish's turn and FEN matches
           if (gameAtResponse.fen() !== fenToEvaluate) {
             return gameAtResponse;
           }
@@ -113,8 +156,14 @@ export function ChessBoard() {
                 | undefined
             });
             if (move) {
-              // Schedule addMove for after animation
-              setPendingMove({ san: move.san, fen: newGame.fen() });
+              setPendingMove({
+                san: move.san,
+                fen: newGame.fen(),
+                isCapture: move.captured !== undefined,
+                isCheck: newGame.isCheck(),
+                isCastle: move.san === 'O-O' || move.san === 'O-O-O',
+                isPromotion: move.promotion !== undefined
+              });
               return newGame;
             }
             return gameAtResponse;
@@ -179,10 +228,13 @@ export function ChessBoard() {
                   to: bestMove.substring(2, 4) as Square
                 });
                 if (move) {
-                  // Schedule addMove for after animation
                   setPendingMove({
                     san: move.san,
-                    fen: gameToUpdate.fen()
+                    fen: gameToUpdate.fen(),
+                    isCapture: move.captured !== undefined,
+                    isCheck: gameToUpdate.isCheck(),
+                    isCastle: move.san === 'O-O' || move.san === 'O-O-O',
+                    isPromotion: move.promotion !== undefined
                   });
                   return gameToUpdate;
                 }
@@ -226,16 +278,14 @@ export function ChessBoard() {
   }
 
   function makeMove(from: Square, to: Square, promotion?: string): boolean {
-    // If viewing history, go back to current position first
     if (isViewingHistory) {
       goToEnd();
       return false;
     }
 
-    // If it's not player's turn, set as premove
     if (!isPlayerTurn) {
       setPremove({ from, to, promotion: promotion || 'q' });
-      return true; // Return true to show the piece snapping back
+      return true;
     }
 
     try {
@@ -247,12 +297,13 @@ export function ChessBoard() {
       });
 
       if (move) {
+        playMoveSound(move, newGame);
         addMove(move.san, newGame.fen());
         setGame(newGame);
         setMoveFrom(null);
         setMoveTo(null);
         setOptionSquares({});
-        setTimeout(makeStockfishMove, 300);
+        setTimeout(makeStockfishMove, MOVE_DELAY);
         return true;
       }
     } catch {
@@ -279,13 +330,11 @@ export function ChessBoard() {
     piece: { pieceType: string } | null;
     square: string;
   }) {
-    // If viewing history, go back to current position
     if (isViewingHistory) {
       goToEnd();
       return;
     }
 
-    // Clear premove on click
     if (premove) {
       setPremove(null);
     }
@@ -305,7 +354,6 @@ export function ChessBoard() {
       const foundMove = moves.find((m) => m.from === moveFrom && m.to === sq);
 
       if (!foundMove) {
-        // If not player's turn, allow setting premove by clicking
         if (!isPlayerTurn) {
           setPremove({ from: moveFrom, to: sq, promotion: 'q' });
           setMoveFrom(null);
@@ -319,7 +367,6 @@ export function ChessBoard() {
 
       setMoveTo(sq);
 
-      // Check for pawn promotion
       const promotion =
         piece?.type === 'p' &&
         ((piece.color === 'w' && sq[1] === '8') ||
@@ -340,7 +387,6 @@ export function ChessBoard() {
     piece: { pieceType: string } | null;
     square: string;
   }) {
-    // Right click clears premove
     if (premove) {
       setPremove(null);
       return;
@@ -355,34 +401,39 @@ export function ChessBoard() {
     }));
   }
 
-  // Build square styles including premove highlight
-  const squareStyles: OptionSquares = {
-    ...optionSquares,
-    ...rightClickedSquares
+  // Build square styles including premove highlight (memoized to prevent unnecessary re-renders)
+  const squareStyles = useMemo<OptionSquares>(() => {
+    const styles: OptionSquares = {
+      ...optionSquares,
+      ...rightClickedSquares
+    };
+
+    if (premove) {
+      styles[premove.from] = BOARD_STYLES.premoveSquare;
+      styles[premove.to] = BOARD_STYLES.premoveSquare;
+    }
+
+    return styles;
+  }, [optionSquares, rightClickedSquares, premove]);
+
+  // Derive theme styles from theme name (memoized)
+  const theme = useMemo(() => {
+    const boardTheme = getBoardTheme(boardThemeName);
+    return {
+      darkSquareStyle: boardTheme.dark,
+      lightSquareStyle: boardTheme.light
+    };
+  }, [boardThemeName]);
+
+  return {
+    game,
+    theme,
+    boardOrientation,
+    currentFEN,
+    isViewingHistory,
+    squareStyles,
+    onDrop,
+    handleSquareClick,
+    handleSquareRightClick
   };
-
-  if (premove) {
-    squareStyles[premove.from] = BOARD_STYLES.premoveSquare;
-    squareStyles[premove.to] = BOARD_STYLES.premoveSquare;
-  }
-
-  return (
-    <div className='w-[calc(100vw-2rem)] max-w-[380px] sm:w-[400px] sm:max-w-none lg:w-[560px]'>
-      <Chessboard
-        options={{
-          position: isViewingHistory ? currentFEN : game.fen(),
-          boardOrientation: playAs,
-          allowDragging: true,
-          animationDurationInMs: 300,
-          boardStyle: BOARD_STYLES.boardStyle,
-          squareStyles,
-          darkSquareStyle: theme.darkSquareStyle,
-          lightSquareStyle: theme.lightSquareStyle,
-          onSquareClick: handleSquareClick,
-          onSquareRightClick: handleSquareRightClick,
-          onPieceDrop: onDrop
-        }}
-      />
-    </div>
-  );
 }

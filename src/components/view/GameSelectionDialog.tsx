@@ -11,20 +11,20 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Slider } from '@/components/ui/slider';
-import { useBoardStore } from '@/lib/store';
+import { useGameStore } from '@/hooks/stores/useGameStore';
 
-interface GameSelectionDialogProps {
+type GameSelectionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
+};
 
 export function GameSelectionDialog({
   open,
   onOpenChange
 }: GameSelectionDialogProps) {
-  const stockfishLevel = useBoardStore((state) => state.stockfishLevel);
-  const currentPlayAs = useBoardStore((state) => state.playAs);
-  const startGame = useBoardStore((state) => state.startGame);
+  const stockfishLevel = useGameStore((s) => s.stockfishLevel);
+  const currentPlayAs = useGameStore((s) => s.playAs);
+  const startGame = useGameStore((s) => s.startGame);
 
   const [depth, setDepth] = useState(stockfishLevel);
   const [playAs, setPlayAs] = useState<'white' | 'black'>(currentPlayAs);

@@ -1,5 +1,5 @@
-import { GameView } from '@/components/game-view';
-import PageContainer from '@/components/page-container';
+import { GameView } from '@/components/view/GameView';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export default function Home() {
   return (

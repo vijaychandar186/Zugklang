@@ -19,6 +19,7 @@ import {
   Sun,
   Moon,
   Monitor,
+  ArrowUpDown,
   type LucideIcon
 } from 'lucide-react';
 
@@ -43,6 +44,7 @@ export const Icons = {
   flag: Flag,
   rematch: RotateCcw,
   newGame: Plus,
+  flipBoard: ArrowUpDown,
 
   // Users
   player: User,

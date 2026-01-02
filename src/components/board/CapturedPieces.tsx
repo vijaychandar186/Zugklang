@@ -1,7 +1,7 @@
 'use client';
 
 import { PieceType } from '@/utils/types';
-import { Icons, type LucideIcon } from '@/components/icons';
+import { Icons, type LucideIcon } from '@/components/Icons';
 
 const PIECE_ICONS: Record<PieceType, LucideIcon> = {
   p: Icons.chessPawn,

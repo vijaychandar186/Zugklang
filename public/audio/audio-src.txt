@@ -1,0 +1,69 @@
+When the game starts:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/game-start.mp3
+
+------------------------
+
+When the game ends (move-check sound + game-end sound = Checkmate)
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/game-end.mp3
+
+------------------------
+
+When you Capture or your opponent does:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/capture.mp3
+
+------------------------
+
+When you Castle or your opponent does:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/castle.mp3
+
+------------------------
+
+when you Pre-move a piece or your opponent does:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/premove.mp3
+
+------------------------
+
+When you move a piece:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-self.mp3
+
+------------------------
+
+When your opponent moves a piece:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-opponent.mp3
+
+------------------------
+
+When you deliver a check or your opponent does:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/move-check.mp3
+
+------------------------
+
+When you promote a piece or your opponent does:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/promote.mp3
+
+------------------------
+
+Notification sound:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/notify.mp3
+
+------------------------
+
+illegal move:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/illegal.mp3
+
+------------------------
+
+When there is isn't much time left on the clock:
+
+http://images.chesscomfiles.com/chess-themes/sounds/_MP3_/default/tenseconds.mp3

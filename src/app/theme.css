@@ -39,6 +39,35 @@
   /* Board theme colors - Mono */
   --board-mono-dark: #666666;
   --board-mono-light: #cccccc;
+
+  /* Default board colors (fallback) */
+  --board-square-dark: var(--board-default-dark);
+  --board-square-light: var(--board-default-light);
+}
+
+[data-board-scheme='blue'] {
+  --board-square-dark: var(--board-blue-dark);
+  --board-square-light: var(--board-blue-light);
+}
+
+[data-board-scheme='teal'] {
+  --board-square-dark: var(--board-teal-dark);
+  --board-square-light: var(--board-teal-light);
+}
+
+[data-board-scheme='gold'] {
+  --board-square-dark: var(--board-gold-dark);
+  --board-square-light: var(--board-gold-light);
+}
+
+[data-board-scheme='orange'] {
+  --board-square-dark: var(--board-orange-dark);
+  --board-square-light: var(--board-orange-light);
+}
+
+[data-board-scheme='mono'] {
+  --board-square-dark: var(--board-mono-dark);
+  --board-square-light: var(--board-mono-light);
 }
 
 .dark {

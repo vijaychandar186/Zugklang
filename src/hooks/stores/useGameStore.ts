@@ -29,7 +29,7 @@ function getInitialBoardTheme(): BoardThemeName {
   if (typeof document === 'undefined') return DEFAULT_BOARD_THEME;
 
   // First try data attribute (set by server from cookie, prevents flash)
-  const dataValue = document.body?.getAttribute('data-board-scheme');
+  const dataValue = document.documentElement?.getAttribute('data-board-scheme');
   if (dataValue && VALID_BOARD_THEMES.includes(dataValue)) {
     return dataValue as BoardThemeName;
   }

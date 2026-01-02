@@ -3,6 +3,7 @@
 import { Chessboard } from 'react-chessboard';
 import { useChessBoard } from '@/hooks/useChessBoard';
 import { BOARD_STYLES } from '@/constants/board-themes';
+import { ANIMATION_CONFIG } from '@/constants/animation';
 
 export function ChessBoard() {
   const {
@@ -24,7 +25,7 @@ export function ChessBoard() {
           position: isViewingHistory ? currentFEN : game.fen(),
           boardOrientation: boardOrientation,
           allowDragging: true,
-          animationDurationInMs: 300,
+          animationDurationInMs: ANIMATION_CONFIG.durationMs,
           boardStyle: BOARD_STYLES.boardStyle,
           squareStyles,
           darkSquareStyle: theme.darkSquareStyle,

@@ -39,7 +39,7 @@ export default async function RootLayout({
   const boardScheme = cookieStore.get('boardScheme')?.value;
 
   return (
-    <html lang='en' suppressHydrationWarning>
+    <html lang='en' suppressHydrationWarning data-board-scheme={boardScheme}>
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -56,7 +56,6 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} overflow-hidden antialiased`}
         data-theme={theme}
-        data-board-scheme={boardScheme}
       >
         <Providers>
           <main>{children}</main>

@@ -22,6 +22,9 @@ import {
   ArrowUpDown,
   Ban,
   Share2,
+  Eye,
+  EyeOff,
+  Brain,
   type LucideIcon
 } from 'lucide-react';
 
@@ -57,7 +60,12 @@ export const Icons = {
   sun: Sun,
   moon: Moon,
   system: Monitor,
-  abort: Ban
+  abort: Ban,
+
+  // Analysis
+  analyze: Eye,
+  analyzeOff: EyeOff,
+  engine: Brain
 } as const;
 
 export type { LucideIcon };

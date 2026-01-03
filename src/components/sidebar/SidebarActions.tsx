@@ -18,6 +18,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
+import {
+  useAnalysisState,
+  useAnalysisActions
+} from '@/hooks/stores/useAnalysisStore';
 
 type SidebarActionsProps = {
   moves: string[];
@@ -43,6 +47,17 @@ export function SidebarActions({
   const canAbort = moves.length < 4;
   const isGameActive = gameStarted && !gameOver;
 
+  const { isAnalysisOn, isInitialized } = useAnalysisState();
+  const { startAnalysis, endAnalysis } = useAnalysisActions();
+
+  const handleToggleAnalysis = () => {
+    if (isAnalysisOn) {
+      endAnalysis();
+    } else {
+      startAnalysis();
+    }
+  };
+
   return (
     <div className='flex items-center gap-1'>
       <Tooltip>
@@ -61,6 +76,26 @@ export function SidebarActions({
           </Button>
         </TooltipTrigger>
         <TooltipContent>Flip Board</TooltipContent>
+      </Tooltip>
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant={isAnalysisOn ? 'default' : 'ghost'}
+            size='icon'
+            onClick={handleToggleAnalysis}
+            disabled={!isInitialized}
+          >
+            {isAnalysisOn ? (
+              <Icons.analyze className='h-4 w-4' />
+            ) : (
+              <Icons.analyzeOff className='h-4 w-4' />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {isAnalysisOn ? 'Turn Off Analysis' : 'Turn On Analysis'}
+        </TooltipContent>
       </Tooltip>
 
       <div className='ml-auto flex items-center gap-1'>

@@ -1,12 +1,19 @@
 'use client';
 
+import { useEffect } from 'react';
 import { ChessBoard } from '@/components/board/ChessBoard';
 import { CapturedPiecesDisplay } from '@/components/board/CapturedPieces';
 import { GameSidebar } from '@/components/sidebar/GameSidebar';
+import { EvaluationBar } from '@/components/analysis/EvaluationBar';
+import { AnalysisLines } from '@/components/analysis/AnalysisLines';
 import { PlayerInfo } from './PlayerInfo';
 import { PlayerClock } from './PlayerClock';
 import { useGameView } from '@/hooks/useGameView';
 import { useGameTimer } from '@/hooks/useGameTimer';
+import {
+  useAnalysisState,
+  useAnalysisActions
+} from '@/hooks/stores/useAnalysisStore';
 
 interface GameViewProps {
   serverOrientation?: 'white' | 'black';
@@ -28,11 +35,28 @@ export function GameView({ serverOrientation }: GameViewProps) {
     topTime,
     bottomTime,
     topTimerActive,
-    bottomTimerActive
+    bottomTimerActive,
+    currentFEN
   } = useGameView();
+
+  const { isAnalysisOn } = useAnalysisState();
+  const { initializeEngine, setPosition, cleanup } = useAnalysisActions();
 
   // Initialize timer hook to ensure timer ticks
   useGameTimer();
+
+  // Initialize analysis engine on mount
+  useEffect(() => {
+    initializeEngine();
+    return () => cleanup();
+  }, [initializeEngine, cleanup]);
+
+  // Sync position when FEN changes
+  useEffect(() => {
+    if (!currentFEN) return;
+    const fenTurn = currentFEN.split(' ')[1] as 'w' | 'b';
+    setPosition(currentFEN, fenTurn);
+  }, [currentFEN, setPosition]);
 
   return (
     <div className='flex h-screen flex-col gap-4 overflow-hidden px-4 py-4 lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:px-6'>
@@ -58,7 +82,10 @@ export function GameView({ serverOrientation }: GameViewProps) {
             advantage={topAdvantage}
           />
         </div>
-        <ChessBoard key={gameId} serverOrientation={serverOrientation} />
+        <div className='flex items-center gap-2'>
+          {isAnalysisOn && <EvaluationBar />}
+          <ChessBoard key={gameId} serverOrientation={serverOrientation} />
+        </div>
         <div className='flex w-full items-center justify-between py-2'>
           <div className='flex items-center gap-3'>
             <PlayerInfo
@@ -83,8 +110,15 @@ export function GameView({ serverOrientation }: GameViewProps) {
           />
         </div>
       </div>
-      <div className='min-h-[250px] w-full flex-1 overflow-hidden sm:h-[400px] sm:flex-none lg:h-[560px] lg:w-80'>
-        <GameSidebar />
+      <div className='flex min-h-[250px] w-full flex-1 flex-col gap-2 overflow-hidden sm:h-[400px] sm:flex-none lg:h-[560px] lg:w-80'>
+        {isAnalysisOn && (
+          <div className='bg-card shrink-0 rounded-lg border'>
+            <AnalysisLines />
+          </div>
+        )}
+        <div className='min-h-0 flex-1 overflow-hidden'>
+          <GameSidebar />
+        </div>
       </div>
     </div>
   );

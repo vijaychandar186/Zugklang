@@ -23,6 +23,7 @@ export function useGameSidebar() {
   const gameResult = useGameStore((s) => s.gameResult);
   const playAs = useGameStore((s) => s.playAs);
   const flipBoard = useGameStore((s) => s.flipBoard);
+  const gameStarted = useGameStore((s) => s.gameStarted);
 
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
@@ -69,8 +70,7 @@ export function useGameSidebar() {
       : '*';
 
     const headers = [
-      '[Event "Casual Game"]',
-      '[Site "Chess Variant"]',
+      '[Site "Zugklang"]',
       `[Date "${dateStr}"]`,
       `[White "${playAs === 'white' ? 'Player' : 'Stockfish'}"]`,
       `[Black "${playAs === 'black' ? 'Player' : 'Stockfish'}"]`,
@@ -92,6 +92,11 @@ export function useGameSidebar() {
 
   const handleResign = () => {
     setGameResult('You resigned');
+    setGameOver(true);
+  };
+
+  const handleAbort = () => {
+    setGameResult('Game Aborted');
     setGameOver(true);
   };
 
@@ -117,6 +122,7 @@ export function useGameSidebar() {
     positionHistory,
     gameOver,
     gameResult,
+    gameStarted,
 
     // Navigation
     canGoBack,
@@ -131,6 +137,7 @@ export function useGameSidebar() {
     handleCopyMoves,
     handleCopyPGN,
     handleResign,
+    handleAbort,
     handleRematch,
     flipBoard
   };

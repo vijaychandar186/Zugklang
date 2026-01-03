@@ -8,7 +8,11 @@ import { PlayerClock } from './PlayerClock';
 import { useGameView } from '@/hooks/useGameView';
 import { useGameTimer } from '@/hooks/useGameTimer';
 
-export function GameView() {
+interface GameViewProps {
+  serverOrientation?: 'white' | 'black';
+}
+
+export function GameView({ serverOrientation }: GameViewProps) {
   const {
     gameId,
     stockfishLevel,
@@ -54,7 +58,7 @@ export function GameView() {
             advantage={topAdvantage}
           />
         </div>
-        <ChessBoard key={gameId} />
+        <ChessBoard key={gameId} serverOrientation={serverOrientation} />
         <div className='flex w-full items-center justify-between py-2'>
           <div className='flex items-center gap-3'>
             <PlayerInfo

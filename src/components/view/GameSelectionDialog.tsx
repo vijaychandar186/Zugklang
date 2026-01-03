@@ -51,19 +51,11 @@ export function GameSelectionDialog({
   const [minutes, setMinutes] = useState(currentTimeControl.minutes || 10);
   const [increment, setIncrement] = useState(currentTimeControl.increment || 0);
 
-  // Custom mode settings (different per player)
-  const [whiteMinutes, setWhiteMinutes] = useState(
-    currentTimeControl.whiteMinutes ?? 10
-  );
-  const [whiteIncrement, setWhiteIncrement] = useState(
-    currentTimeControl.whiteIncrement ?? 0
-  );
-  const [blackMinutes, setBlackMinutes] = useState(
-    currentTimeControl.blackMinutes ?? 10
-  );
-  const [blackIncrement, setBlackIncrement] = useState(
-    currentTimeControl.blackIncrement ?? 0
-  );
+  // Custom mode settings (Player 1 = You, Player 2 = Stockfish)
+  const [player1Minutes, setPlayer1Minutes] = useState(10);
+  const [player1Increment, setPlayer1Increment] = useState(0);
+  const [player2Minutes, setPlayer2Minutes] = useState(10);
+  const [player2Increment, setPlayer2Increment] = useState(0);
 
   useEffect(() => {
     if (open) {
@@ -72,10 +64,11 @@ export function GameSelectionDialog({
       setTimerMode(currentTimeControl.mode);
       setMinutes(currentTimeControl.minutes || 10);
       setIncrement(currentTimeControl.increment || 0);
-      setWhiteMinutes(currentTimeControl.whiteMinutes ?? 10);
-      setWhiteIncrement(currentTimeControl.whiteIncrement ?? 0);
-      setBlackMinutes(currentTimeControl.blackMinutes ?? 10);
-      setBlackIncrement(currentTimeControl.blackIncrement ?? 0);
+      // Reset player times to defaults when opening
+      setPlayer1Minutes(10);
+      setPlayer1Increment(0);
+      setPlayer2Minutes(10);
+      setPlayer2Increment(0);
     }
   }, [open, stockfishLevel, currentTimeControl]);
 
@@ -84,14 +77,40 @@ export function GameSelectionDialog({
     const resolvedColor: 'white' | 'black' =
       playAs === 'random' ? (Math.random() < 0.5 ? 'white' : 'black') : playAs;
 
+    // For custom mode: Player 1 = You, Player 2 = Stockfish
+    // Map to white/black based on which color the user is playing
+    const userPlaysWhite = resolvedColor === 'white';
+
     const timeControl: TimeControl = {
       mode: timerMode,
       minutes: timerMode === 'timed' ? minutes : 0,
       increment: timerMode === 'timed' ? increment : 0,
-      whiteMinutes: timerMode === 'custom' ? whiteMinutes : undefined,
-      whiteIncrement: timerMode === 'custom' ? whiteIncrement : undefined,
-      blackMinutes: timerMode === 'custom' ? blackMinutes : undefined,
-      blackIncrement: timerMode === 'custom' ? blackIncrement : undefined
+      // If user plays white: white=player1, black=player2
+      // If user plays black: white=player2, black=player1
+      whiteMinutes:
+        timerMode === 'custom'
+          ? userPlaysWhite
+            ? player1Minutes
+            : player2Minutes
+          : undefined,
+      whiteIncrement:
+        timerMode === 'custom'
+          ? userPlaysWhite
+            ? player1Increment
+            : player2Increment
+          : undefined,
+      blackMinutes:
+        timerMode === 'custom'
+          ? userPlaysWhite
+            ? player2Minutes
+            : player1Minutes
+          : undefined,
+      blackIncrement:
+        timerMode === 'custom'
+          ? userPlaysWhite
+            ? player2Increment
+            : player1Increment
+          : undefined
     };
     startGame(depth, resolvedColor, timeControl);
     onOpenChange(false);
@@ -179,7 +198,7 @@ export function GameSelectionDialog({
               <SelectContent>
                 <SelectItem value='unlimited'>Unlimited</SelectItem>
                 <SelectItem value='timed'>Time Controlled</SelectItem>
-                <SelectItem value='custom'>Custom (per player)</SelectItem>
+                <SelectItem value='custom'>Custom</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -228,26 +247,26 @@ export function GameSelectionDialog({
             <>
               <div className='rounded-lg border p-4'>
                 <Label className='mb-3 block text-center font-medium'>
-                  White (Player 1)
+                  Player 1
                 </Label>
                 <div className='space-y-3'>
                   <Label className='block text-center text-sm'>
-                    Time: {formatTimeLabel(whiteMinutes)}
+                    Time: {formatTimeLabel(player1Minutes)}
                   </Label>
                   <Slider
-                    value={[whiteMinutes]}
-                    onValueChange={(v) => setWhiteMinutes(v[0])}
+                    value={[player1Minutes]}
+                    onValueChange={(v) => setPlayer1Minutes(v[0])}
                     min={1}
                     max={180}
                     step={1}
                     className='w-full'
                   />
                   <Label className='block text-center text-sm'>
-                    Increment: {formatIncrementLabel(whiteIncrement)}
+                    Increment: {formatIncrementLabel(player1Increment)}
                   </Label>
                   <Slider
-                    value={[whiteIncrement]}
-                    onValueChange={(v) => setWhiteIncrement(v[0])}
+                    value={[player1Increment]}
+                    onValueChange={(v) => setPlayer1Increment(v[0])}
                     min={0}
                     max={180}
                     step={1}
@@ -258,26 +277,26 @@ export function GameSelectionDialog({
 
               <div className='rounded-lg border p-4'>
                 <Label className='mb-3 block text-center font-medium'>
-                  Black (Player 2)
+                  Player 2
                 </Label>
                 <div className='space-y-3'>
                   <Label className='block text-center text-sm'>
-                    Time: {formatTimeLabel(blackMinutes)}
+                    Time: {formatTimeLabel(player2Minutes)}
                   </Label>
                   <Slider
-                    value={[blackMinutes]}
-                    onValueChange={(v) => setBlackMinutes(v[0])}
+                    value={[player2Minutes]}
+                    onValueChange={(v) => setPlayer2Minutes(v[0])}
                     min={1}
                     max={180}
                     step={1}
                     className='w-full'
                   />
                   <Label className='block text-center text-sm'>
-                    Increment: {formatIncrementLabel(blackIncrement)}
+                    Increment: {formatIncrementLabel(player2Increment)}
                   </Label>
                   <Slider
-                    value={[blackIncrement]}
-                    onValueChange={(v) => setBlackIncrement(v[0])}
+                    value={[player2Increment]}
+                    onValueChange={(v) => setPlayer2Increment(v[0])}
                     min={0}
                     max={180}
                     step={1}

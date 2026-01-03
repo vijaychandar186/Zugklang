@@ -20,6 +20,8 @@ import {
   Moon,
   Monitor,
   ArrowUpDown,
+  Ban,
+  Share2,
   type LucideIcon
 } from 'lucide-react';
 
@@ -45,6 +47,7 @@ export const Icons = {
   rematch: RotateCcw,
   newGame: Plus,
   flipBoard: ArrowUpDown,
+  share: Share2,
 
   // Users
   player: User,
@@ -53,7 +56,8 @@ export const Icons = {
   // Theme
   sun: Sun,
   moon: Moon,
-  system: Monitor
+  system: Monitor,
+  abort: Ban
 } as const;
 
 export type { LucideIcon };

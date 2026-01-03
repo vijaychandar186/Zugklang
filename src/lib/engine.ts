@@ -1,6 +1,7 @@
 export class StockfishEngine {
   private worker: Worker | null = null;
   private currentHandler: ((e: MessageEvent) => void) | null = null;
+  private isDestroyed = false;
 
   constructor() {
     if (typeof Worker !== 'undefined') {
@@ -11,18 +12,17 @@ export class StockfishEngine {
   }
 
   onMessage(callback: (data: { bestMove: string }) => void) {
-    if (this.worker) {
+    if (this.worker && !this.isDestroyed) {
       // Remove any existing handler first
-      if (this.currentHandler) {
-        this.worker.removeEventListener('message', this.currentHandler);
-      }
+      this.clearCurrentHandler();
 
       const handler = (e: MessageEvent) => {
         const bestMove = e.data?.match(/bestmove\s+(\S+)/)?.[1];
         if (bestMove) {
-          this.worker?.removeEventListener('message', handler);
-          this.currentHandler = null;
-          callback({ bestMove });
+          this.clearCurrentHandler();
+          if (!this.isDestroyed) {
+            callback({ bestMove });
+          }
         }
       };
       this.currentHandler = handler;
@@ -30,19 +30,38 @@ export class StockfishEngine {
     }
   }
 
+  private clearCurrentHandler() {
+    if (this.currentHandler && this.worker) {
+      this.worker.removeEventListener('message', this.currentHandler);
+      this.currentHandler = null;
+    }
+  }
+
   evaluatePosition(fen: string, depth: number) {
-    if (this.worker) {
+    if (this.worker && !this.isDestroyed) {
       this.sendCommand(`position fen ${fen}`);
       this.sendCommand(`go depth ${depth}`);
     }
   }
 
   stop() {
+    this.clearCurrentHandler();
     this.sendCommand('stop');
   }
 
   quit() {
     this.sendCommand('quit');
+  }
+
+  destroy() {
+    this.isDestroyed = true;
+    this.clearCurrentHandler();
+    this.stop();
+    this.quit();
+    if (this.worker) {
+      this.worker.terminate();
+      this.worker = null;
+    }
   }
 
   private sendCommand(command: string) {

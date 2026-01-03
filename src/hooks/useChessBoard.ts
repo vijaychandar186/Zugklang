@@ -3,23 +3,58 @@ import { Chess, Square, Move } from 'chess.js';
 import { StockfishEngine } from '@/lib/engine';
 import { useGameStore } from '@/hooks/stores/useGameStore';
 import { OptionSquares, RightClickedSquares } from '@/utils/types';
-import { BOARD_STYLES, getBoardTheme } from '@/constants/board-themes';
+import { BOARD_STYLES } from '@/constants/board-themes';
 import { playSound, getSoundType } from '@/utils/sounds';
 import { MOVE_DELAY } from '@/constants/animation';
 
 export function useChessBoard() {
-  const engine = useMemo(() => new StockfishEngine(), []);
-  const [game, setGame] = useState(new Chess());
+  const engineRef = useRef<StockfishEngine | null>(null);
+  const stockfishTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Initialize engine lazily
+  const engine = useMemo(() => {
+    if (!engineRef.current) {
+      engineRef.current = new StockfishEngine();
+    }
+    return engineRef.current;
+  }, []);
+
+  // Cleanup engine and timers on unmount
+  useEffect(() => {
+    return () => {
+      if (stockfishTimerRef.current) {
+        clearTimeout(stockfishTimerRef.current);
+        stockfishTimerRef.current = null;
+      }
+      if (engineRef.current) {
+        engineRef.current.destroy();
+        engineRef.current = null;
+      }
+    };
+  }, []);
+
+  // Initialize game with persisted FEN if available
+  const initialFEN = useGameStore.getState().currentFEN;
+  const [game, setGame] = useState(() => {
+    try {
+      return new Chess(initialFEN);
+    } catch {
+      return new Chess();
+    }
+  });
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [moveTo, setMoveTo] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<OptionSquares>({});
   const [rightClickedSquares, setRightClickedSquares] =
     useState<RightClickedSquares>({});
-  const [premove, setPremove] = useState<{
-    from: Square;
-    to: Square;
-    promotion?: string;
-  } | null>(null);
+  // Support multiple premoves queued up
+  const [premoves, setPremoves] = useState<
+    Array<{
+      from: Square;
+      to: Square;
+      promotion?: string;
+    }>
+  >([]);
   const [pendingMove, setPendingMove] = useState<{
     san: string;
     fen: string;
@@ -35,10 +70,11 @@ export function useChessBoard() {
   // Individual selectors for better performance
   const stockfishLevel = useGameStore((s) => s.stockfishLevel);
   const playAs = useGameStore((s) => s.playAs);
+  const gameId = useGameStore((s) => s.gameId);
   const boardFlipped = useGameStore((s) => s.boardFlipped);
-  const boardThemeName = useGameStore((s) => s.boardThemeName);
   const soundEnabled = useGameStore((s) => s.soundEnabled);
   const addMove = useGameStore((s) => s.addMove);
+  const switchTimer = useGameStore((s) => s.switchTimer);
   const setOnNewGame = useGameStore((s) => s.setOnNewGame);
   const setGameOver = useGameStore((s) => s.setGameOver);
   const resetGame = useGameStore((s) => s.resetGame);
@@ -89,49 +125,39 @@ export function useChessBoard() {
     if (pendingMove) {
       // Play sound immediately when move is made
       if (soundEnabledRef.current) {
-        const isPlayerMove =
-          pendingMove.fen.split(' ')[1] ===
-          (useGameStore.getState().playAs === 'white' ? 'b' : 'w'); // Logic to check who moved. Pending move has FEN *after* move. So turn is now opponent.
-
-        // Simpler: pendingMove is set by stockfish or premove execution.
-        // Actually pendingMove is mostly used for stockfish moves or buffer.
-        // Let's rely on standard logic.
-
-        // Re-deriving isPlayerMove in pendingMove effect might be tricky without full move object?
-        // pendingMove struct has: san, fen, isCapture... no color.
-        // But we know who moved based on whose turn it is in the NEW fen?
-        // If fen turn is 'b', then 'w' just moved.
-
+        // Determine who made the move based on FEN (turn after move is opponent)
         const turnAfterMove = pendingMove.fen.split(' ')[1];
         const playerColor =
           useGameStore.getState().playAs === 'white' ? 'w' : 'b';
-        // If it's now 'b's turn, then 'w' moved.
         const moverColor = turnAfterMove === 'w' ? 'b' : 'w';
-        const isPlayerMoveCheck = moverColor === playerColor;
+        const isPlayerMove = moverColor === playerColor;
 
         const soundType = getSoundType(
           pendingMove.isCapture,
           pendingMove.isCheck,
           pendingMove.isCastle,
           pendingMove.isPromotion,
-          isPlayerMoveCheck
+          isPlayerMove
         );
         playSound(soundType);
       }
 
       const timer = setTimeout(() => {
         addMove(pendingMove.san, pendingMove.fen);
+        // Switch timer back to player after stockfish moves
+        const playerColor = useGameStore.getState().playAs;
+        useGameStore.getState().switchTimer(playerColor);
         setPendingMove(null);
       }, MOVE_DELAY);
       return () => clearTimeout(timer);
     }
   }, [pendingMove, addMove]);
 
-  // Execute premove when it becomes player's turn
+  // Execute first premove when it becomes player's turn
   useEffect(() => {
-    if (premove && isPlayerTurn && !game.isGameOver()) {
-      const { from, to, promotion } = premove;
-      setPremove(null);
+    if (premoves.length > 0 && isPlayerTurn && !game.isGameOver()) {
+      const [firstPremove, ...remainingPremoves] = premoves;
+      const { from, to, promotion } = firstPremove;
 
       try {
         const newGame = new Chess(game.fen());
@@ -141,17 +167,29 @@ export function useChessBoard() {
           promotion: promotion as 'q' | 'r' | 'b' | 'n' | undefined
         });
         if (move) {
+          // Remove executed premove from queue
+          setPremoves(remainingPremoves);
           playMoveSound(move, newGame);
           addMove(move.san, newGame.fen());
           setGame(newGame);
-          setTimeout(makeStockfishMove, MOVE_DELAY);
+          // Switch timer to opponent after premove
+          const opponentColor = playAs === 'white' ? 'black' : 'white';
+          switchTimer(opponentColor);
+          if (stockfishTimerRef.current) {
+            clearTimeout(stockfishTimerRef.current);
+          }
+          stockfishTimerRef.current = setTimeout(makeStockfishMove, MOVE_DELAY);
+        } else {
+          // Invalid premove, clear all remaining premoves
+          setPremoves([]);
         }
       } catch {
-        // Invalid premove, just clear it
+        // Invalid premove, clear all remaining premoves
+        setPremoves([]);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game, isPlayerTurn, premove]);
+  }, [game, isPlayerTurn, premoves]);
 
   const makeStockfishMove = useCallback(() => {
     const currentGame = gameRef.current;
@@ -200,18 +238,32 @@ export function useChessBoard() {
     });
   }, [engine, playAs, stockfishLevel]);
 
-  // Initial move for black
+  // Trigger stockfish move on mount if it's stockfish's turn
+  // ChessBoard remounts with key={gameId}, so this runs fresh for each new game
   useEffect(() => {
-    // Only play game start sound if it's the very beginning and we haven't played it yet?
-    // Or just play it when component mounts if game is empty?
-    // useGameStore persistence might make this tricky.
-    // Let's just play it when a NEW game starts (onNewGame).
+    const stockfishColor = playAs === 'white' ? 'b' : 'w';
 
-    if (playAs === 'black' && game.history().length === 0) {
-      makeStockfishMove();
+    // Play game start sound for new games (gameId > 0)
+    if (gameId > 0 && soundEnabledRef.current) {
+      playSound('game-start');
     }
+
+    // If it's stockfish's turn, trigger a move
+    if (game.turn() === stockfishColor && !game.isGameOver()) {
+      // Give engine time to initialize on fresh mount
+      stockfishTimerRef.current = setTimeout(() => {
+        makeStockfishMove();
+      }, 200);
+    }
+
+    return () => {
+      if (stockfishTimerRef.current) {
+        clearTimeout(stockfishTimerRef.current);
+        stockfishTimerRef.current = null;
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playAs]);
+  }, []);
 
   // Check for game over after each move
   useEffect(() => {
@@ -243,11 +295,16 @@ export function useChessBoard() {
     setRightClickedSquares({});
     setMoveFrom(null);
     setMoveTo(null);
-    setPremove(null);
+    setPremoves([]);
     setPendingMove(null);
+    // Clear any pending stockfish timer
+    if (stockfishTimerRef.current) {
+      clearTimeout(stockfishTimerRef.current);
+      stockfishTimerRef.current = null;
+    }
     if (playAs === 'black') {
       const startFen = newGame.fen();
-      setTimeout(() => {
+      stockfishTimerRef.current = setTimeout(() => {
         engine.evaluatePosition(startFen, stockfishLevel);
         engine.onMessage(({ bestMove }) => {
           if (bestMove) {
@@ -318,7 +375,11 @@ export function useChessBoard() {
     }
 
     if (!isPlayerTurn) {
-      setPremove({ from, to, promotion: promotion || 'q' });
+      // Add to premove queue
+      setPremoves((prev) => [
+        ...prev,
+        { from, to, promotion: promotion || 'q' }
+      ]);
       if (soundEnabledRef.current) playSound('premove'); // Play premove sound
       return true;
     }
@@ -338,7 +399,13 @@ export function useChessBoard() {
         setMoveFrom(null);
         setMoveTo(null);
         setOptionSquares({});
-        setTimeout(makeStockfishMove, MOVE_DELAY);
+        // Switch timer to opponent (stockfish)
+        const opponentColor = playAs === 'white' ? 'black' : 'white';
+        switchTimer(opponentColor);
+        if (stockfishTimerRef.current) {
+          clearTimeout(stockfishTimerRef.current);
+        }
+        stockfishTimerRef.current = setTimeout(makeStockfishMove, MOVE_DELAY);
         return true;
       }
     } catch {
@@ -371,10 +438,6 @@ export function useChessBoard() {
       return;
     }
 
-    if (premove) {
-      setPremove(null);
-    }
-
     setRightClickedSquares({});
     const sq = square as Square;
 
@@ -391,7 +454,12 @@ export function useChessBoard() {
 
       if (!foundMove) {
         if (!isPlayerTurn) {
-          setPremove({ from: moveFrom, to: sq, promotion: 'q' });
+          // Add to premove queue
+          setPremoves((prev) => [
+            ...prev,
+            { from: moveFrom, to: sq, promotion: 'q' }
+          ]);
+          if (soundEnabledRef.current) playSound('premove');
           setMoveFrom(null);
           setOptionSquares({});
           return;
@@ -423,8 +491,9 @@ export function useChessBoard() {
     piece: { pieceType: string } | null;
     square: string;
   }) {
-    if (premove) {
-      setPremove(null);
+    // Right-click clears all premoves
+    if (premoves.length > 0) {
+      setPremoves([]);
       return;
     }
 
@@ -437,20 +506,21 @@ export function useChessBoard() {
     }));
   }
 
-  // Build square styles including premove highlight (memoized to prevent unnecessary re-renders)
+  // Build square styles including all premove highlights (memoized to prevent unnecessary re-renders)
   const squareStyles = useMemo<OptionSquares>(() => {
     const styles: OptionSquares = {
       ...optionSquares,
       ...rightClickedSquares
     };
 
-    if (premove) {
+    // Highlight all premove squares
+    for (const premove of premoves) {
       styles[premove.from] = BOARD_STYLES.premoveSquare;
       styles[premove.to] = BOARD_STYLES.premoveSquare;
     }
 
     return styles;
-  }, [optionSquares, rightClickedSquares, premove]);
+  }, [optionSquares, rightClickedSquares, premoves]);
 
   // Derive theme styles from theme name (memoized)
   const theme = useMemo(() => {

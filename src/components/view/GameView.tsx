@@ -4,7 +4,9 @@ import { ChessBoard } from '@/components/board/ChessBoard';
 import { CapturedPiecesDisplay } from '@/components/board/CapturedPieces';
 import { GameSidebar } from '@/components/sidebar/GameSidebar';
 import { PlayerInfo } from './PlayerInfo';
+import { PlayerClock } from './PlayerClock';
 import { useGameView } from '@/hooks/useGameView';
+import { useGameTimer } from '@/hooks/useGameTimer';
 
 export function GameView() {
   const {
@@ -15,18 +17,37 @@ export function GameView() {
     topCaptured,
     topAdvantage,
     bottomCaptured,
-    bottomAdvantage
+    bottomAdvantage,
+    isTopStockfish,
+    isBottomStockfish,
+    hasTimer,
+    topTime,
+    bottomTime,
+    topTimerActive,
+    bottomTimerActive
   } = useGameView();
+
+  // Initialize timer hook to ensure timer ticks
+  useGameTimer();
 
   return (
     <div className='flex h-screen flex-col gap-4 overflow-hidden px-4 py-4 lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:px-6'>
       <div className='flex flex-col items-center gap-2'>
         <div className='flex w-full items-center justify-between py-2'>
-          <PlayerInfo
-            name='Stockfish'
-            subtitle={`Level ${stockfishLevel}`}
-            isStockfish
-          />
+          <div className='flex items-center gap-3'>
+            <PlayerInfo
+              name={isTopStockfish ? 'Stockfish' : 'Player'}
+              subtitle={isTopStockfish ? `Level ${stockfishLevel}` : undefined}
+              isStockfish={isTopStockfish}
+            />
+            {hasTimer && (
+              <PlayerClock
+                time={topTime}
+                isActive={topTimerActive}
+                isPlayer={!isTopStockfish}
+              />
+            )}
+          </div>
           <CapturedPiecesDisplay
             pieces={topCaptured}
             pieceColor={bottomColor}
@@ -35,7 +56,22 @@ export function GameView() {
         </div>
         <ChessBoard key={gameId} />
         <div className='flex w-full items-center justify-between py-2'>
-          <PlayerInfo name='Player' />
+          <div className='flex items-center gap-3'>
+            <PlayerInfo
+              name={isBottomStockfish ? 'Stockfish' : 'Player'}
+              subtitle={
+                isBottomStockfish ? `Level ${stockfishLevel}` : undefined
+              }
+              isStockfish={isBottomStockfish}
+            />
+            {hasTimer && (
+              <PlayerClock
+                time={bottomTime}
+                isActive={bottomTimerActive}
+                isPlayer={!isBottomStockfish}
+              />
+            )}
+          </div>
           <CapturedPiecesDisplay
             pieces={bottomCaptured}
             pieceColor={topColor}

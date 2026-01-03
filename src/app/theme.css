@@ -3,7 +3,7 @@
   /* Board highlight colors */
   --highlight-move-option: rgba(0, 0, 0, 0.1);
   --highlight-selected: rgba(255, 255, 0, 0.4);
-  --highlight-premove: rgba(0, 150, 255, 0.5);
+  --highlight-premove: rgba(255, 50, 50, 0.6);
   --highlight-right-click: rgba(255, 0, 0, 0.5);
   --board-shadow: rgba(0, 0, 0, 0.3);
 
@@ -74,7 +74,7 @@
   /* Board highlight colors */
   --highlight-move-option: rgba(255, 255, 255, 0.15);
   --highlight-selected: rgba(255, 255, 0, 0.4);
-  --highlight-premove: rgba(0, 150, 255, 0.5);
+  --highlight-premove: rgba(255, 50, 50, 0.6);
   --highlight-right-click: rgba(255, 0, 0, 0.5);
   --board-shadow: rgba(0, 0, 0, 0.5);
 

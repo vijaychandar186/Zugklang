@@ -17,7 +17,7 @@ export function useChessBoard() {
   });
 
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
-  const [_moveTo, setMoveTo] = useState<Square | null>(null);
+  const [, setMoveTo] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<OptionSquares>({});
   const [rightClickedSquares, setRightClickedSquares] =
     useState<RightClickedSquares>({});

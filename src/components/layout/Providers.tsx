@@ -2,8 +2,9 @@
 
 import { ThemeProvider, useTheme } from 'next-themes';
 import { Toaster } from 'sonner';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useGameStore } from '@/hooks/stores/useGameStore';
+import { BoardThemeName, DEFAULT_BOARD_THEME } from '@/constants/board-themes';
 
 function ThemeCookieSync() {
   const { theme } = useTheme();
@@ -28,7 +29,35 @@ function BoardSchemeSync() {
   return null;
 }
 
-export function Providers({ children }: { children: React.ReactNode }) {
+function StoreInitializer({
+  initialBoardTheme,
+  initialPlayAs
+}: {
+  initialBoardTheme: BoardThemeName;
+  initialPlayAs: 'white' | 'black' | undefined;
+}) {
+  const initialized = useRef(false);
+  if (!initialized.current) {
+    useGameStore.setState({
+      boardThemeName: initialBoardTheme,
+      ...(initialPlayAs && { playAs: initialPlayAs })
+    });
+    initialized.current = true;
+  }
+  return null;
+}
+
+interface ProvidersProps {
+  children: React.ReactNode;
+  initialBoardTheme?: string;
+  initialPlayAs?: string;
+}
+
+export function Providers({
+  children,
+  initialBoardTheme,
+  initialPlayAs
+}: ProvidersProps) {
   return (
     <ThemeProvider
       attribute='class'
@@ -37,6 +66,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
       enableColorScheme
     >
+      <StoreInitializer
+        initialBoardTheme={
+          (initialBoardTheme as BoardThemeName) || DEFAULT_BOARD_THEME
+        }
+        initialPlayAs={
+          initialPlayAs === 'white' || initialPlayAs === 'black'
+            ? initialPlayAs
+            : undefined
+        }
+      />
       <ThemeCookieSync />
       <BoardSchemeSync />
       <Toaster position='top-center' richColors />

@@ -1,39 +1,12 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Chess, Square, Move } from 'chess.js';
-import { StockfishEngine } from '@/lib/engine';
 import { useGameStore } from '@/hooks/stores/useGameStore';
 import { OptionSquares, RightClickedSquares } from '@/utils/types';
 import { BOARD_STYLES } from '@/constants/board-themes';
 import { playSound, getSoundType } from '@/utils/sounds';
-import { MOVE_DELAY } from '@/constants/animation';
+import { useStockfish } from '@/hooks/computer/useStockfish';
 
 export function useChessBoard() {
-  const engineRef = useRef<StockfishEngine | null>(null);
-  const stockfishTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // Initialize engine lazily
-  const engine = useMemo(() => {
-    if (!engineRef.current) {
-      engineRef.current = new StockfishEngine();
-    }
-    return engineRef.current;
-  }, []);
-
-  // Cleanup engine and timers on unmount
-  useEffect(() => {
-    return () => {
-      if (stockfishTimerRef.current) {
-        clearTimeout(stockfishTimerRef.current);
-        stockfishTimerRef.current = null;
-      }
-      if (engineRef.current) {
-        engineRef.current.destroy();
-        engineRef.current = null;
-      }
-    };
-  }, []);
-
-  // Initialize game with persisted FEN if available
   const initialFEN = useGameStore.getState().currentFEN;
   const [game, setGame] = useState(() => {
     try {
@@ -42,32 +15,22 @@ export function useChessBoard() {
       return new Chess();
     }
   });
+
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [moveTo, setMoveTo] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<OptionSquares>({});
   const [rightClickedSquares, setRightClickedSquares] =
     useState<RightClickedSquares>({});
-  // Support multiple premoves queued up
+
+  // Premoves queue
   const [premoves, setPremoves] = useState<
-    Array<{
-      from: Square;
-      to: Square;
-      promotion?: string;
-    }>
+    Array<{ from: Square; to: Square; promotion?: string }>
   >([]);
-  const [pendingMove, setPendingMove] = useState<{
-    san: string;
-    fen: string;
-    isCapture: boolean;
-    isCheck: boolean;
-    isCastle: boolean;
-    isPromotion: boolean;
-  } | null>(null);
 
   const gameRef = useRef(game);
   gameRef.current = game;
 
-  // Individual selectors for better performance
+  // Store Selectors
   const stockfishLevel = useGameStore((s) => s.stockfishLevel);
   const playAs = useGameStore((s) => s.playAs);
   const gameId = useGameStore((s) => s.gameId);
@@ -88,28 +51,25 @@ export function useChessBoard() {
   const playerTurn = playAs === 'white' ? 'w' : 'b';
   const isPlayerTurn = game.turn() === playerTurn;
 
-  // Board orientation based on playAs and flip state
   const boardOrientation = boardFlipped
     ? playAs === 'white'
       ? 'black'
       : 'white'
     : playAs;
 
-  // Ref to access current sound setting in callbacks
   const soundEnabledRef = useRef(soundEnabled);
   soundEnabledRef.current = soundEnabled;
 
-  // Play sound for a chess move
+  // --- Move Execution Helpers ---
+
   const playMoveSound = useCallback((move: Move, gameAfterMove: Chess) => {
     if (!soundEnabledRef.current) return;
-
     const isCapture = move.captured !== undefined;
     const isCheck = gameAfterMove.isCheck();
     const isCastle = move.san === 'O-O' || move.san === 'O-O-O';
     const isPromotion = move.promotion !== undefined;
     const isPlayerMove =
       move.color === (useGameStore.getState().playAs === 'white' ? 'w' : 'b');
-
     const soundType = getSoundType(
       isCapture,
       isCheck,
@@ -120,174 +80,128 @@ export function useChessBoard() {
     playSound(soundType);
   }, []);
 
-  // Process pending move after animation completes
-  useEffect(() => {
-    if (pendingMove) {
-      // Play sound immediately when move is made
-      if (soundEnabledRef.current) {
-        // Determine who made the move based on FEN (turn after move is opponent)
-        const turnAfterMove = pendingMove.fen.split(' ')[1];
-        const playerColor =
-          useGameStore.getState().playAs === 'white' ? 'w' : 'b';
-        const moverColor = turnAfterMove === 'w' ? 'b' : 'w';
-        const isPlayerMove = moverColor === playerColor;
-
-        const soundType = getSoundType(
-          pendingMove.isCapture,
-          pendingMove.isCheck,
-          pendingMove.isCastle,
-          pendingMove.isPromotion,
-          isPlayerMove
-        );
-        playSound(soundType);
-      }
-
-      const timer = setTimeout(() => {
-        addMove(pendingMove.san, pendingMove.fen);
-        // Switch timer back to player after stockfish moves
-        const playerColor = useGameStore.getState().playAs;
-        useGameStore.getState().switchTimer(playerColor);
-        setPendingMove(null);
-      }, MOVE_DELAY);
-      return () => clearTimeout(timer);
-    }
-  }, [pendingMove, addMove]);
-
-  // Execute first premove when it becomes player's turn
-  useEffect(() => {
-    if (premoves.length > 0 && isPlayerTurn && !game.isGameOver()) {
-      const [firstPremove, ...remainingPremoves] = premoves;
-      const { from, to, promotion } = firstPremove;
-
+  // Generic function to execute a move (Validation should happen before this or via try/catch)
+  const executeMove = useCallback(
+    (from: Square, to: Square, promotion?: string): boolean => {
       try {
         const newGame = new Chess(game.fen());
         const move = newGame.move({
           from,
           to,
-          promotion: promotion as 'q' | 'r' | 'b' | 'n' | undefined
+          promotion: (promotion || 'q') as 'q' | 'r' | 'b' | 'n'
         });
+
         if (move) {
-          // Remove executed premove from queue
-          setPremoves(remainingPremoves);
+          setGame(newGame);
           playMoveSound(move, newGame);
           addMove(move.san, newGame.fen());
-          setGame(newGame);
-          // Switch timer to opponent after premove
-          const opponentColor = playAs === 'white' ? 'black' : 'white';
-          switchTimer(opponentColor);
-          if (stockfishTimerRef.current) {
-            clearTimeout(stockfishTimerRef.current);
-          }
-          stockfishTimerRef.current = setTimeout(makeStockfishMove, MOVE_DELAY);
-        } else {
-          // Invalid premove, clear all remaining premoves
-          setPremoves([]);
+          setMoveFrom(null); // Clear selection
+          setMoveTo(null);
+          setOptionSquares({});
+
+          // Switch timer to active side
+          const activeColor = newGame.turn() === 'w' ? 'white' : 'black';
+          switchTimer(activeColor);
+
+          return true;
         }
       } catch {
-        // Invalid premove, clear all remaining premoves
+        // Invalid move
+      }
+      return false;
+    },
+    [game, playMoveSound, addMove, switchTimer]
+  );
+
+  // --- Engine Integration ---
+
+  // This hook handles all Stockfish logic (initialization, thinking, moving)
+  useStockfish({
+    game,
+    gameId,
+    playAs,
+    stockfishLevel,
+    enabled: true, // TODO: Check gameMode here
+    onMove: executeMove,
+    soundEnabled,
+    playSound
+  });
+
+  // --- User Interaction Handling ---
+
+  const handleUserMove = useCallback(
+    (from: Square, to: Square, promotion?: string): boolean => {
+      if (isViewingHistory) {
+        goToEnd();
+        return false;
+      }
+
+      // Prevent moving opponent pieces (User only)
+      const piece = game.get(from);
+      const playerColorShort = playAs === 'white' ? 'w' : 'b';
+      if (piece?.color !== playerColorShort) {
+        return false;
+      }
+
+      if (!isPlayerTurn) {
+        // Queue Premove
+        setPremoves((prev) => [
+          ...prev,
+          { from, to, promotion: promotion || 'q' }
+        ]);
+        if (soundEnabledRef.current) playSound('premove');
+
+        // Clear selection to give feedback that "action is stored"
+        setMoveFrom(null);
+        setOptionSquares({});
+        return true;
+      }
+
+      const success = executeMove(from, to, promotion);
+      if (!success && soundEnabledRef.current) {
+        playSound('illegal');
+      }
+      return success;
+    },
+    [isViewingHistory, goToEnd, game, playAs, isPlayerTurn, executeMove]
+  );
+
+  // Premove Execution Effect
+  useEffect(() => {
+    if (premoves.length > 0 && isPlayerTurn && !game.isGameOver()) {
+      const [first, ...rest] = premoves;
+      const success = executeMove(first.from, first.to, first.promotion);
+      if (success) {
+        setPremoves(rest);
+      } else {
+        // Invalid premove (maybe board changed), clear all
         setPremoves([]);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game, isPlayerTurn, premoves]);
+  }, [premoves, isPlayerTurn, game, executeMove]);
 
-  const makeStockfishMove = useCallback(() => {
-    const currentGame = gameRef.current;
-    const expectedTurn = playAs === 'white' ? 'b' : 'w';
-    if (currentGame.turn() !== expectedTurn || currentGame.isGameOver()) {
-      return;
-    }
+  // --- Game Lifecycle ---
 
-    const fenToEvaluate = currentGame.fen();
-    engine.evaluatePosition(fenToEvaluate, stockfishLevel);
-    engine.onMessage(({ bestMove }) => {
-      if (bestMove) {
-        setGame((gameAtResponse) => {
-          if (gameAtResponse.fen() !== fenToEvaluate) {
-            return gameAtResponse;
-          }
-          try {
-            const newGame = new Chess(gameAtResponse.fen());
-            const move = newGame.move({
-              from: bestMove.substring(0, 2) as Square,
-              to: bestMove.substring(2, 4) as Square,
-              promotion: (bestMove.substring(4, 5) || undefined) as
-                | 'b'
-                | 'n'
-                | 'r'
-                | 'q'
-                | undefined
-            });
-            if (move) {
-              setPendingMove({
-                san: move.san,
-                fen: newGame.fen(),
-                isCapture: move.captured !== undefined,
-                isCheck: newGame.isCheck(),
-                isCastle: move.san === 'O-O' || move.san === 'O-O-O',
-                isPromotion: move.promotion !== undefined
-              });
-              return newGame;
-            }
-            return gameAtResponse;
-          } catch {
-            return gameAtResponse;
-          }
-        });
-      }
-    });
-  }, [engine, playAs, stockfishLevel]);
-
-  // Trigger stockfish move on mount if it's stockfish's turn
-  // ChessBoard remounts with key={gameId}, so this runs fresh for each new game
-  useEffect(() => {
-    const stockfishColor = playAs === 'white' ? 'b' : 'w';
-
-    // Play game start sound for new games (gameId > 0)
-    if (gameId > 0 && soundEnabledRef.current) {
-      playSound('game-start');
-    }
-
-    // If it's stockfish's turn, trigger a move
-    if (game.turn() === stockfishColor && !game.isGameOver()) {
-      // Give engine time to initialize on fresh mount
-      stockfishTimerRef.current = setTimeout(() => {
-        makeStockfishMove();
-      }, 200);
-    }
-
-    return () => {
-      if (stockfishTimerRef.current) {
-        clearTimeout(stockfishTimerRef.current);
-        stockfishTimerRef.current = null;
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Check for game over after each move
+  // Game Over Check
   useEffect(() => {
     if (game.isGameOver()) {
-      if (soundEnabled) playSound('game-end'); // Play game end sound
-
+      if (soundEnabled) playSound('game-end');
       if (game.isCheckmate()) {
         const winner = game.turn() === 'w' ? 'Black' : 'White';
+        // Logic assumes Computer Mode for now w.r.t messages
         const isUserWin =
           (playAs === 'white' && winner === 'White') ||
           (playAs === 'black' && winner === 'Black');
         setGameResult(isUserWin ? 'You win!' : 'Stockfish wins!');
-      } else if (game.isDraw()) {
-        setGameResult('Draw!');
-      } else if (game.isStalemate()) {
-        setGameResult('Stalemate!');
-      }
+      } else if (game.isDraw()) setGameResult('Draw!');
+      else if (game.isStalemate()) setGameResult('Stalemate!');
+
       setGameOver(true);
     }
-  }, [game, playAs, setGameResult, setGameOver, soundEnabled]);
+  }, [game, playAs, setGameResult, setGameOver, soundEnabled]); // Added game here
 
   const onNewGame = useCallback(() => {
-    if (soundEnabledRef.current) playSound('game-start'); // Play game start sound
-
+    if (soundEnabledRef.current) playSound('game-start');
     const newGame = new Chess();
     setGame(newGame);
     resetGame();
@@ -296,241 +210,143 @@ export function useChessBoard() {
     setMoveFrom(null);
     setMoveTo(null);
     setPremoves([]);
-    setPendingMove(null);
-    // Clear any pending stockfish timer
-    if (stockfishTimerRef.current) {
-      clearTimeout(stockfishTimerRef.current);
-      stockfishTimerRef.current = null;
-    }
-    if (playAs === 'black') {
-      const startFen = newGame.fen();
-      stockfishTimerRef.current = setTimeout(() => {
-        engine.evaluatePosition(startFen, stockfishLevel);
-        engine.onMessage(({ bestMove }) => {
-          if (bestMove) {
-            setGame((currentGame) => {
-              if (currentGame.fen() !== startFen) {
-                return currentGame;
-              }
-              try {
-                const gameToUpdate = new Chess(currentGame.fen());
-                const move = gameToUpdate.move({
-                  from: bestMove.substring(0, 2) as Square,
-                  to: bestMove.substring(2, 4) as Square
-                });
-                if (move) {
-                  setPendingMove({
-                    san: move.san,
-                    fen: gameToUpdate.fen(),
-                    isCapture: move.captured !== undefined,
-                    isCheck: gameToUpdate.isCheck(),
-                    isCastle: move.san === 'O-O' || move.san === 'O-O-O',
-                    isPromotion: move.promotion !== undefined
-                  });
-                  return gameToUpdate;
-                }
-                return currentGame;
-              } catch {
-                return currentGame;
-              }
-            });
-          }
-        });
-      }, 100);
-    }
-  }, [playAs, engine, stockfishLevel, resetGame]);
+  }, [resetGame]);
 
   useEffect(() => {
     setOnNewGame(onNewGame);
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
 
-  function getMoveOptions(square: Square): boolean {
-    const moves = game.moves({ square, verbose: true });
-    if (moves.length === 0) {
-      setOptionSquares({});
-      return false;
-    }
+  // --- Helper Functions (Stable) ---
 
-    const newSquares: OptionSquares = {};
-    moves.forEach((move) => {
-      const targetPiece = game.get(move.to);
-      const sourcePiece = game.get(square);
-      const isCapture = !!(
-        targetPiece &&
-        sourcePiece &&
-        targetPiece.color !== sourcePiece.color
-      );
-      newSquares[move.to] = BOARD_STYLES.getMoveOptionStyle(isCapture);
-    });
-    newSquares[square] = BOARD_STYLES.selectedSquare;
-    setOptionSquares(newSquares);
-    return true;
-  }
-
-  function makeMove(from: Square, to: Square, promotion?: string): boolean {
-    if (isViewingHistory) {
-      goToEnd();
-      return false;
-    }
-
-    if (!isPlayerTurn) {
-      // Add to premove queue
-      setPremoves((prev) => [
-        ...prev,
-        { from, to, promotion: promotion || 'q' }
-      ]);
-      if (soundEnabledRef.current) playSound('premove'); // Play premove sound
-      return true;
-    }
-
-    try {
-      const newGame = new Chess(game.fen());
-      const move = newGame.move({
-        from,
-        to,
-        promotion: (promotion || 'q') as 'q' | 'r' | 'b' | 'n'
-      });
-
-      if (move) {
-        playMoveSound(move, newGame);
-        addMove(move.san, newGame.fen());
-        setGame(newGame);
-        setMoveFrom(null);
-        setMoveTo(null);
+  const getMoveOptions = useCallback(
+    (square: Square): boolean => {
+      const moves = game.moves({ square, verbose: true });
+      if (moves.length === 0) {
         setOptionSquares({});
-        // Switch timer to opponent (stockfish)
-        const opponentColor = playAs === 'white' ? 'black' : 'white';
-        switchTimer(opponentColor);
-        if (stockfishTimerRef.current) {
-          clearTimeout(stockfishTimerRef.current);
-        }
-        stockfishTimerRef.current = setTimeout(makeStockfishMove, MOVE_DELAY);
-        return true;
+        return false;
       }
-    } catch {
-      // Invalid move
-      if (soundEnabledRef.current) playSound('illegal'); // Play illegal sound
-    }
-    return false;
-  }
+      const newSquares: OptionSquares = {};
+      moves.forEach((move) => {
+        const target = game.get(move.to);
+        const source = game.get(square);
+        const isCapture = !!(target && source && target.color !== source.color);
+        newSquares[move.to] = BOARD_STYLES.getMoveOptionStyle(isCapture);
+      });
+      newSquares[square] = BOARD_STYLES.selectedSquare;
+      setOptionSquares(newSquares);
+      return true;
+    },
+    [game]
+  );
 
-  function onDrop({
-    sourceSquare,
-    targetSquare
-  }: {
-    piece: { pieceType: string };
-    sourceSquare: string;
-    targetSquare: string | null;
-  }): boolean {
-    if (!targetSquare) return false;
-    return makeMove(sourceSquare as Square, targetSquare as Square);
-  }
+  const onDrop = useCallback(
+    ({
+      sourceSquare,
+      targetSquare
+    }: {
+      sourceSquare: string;
+      targetSquare: string | null;
+    }): boolean => {
+      if (!targetSquare) return false;
+      return handleUserMove(sourceSquare as Square, targetSquare as Square);
+    },
+    [handleUserMove]
+  );
 
-  function handleSquareClick({
-    square
-  }: {
-    piece: { pieceType: string } | null;
-    square: string;
-  }) {
-    if (isViewingHistory) {
-      goToEnd();
-      return;
-    }
-
-    setRightClickedSquares({});
-    const sq = square as Square;
-
-    if (!moveFrom) {
-      const hasMoveOptions = getMoveOptions(sq);
-      if (hasMoveOptions) setMoveFrom(sq);
-      return;
-    }
-
-    if (!moveTo) {
-      const piece = game.get(moveFrom);
-      const moves = game.moves({ square: moveFrom, verbose: true });
-      const foundMove = moves.find((m) => m.from === moveFrom && m.to === sq);
-
-      if (!foundMove) {
-        if (!isPlayerTurn) {
-          // Add to premove queue
-          setPremoves((prev) => [
-            ...prev,
-            { from: moveFrom, to: sq, promotion: 'q' }
-          ]);
-          if (soundEnabledRef.current) playSound('premove');
-          setMoveFrom(null);
-          setOptionSquares({});
-          return;
-        }
-        const hasMoveOptions = getMoveOptions(sq);
-        setMoveFrom(hasMoveOptions ? sq : null);
+  const handleSquareClick = useCallback(
+    ({ square }: { square: string }) => {
+      if (isViewingHistory) {
+        goToEnd();
         return;
       }
 
-      setMoveTo(sq);
+      setRightClickedSquares({});
+      const sq = square as Square;
 
+      if (!moveFrom) {
+        if (getMoveOptions(sq)) setMoveFrom(sq);
+        return;
+      }
+
+      // Check validation
+      // Optimization: Check if clicked square is in optionSquares?
+      // Strict logic:
+      const moves = game.moves({ square: moveFrom, verbose: true });
+      const found = moves.find((m) => m.from === moveFrom && m.to === sq);
+
+      if (!found) {
+        // If clicked another one of own pieces, select it instead
+        if (getMoveOptions(sq)) {
+          setMoveFrom(sq);
+        } else {
+          // If completely invalid or empty...
+          // If Premove?
+          if (!isPlayerTurn) {
+            handleUserMove(moveFrom, sq);
+            setMoveFrom(null);
+            setOptionSquares({});
+          } else {
+            setMoveFrom(null);
+            setOptionSquares({});
+          }
+        }
+        return;
+      }
+
+      // Found valid move
+      const piece = game.get(moveFrom);
       const promotion =
-        piece?.type === 'p' &&
-        ((piece.color === 'w' && sq[1] === '8') ||
-          (piece.color === 'b' && sq[1] === '1'))
+        piece?.type === 'p' && (sq[1] === '8' || sq[1] === '1')
           ? 'q'
           : undefined;
-
-      makeMove(moveFrom, sq, promotion);
+      handleUserMove(moveFrom, sq, promotion);
       setMoveFrom(null);
-      setMoveTo(null);
-      setOptionSquares({});
-    }
-  }
+      setOptionSquares({}); // Clear options
+    },
+    [
+      isViewingHistory,
+      goToEnd,
+      moveFrom,
+      getMoveOptions,
+      game,
+      isPlayerTurn,
+      handleUserMove
+    ]
+  );
 
-  function handleSquareRightClick({
-    square
-  }: {
-    piece: { pieceType: string } | null;
-    square: string;
-  }) {
-    // Right-click clears all premoves
-    if (premoves.length > 0) {
-      setPremoves([]);
-      return;
-    }
+  const handleSquareRightClick = useCallback(
+    ({ square }: { square: string }) => {
+      if (premoves.length > 0) {
+        setPremoves([]);
+        return;
+      }
+      const sq = square as Square;
+      setRightClickedSquares((p) => ({
+        ...p,
+        [sq]: p[sq]?.backgroundColor ? undefined : BOARD_STYLES.rightClickSquare
+      }));
+    },
+    [premoves]
+  );
 
-    const sq = square as Square;
-    setRightClickedSquares((prev) => ({
-      ...prev,
-      [sq]: prev[sq]?.backgroundColor
-        ? undefined
-        : BOARD_STYLES.rightClickSquare
-    }));
-  }
-
-  // Build square styles including all premove highlights (memoized to prevent unnecessary re-renders)
+  // Styles Memoization
   const squareStyles = useMemo<OptionSquares>(() => {
-    const styles: OptionSquares = {
-      ...optionSquares,
-      ...rightClickedSquares
-    };
-
-    // Highlight all premove squares
-    for (const premove of premoves) {
-      styles[premove.from] = BOARD_STYLES.premoveSquare;
-      styles[premove.to] = BOARD_STYLES.premoveSquare;
-    }
-
-    return styles;
+    const s = { ...optionSquares, ...rightClickedSquares };
+    premoves.forEach((p) => {
+      s[p.from] = BOARD_STYLES.premoveSquare;
+      s[p.to] = BOARD_STYLES.premoveSquare;
+    });
+    return s;
   }, [optionSquares, rightClickedSquares, premoves]);
 
-  // Derive theme styles from theme name (memoized)
-  const theme = useMemo(() => {
-    // We use the generic variables which are set by the data-board-scheme attribute
-    // This allows instant theme switching via CSS without re-render flash
-    return {
+  const theme = useMemo(
+    () => ({
       darkSquareStyle: { backgroundColor: 'var(--board-square-dark)' },
       lightSquareStyle: { backgroundColor: 'var(--board-square-light)' }
-    };
-  }, []); // Empty dependency array as these values are static strings pointing to CSS vars
+    }),
+    []
+  );
 
   return {
     game,

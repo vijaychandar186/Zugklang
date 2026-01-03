@@ -37,6 +37,7 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const theme = cookieStore.get('theme')?.value;
   const boardScheme = cookieStore.get('boardScheme')?.value;
+  const playAs = cookieStore.get('playAs')?.value;
 
   return (
     <html lang='en' suppressHydrationWarning data-board-scheme={boardScheme}>
@@ -57,7 +58,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} overflow-hidden antialiased`}
         data-theme={theme}
       >
-        <Providers>
+        <Providers initialBoardTheme={boardScheme} initialPlayAs={playAs}>
           <main>{children}</main>
         </Providers>
       </body>

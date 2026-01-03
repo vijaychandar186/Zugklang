@@ -2,22 +2,64 @@ export class StockfishEngine {
   private worker: Worker | null = null;
   private currentHandler: ((e: MessageEvent) => void) | null = null;
   private isDestroyed = false;
+  private isReady = false;
+  private readyPromise: Promise<void>;
+  private resolveReady: (() => void) | null = null;
+
+  private static instance: StockfishEngine | null = null;
+
+  static getInstance(): StockfishEngine {
+    if (!StockfishEngine.instance || StockfishEngine.instance.isDestroyed) {
+      StockfishEngine.instance = new StockfishEngine();
+    }
+    return StockfishEngine.instance;
+  }
 
   constructor() {
+    this.readyPromise = new Promise((resolve) => {
+      this.resolveReady = resolve;
+    });
+
     if (typeof Worker !== 'undefined') {
-      this.worker = new Worker('/stockfish.js');
-      this.sendCommand('uci');
-      this.sendCommand('isready');
+      try {
+        this.worker = new Worker('/stockfish.js');
+        this.worker.onerror = (e) => {
+          console.error('Stockfish Worker Error:', e);
+        };
+
+        // Listen for readyok to know when engine is initialized
+        const initHandler = (e: MessageEvent) => {
+          const data = String(e.data || '');
+          if (data.includes('readyok')) {
+            this.isReady = true;
+            this.worker?.removeEventListener('message', initHandler);
+            this.resolveReady?.();
+          }
+        };
+        this.worker.addEventListener('message', initHandler);
+
+        this.sendCommand('uci');
+        this.sendCommand('isready');
+      } catch (e) {
+        console.error('Failed to create Stockfish worker:', e);
+        this.resolveReady?.(); // Resolve anyway to prevent hanging
+      }
+    } else {
+      this.resolveReady?.(); // Resolve if no Worker support
     }
+  }
+
+  async waitUntilReady(): Promise<void> {
+    return this.readyPromise;
   }
 
   onMessage(callback: (data: { bestMove: string }) => void) {
     if (this.worker && !this.isDestroyed) {
-      // Remove any existing handler first
       this.clearCurrentHandler();
 
       const handler = (e: MessageEvent) => {
-        const bestMove = e.data?.match(/bestmove\s+(\S+)/)?.[1];
+        const data = String(e.data || '');
+        const bestMove = data.match(/bestmove\s+(\S+)/)?.[1];
         if (bestMove) {
           this.clearCurrentHandler();
           if (!this.isDestroyed) {
@@ -37,20 +79,46 @@ export class StockfishEngine {
     }
   }
 
-  evaluatePosition(fen: string, depth: number) {
+  async evaluatePosition(fen: string, depth: number): Promise<void> {
     if (this.worker && !this.isDestroyed) {
-      this.sendCommand(`position fen ${fen}`);
-      this.sendCommand(`go depth ${depth}`);
+      await this.readyPromise;
+      if (!this.isDestroyed) {
+        this.sendCommand(`position fen ${fen}`);
+        this.sendCommand(`go depth ${depth}`);
+      }
+    }
+  }
+
+  async newGame(): Promise<void> {
+    if (this.worker && !this.isDestroyed) {
+      await this.readyPromise;
+      this.sendCommand('ucinewgame');
+      this.sendCommand('isready');
+      // Wait for readyok after ucinewgame
+      return new Promise((resolve) => {
+        const handler = (e: MessageEvent) => {
+          const data = String(e.data || '');
+          if (data.includes('readyok')) {
+            this.worker?.removeEventListener('message', handler);
+            resolve();
+          }
+        };
+        this.worker?.addEventListener('message', handler);
+      });
     }
   }
 
   stop() {
     this.clearCurrentHandler();
-    this.sendCommand('stop');
+    if (this.isReady && this.worker) {
+      this.sendCommand('stop');
+    }
   }
 
   quit() {
-    this.sendCommand('quit');
+    if (this.worker) {
+      this.sendCommand('quit');
+    }
   }
 
   destroy() {

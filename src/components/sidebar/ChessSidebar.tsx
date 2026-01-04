@@ -312,97 +312,88 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
               </PGNImportDialog>
             )}
 
-            {/* Settings dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='h-8 w-8'
-                  title='Options'
-                >
-                  <Icons.settings className='h-4 w-4' />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align='end' className='w-56'>
-                <DropdownMenuLabel>View</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleFlipBoard}>
-                  <Icons.flipBoard className='mr-2 h-4 w-4' />
-                  Flip Board (
-                  {isPlayMode
-                    ? boardOrientation === 'white'
-                      ? 'Black'
-                      : 'White'
-                    : boardOrientation === 'white'
-                      ? 'Black'
-                      : 'White'}
-                  )
-                </DropdownMenuItem>
+            {/* Settings dropdown - Only show in Analysis mode (redundant in Play mode) */}
+            {!isPlayMode && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8'
+                    title='Options'
+                  >
+                    <Icons.settings className='h-4 w-4' />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end' className='w-56'>
+                  <DropdownMenuLabel>View</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleFlipBoard}>
+                    <Icons.flipBoard className='mr-2 h-4 w-4' />
+                    Flip Board (
+                    {isPlayMode
+                      ? boardOrientation === 'white'
+                        ? 'Black'
+                        : 'White'
+                      : boardOrientation === 'white'
+                        ? 'Black'
+                        : 'White'}
+                    )
+                  </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
-                <DropdownMenuLabel>Engine</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleToggleAnalysis}
-                  disabled={!isInitialized}
-                >
-                  <Icons.stockfish
-                    className={`mr-2 h-4 w-4 ${isAnalysisOn ? 'text-green-500' : 'text-muted-foreground'}`}
-                  />
-                  {isAnalysisOn ? 'Disable Engine' : 'Enable Engine'}
-                </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Engine</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleToggleAnalysis}
+                    disabled={!isInitialized}
+                  >
+                    <Icons.stockfish
+                      className={`mr-2 h-4 w-4 ${isAnalysisOn ? 'text-green-500' : 'text-muted-foreground'}`}
+                    />
+                    {isAnalysisOn ? 'Disable Engine' : 'Enable Engine'}
+                  </DropdownMenuItem>
 
-                {/* Analysis mode specific options */}
-                {isAnalysisMode && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Play vs Stockfish</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {playingAgainstStockfish ? (
-                      <DropdownMenuItem onClick={stopPlayingFromPosition}>
-                        <Icons.stockfish className='mr-2 h-4 w-4' />
-                        Stop Playing
+                  {/* Analysis mode specific options */}
+                  {isAnalysisMode && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Play vs Stockfish</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {playingAgainstStockfish ? (
+                        <DropdownMenuItem onClick={stopPlayingFromPosition}>
+                          <Icons.stockfish className='mr-2 h-4 w-4' />
+                          Stop Playing
+                        </DropdownMenuItem>
+                      ) : (
+                        <>
+                          <DropdownMenuItem
+                            onClick={() => handlePlayFromPosition('white')}
+                          >
+                            <Icons.stockfish className='mr-2 h-4 w-4' />
+                            Play as White
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handlePlayFromPosition('black')}
+                          >
+                            <Icons.stockfish className='mr-2 h-4 w-4' />
+                            Play as Black
+                          </DropdownMenuItem>
+                        </>
+                      )}
+
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>Reset Board</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={resetToStarting}>
+                        <Icons.rematch className='mr-2 h-4 w-4' />
+                        Starting Position
                       </DropdownMenuItem>
-                    ) : (
-                      <>
-                        <DropdownMenuItem
-                          onClick={() => handlePlayFromPosition('white')}
-                        >
-                          <Icons.stockfish className='mr-2 h-4 w-4' />
-                          Play as White
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => handlePlayFromPosition('black')}
-                        >
-                          <Icons.stockfish className='mr-2 h-4 w-4' />
-                          Play as Black
-                        </DropdownMenuItem>
-                      </>
-                    )}
-
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel>Reset Board</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={resetToStarting}>
-                      <Icons.rematch className='mr-2 h-4 w-4' />
-                      Starting Position
-                    </DropdownMenuItem>
-                  </>
-                )}
-
-                {/* Play mode specific options */}
-                {isPlayMode && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setSettingsOpen(true)}>
-                      <Icons.settings className='mr-2 h-4 w-4' />
-                      Game Settings
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
 

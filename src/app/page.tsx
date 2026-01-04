@@ -14,27 +14,6 @@ export default function Page() {
         >
           Play
         </Link>
-
-        <Link
-          href='/analysis'
-          className='border-border border px-6 py-3 transition-colors'
-        >
-          Analysis
-        </Link>
-
-        <Link
-          href='/openings'
-          className='border-border border px-6 py-3 transition-colors'
-        >
-          Openings
-        </Link>
-
-        <Link
-          href='/variants'
-          className='border-border border px-6 py-3 transition-colors'
-        >
-          Variants
-        </Link>
       </nav>
     </main>
   );

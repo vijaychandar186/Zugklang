@@ -19,10 +19,10 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import {
-  useGameStore,
+  useChessStore,
   TimeControl,
   TimeControlMode
-} from '@/hooks/stores/useGameStore';
+} from '@/hooks/stores/useChessStore';
 
 type PlayAsOption = 'random' | 'white' | 'black';
 
@@ -35,9 +35,9 @@ export function GameSelectionDialog({
   open,
   onOpenChange
 }: GameSelectionDialogProps) {
-  const stockfishLevel = useGameStore((s) => s.stockfishLevel);
-  const currentTimeControl = useGameStore((s) => s.timeControl);
-  const startGame = useGameStore((s) => s.startGame);
+  const stockfishLevel = useChessStore((s) => s.stockfishLevel);
+  const currentTimeControl = useChessStore((s) => s.timeControl);
+  const startGame = useChessStore((s) => s.startGame);
 
   const [depth, setDepth] = useState(stockfishLevel);
   const [playAs, setPlayAs] = useState<PlayAsOption>('random');

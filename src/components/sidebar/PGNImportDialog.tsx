@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useAnalysisBoardActions } from '@/hooks/stores/useAnalysisBoardStore';
+import { useChessActions } from '@/hooks/stores/useChessStore';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Icons } from '@/components/Icons';
@@ -15,14 +15,13 @@ import {
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-export function PGNImport({ children }: { children?: React.ReactNode }) {
+export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [pgnInput, setPgnInput] = useState('');
-  const { loadPGN, loadFEN } = useAnalysisBoardActions();
+  const { loadPGN, loadFEN } = useChessActions();
 
   const handleImport = () => {
     const trimmed = pgnInput.trim();
-    // ... (rest of function unchanged, just need to make sure I don't delete lines by mistake)
     if (!trimmed) {
       toast.error('Please enter a PGN or FEN string');
       return;

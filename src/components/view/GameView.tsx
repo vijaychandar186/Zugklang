@@ -3,13 +3,14 @@
 import { useEffect } from 'react';
 import { ChessBoard } from '@/components/board/ChessBoard';
 import { CapturedPiecesDisplay } from '@/components/board/CapturedPieces';
-import { GameSidebar } from '@/components/sidebar/GameSidebar';
+import { ChessSidebar } from '@/components/sidebar/ChessSidebar';
 import { BoardContainer } from '@/components/board/BoardContainer';
 import { AnalysisLines } from '@/components/analysis/AnalysisLines';
 import { PlayerInfo } from './PlayerInfo';
 import { PlayerClock } from './PlayerClock';
 import { useGameView } from '@/hooks/useGameView';
 import { useGameTimer } from '@/hooks/useGameTimer';
+import { useChessStore, ChessMode } from '@/hooks/stores/useChessStore';
 import {
   useAnalysisState,
   useAnalysisActions
@@ -17,13 +18,10 @@ import {
 
 interface GameViewProps {
   serverOrientation?: 'white' | 'black';
-  mode?: 'computer' | 'analysis' | 'pass-and-play';
+  mode?: ChessMode;
 }
 
-export function GameView({
-  serverOrientation,
-  mode = 'computer'
-}: GameViewProps) {
+export function GameView({ serverOrientation, mode = 'play' }: GameViewProps) {
   const {
     gameId,
     stockfishLevel,
@@ -43,10 +41,16 @@ export function GameView({
     currentFEN
   } = useGameView();
 
+  const setMode = useChessStore((s) => s.setMode);
   const { isAnalysisOn } = useAnalysisState();
   const { initializeEngine, setPosition, cleanup } = useAnalysisActions();
 
-  const isAnalysisMode = mode === 'analysis';
+  const isPlayMode = mode === 'play';
+
+  // Set mode on mount
+  useEffect(() => {
+    setMode(mode);
+  }, [mode, setMode]);
 
   // Initialize timer hook to ensure timer ticks (skip in analysis mode)
   useGameTimer();
@@ -68,7 +72,7 @@ export function GameView({
     <div className='flex h-screen flex-col gap-4 overflow-hidden px-4 py-4 lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:px-6'>
       <div className='flex flex-col items-center gap-2'>
         <div className='flex w-full items-center justify-between py-2'>
-          {!isAnalysisMode && (
+          {isPlayMode && (
             <div className='flex items-center gap-3'>
               <PlayerInfo
                 name={isTopStockfish ? 'Stockfish' : 'Player'}
@@ -96,7 +100,7 @@ export function GameView({
           <ChessBoard key={gameId} serverOrientation={serverOrientation} />
         </BoardContainer>
         <div className='flex w-full items-center justify-between py-2'>
-          {!isAnalysisMode && (
+          {isPlayMode && (
             <div className='flex items-center gap-3'>
               <PlayerInfo
                 name={isBottomStockfish ? 'Stockfish' : 'Player'}
@@ -128,7 +132,7 @@ export function GameView({
           </div>
         )}
         <div className='min-h-0 flex-1 overflow-hidden'>
-          <GameSidebar />
+          <ChessSidebar mode={mode} />
         </div>
       </div>
     </div>

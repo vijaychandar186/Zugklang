@@ -1,4 +1,4 @@
-import { GameView } from '@/components/view/GameView';
+import { GameView } from '@/features/game/components/GameView';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { cookies } from 'next/headers';
 

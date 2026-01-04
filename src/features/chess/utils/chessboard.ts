@@ -1,3 +1,5 @@
+import { ARROW_COLORS } from '@/features/chess/config/colors';
+
 export function fenToPosition(
   fen: string
 ): Record<string, { pieceType: string }> {
@@ -45,14 +47,14 @@ export function createArrowsFromUCI(
 }
 
 export function indexToSquare(index: number): string {
-  const file = String.fromCharCode(97 + (index % 8)); // a-h
-  const rank = 8 - Math.floor(index / 8); // 8-1
+  const file = String.fromCharCode(97 + (index % 8));
+  const rank = 8 - Math.floor(index / 8);
   return `${file}${rank}`;
 }
 
 export function squareToIndex(square: string): number {
-  const file = square.charCodeAt(0) - 97; // a=0, b=1, etc.
-  const rank = 8 - parseInt(square[1]); // 8=0, 7=1, etc.
+  const file = square.charCodeAt(0) - 97;
+  const rank = 8 - parseInt(square[1]);
   return rank * 8 + file;
 }
 
@@ -116,7 +118,7 @@ export const PIECE_UNICODE = {
   bK: '♚'
 } as const;
 
-export { ARROW_COLORS } from '@/constants/colors';
+export { ARROW_COLORS };
 
 export function formatTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);

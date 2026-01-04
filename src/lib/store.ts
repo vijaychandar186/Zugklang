@@ -6,4 +6,4 @@ export {
   useChessSettings,
   useChessActions,
   useTimerState
-} from '@/hooks/stores/useChessStore';
+} from '@/features/chess/stores/useChessStore';

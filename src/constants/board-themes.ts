@@ -83,5 +83,9 @@ export const BOARD_STYLES = {
 
   rightClickSquare: {
     backgroundColor: 'var(--highlight-right-click)'
+  } as CSSProperties,
+
+  dropSquareStyle: {
+    boxShadow: 'inset 0 0 1px 6px var(--highlight-drop-alt)'
   } as CSSProperties
 };

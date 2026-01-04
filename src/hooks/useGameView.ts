@@ -77,6 +77,8 @@ export function useGameView() {
     topTime,
     bottomTime,
     topTimerActive,
-    bottomTimerActive
+    bottomTimerActive,
+    // Analysis data
+    currentFEN
   };
 }

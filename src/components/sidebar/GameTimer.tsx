@@ -44,8 +44,7 @@ const Clock = memo(function Clock({
 });
 
 export const GameTimer = memo(function GameTimer() {
-  const { timeControl, whiteTime, blackTime, activeTimer, hasTimer } =
-    useGameTimer();
+  const { whiteTime, blackTime, activeTimer, hasTimer } = useGameTimer();
 
   if (!hasTimer) {
     return null;

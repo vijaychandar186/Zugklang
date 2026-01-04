@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Volume2, VolumeX } from 'lucide-react';
+import { Icons } from '@/components/Icons';
 
 type SoundToggleProps = {
   enabled: boolean;
@@ -21,12 +21,12 @@ export function SoundToggle({ enabled, onToggle }: SoundToggleProps) {
       >
         {enabled ? (
           <>
-            <Volume2 className='h-4 w-4' />
+            <Icons.volumeOn className='h-4 w-4' />
             <span>On</span>
           </>
         ) : (
           <>
-            <VolumeX className='h-4 w-4' />
+            <Icons.volumeOff className='h-4 w-4' />
             <span>Off</span>
           </>
         )}

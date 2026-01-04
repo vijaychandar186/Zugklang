@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { ChessBoard } from '@/components/board/ChessBoard';
 import { CapturedPiecesDisplay } from '@/components/board/CapturedPieces';
 import { GameSidebar } from '@/components/sidebar/GameSidebar';
-import { EvaluationBar } from '@/components/analysis/EvaluationBar';
+import { BoardContainer } from '@/components/board/BoardContainer';
 import { AnalysisLines } from '@/components/analysis/AnalysisLines';
 import { PlayerInfo } from './PlayerInfo';
 import { PlayerClock } from './PlayerClock';
@@ -92,10 +92,9 @@ export function GameView({
             advantage={topAdvantage}
           />
         </div>
-        <div className='flex items-center gap-2'>
-          {isAnalysisOn && <EvaluationBar />}
+        <BoardContainer>
           <ChessBoard key={gameId} serverOrientation={serverOrientation} />
-        </div>
+        </BoardContainer>
         <div className='flex w-full items-center justify-between py-2'>
           {!isAnalysisMode && (
             <div className='flex items-center gap-3'>

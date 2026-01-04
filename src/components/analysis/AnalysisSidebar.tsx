@@ -11,9 +11,6 @@ import {
   useAnalysisActions
 } from '@/hooks/stores/useAnalysisStore';
 import { PGNImport } from './PGNImport';
-import { MoveHistory } from '@/components/sidebar/MoveHistory';
-import { NavigationControls } from '@/components/sidebar/NavigationControls';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,6 +21,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { Icons } from '@/components/Icons';
+import { Sidebar } from '@/components/sidebar/Sidebar';
 
 export function AnalysisSidebar() {
   const {
@@ -98,24 +96,33 @@ export function AnalysisSidebar() {
   };
 
   return (
-    <div className='bg-card flex h-full flex-col rounded-lg border'>
-      {/* Header with Tools */}
-      <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
-        <h3 className='font-semibold'>Moves</h3>
-        <div className='flex items-center gap-1'>
-          {/* PGN Import Button */}
-          <PGNImport>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='h-8 w-8'
-              title='Import PGN/FEN'
-            >
-              <Icons.upload className='h-4 w-4' />
-            </Button>
-          </PGNImport>
-
-          {/* Analysis Tools Dropdown */}
+    <Sidebar
+      moves={moves}
+      viewingIndex={viewingIndex}
+      totalPositions={positionHistory.length}
+      canGoBack={canGoBack}
+      canGoForward={canGoForward}
+      isPlaying={isPlaying}
+      onMoveClick={goToMove}
+      onTogglePlay={togglePlay}
+      onGoToStart={goToStart}
+      onGoToEnd={goToEnd}
+      onGoToPrev={goToPrev}
+      onGoToNext={goToNext}
+      headerContent={
+        <PGNImport>
+          <Button
+            variant='ghost'
+            size='icon'
+            className='h-8 w-8'
+            title='Import PGN/FEN'
+          >
+            <Icons.upload className='h-4 w-4' />
+          </Button>
+        </PGNImport>
+      }
+      bottomContent={
+        <div className='flex items-center justify-end px-2'>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -184,32 +191,7 @@ export function AnalysisSidebar() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
-
-      {/* Moves List */}
-      <ScrollArea className='h-0 flex-grow'>
-        <div className='px-4 py-2'>
-          <MoveHistory
-            moves={moves}
-            viewingIndex={viewingIndex}
-            onMoveClick={goToMove}
-          />
-        </div>
-      </ScrollArea>
-
-      {/* Navigation Controls */}
-      <NavigationControls
-        viewingIndex={viewingIndex}
-        totalPositions={positionHistory.length}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        isPlaying={isPlaying}
-        onTogglePlay={togglePlay}
-        onGoToStart={goToStart}
-        onGoToEnd={goToEnd}
-        onGoToPrev={goToPrev}
-        onGoToNext={goToNext}
-      />
-    </div>
+      }
+    />
   );
 }

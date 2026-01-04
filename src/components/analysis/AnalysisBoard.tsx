@@ -16,7 +16,7 @@ import {
   useSquareInteraction,
   useBoardTheme
 } from '@/hooks/useSquareInteraction';
-import { UnifiedChessBoard as Board } from '@/components/board/Board';
+import { Board } from '@/components/board/Board';
 
 export function AnalysisBoard() {
   const {

@@ -1,9 +1,7 @@
 'use client';
 
-import { Chessboard } from 'react-chessboard';
 import { useChessBoard } from '@/hooks/useChessBoard';
-import { BOARD_STYLES } from '@/constants/board-themes';
-import { ANIMATION_CONFIG } from '@/constants/animation';
+import { Board } from './Board';
 import { useEffect, useState } from 'react';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -31,29 +29,33 @@ export function ChessBoard({
     setIsMounted(true);
   }, []);
 
+  // Determine actual values based on mount state to avoid hydration mismatch
+  const position = isMounted
+    ? isViewingHistory
+      ? currentFEN
+      : game.fen()
+    : STARTING_FEN;
+
+  const orientation = isMounted
+    ? boardOrientation
+    : serverOrientation || 'white';
+
+  const canDrag = isMounted && !isViewingHistory;
+  const currentSquareStyles = isMounted ? squareStyles : {};
+
   return (
-    <div className='w-[calc(100vw-2rem)] max-w-[380px] sm:w-[400px] sm:max-w-none lg:w-[560px]'>
-      <Chessboard
-        options={{
-          position: isMounted
-            ? isViewingHistory
-              ? currentFEN
-              : game.fen()
-            : STARTING_FEN,
-          boardOrientation: isMounted
-            ? boardOrientation
-            : serverOrientation || 'white',
-          allowDragging: isMounted && !isViewingHistory,
-          animationDurationInMs: ANIMATION_CONFIG.durationMs,
-          boardStyle: BOARD_STYLES.boardStyle,
-          squareStyles: isMounted ? squareStyles : {},
-          darkSquareStyle: theme.darkSquareStyle,
-          lightSquareStyle: theme.lightSquareStyle,
-          onSquareClick: handleSquareClick,
-          onSquareRightClick: handleSquareRightClick,
-          onPieceDrop: onDrop
-        }}
-      />
-    </div>
+    <Board
+      id='computer-chess-board'
+      position={position}
+      boardOrientation={orientation}
+      canDrag={canDrag}
+      squareStyles={currentSquareStyles}
+      darkSquareStyle={theme.darkSquareStyle}
+      lightSquareStyle={theme.lightSquareStyle}
+      onPieceDrop={onDrop}
+      onSquareClick={handleSquareClick}
+      onSquareRightClick={handleSquareRightClick}
+      // arrows prop is optional, AnalysisBoard uses it, ComputerBoard doesn't yet (unless we add visual cues)
+    />
   );
 }

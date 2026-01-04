@@ -26,7 +26,7 @@ export type UnifiedChessBoardProps = {
   animationDuration?: number;
 };
 
-export function UnifiedChessBoard({
+export function Board({
   position,
   boardOrientation = 'white',
   canDrag = true,

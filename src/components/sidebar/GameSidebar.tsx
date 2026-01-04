@@ -1,11 +1,8 @@
 'use client';
 
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGameSidebar } from '@/hooks/useGameSidebar';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { GameSelectionDialog } from '@/components/view/GameSelectionDialog';
-import { MoveHistory } from './MoveHistory';
-import { NavigationControls } from './NavigationControls';
 import { SidebarActions } from './SidebarActions';
 import { GameOverPanel } from './GameOverPanel';
 import { Button } from '@/components/ui/button';
@@ -18,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import { Sidebar } from './Sidebar';
 
 export function GameSidebar() {
   const {
@@ -52,10 +50,20 @@ export function GameSidebar() {
 
   return (
     <>
-      <div className='bg-card flex h-full flex-col rounded-lg border'>
-        {/* Moves Section */}
-        <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
-          <h3 className='font-semibold'>Moves</h3>
+      <Sidebar
+        moves={moves}
+        viewingIndex={viewingIndex}
+        totalPositions={positionHistory.length}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        isPlaying={isPlaying}
+        onMoveClick={goToMove}
+        onTogglePlay={onTogglePlay}
+        onGoToStart={goToStart}
+        onGoToEnd={goToEnd}
+        onGoToPrev={goToPrev}
+        onGoToNext={goToNext}
+        headerContent={
           <Dialog>
             <DialogTrigger asChild>
               <Button variant='ghost' size='icon' className='h-8 w-8'>
@@ -107,47 +115,28 @@ export function GameSidebar() {
               </div>
             </DialogContent>
           </Dialog>
-        </div>
-        <ScrollArea className='h-0 flex-grow'>
-          <div className='px-4 py-2'>
-            <MoveHistory
+        }
+        bottomContent={
+          <>
+            {gameOver && (
+              <GameOverPanel
+                gameResult={gameResult}
+                onRematch={handleRematch}
+              />
+            )}
+            <SidebarActions
               moves={moves}
-              viewingIndex={viewingIndex}
-              onMoveClick={goToMove}
+              gameOver={gameOver}
+              onOpenSettings={() => setSettingsOpen(true)}
+              onOpenNewGame={() => setNewGameOpen(true)}
+              onFlipBoard={flipBoard}
+              onResign={handleResign}
+              onAbort={handleAbort}
+              gameStarted={gameStarted}
             />
-          </div>
-        </ScrollArea>
-
-        <NavigationControls
-          viewingIndex={viewingIndex}
-          totalPositions={positionHistory.length}
-          canGoBack={canGoBack}
-          canGoForward={canGoForward}
-          isPlaying={isPlaying}
-          onTogglePlay={onTogglePlay}
-          onGoToStart={goToStart}
-          onGoToEnd={goToEnd}
-          onGoToPrev={goToPrev}
-          onGoToNext={goToNext}
-        />
-
-        {/* Bottom Actions */}
-        <div className='bg-muted/50 space-y-2 border-t p-2'>
-          {gameOver && (
-            <GameOverPanel gameResult={gameResult} onRematch={handleRematch} />
-          )}
-          <SidebarActions
-            moves={moves}
-            gameOver={gameOver}
-            onOpenSettings={() => setSettingsOpen(true)}
-            onOpenNewGame={() => setNewGameOpen(true)}
-            onFlipBoard={flipBoard}
-            onResign={handleResign}
-            onAbort={handleAbort}
-            gameStarted={gameStarted}
-          />
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       <GameSelectionDialog open={newGameOpen} onOpenChange={setNewGameOpen} />

@@ -61,8 +61,6 @@ export function useChessBoard() {
   const soundEnabledRef = useRef(soundEnabled);
   soundEnabledRef.current = soundEnabled;
 
-  // --- Move Execution Helpers ---
-
   const playMoveSound = useCallback((move: Move, gameAfterMove: Chess) => {
     if (!soundEnabledRef.current) return;
     const isCapture = move.captured !== undefined;

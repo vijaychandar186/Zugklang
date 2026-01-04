@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
-import { useGameStore } from '@/hooks/stores/useGameStore';
+import { useChessStore } from '@/hooks/stores/useChessStore';
 import { useTheme } from 'next-themes';
 import { BoardThemeSelector } from './ThemeSelector';
 import { AppearanceSelector } from './AppearanceSelector';
@@ -19,10 +19,10 @@ type SettingsDialogProps = {
 };
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
-  const setBoardTheme = useGameStore((s) => s.setBoardTheme);
-  const currentBoardTheme = useGameStore((s) => s.boardThemeName);
-  const soundEnabled = useGameStore((s) => s.soundEnabled);
-  const setSoundEnabled = useGameStore((s) => s.setSoundEnabled);
+  const setBoardTheme = useChessStore((s) => s.setBoardTheme);
+  const currentBoardTheme = useChessStore((s) => s.boardThemeName);
+  const soundEnabled = useChessStore((s) => s.soundEnabled);
+  const setSoundEnabled = useChessStore((s) => s.setSoundEnabled);
   const { theme, setTheme } = useTheme();
 
   const handleBoardThemeChange = (themeName: BoardThemeName) => {

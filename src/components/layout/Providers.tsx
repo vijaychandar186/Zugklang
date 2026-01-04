@@ -3,7 +3,7 @@
 import { ThemeProvider, useTheme } from 'next-themes';
 import { Toaster } from 'sonner';
 import { useEffect, useRef } from 'react';
-import { useGameStore } from '@/hooks/stores/useGameStore';
+import { useChessStore } from '@/hooks/stores/useChessStore';
 import { BoardThemeName, DEFAULT_BOARD_THEME } from '@/constants/board-themes';
 
 function ThemeCookieSync() {
@@ -19,7 +19,7 @@ function ThemeCookieSync() {
 }
 
 function BoardSchemeSync() {
-  const boardThemeName = useGameStore((s) => s.boardThemeName);
+  const boardThemeName = useChessStore((s) => s.boardThemeName);
 
   useEffect(() => {
     // Sync data attribute for SSR on next page load
@@ -38,7 +38,7 @@ function StoreInitializer({
 }) {
   const initialized = useRef(false);
   if (!initialized.current) {
-    useGameStore.setState({
+    useChessStore.setState({
       boardThemeName: initialBoardTheme,
       ...(initialPlayAs && { playAs: initialPlayAs })
     });

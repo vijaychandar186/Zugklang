@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useGameStore } from '@/hooks/stores/useGameStore';
+import { useChessStore } from '@/hooks/stores/useChessStore';
 import {
   getCapturedPiecesFromFEN,
   getMaterialAdvantage
@@ -7,16 +7,16 @@ import {
 
 export function useGameView() {
   // Individual selectors for better performance
-  const gameId = useGameStore((s) => s.gameId);
-  const gameStarted = useGameStore((s) => s.gameStarted);
-  const stockfishLevel = useGameStore((s) => s.stockfishLevel);
-  const playAs = useGameStore((s) => s.playAs);
-  const boardFlipped = useGameStore((s) => s.boardFlipped);
-  const currentFEN = useGameStore((s) => s.currentFEN);
-  const timeControl = useGameStore((s) => s.timeControl);
-  const whiteTime = useGameStore((s) => s.whiteTime);
-  const blackTime = useGameStore((s) => s.blackTime);
-  const activeTimer = useGameStore((s) => s.activeTimer);
+  const gameId = useChessStore((s) => s.gameId);
+  const gameStarted = useChessStore((s) => s.gameStarted);
+  const stockfishLevel = useChessStore((s) => s.stockfishLevel);
+  const playAs = useChessStore((s) => s.playAs);
+  const boardFlipped = useChessStore((s) => s.boardFlipped);
+  const currentFEN = useChessStore((s) => s.currentFEN);
+  const timeControl = useChessStore((s) => s.timeControl);
+  const whiteTime = useChessStore((s) => s.whiteTime);
+  const blackTime = useChessStore((s) => s.blackTime);
+  const activeTimer = useChessStore((s) => s.activeTimer);
 
   const hasTimer = timeControl.mode !== 'unlimited';
 

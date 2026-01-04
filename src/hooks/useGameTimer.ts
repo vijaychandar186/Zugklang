@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useTimerState } from '@/hooks/stores/useGameStore';
+import { useTimerState } from '@/hooks/stores/useChessStore';
 import { playSound } from '@/utils/sounds';
 
 export function useGameTimer() {

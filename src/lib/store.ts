@@ -1,8 +1,9 @@
 export {
-  useGameStore,
-  useGameStore as useBoardStore,
-  useGameState,
-  useMoveHistory,
-  useBoardState,
-  useGameActions
-} from '@/hooks/stores/useGameStore';
+  useChessStore,
+  useChessStore as useBoardStore,
+  useChessState,
+  useChessNavigation,
+  useChessSettings,
+  useChessActions,
+  useTimerState
+} from '@/hooks/stores/useChessStore';

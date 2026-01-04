@@ -1,17 +1,9 @@
 import { CSSProperties } from 'react';
-import { CapturedPieces, PieceType } from './types';
+import { CapturedPieces, CapturablePiece, PIECE_VALUES } from '@/types';
 
 const STARTING_PIECES = {
   white: { p: 8, n: 2, b: 2, r: 2, q: 1, k: 1 },
   black: { p: 8, n: 2, b: 2, r: 2, q: 1, k: 1 }
-};
-
-const PIECE_VALUES: Record<PieceType, number> = {
-  p: 1,
-  n: 3,
-  b: 3,
-  r: 5,
-  q: 9
 };
 
 export function convertCSSPropertiesToStringObject(
@@ -48,7 +40,7 @@ export function getCapturedPiecesFromFEN(fen: string): CapturedPieces {
   }
 
   const captured: CapturedPieces = { white: [], black: [] };
-  const pieceTypes: PieceType[] = ['q', 'r', 'b', 'n', 'p'];
+  const pieceTypes: CapturablePiece[] = ['q', 'r', 'b', 'n', 'p'];
 
   for (const piece of pieceTypes) {
     const blackMissing =

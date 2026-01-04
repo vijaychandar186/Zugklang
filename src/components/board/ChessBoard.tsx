@@ -1,11 +1,12 @@
-import { UnifiedChessBoard as Board } from '@/components/board/Board';
+'use client';
+
+import { Chessboard } from 'react-chessboard';
 import { useChessBoard } from '@/hooks/useChessBoard';
-import {
-  useEngineAnalysis,
-  useAnalysisState,
-  useAnalysisConfig
-} from '@/hooks/stores/useAnalysisStore';
-import { useChessArrows } from '@/hooks/useChessArrows';
+import { BOARD_STYLES } from '@/constants/board-themes';
+import { ANIMATION_CONFIG } from '@/constants/animation';
+import { useEffect, useState } from 'react';
+
+const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 export function ChessBoard({
   serverOrientation
@@ -24,30 +25,35 @@ export function ChessBoard({
     handleSquareRightClick
   } = useChessBoard();
 
-  const { isAnalysisOn } = useAnalysisState();
-  const { uciLines } = useEngineAnalysis();
-  const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
+  const [isMounted, setIsMounted] = useState(false);
 
-  const analysisArrows = useChessArrows({
-    isAnalysisOn,
-    uciLines,
-    showBestMoveArrow,
-    showThreatArrow
-  });
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   return (
-    <Board
-      position={isViewingHistory ? currentFEN : game.fen()}
-      boardOrientation={boardOrientation || serverOrientation || 'white'}
-      canDrag={!isViewingHistory}
-      squareStyles={squareStyles}
-      darkSquareStyle={theme.darkSquareStyle}
-      lightSquareStyle={theme.lightSquareStyle}
-      onPieceDrop={onDrop}
-      onSquareClick={handleSquareClick}
-      onSquareRightClick={handleSquareRightClick}
-      arrows={analysisArrows}
-      id='main-chess-board'
-    />
+    <div className='w-[calc(100vw-2rem)] max-w-[380px] sm:w-[400px] sm:max-w-none lg:w-[560px]'>
+      <Chessboard
+        options={{
+          position: isMounted
+            ? isViewingHistory
+              ? currentFEN
+              : game.fen()
+            : STARTING_FEN,
+          boardOrientation: isMounted
+            ? boardOrientation
+            : serverOrientation || 'white',
+          allowDragging: isMounted && !isViewingHistory,
+          animationDurationInMs: ANIMATION_CONFIG.durationMs,
+          boardStyle: BOARD_STYLES.boardStyle,
+          squareStyles: isMounted ? squareStyles : {},
+          darkSquareStyle: theme.darkSquareStyle,
+          lightSquareStyle: theme.lightSquareStyle,
+          onSquareClick: handleSquareClick,
+          onSquareRightClick: handleSquareRightClick,
+          onPieceDrop: onDrop
+        }}
+      />
+    </div>
   );
 }

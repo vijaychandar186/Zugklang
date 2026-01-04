@@ -1,13 +1,8 @@
-import { useState, useMemo } from 'react';
 import {
   useAnalysisBoardState,
   useAnalysisBoardStore,
-  useAnalysisBoardActions,
-  usePositionEditor,
-  type EditorPieceType
+  useAnalysisBoardActions
 } from '@/hooks/stores/useAnalysisBoardStore';
-
-type PieceType = Exclude<EditorPieceType, 'trash'>;
 import { useGameStore } from '@/hooks/stores/useGameStore';
 import {
   useEngineAnalysis,
@@ -17,11 +12,14 @@ import {
 import { playSound } from '@/utils/sounds';
 import { useStockfish } from '@/hooks/computer/useStockfish';
 import { useChessArrows } from '@/hooks/useChessArrows';
+import {
+  useSquareInteraction,
+  useBoardTheme
+} from '@/hooks/useSquareInteraction';
 import { UnifiedChessBoard as Board } from '@/components/board/Board';
 
 export function AnalysisBoard() {
   const {
-    mode,
     currentFEN,
     playingAgainstStockfish,
     playerColor,
@@ -32,26 +30,17 @@ export function AnalysisBoard() {
   } = useAnalysisBoardState();
 
   const { makeMove } = useAnalysisBoardActions();
-  const { editorFEN, selectedPiece, setEditorPiece } = usePositionEditor();
   const game = useAnalysisBoardStore((state) => state.game);
   const soundEnabled = useGameStore((state) => state.soundEnabled);
 
-  const theme = useMemo(
-    () => ({
-      dark: { backgroundColor: 'var(--board-square-dark)' },
-      light: { backgroundColor: 'var(--board-square-light)' }
-    }),
-    []
-  );
+  const theme = useBoardTheme();
 
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
 
-  const [squareStyles, setSquareStyles] = useState({});
-  const [rightClickSquares, setRightClickSquares] = useState<
-    Record<string, { backgroundColor: string }>
-  >({});
+  const { squareStyles, handleSquareClick, handleSquareRightClick } =
+    useSquareInteraction();
 
   const analysisArrows = useChessArrows({
     isAnalysisOn,
@@ -60,10 +49,10 @@ export function AnalysisBoard() {
     showThreatArrow
   });
 
-  // Stockfish integration
+  // Stockfish integration for play-from-position
   useStockfish({
     game,
-    gameId: 1, // Analysis session ID
+    gameId: 1,
     playAs: playerColor,
     stockfishLevel,
     enabled: playingAgainstStockfish,
@@ -72,7 +61,6 @@ export function AnalysisBoard() {
     playSound
   });
 
-  // Handle piece drop (using object destructuring as per environment pattern)
   function onDrop({
     sourceSquare,
     targetSquare
@@ -81,67 +69,23 @@ export function AnalysisBoard() {
     targetSquare: string | null;
   }): boolean {
     if (!targetSquare) return false;
-
-    // In position editor mode, handled differently (Dialog)
-    if (mode === 'position-editor') return false;
-
     return makeMove(sourceSquare, targetSquare);
   }
 
-  // Handle square click
-  function handleSquareClick({ square }: { square: string }) {
-    // In position editor mode, place or remove pieces
-    if (mode === 'position-editor') {
-      if (selectedPiece) {
-        // Place the selected piece or remove if it's an eraser
-        setEditorPiece(
-          square,
-          selectedPiece === 'trash' ? null : (selectedPiece as PieceType)
-        );
-      }
-      return;
-    }
-
-    // Simple click highlighting
-    setSquareStyles({
-      [square]: { backgroundColor: 'var(--highlight-selected)' }
-    });
-  }
-
-  // Handle right-click for custom arrows
-  function handleSquareRightClick({ square }: { square: string }) {
-    const color = 'var(--highlight-right-click)';
-
-    setRightClickSquares((prev) => {
-      const newSquares = { ...prev };
-      if (newSquares[square]) {
-        delete newSquares[square];
-      } else {
-        newSquares[square] = { backgroundColor: color };
-      }
-      return newSquares;
-    });
-  }
-
-  const combinedSquareStyles = { ...squareStyles, ...rightClickSquares };
   const isViewingHistory = viewingIndex < positionHistory.length - 1;
-  const isPositionEditorMode = mode === 'position-editor';
-
-  // Show editorFEN when in position editor mode, otherwise show currentFEN
-  const displayPosition = isPositionEditorMode ? editorFEN : currentFEN;
 
   return (
     <Board
-      position={displayPosition}
+      position={currentFEN}
       boardOrientation={boardOrientation}
-      canDrag={!isViewingHistory && !isPositionEditorMode}
-      squareStyles={combinedSquareStyles}
-      darkSquareStyle={theme.dark}
-      lightSquareStyle={theme.light}
+      canDrag={!isViewingHistory}
+      squareStyles={squareStyles}
+      darkSquareStyle={theme.darkSquareStyle}
+      lightSquareStyle={theme.lightSquareStyle}
       onPieceDrop={onDrop}
       onSquareClick={handleSquareClick}
       onSquareRightClick={handleSquareRightClick}
-      arrows={isPositionEditorMode ? [] : analysisArrows}
+      arrows={analysisArrows}
       id='analysis-chess-board'
     />
   );

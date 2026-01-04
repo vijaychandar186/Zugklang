@@ -1,9 +1,9 @@
 'use client';
 
-import { PieceType } from '@/utils/types';
+import { CapturablePiece } from '@/types';
 import { Icons, type LucideIcon } from '@/components/Icons';
 
-const PIECE_ICONS: Record<PieceType, LucideIcon> = {
+const PIECE_ICONS: Record<CapturablePiece, LucideIcon> = {
   p: Icons.chessPawn,
   n: Icons.chessKnight,
   b: Icons.chessBishop,
@@ -12,7 +12,7 @@ const PIECE_ICONS: Record<PieceType, LucideIcon> = {
 };
 
 type CapturedPiecesDisplayProps = {
-  pieces: PieceType[];
+  pieces: CapturablePiece[];
   pieceColor: 'white' | 'black';
   advantage?: number;
 };

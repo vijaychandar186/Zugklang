@@ -132,9 +132,3 @@ export function EvaluationBar({
     </div>
   );
 }
-
-/**
- * A connected version that pulls data from the analysis store.
- * Use this when you want automatic connection to the analysis engine.
- */
-export { EvaluationBarConnected } from './EvaluationBarConnected';

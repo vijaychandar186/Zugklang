@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Chess, Square, Move } from 'chess.js';
 import { useGameStore } from '@/hooks/stores/useGameStore';
-import { OptionSquares, RightClickedSquares } from '@/utils/types';
+import { SquareStyles, RightClickedSquares } from '@/types';
 import { BOARD_STYLES } from '@/constants/board-themes';
 import { playSound, getSoundType } from '@/utils/sounds';
 import { useStockfish } from '@/hooks/computer/useStockfish';
+import { useBoardTheme } from '@/hooks/useSquareInteraction';
 
 export function useChessBoard() {
   const initialFEN = useGameStore.getState().currentFEN;
@@ -18,7 +19,7 @@ export function useChessBoard() {
 
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [, setMoveTo] = useState<Square | null>(null);
-  const [optionSquares, setOptionSquares] = useState<OptionSquares>({});
+  const [optionSquares, setOptionSquares] = useState<SquareStyles>({});
   const [rightClickedSquares, setRightClickedSquares] =
     useState<RightClickedSquares>({});
 
@@ -226,7 +227,7 @@ export function useChessBoard() {
         setOptionSquares({});
         return false;
       }
-      const newSquares: OptionSquares = {};
+      const newSquares: SquareStyles = {};
       moves.forEach((move) => {
         const target = game.get(move.to);
         const source = game.get(square);
@@ -331,7 +332,7 @@ export function useChessBoard() {
   );
 
   // Styles Memoization
-  const squareStyles = useMemo<OptionSquares>(() => {
+  const squareStyles = useMemo<SquareStyles>(() => {
     const s = { ...optionSquares, ...rightClickedSquares };
     premoves.forEach((p) => {
       s[p.from] = BOARD_STYLES.premoveSquare;
@@ -340,13 +341,8 @@ export function useChessBoard() {
     return s;
   }, [optionSquares, rightClickedSquares, premoves]);
 
-  const theme = useMemo(
-    () => ({
-      darkSquareStyle: { backgroundColor: 'var(--board-square-dark)' },
-      lightSquareStyle: { backgroundColor: 'var(--board-square-light)' }
-    }),
-    []
-  );
+  // Use shared board theme
+  const theme = useBoardTheme();
 
   return {
     game,

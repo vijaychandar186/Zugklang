@@ -43,6 +43,25 @@ export function useGameSidebar() {
     }
   }, [copiedPGN]);
 
+  // Playback logic
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        if (viewingIndex < positionHistory.length - 1) {
+          goToNext();
+        } else {
+          setIsPlaying(false);
+        }
+      }, 600);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, viewingIndex, positionHistory.length, goToNext]);
+
+  const togglePlay = () => setIsPlaying(!isPlaying);
+
   const formatMovesText = () => {
     const pairs: string[] = [];
     for (let i = 0; i < moves.length; i += 2) {
@@ -139,6 +158,10 @@ export function useGameSidebar() {
     handleResign,
     handleAbort,
     handleRematch,
-    flipBoard
+    flipBoard,
+
+    // Playback
+    isPlaying,
+    onTogglePlay: togglePlay
   };
 }

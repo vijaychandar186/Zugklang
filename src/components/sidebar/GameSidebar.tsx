@@ -1,6 +1,6 @@
 'use client';
 
-import { PageContainer } from '@/components/layout/PageContainer';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useGameSidebar } from '@/hooks/useGameSidebar';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { GameSelectionDialog } from '@/components/view/GameSelectionDialog';
@@ -45,7 +45,9 @@ export function GameSidebar() {
     handleResign,
     handleAbort,
     handleRematch,
-    flipBoard
+    flipBoard,
+    isPlaying,
+    onTogglePlay
   } = useGameSidebar();
 
   return (
@@ -106,7 +108,7 @@ export function GameSidebar() {
             </DialogContent>
           </Dialog>
         </div>
-        <PageContainer className='h-0 flex-grow'>
+        <ScrollArea className='h-0 flex-grow'>
           <div className='px-4 py-2'>
             <MoveHistory
               moves={moves}
@@ -114,13 +116,15 @@ export function GameSidebar() {
               onMoveClick={goToMove}
             />
           </div>
-        </PageContainer>
+        </ScrollArea>
 
         <NavigationControls
           viewingIndex={viewingIndex}
           totalPositions={positionHistory.length}
           canGoBack={canGoBack}
           canGoForward={canGoForward}
+          isPlaying={isPlaying}
+          onTogglePlay={onTogglePlay}
           onGoToStart={goToStart}
           onGoToEnd={goToEnd}
           onGoToPrev={goToPrev}

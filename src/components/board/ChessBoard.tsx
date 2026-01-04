@@ -1,12 +1,11 @@
-'use client';
-
-import { Chessboard } from 'react-chessboard';
+import { UnifiedChessBoard as Board } from '@/components/board/Board';
 import { useChessBoard } from '@/hooks/useChessBoard';
-import { BOARD_STYLES } from '@/constants/board-themes';
-import { ANIMATION_CONFIG } from '@/constants/animation';
-import { useEffect, useState } from 'react';
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+import {
+  useEngineAnalysis,
+  useAnalysisState,
+  useAnalysisConfig
+} from '@/hooks/stores/useAnalysisStore';
+import { useChessArrows } from '@/hooks/useChessArrows';
 
 export function ChessBoard({
   serverOrientation
@@ -25,35 +24,30 @@ export function ChessBoard({
     handleSquareRightClick
   } = useChessBoard();
 
-  const [isMounted, setIsMounted] = useState(false);
+  const { isAnalysisOn } = useAnalysisState();
+  const { uciLines } = useEngineAnalysis();
+  const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const analysisArrows = useChessArrows({
+    isAnalysisOn,
+    uciLines,
+    showBestMoveArrow,
+    showThreatArrow
+  });
 
   return (
-    <div className='w-[calc(100vw-2rem)] max-w-[380px] sm:w-[400px] sm:max-w-none lg:w-[560px]'>
-      <Chessboard
-        options={{
-          position: isMounted
-            ? isViewingHistory
-              ? currentFEN
-              : game.fen()
-            : STARTING_FEN,
-          boardOrientation: isMounted
-            ? boardOrientation
-            : serverOrientation || 'white',
-          allowDragging: true,
-          animationDurationInMs: ANIMATION_CONFIG.durationMs,
-          boardStyle: BOARD_STYLES.boardStyle,
-          squareStyles,
-          darkSquareStyle: theme.darkSquareStyle,
-          lightSquareStyle: theme.lightSquareStyle,
-          onSquareClick: handleSquareClick,
-          onSquareRightClick: handleSquareRightClick,
-          onPieceDrop: onDrop
-        }}
-      />
-    </div>
+    <Board
+      position={isViewingHistory ? currentFEN : game.fen()}
+      boardOrientation={boardOrientation || serverOrientation || 'white'}
+      canDrag={!isViewingHistory}
+      squareStyles={squareStyles}
+      darkSquareStyle={theme.darkSquareStyle}
+      lightSquareStyle={theme.lightSquareStyle}
+      onPieceDrop={onDrop}
+      onSquareClick={handleSquareClick}
+      onSquareRightClick={handleSquareRightClick}
+      arrows={analysisArrows}
+      id='main-chess-board'
+    />
   );
 }

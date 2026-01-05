@@ -103,7 +103,6 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
   const canAbort = moves.length < 4;
-  const isGameActive = gameStarted && !gameOver;
 
   useEffect(() => {
     if (copiedMoves) {
@@ -480,7 +479,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                           variant='ghost'
                           size='icon'
                           className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive'
-                          disabled={gameOver || moves.length === 0}
+                          disabled={gameOver || !gameStarted}
                         >
                           {canAbort ? (
                             <Icons.abort className='h-4 w-4' />

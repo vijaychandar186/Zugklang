@@ -68,7 +68,7 @@ export function GameView({ serverOrientation, mode = 'play' }: GameViewProps) {
   }, [currentFEN, setPosition]);
 
   return (
-    <div className='flex h-screen flex-col gap-4 overflow-hidden px-4 py-4 lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:px-6'>
+    <div className='flex min-h-screen flex-col gap-4 px-4 py-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
       <div className='flex flex-col items-center gap-2'>
         <div className='flex w-full items-center justify-between py-2'>
           {isPlayMode && (
@@ -124,13 +124,13 @@ export function GameView({ serverOrientation, mode = 'play' }: GameViewProps) {
           />
         </div>
       </div>
-      <div className='flex min-h-[250px] w-full flex-1 flex-col gap-2 overflow-hidden sm:h-[400px] sm:flex-none lg:h-[560px] lg:w-80'>
+      <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
         {isAnalysisOn && (
           <div className='bg-card shrink-0 rounded-lg border'>
             <AnalysisLines />
           </div>
         )}
-        <div className='min-h-0 flex-1 overflow-hidden'>
+        <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
           <ChessSidebar mode={mode} />
         </div>
       </div>

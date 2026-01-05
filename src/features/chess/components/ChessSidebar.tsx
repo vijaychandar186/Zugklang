@@ -246,7 +246,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
 
   return (
     <>
-      <div className='bg-card flex h-full flex-col rounded-lg border'>
+      <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
         <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
           <h3 className='font-semibold'>Moves</h3>
           <div className='flex items-center gap-1'>
@@ -400,7 +400,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
           </div>
         </div>
 
-        <ScrollArea className='h-0 flex-grow'>
+        <ScrollArea className='min-h-[120px] flex-1 lg:h-0 lg:min-h-0 lg:flex-grow'>
           <div className='px-4 py-2'>
             <MoveHistory
               moves={moves}

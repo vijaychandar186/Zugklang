@@ -79,7 +79,7 @@ export function EvaluationBar({
   const sizeClasses = {
     sm: 'h-[200px] w-5',
     md: 'h-[400px] w-6',
-    lg: 'h-[calc(100vw-2rem)] max-h-[380px] w-7 sm:h-[400px] sm:max-h-none lg:h-[560px]'
+    lg: 'h-[calc(100vw-5rem)] max-h-[380px] w-7 sm:h-[400px] sm:max-h-none lg:h-[560px]'
   };
 
   if (!isActive) {

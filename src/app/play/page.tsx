@@ -12,13 +12,6 @@ export default function PlayPage() {
         >
           Computer
         </Link>
-
-        <Link
-          href='/play/online'
-          className='border-border border px-6 py-3 transition-colors'
-        >
-          Online
-        </Link>
       </nav>
 
       <Link

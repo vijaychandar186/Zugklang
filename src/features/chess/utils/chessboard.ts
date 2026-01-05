@@ -1,4 +1,5 @@
 import { ARROW_COLORS } from '@/features/chess/config/colors';
+import { BOARD_CONFIG } from '@/features/chess/config/board';
 
 export function fenToPosition(
   fen: string
@@ -6,16 +7,13 @@ export function fenToPosition(
   const position: Record<string, { pieceType: string }> = {};
   const rows = fen.split(' ')[0].split('/');
 
-  const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-  const ranks = ['8', '7', '6', '5', '4', '3', '2', '1'];
-
   rows.forEach((row, rowIndex) => {
     let fileIndex = 0;
     for (const char of row) {
       if (!isNaN(parseInt(char))) {
         fileIndex += parseInt(char);
       } else {
-        const square = `${files[fileIndex]}${ranks[rowIndex]}`;
+        const square = `${BOARD_CONFIG.files[fileIndex]}${BOARD_CONFIG.ranks[rowIndex]}`;
         const color = char === char.toUpperCase() ? 'w' : 'b';
         const piece = char.toUpperCase();
         position[square] = { pieceType: `${color}${piece}` };
@@ -47,21 +45,23 @@ export function createArrowsFromUCI(
 }
 
 export function indexToSquare(index: number): string {
-  const file = String.fromCharCode(97 + (index % 8));
-  const rank = 8 - Math.floor(index / 8);
+  const file = String.fromCharCode(
+    BOARD_CONFIG.asciiLowercaseA + (index % BOARD_CONFIG.size)
+  );
+  const rank = BOARD_CONFIG.size - Math.floor(index / BOARD_CONFIG.size);
   return `${file}${rank}`;
 }
 
 export function squareToIndex(square: string): number {
-  const file = square.charCodeAt(0) - 97;
-  const rank = 8 - parseInt(square[1]);
-  return rank * 8 + file;
+  const file = square.charCodeAt(0) - BOARD_CONFIG.asciiLowercaseA;
+  const rank = BOARD_CONFIG.size - parseInt(square[1]);
+  return rank * BOARD_CONFIG.size + file;
 }
 
 export function getSquaresBetween(from: string, to: string): string[] {
-  const fromFile = from.charCodeAt(0) - 97;
+  const fromFile = from.charCodeAt(0) - BOARD_CONFIG.asciiLowercaseA;
   const fromRank = parseInt(from[1]) - 1;
-  const toFile = to.charCodeAt(0) - 97;
+  const toFile = to.charCodeAt(0) - BOARD_CONFIG.asciiLowercaseA;
   const toRank = parseInt(to[1]) - 1;
 
   const fileDiff = toFile - fromFile;
@@ -83,7 +83,9 @@ export function getSquaresBetween(from: string, to: string): string[] {
   let currentRank = fromRank + rankStep;
 
   while (currentFile !== toFile || currentRank !== toRank) {
-    const file = String.fromCharCode(97 + currentFile);
+    const file = String.fromCharCode(
+      BOARD_CONFIG.asciiLowercaseA + currentFile
+    );
     const rank = (currentRank + 1).toString();
     squares.push(`${file}${rank}`);
     currentFile += fileStep;
@@ -94,7 +96,7 @@ export function getSquaresBetween(from: string, to: string): string[] {
 }
 
 export function isLightSquare(square: string): boolean {
-  const file = square.charCodeAt(0) - 97;
+  const file = square.charCodeAt(0) - BOARD_CONFIG.asciiLowercaseA;
   const rank = parseInt(square[1]) - 1;
   return (file + rank) % 2 === 1;
 }
@@ -132,9 +134,9 @@ export function formatTime(seconds: number): string {
 }
 
 export function getFileFromIndex(index: number): string {
-  return String.fromCharCode(97 + index);
+  return String.fromCharCode(BOARD_CONFIG.asciiLowercaseA + index);
 }
 
 export function getRankFromIndex(index: number): number {
-  return 8 - index;
+  return BOARD_CONFIG.size - index;
 }

@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useShallow } from 'zustand/shallow';
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+import { STARTING_FEN } from '@/features/chess/config/constants';
+import { ANALYSIS_DEFAULTS } from '@/features/analysis/config/defaults';
 
 export type Advantage = 'white' | 'black' | 'equal';
 
@@ -111,7 +111,7 @@ type AnalysisStore = {
   cleanup: () => void;
 };
 
-const UPDATE_INTERVAL = 100;
+const UPDATE_INTERVAL = ANALYSIS_DEFAULTS.updateInterval;
 let lastUpdate = 0;
 let pendingTimeout: NodeJS.Timeout | null = null;
 let pendingLines: (AnalysisLine | null)[] | null = null;
@@ -123,17 +123,17 @@ export const useAnalysisStore = create<AnalysisStore>()(
       isInitialized: false,
       worker: null,
 
-      multiPV: 3,
-      searchTime: 8,
-      threads: 4,
-      hashSize: 128,
+      multiPV: ANALYSIS_DEFAULTS.multiPV,
+      searchTime: ANALYSIS_DEFAULTS.searchTime,
+      threads: ANALYSIS_DEFAULTS.threads,
+      hashSize: ANALYSIS_DEFAULTS.hashSize,
       showBestMoveArrow: true,
       showThreatArrow: false,
 
       isAnalyzing: false,
       isAnalysisOn: false,
       currentSearchDepth: 0,
-      currentLines: Array(3).fill(null),
+      currentLines: Array(ANALYSIS_DEFAULTS.multiPV).fill(null),
 
       currentFen: STARTING_FEN,
       turn: 'w',

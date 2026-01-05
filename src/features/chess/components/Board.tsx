@@ -1,6 +1,6 @@
 'use client';
 
-import { Chessboard, Arrow } from 'react-chessboard';
+import { Chessboard } from 'react-chessboard';
 import { useCallback, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
@@ -24,9 +24,6 @@ export type UnifiedChessBoardProps = {
   animationDuration?: number;
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ChessboardAny = Chessboard as any;
-
 export function UnifiedChessBoard({
   position,
   boardOrientation = 'white',
@@ -41,7 +38,13 @@ export function UnifiedChessBoard({
   animationDuration = ANIMATION_CONFIG.durationMs
 }: UnifiedChessBoardProps) {
   const handlePieceDrop = useCallback(
-    (sourceSquare: string, targetSquare: string): boolean => {
+    ({
+      sourceSquare,
+      targetSquare
+    }: {
+      sourceSquare: string;
+      targetSquare: string | null;
+    }): boolean => {
       if (!onPieceDrop) return false;
       return onPieceDrop({ sourceSquare, targetSquare });
     },
@@ -49,7 +52,7 @@ export function UnifiedChessBoard({
   );
 
   const handleSquareClick = useCallback(
-    (square: string) => {
+    ({ square }: { square: string }) => {
       if (onSquareClick) {
         onSquareClick({ square });
       }
@@ -58,7 +61,7 @@ export function UnifiedChessBoard({
   );
 
   const handleSquareRightClick = useCallback(
-    (square: string) => {
+    ({ square }: { square: string }) => {
       if (onSquareRightClick) {
         onSquareRightClick({ square });
       }
@@ -66,7 +69,7 @@ export function UnifiedChessBoard({
     [onSquareRightClick]
   );
 
-  const chessboardArrows: Arrow[] = useMemo(
+  const chessboardArrows = useMemo(
     () =>
       arrows.map((arrow) => ({
         startSquare: arrow.startSquare,
@@ -76,27 +79,42 @@ export function UnifiedChessBoard({
     [arrows]
   );
 
+  const options = useMemo(
+    () => ({
+      position,
+      boardOrientation,
+      allowDragging: canDrag,
+      animationDurationInMs: animationDuration,
+      boardStyle: BOARD_STYLES.boardStyle,
+      squareStyles,
+      darkSquareStyle,
+      lightSquareStyle,
+      dropSquareStyle: {
+        boxShadow: 'inset 0 0 1px 4px var(--highlight-drop)'
+      },
+      arrows: chessboardArrows,
+      onSquareClick: handleSquareClick,
+      onSquareRightClick: handleSquareRightClick,
+      onPieceDrop: handlePieceDrop
+    }),
+    [
+      position,
+      boardOrientation,
+      canDrag,
+      animationDuration,
+      squareStyles,
+      darkSquareStyle,
+      lightSquareStyle,
+      chessboardArrows,
+      handleSquareClick,
+      handleSquareRightClick,
+      handlePieceDrop
+    ]
+  );
+
   return (
     <div className='w-[calc(100vw-2rem)] max-w-[380px] sm:w-[400px] sm:max-w-none lg:w-[560px]'>
-      <ChessboardAny
-        id='UnifiedChessBoard'
-        position={position}
-        boardOrientation={boardOrientation}
-        arePiecesDraggable={canDrag}
-        showBoardNotation={true}
-        animationDuration={animationDuration}
-        customBoardStyle={BOARD_STYLES.boardStyle}
-        customSquareStyles={squareStyles}
-        customDropSquareStyle={{
-          boxShadow: 'inset 0 0 1px 4px var(--highlight-drop)'
-        }}
-        customDarkSquareStyle={darkSquareStyle}
-        customLightSquareStyle={lightSquareStyle}
-        onPieceDrop={handlePieceDrop}
-        onSquareClick={handleSquareClick}
-        onSquareRightClick={handleSquareRightClick}
-        customArrows={chessboardArrows}
-      />
+      <Chessboard options={options} />
     </div>
   );
 }

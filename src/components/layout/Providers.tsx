@@ -4,14 +4,18 @@ import { ThemeProvider, useTheme } from 'next-themes';
 import { Toaster } from 'sonner';
 import { useEffect, useRef } from 'react';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
-import { BoardThemeName, DEFAULT_BOARD_THEME } from '@/constants/board-themes';
+import {
+  BoardThemeName,
+  DEFAULT_BOARD_THEME
+} from '@/features/chess/config/board-themes';
+import { COOKIE_CONFIG } from '@/features/chess/config/board';
 
 function ThemeCookieSync() {
   const { theme } = useTheme();
 
   useEffect(() => {
     if (theme) {
-      document.cookie = `theme=${theme};path=/;max-age=31536000`;
+      document.cookie = `theme=${theme};path=/;max-age=${COOKIE_CONFIG.maxAge}`;
     }
   }, [theme]);
 

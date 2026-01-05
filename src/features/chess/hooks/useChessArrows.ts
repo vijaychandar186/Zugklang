@@ -7,20 +7,23 @@ type UseChessArrowsProps = {
   uciLines: string[][];
   showBestMoveArrow: boolean;
   showThreatArrow: boolean;
+  isPlayerTurn: boolean;
 };
 
 export function useChessArrows({
   isAnalysisOn,
   uciLines,
   showBestMoveArrow,
-  showThreatArrow
+  showThreatArrow,
+  isPlayerTurn
 }: UseChessArrowsProps): ChessArrow[] {
   return useMemo(() => {
     if (!isAnalysisOn || !uciLines[0]) return [];
 
     const uniqueArrows = new Map<string, ChessArrow>();
 
-    if (showBestMoveArrow) {
+    // Best move arrow: Show player's best move when it's player's turn
+    if (showBestMoveArrow && isPlayerTurn) {
       uciLines.forEach((line) => {
         if (line.length > 0) {
           const uci = line[0];
@@ -36,10 +39,11 @@ export function useChessArrows({
       });
     }
 
-    if (showThreatArrow) {
+    // Threat arrow: Show opponent's best move when it's opponent's turn
+    if (showThreatArrow && !isPlayerTurn) {
       uciLines.forEach((line) => {
-        if (line.length > 1) {
-          const uci = line[1];
+        if (line.length > 0) {
+          const uci = line[0];
           const from = uci.slice(0, 2);
           const to = uci.slice(2, 4);
           const key = `${from}-${to}`;
@@ -55,5 +59,11 @@ export function useChessArrows({
     }
 
     return Array.from(uniqueArrows.values());
-  }, [isAnalysisOn, uciLines, showBestMoveArrow, showThreatArrow]);
+  }, [
+    isAnalysisOn,
+    uciLines,
+    showBestMoveArrow,
+    showThreatArrow,
+    isPlayerTurn
+  ]);
 }

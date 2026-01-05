@@ -5,10 +5,10 @@ import { Icons } from '@/components/Icons';
 
 type GameOverPanelProps = {
   gameResult: string | null;
-  onRematch: () => void;
+  onNewGame: () => void;
 };
 
-export function GameOverPanel({ gameResult, onRematch }: GameOverPanelProps) {
+export function GameOverPanel({ gameResult, onNewGame }: GameOverPanelProps) {
   return (
     <div className='flex flex-col gap-2 border-b pb-2'>
       <p className='text-center text-sm font-medium'>{gameResult}</p>
@@ -16,10 +16,10 @@ export function GameOverPanel({ gameResult, onRematch }: GameOverPanelProps) {
         variant='default'
         size='sm'
         className='w-full'
-        onClick={onRematch}
+        onClick={onNewGame}
       >
-        <Icons.rematch className='mr-2 h-4 w-4' />
-        Rematch
+        <Icons.newGame className='mr-2 h-4 w-4' />
+        New Game
       </Button>
     </div>
   );

@@ -32,6 +32,7 @@ function getInitialSoundEnabled(): boolean {
 
 type ChessStore = {
   mode: ChessMode;
+  hasHydrated: boolean;
 
   game: Chess;
   currentFEN: string;
@@ -51,6 +52,7 @@ type ChessStore = {
   whiteTime: number | null;
   blackTime: number | null;
   activeTimer: 'white' | 'black' | null;
+  lastActiveTimestamp: number | null;
 
   playingAgainstStockfish: boolean;
   playerColor: 'white' | 'black';
@@ -110,6 +112,7 @@ export const useChessStore = create<ChessStore>()(
   persist(
     (set, get) => ({
       mode: 'play',
+      hasHydrated: false,
 
       game: new Chess(),
       currentFEN: STARTING_FEN,
@@ -129,6 +132,7 @@ export const useChessStore = create<ChessStore>()(
       whiteTime: null,
       blackTime: null,
       activeTimer: null,
+      lastActiveTimestamp: null,
 
       playingAgainstStockfish: false,
       playerColor: 'white',
@@ -263,7 +267,8 @@ export const useChessStore = create<ChessStore>()(
       },
 
       setGameResult: (result) => set({ gameResult: result }),
-      setGameOver: (gameOver) => set({ gameOver, activeTimer: null }),
+      setGameOver: (gameOver) =>
+        set({ gameOver, activeTimer: null, lastActiveTimestamp: null }),
       setGameStarted: (started) => set({ gameStarted: started }),
       setStockfishLevel: (level) => set({ stockfishLevel: level }),
 
@@ -312,6 +317,7 @@ export const useChessStore = create<ChessStore>()(
           whiteTime: whiteInitialTime,
           blackTime: blackInitialTime,
           activeTimer: hasTimer ? 'white' : null,
+          lastActiveTimestamp: hasTimer ? Date.now() : null,
           playingAgainstStockfish: false
         });
       },
@@ -344,6 +350,7 @@ export const useChessStore = create<ChessStore>()(
           whiteTime: whiteInitialTime,
           blackTime: blackInitialTime,
           activeTimer: hasTimer && state.playAs === 'white' ? 'white' : null,
+          lastActiveTimestamp: hasTimer ? Date.now() : null,
           playingAgainstStockfish: false
         });
       },
@@ -357,7 +364,7 @@ export const useChessStore = create<ChessStore>()(
           const currentTime = state[timeKey];
           if (currentTime === null || currentTime <= 0) return {};
           const newTime = currentTime - 1;
-          return { [timeKey]: newTime };
+          return { [timeKey]: newTime, lastActiveTimestamp: Date.now() };
         }),
 
       switchTimer: (toColor) =>
@@ -378,11 +385,12 @@ export const useChessStore = create<ChessStore>()(
           const newTime = currentTime !== null ? currentTime + increment : null;
           return {
             activeTimer: toColor,
-            [movedTimeKey]: newTime
+            [movedTimeKey]: newTime,
+            lastActiveTimestamp: Date.now()
           };
         }),
 
-      stopTimer: () => set({ activeTimer: null }),
+      stopTimer: () => set({ activeTimer: null, lastActiveTimestamp: null }),
 
       onTimeout: (color) => {
         const state = get();
@@ -392,7 +400,8 @@ export const useChessStore = create<ChessStore>()(
           gameResult: isPlayerTimeout
             ? 'Stockfish wins on time!'
             : 'You win on time!',
-          activeTimer: null
+          activeTimer: null,
+          lastActiveTimestamp: null
         });
       },
 
@@ -492,6 +501,8 @@ export const useChessStore = create<ChessStore>()(
         timeControl: state.timeControl,
         whiteTime: state.whiteTime,
         blackTime: state.blackTime,
+        activeTimer: state.activeTimer,
+        lastActiveTimestamp: state.lastActiveTimestamp,
         boardOrientation: state.boardOrientation
       }),
       onRehydrateStorage: () => (state) => {
@@ -504,6 +515,30 @@ export const useChessStore = create<ChessStore>()(
             state.game = new Chess();
             state.currentFEN = STARTING_FEN;
           }
+
+          // Calculate elapsed time since last tick and subtract from active timer
+          if (
+            state.activeTimer &&
+            state.lastActiveTimestamp &&
+            !state.gameOver &&
+            state.timeControl.mode !== 'unlimited'
+          ) {
+            const elapsedMs = Date.now() - state.lastActiveTimestamp;
+            const elapsedSeconds = Math.floor(elapsedMs / 1000);
+
+            if (elapsedSeconds > 0) {
+              const timeKey =
+                state.activeTimer === 'white' ? 'whiteTime' : 'blackTime';
+              const currentTime = state[timeKey];
+              if (currentTime !== null) {
+                const newTime = Math.max(0, currentTime - elapsedSeconds);
+                state[timeKey] = newTime;
+              }
+            }
+            state.lastActiveTimestamp = Date.now();
+          }
+
+          state.hasHydrated = true;
         }
       }
     }
@@ -516,6 +551,7 @@ export const useChessState = () =>
   useChessStore(
     useShallow((s) => ({
       mode: s.mode,
+      hasHydrated: s.hasHydrated,
       game: s.game,
       currentFEN: s.currentFEN,
       moves: s.moves,

@@ -51,6 +51,7 @@ import {
   useAnalysisState,
   useAnalysisActions
 } from '../stores/useAnalysisStore';
+import { playSound } from '@/features/game/utils/sounds';
 
 interface ChessSidebarProps {
   mode: ChessMode;
@@ -66,7 +67,9 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     gameStarted,
     playAs,
     playingAgainstStockfish,
-    boardOrientation
+    boardOrientation,
+    soundEnabled,
+    hasHydrated
   } = useChessState();
 
   const {
@@ -79,7 +82,6 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     toggleBoardOrientation,
     setGameOver,
     setGameResult,
-    onNewGame,
     resetToStarting,
     startPlayingFromPosition,
     stopPlayingFromPosition
@@ -147,6 +149,19 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
 
   const togglePlay = () => setIsPlaying(!isPlaying);
 
+  // Auto-show game selection dialog when in play mode with no active game and no moves
+  useEffect(() => {
+    if (
+      hasHydrated &&
+      isPlayMode &&
+      !gameStarted &&
+      !gameOver &&
+      moves.length === 0
+    ) {
+      setNewGameOpen(true);
+    }
+  }, [hasHydrated, isPlayMode, gameStarted, gameOver, moves.length]);
+
   const formatMovesText = () => {
     const pairs: string[] = [];
     for (let i = 0; i < moves.length; i += 2) {
@@ -195,18 +210,19 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
   };
 
   const handleResign = () => {
+    if (soundEnabled) playSound('game-end');
     setGameResult('You resigned');
     setGameOver(true);
   };
 
   const handleAbort = () => {
+    if (soundEnabled) playSound('game-end');
     setGameResult('Game Aborted');
     setGameOver(true);
   };
 
-  const handleRematch = () => {
-    onNewGame();
-    setGameOver(false);
+  const handleNewGame = () => {
+    setNewGameOpen(true);
   };
 
   const handleToggleAnalysis = () => {
@@ -413,7 +429,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
             {gameOver && (
               <GameOverPanel
                 gameResult={gameResult}
-                onRematch={handleRematch}
+                onNewGame={handleNewGame}
               />
             )}
             <div className='flex items-center gap-1'>
@@ -456,24 +472,6 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
               </Tooltip>
 
               <div className='ml-auto flex items-center gap-1'>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span>
-                      <Button
-                        variant='ghost'
-                        size='icon'
-                        onClick={() => setNewGameOpen(true)}
-                        disabled={isGameActive}
-                      >
-                        <Icons.newGame className='h-4 w-4' />
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isGameActive ? 'Finish current game first' : 'New Game'}
-                  </TooltipContent>
-                </Tooltip>
-
                 <AlertDialog>
                   <Tooltip>
                     <TooltipTrigger asChild>

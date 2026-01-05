@@ -13,18 +13,18 @@ export type SoundType =
   | 'tenseconds';
 
 const SOUND_FILES: Record<SoundType, string> = {
-  'game-start': '/audio/chess-moves/game-start.mp3',
-  'game-end': '/audio/chess-moves/game-end.mp3',
-  'move-self': '/audio/chess-moves/move-self.mp3',
-  'move-opponent': '/audio/chess-moves/move-opponent.mp3',
-  capture: '/audio/chess-moves/capture.mp3',
-  check: '/audio/chess-moves/move-check.mp3',
-  castle: '/audio/chess-moves/castle.mp3',
-  promote: '/audio/chess-moves/promote.mp3',
-  premove: '/audio/chess-moves/premove.mp3',
-  notify: '/audio/chess-moves/notify.mp3',
-  illegal: '/audio/chess-moves/illegal.mp3',
-  tenseconds: '/audio/chess-moves/tenseconds.mp3'
+  'game-start': '/audio/sounds/game-start.mp3',
+  'game-end': '/audio/sounds/game-end.mp3',
+  'move-self': '/audio/sounds/move-self.mp3',
+  'move-opponent': '/audio/sounds/move-opponent.mp3',
+  capture: '/audio/sounds/capture.mp3',
+  check: '/audio/sounds/move-check.mp3',
+  castle: '/audio/sounds/castle.mp3',
+  promote: '/audio/sounds/promote.mp3',
+  premove: '/audio/sounds/premove.mp3',
+  notify: '/audio/sounds/notify.mp3',
+  illegal: '/audio/sounds/illegal.mp3',
+  tenseconds: '/audio/sounds/tenseconds.mp3'
 };
 
 const audioCache: Partial<Record<SoundType, HTMLAudioElement>> = {};

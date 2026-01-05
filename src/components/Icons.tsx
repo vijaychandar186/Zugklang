@@ -48,7 +48,6 @@ import {
 } from 'lucide-react';
 
 export const Icons = {
-  // Chess pieces
   chessPawn: ChessPawn,
   chessKnight: ChessKnight,
   chessBishop: ChessBishop,
@@ -56,7 +55,6 @@ export const Icons = {
   chessQueen: ChessQueen,
   chessKing: Crown,
 
-  // Navigation
   chevronsLeft: ChevronsLeft,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
@@ -64,7 +62,6 @@ export const Icons = {
   chevronFirst: ChevronFirst,
   chevronLast: ChevronLast,
 
-  // Actions
   copy: Copy,
   check: Check,
   settings: Settings,
@@ -88,22 +85,18 @@ export const Icons = {
   shuffle: Shuffle,
   rotate: RotateCw,
 
-  // Users
   player: User,
   stockfish: Bot,
 
-  // Theme
   sun: Sun,
   moon: Moon,
   system: Monitor,
   abort: Ban,
 
-  // Analysis
   analyze: Eye,
   analyzeOff: EyeOff,
   engine: Brain,
 
-  // Sound
   volumeOn: Volume2,
   volumeOff: VolumeX
 } as const;

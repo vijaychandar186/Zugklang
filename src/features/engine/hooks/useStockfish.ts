@@ -6,6 +6,7 @@ import { SoundType } from '@/features/game/utils/sounds';
 
 type UseStockfishProps = {
   game: Chess;
+  fen: string;
   gameId: number;
   playAs: 'white' | 'black';
   stockfishLevel: number;
@@ -17,6 +18,7 @@ type UseStockfishProps = {
 
 export function useStockfish({
   game,
+  fen,
   gameId,
   playAs,
   stockfishLevel,
@@ -95,8 +97,9 @@ export function useStockfish({
       }
       engine.stop();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fen is used instead of game to trigger effect since game reference doesn't change
   }, [
-    game,
+    fen,
     playAs,
     gameId,
     engine,

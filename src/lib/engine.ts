@@ -27,7 +27,6 @@ export class StockfishEngine {
           console.error('Stockfish Worker Error:', e);
         };
 
-        // Listen for readyok to know when engine is initialized
         const initHandler = (e: MessageEvent) => {
           const data = String(e.data || '');
           if (data.includes('readyok')) {
@@ -42,10 +41,10 @@ export class StockfishEngine {
         this.sendCommand('isready');
       } catch (e) {
         console.error('Failed to create Stockfish worker:', e);
-        this.resolveReady?.(); // Resolve anyway to prevent hanging
+        this.resolveReady?.();
       }
     } else {
-      this.resolveReady?.(); // Resolve if no Worker support
+      this.resolveReady?.();
     }
   }
 
@@ -94,7 +93,6 @@ export class StockfishEngine {
       await this.readyPromise;
       this.sendCommand('ucinewgame');
       this.sendCommand('isready');
-      // Wait for readyok after ucinewgame
       return new Promise((resolve) => {
         const handler = (e: MessageEvent) => {
           const data = String(e.data || '');

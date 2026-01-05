@@ -72,19 +72,20 @@ export function ChessBoard({
 
   const theme = useBoardTheme();
 
-  const analysisArrows = useChessArrows({
-    isAnalysisOn,
-    uciLines,
-    showBestMoveArrow,
-    showThreatArrow
-  });
-
   const isViewingHistory = viewingIndex < positionHistory.length - 1;
   const isPlayMode = mode === 'play';
 
   const effectivePlayAs = isPlayMode ? playAs : playerColor;
   const playerTurn = effectivePlayAs === 'white' ? 'w' : 'b';
   const isPlayerTurn = game.turn() === playerTurn;
+
+  const analysisArrows = useChessArrows({
+    isAnalysisOn,
+    uciLines,
+    showBestMoveArrow,
+    showThreatArrow,
+    isPlayerTurn
+  });
 
   const effectiveBoardOrientation = useMemo(() => {
     if (isPlayMode) {
@@ -143,6 +144,7 @@ export function ChessBoard({
 
   useStockfish({
     game,
+    fen: currentFEN,
     gameId: isPlayMode ? gameId : 1,
     playAs: effectivePlayAs,
     stockfishLevel,

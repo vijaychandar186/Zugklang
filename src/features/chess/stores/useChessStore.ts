@@ -5,7 +5,8 @@ import { Chess, Square, Move } from 'chess.js';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
 import { STARTING_FEN } from '@/features/chess/config/constants';
-import { TimeControl, TimeControlMode } from '@/features/game/types/rules';
+import { COOKIE_CONFIG } from '@/features/chess/config/board';
+import { TimeControl } from '@/features/game/types/rules';
 
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
@@ -20,7 +21,7 @@ function getCookie(name: string): string | null {
 }
 
 function setCookie(name: string, value: string) {
-  document.cookie = `${name}=${value};path=/;max-age=31536000`;
+  document.cookie = `${name}=${value};path=/;max-age=${COOKIE_CONFIG.maxAge}`;
 }
 
 function getInitialSoundEnabled(): boolean {
@@ -496,9 +497,7 @@ export const useChessStore = create<ChessStore>()(
       onRehydrateStorage: () => (state) => {
         if (state) {
           try {
-            // Ensure FEN is valid, fallback to start if not
             const fen = state.currentFEN || STARTING_FEN;
-            // Re-initialize game instance from stored FEN
             state.game = new Chess(fen);
           } catch (e) {
             console.error('Failed to rehydrate chess game:', e);

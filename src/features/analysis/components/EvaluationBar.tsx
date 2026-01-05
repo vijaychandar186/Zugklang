@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import type { Advantage } from '@/features/analysis/types/core';
+import { EVALUATION_CONFIG } from '@/features/analysis/config/defaults';
 
 function calcBarPercentage(
   advantage: Advantage,
@@ -10,23 +11,33 @@ function calcBarPercentage(
   mate: number | null
 ): number {
   if (advantage === 'equal') {
-    return 50;
+    return EVALUATION_CONFIG.equalPosition;
   }
 
   if (mate !== null) {
-    return advantage === 'white' ? 98 : 2;
+    return advantage === 'white'
+      ? EVALUATION_CONFIG.mateAdvantageWhite
+      : EVALUATION_CONFIG.mateAdvantageBlack;
   }
 
   if (cp === null) {
-    return 50;
+    return EVALUATION_CONFIG.equalPosition;
   }
 
-  const coefficient = 0.2;
   const adjustedCp = advantage === 'white' ? cp : -cp;
   const percentage =
-    (1 / (1 + Math.exp(-(adjustedCp / 100) * coefficient))) * 100;
+    (1 /
+      (1 +
+        Math.exp(
+          -(adjustedCp / EVALUATION_CONFIG.centipawnDivisor) *
+            EVALUATION_CONFIG.sigmoidCoefficient
+        ))) *
+    100;
 
-  return Math.min(Math.max(percentage, 2), 98);
+  return Math.min(
+    Math.max(percentage, EVALUATION_CONFIG.clampMin),
+    EVALUATION_CONFIG.clampMax
+  );
 }
 
 function formatScore(cp: number | null, mate: number | null): string {

@@ -156,6 +156,10 @@ export function ChessBoard({
 
   const handleUserMove = useCallback(
     (from: Square, to: Square, promotion?: string): boolean => {
+      if (gameOver) {
+        return false;
+      }
+
       if (isViewingHistory) {
         goToEnd();
         return false;
@@ -187,6 +191,7 @@ export function ChessBoard({
       return success;
     },
     [
+      gameOver,
       isViewingHistory,
       goToEnd,
       game,
@@ -273,6 +278,10 @@ export function ChessBoard({
 
   const handleSquareClick = useCallback(
     ({ square }: { square: string }) => {
+      if (gameOver) {
+        return;
+      }
+
       if (isViewingHistory) {
         goToEnd();
         return;
@@ -315,6 +324,7 @@ export function ChessBoard({
       setOptionSquares({});
     },
     [
+      gameOver,
       isViewingHistory,
       goToEnd,
       moveFrom,

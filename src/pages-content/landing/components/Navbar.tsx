@@ -62,14 +62,14 @@ export function Navbar() {
                 <span className='sr-only'>Toggle Menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side='right' className='w-[280px]'>
-              <SheetHeader>
+            <SheetContent side='right' className='w-[280px] px-6'>
+              <SheetHeader className='pb-4'>
                 <SheetTitle className='flex items-center gap-2 text-left'>
                   <Icons.crown className='text-primary h-6 w-6' />
                   <span className='font-bold'>Zugklang</span>
                 </SheetTitle>
               </SheetHeader>
-              <nav className='mt-8 flex flex-col gap-4'>
+              <nav className='mt-6 flex flex-col gap-5'>
                 {routeList.map(({ href, label }) => (
                   <Link
                     key={label}

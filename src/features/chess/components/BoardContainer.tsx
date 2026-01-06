@@ -21,7 +21,12 @@ export function BoardContainer({
 
   return (
     <div className={`flex items-start justify-center gap-2 ${className ?? ''}`}>
-      <div className='w-7 shrink-0'>{shouldShowEval && <EvaluationBar />}</div>
+      {/* Desktop: always reserve space. Mobile: only show when analysis is on */}
+      <div
+        className={`shrink-0 ${shouldShowEval ? 'w-7' : 'hidden w-0 sm:block sm:w-7'}`}
+      >
+        {shouldShowEval && <EvaluationBar />}
+      </div>
       <div className='shrink-0'>{children}</div>
     </div>
   );

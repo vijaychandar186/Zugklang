@@ -5,13 +5,13 @@ import {
   featureList,
   FEATURE_HEADING,
   FeatureProps
-} from '@/features/landing/content/features';
+} from '@/pages-content/landing/content/features';
 
-export const Features = () => {
+export function Features() {
   return (
     <section
       id='features'
-      className='container space-y-8 py-16 sm:py-24 lg:py-32'
+      className='mx-auto max-w-7xl space-y-8 px-4 py-16 sm:py-24 lg:py-32'
     >
       <h2 className='text-center text-2xl font-bold md:text-3xl lg:text-4xl'>
         {FEATURE_HEADING.split(' ')[0]}{' '}
@@ -25,7 +25,7 @@ export const Features = () => {
           <Badge
             variant='secondary'
             key={feature}
-            className='px-3 py-1 text-xs transition-all hover:scale-105 md:text-sm'
+            className='px-3 py-1 text-xs md:text-sm'
           >
             {feature}
           </Badge>
@@ -51,4 +51,4 @@ export const Features = () => {
       </div>
     </section>
   );
-};
+}

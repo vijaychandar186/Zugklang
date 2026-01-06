@@ -2,13 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, Swords } from 'lucide-react';
+import { Icons } from '@/components/Icons';
 import {
   HERO_TEXT,
   HERO_BACKGROUND_CLIP_PATH
-} from '@/features/landing/content/hero';
+} from '@/pages-content/landing/content/hero';
 
-export const Hero = () => {
+export function Hero() {
   return (
     <section className='relative isolate overflow-hidden py-16 md:py-32'>
       <div
@@ -21,7 +21,7 @@ export const Hero = () => {
         />
       </div>
 
-      <div className='container flex flex-col items-center gap-8 text-center'>
+      <div className='mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 text-center'>
         <div className='border-primary/20 bg-primary/5 text-primary/80 inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium backdrop-blur-md'>
           <span className='mr-2 flex h-2 w-2'>
             <span className='bg-primary absolute inline-flex h-2 w-2 animate-ping rounded-full opacity-75'></span>
@@ -45,28 +45,16 @@ export const Hero = () => {
           {HERO_TEXT.description}
         </p>
 
-        <div className='flex flex-col gap-4 sm:flex-row'>
-          <Link href='/play'>
-            <Button
-              size='lg'
-              className='shadow-primary/20 hover:shadow-primary/40 h-12 rounded-full px-8 text-base font-semibold shadow-lg transition-all hover:scale-105 active:scale-95'
-            >
-              {HERO_TEXT.buttonText}
-              <ArrowRight className='ml-2 h-5 w-5' />
-            </Button>
-          </Link>
-          <Link href='/play/local'>
-            <Button
-              size='lg'
-              variant='outline'
-              className='border-primary/20 bg-background/50 hover:border-primary/50 hover:bg-accent/50 h-12 rounded-full px-8 text-base backdrop-blur-sm transition-all hover:scale-105 active:scale-95'
-            >
-              Local Game
-              <Swords className='ml-2 h-5 w-5' />
-            </Button>
-          </Link>
-        </div>
+        <Link href='/play'>
+          <Button
+            size='lg'
+            className='shadow-primary/20 hover:shadow-primary/40 h-12 rounded-full px-8 text-base font-semibold shadow-lg transition-shadow'
+          >
+            {HERO_TEXT.buttonText}
+            <Icons.arrowRight className='ml-2 h-5 w-5' />
+          </Button>
+        </Link>
       </div>
     </section>
   );
-};
+}

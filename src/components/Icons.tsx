@@ -44,6 +44,12 @@ import {
   Undo2,
   Redo2,
   Shuffle,
+  ArrowUpRight,
+  ArrowRight,
+  Cpu,
+  Users,
+  Microscope,
+  Menu,
   type LucideIcon
 } from 'lucide-react';
 
@@ -98,7 +104,15 @@ export const Icons = {
   engine: Brain,
 
   volumeOn: Volume2,
-  volumeOff: VolumeX
+  volumeOff: VolumeX,
+
+  arrowUpRight: ArrowUpRight,
+  arrowRight: ArrowRight,
+  cpu: Cpu,
+  users: Users,
+  microscope: Microscope,
+  menu: Menu,
+  crown: Crown
 } as const;
 
 export type { LucideIcon };

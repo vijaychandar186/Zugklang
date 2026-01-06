@@ -8,11 +8,11 @@ import {
   FAQList,
   FAQProps,
   FAQ_SUBTITLE
-} from '@/features/landing/content/faq';
+} from '@/pages-content/landing/content/faq';
 
-export const FAQ = () => {
+export function FAQ() {
   return (
-    <section id='faq' className='container py-16 sm:py-24'>
+    <section id='faq' className='mx-auto max-w-7xl px-4 py-16 sm:py-24'>
       <h2 className='mb-4 text-center text-2xl font-bold md:text-3xl lg:text-4xl'>
         Frequently Asked{' '}
         <span className='from-primary/60 to-primary bg-gradient-to-b bg-clip-text text-transparent'>
@@ -41,4 +41,4 @@ export const FAQ = () => {
       </div>
     </section>
   );
-};
+}

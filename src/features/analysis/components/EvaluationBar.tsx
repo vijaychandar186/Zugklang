@@ -15,6 +15,10 @@ function calcBarPercentage(
   }
 
   if (mate !== null) {
+    // Checkmate (M0) = fully one color, mate-in-X = 98/2
+    if (mate === 0) {
+      return advantage === 'white' ? 100 : 0;
+    }
     return advantage === 'white'
       ? EVALUATION_CONFIG.mateAdvantageWhite
       : EVALUATION_CONFIG.mateAdvantageBlack;

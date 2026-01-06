@@ -11,6 +11,7 @@ import { useTheme } from 'next-themes';
 import { BoardThemeSelector } from './ThemeSelector';
 import { AppearanceSelector } from './AppearanceSelector';
 import { SoundToggle } from './SoundToggle';
+import { FullscreenToggle } from './FullscreenToggle';
 import { BoardThemeName } from '@/features/chess/types/theme';
 
 type SettingsDialogProps = {
@@ -23,6 +24,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const currentBoardTheme = useChessStore((s) => s.boardThemeName);
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const setSoundEnabled = useChessStore((s) => s.setSoundEnabled);
+  const fullscreenEnabled = useChessStore((s) => s.fullscreenEnabled);
+  const setFullscreenEnabled = useChessStore((s) => s.setFullscreenEnabled);
   const { theme, setTheme } = useTheme();
 
   const handleBoardThemeChange = (themeName: BoardThemeName) => {
@@ -41,6 +44,10 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             onThemeChange={handleBoardThemeChange}
           />
           <SoundToggle enabled={soundEnabled} onToggle={setSoundEnabled} />
+          <FullscreenToggle
+            enabled={fullscreenEnabled}
+            onToggle={setFullscreenEnabled}
+          />
           <AppearanceSelector theme={theme} onThemeChange={setTheme} />
         </div>
       </DialogContent>

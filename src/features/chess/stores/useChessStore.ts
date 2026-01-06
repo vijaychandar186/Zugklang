@@ -63,6 +63,7 @@ type ChessStore = {
   soundEnabled: boolean;
   boardFlipped: boolean;
   autoFlipBoard: boolean;
+  fullscreenEnabled: boolean;
 
   onNewGame: () => void;
 
@@ -70,6 +71,7 @@ type ChessStore = {
 
   setBoardTheme: (name: BoardThemeName) => void;
   setSoundEnabled: (enabled: boolean) => void;
+  setFullscreenEnabled: (enabled: boolean) => void;
   flipBoard: () => void;
   toggleBoardOrientation: () => void;
 
@@ -148,6 +150,7 @@ export const useChessStore = create<ChessStore>()(
       soundEnabled: getInitialSoundEnabled(),
       boardFlipped: false,
       autoFlipBoard: false,
+      fullscreenEnabled: false,
 
       onNewGame: () => {},
 
@@ -176,6 +179,10 @@ export const useChessStore = create<ChessStore>()(
       setSoundEnabled: (enabled) => {
         setCookie(SOUND_ENABLED_COOKIE, String(enabled));
         set({ soundEnabled: enabled });
+      },
+
+      setFullscreenEnabled: (enabled) => {
+        set({ fullscreenEnabled: enabled });
       },
 
       flipBoard: () => set((state) => ({ boardFlipped: !state.boardFlipped })),
@@ -635,8 +642,10 @@ export const useChessSettings = () =>
       boardThemeName: s.boardThemeName,
       soundEnabled: s.soundEnabled,
       boardFlipped: s.boardFlipped,
+      fullscreenEnabled: s.fullscreenEnabled,
       setBoardTheme: s.setBoardTheme,
       setSoundEnabled: s.setSoundEnabled,
+      setFullscreenEnabled: s.setFullscreenEnabled,
       flipBoard: s.flipBoard
     }))
   );

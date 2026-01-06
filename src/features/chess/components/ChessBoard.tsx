@@ -32,6 +32,7 @@ export function ChessBoard({
 }) {
   const {
     mode,
+    gameType,
     game,
     currentFEN,
     viewingIndex,
@@ -44,12 +45,21 @@ export function ChessBoard({
     playingAgainstStockfish,
     playerColor,
     soundEnabled,
-    boardFlipped
+    boardFlipped,
+    autoFlipBoard
   } = useChessState();
 
-  const { setGameOver, setGameResult, setOnNewGame, makeMove, goToEnd } =
-    useChessActions();
+  const {
+    setGameOver,
+    setGameResult,
+    setOnNewGame,
+    makeMove,
+    goToEnd,
+    flipBoard
+  } = useChessActions();
   const { switchTimer } = useTimerState();
+
+  const isLocalGame = gameType === 'local';
 
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
@@ -131,16 +141,31 @@ export function ChessBoard({
           const activeColor =
             gameRef.current.turn() === 'w' ? 'white' : 'black';
           switchTimer(activeColor);
+
+          // Auto-flip board in local (pass and play) mode
+          if (isLocalGame && autoFlipBoard) {
+            flipBoard();
+          }
         }
 
         return true;
       }
       return false;
     },
-    [makeMove, playMoveSound, isPlayMode, switchTimer]
+    [
+      makeMove,
+      playMoveSound,
+      isPlayMode,
+      switchTimer,
+      isLocalGame,
+      autoFlipBoard,
+      flipBoard
+    ]
   );
 
-  const stockfishEnabled = isPlayMode || playingAgainstStockfish;
+  // Stockfish is only enabled for computer games, not local (pass and play)
+  const stockfishEnabled =
+    (isPlayMode && !isLocalGame) || playingAgainstStockfish;
 
   useStockfish({
     game,
@@ -222,10 +247,14 @@ export function ChessBoard({
       if (soundEnabled) playSound('game-end');
       if (game.isCheckmate()) {
         const winner = game.turn() === 'w' ? 'Black' : 'White';
-        const isUserWin =
-          (playAs === 'white' && winner === 'White') ||
-          (playAs === 'black' && winner === 'Black');
-        setGameResult(isUserWin ? 'You win!' : 'Stockfish wins!');
+        if (isLocalGame) {
+          setGameResult(`${winner} wins!`);
+        } else {
+          const isUserWin =
+            (playAs === 'white' && winner === 'White') ||
+            (playAs === 'black' && winner === 'Black');
+          setGameResult(isUserWin ? 'You win!' : 'Stockfish wins!');
+        }
       } else if (game.isDraw()) {
         setGameResult('Draw!');
       } else if (game.isStalemate()) {
@@ -233,7 +262,15 @@ export function ChessBoard({
       }
       setGameOver(true);
     }
-  }, [game, isPlayMode, playAs, setGameResult, setGameOver, soundEnabled]);
+  }, [
+    game,
+    isPlayMode,
+    isLocalGame,
+    playAs,
+    setGameResult,
+    setGameOver,
+    soundEnabled
+  ]);
 
   const onNewGame = useCallback(() => {
     if (soundEnabledRef.current) playSound('game-start');

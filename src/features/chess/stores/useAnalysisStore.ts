@@ -360,12 +360,15 @@ export const useAnalysisStore = create<AnalysisStore>()(
                 turn === 'w'
                   ? (['white', 'black'] as const)
                   : (['black', 'white'] as const);
+              // When mate=0, the side to move is checkmated, so opponent wins
               const advantage: Advantage =
-                scoreValue > 0
-                  ? selfColor
-                  : scoreValue < 0
-                    ? opponentColor
-                    : 'equal';
+                mate === 0
+                  ? opponentColor
+                  : scoreValue > 0
+                    ? selfColor
+                    : scoreValue < 0
+                      ? opponentColor
+                      : 'equal';
 
               const pvMatch = message.match(/ pv ([^$]*)/);
               const pvMoves = pvMatch ? pvMatch[1].trim().split(' ') : [];

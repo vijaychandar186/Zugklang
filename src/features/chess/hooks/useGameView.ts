@@ -7,6 +7,7 @@ import {
 
 export function useGameView() {
   const gameId = useChessStore((s) => s.gameId);
+  const gameType = useChessStore((s) => s.gameType);
   const gameStarted = useChessStore((s) => s.gameStarted);
   const stockfishLevel = useChessStore((s) => s.stockfishLevel);
   const playAs = useChessStore((s) => s.playAs);
@@ -16,6 +17,8 @@ export function useGameView() {
   const whiteTime = useChessStore((s) => s.whiteTime);
   const blackTime = useChessStore((s) => s.blackTime);
   const activeTimer = useChessStore((s) => s.activeTimer);
+
+  const isLocalGame = gameType === 'local';
 
   const hasTimer = timeControl.mode !== 'unlimited';
 
@@ -35,8 +38,9 @@ export function useGameView() {
     boardOrientation === 'white' ? 'black' : 'white';
   const bottomColor: 'white' | 'black' = boardOrientation;
 
-  const isTopStockfish = topColor !== playAs;
-  const isBottomStockfish = bottomColor !== playAs;
+  // In local games, neither player is Stockfish
+  const isTopStockfish = isLocalGame ? false : topColor !== playAs;
+  const isBottomStockfish = isLocalGame ? false : bottomColor !== playAs;
 
   const topCaptured = topColor === 'white' ? captured.white : captured.black;
   const topAdvantage =
@@ -54,6 +58,8 @@ export function useGameView() {
 
   return {
     gameId,
+    gameType,
+    isLocalGame,
     gameStarted,
     stockfishLevel,
     topColor,

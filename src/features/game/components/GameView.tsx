@@ -19,14 +19,22 @@ import {
   useAnalysisActions
 } from '@/features/chess/stores/useAnalysisStore';
 
+import { GameType } from '@/features/chess/stores/useChessStore';
+
 interface GameViewProps {
   serverOrientation?: 'white' | 'black';
   mode?: ChessMode;
+  gameType?: GameType;
 }
 
-export function GameView({ serverOrientation, mode = 'play' }: GameViewProps) {
+export function GameView({
+  serverOrientation,
+  mode = 'play',
+  gameType: initialGameType = 'computer'
+}: GameViewProps) {
   const {
     gameId,
+    isLocalGame,
     stockfishLevel,
     topColor,
     bottomColor,
@@ -44,15 +52,29 @@ export function GameView({ serverOrientation, mode = 'play' }: GameViewProps) {
     currentFEN
   } = useGameView();
 
+  const getPlayerName = (color: 'white' | 'black', isStockfish: boolean) => {
+    if (isLocalGame) {
+      return color === 'white' ? 'White' : 'Black';
+    }
+    return isStockfish ? 'Stockfish' : 'Player';
+  };
+
   const setMode = useChessStore((s) => s.setMode);
   const { isAnalysisOn } = useAnalysisState();
   const { initializeEngine, setPosition, cleanup } = useAnalysisActions();
 
   const isPlayMode = mode === 'play';
 
+  const setGameType = useChessStore((s) => s.setGameType);
+
   useEffect(() => {
     setMode(mode);
   }, [mode, setMode]);
+
+  // Set the game type when mounting - this ensures the correct dialog shows
+  useEffect(() => {
+    setGameType(initialGameType);
+  }, [initialGameType, setGameType]);
 
   useGameTimer();
 
@@ -74,7 +96,7 @@ export function GameView({ serverOrientation, mode = 'play' }: GameViewProps) {
           {isPlayMode && (
             <div className='flex items-center gap-3'>
               <PlayerInfo
-                name={isTopStockfish ? 'Stockfish' : 'Player'}
+                name={getPlayerName(topColor, isTopStockfish)}
                 subtitle={
                   isTopStockfish ? `Level ${stockfishLevel}` : undefined
                 }
@@ -102,7 +124,7 @@ export function GameView({ serverOrientation, mode = 'play' }: GameViewProps) {
           {isPlayMode && (
             <div className='flex items-center gap-3'>
               <PlayerInfo
-                name={isBottomStockfish ? 'Stockfish' : 'Player'}
+                name={getPlayerName(bottomColor, isBottomStockfish)}
                 subtitle={
                   isBottomStockfish ? `Level ${stockfishLevel}` : undefined
                 }

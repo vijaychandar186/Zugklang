@@ -41,6 +41,7 @@ import { NavigationControls } from './sidebar/NavigationControls';
 import { GameOverPanel } from './sidebar/GameOverPanel';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 import { GameSelectionDialog } from './GameSelectionDialog';
+import { LocalGameSelectionDialog } from './LocalGameSelectionDialog';
 import { PGNImportDialog } from './sidebar/PGNImportDialog';
 import {
   useChessState,
@@ -65,12 +66,16 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     gameOver,
     gameResult,
     gameStarted,
+    gameType,
     playAs,
     playingAgainstStockfish,
     boardOrientation,
     soundEnabled,
     hasHydrated
   } = useChessState();
+
+  // gameType is set by GameView on mount, so we can use it directly
+  const isLocalGame = gameType === 'local';
 
   const {
     goToStart,
@@ -175,23 +180,41 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
   const formatPGN = () => {
     const date = new Date();
     const dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-    const result = gameOver
-      ? gameResult?.includes('win')
-        ? playAs === 'white'
-          ? '1-0'
-          : '0-1'
-        : gameResult?.includes('resigned')
-          ? playAs === 'white'
-            ? '0-1'
-            : '1-0'
-          : '1/2-1/2'
-      : '*';
+
+    let result = '*';
+    if (gameOver) {
+      if (gameResult?.includes('White wins')) {
+        result = '1-0';
+      } else if (gameResult?.includes('Black wins')) {
+        result = '0-1';
+      } else if (gameResult?.includes('You win')) {
+        result = playAs === 'white' ? '1-0' : '0-1';
+      } else if (
+        gameResult?.includes('Stockfish wins') ||
+        gameResult?.includes('resigned')
+      ) {
+        result = playAs === 'white' ? '0-1' : '1-0';
+      } else {
+        result = '1/2-1/2';
+      }
+    }
+
+    const whiteName = isLocalGame
+      ? 'White'
+      : playAs === 'white'
+        ? 'Player'
+        : 'Stockfish';
+    const blackName = isLocalGame
+      ? 'Black'
+      : playAs === 'black'
+        ? 'Player'
+        : 'Stockfish';
 
     const headers = [
       '[Site "Zugklang"]',
       `[Date "${dateStr}"]`,
-      `[White "${playAs === 'white' ? 'Player' : 'Stockfish'}"]`,
-      `[Black "${playAs === 'black' ? 'Player' : 'Stockfish'}"]`,
+      `[White "${whiteName}"]`,
+      `[Black "${blackName}"]`,
       `[Result "${result}"]`
     ].join('\n');
 
@@ -523,7 +546,14 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
       </div>
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-      <GameSelectionDialog open={newGameOpen} onOpenChange={setNewGameOpen} />
+      {isLocalGame ? (
+        <LocalGameSelectionDialog
+          open={newGameOpen}
+          onOpenChange={setNewGameOpen}
+        />
+      ) : (
+        <GameSelectionDialog open={newGameOpen} onOpenChange={setNewGameOpen} />
+      )}
     </>
   );
 }

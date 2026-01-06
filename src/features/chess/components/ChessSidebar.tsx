@@ -423,7 +423,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
           </div>
         </div>
 
-        <ScrollArea className='min-h-[120px] flex-1 lg:h-0 lg:min-h-0 lg:flex-grow'>
+        <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
           <div className='px-4 py-2'>
             <MoveHistory
               moves={moves}

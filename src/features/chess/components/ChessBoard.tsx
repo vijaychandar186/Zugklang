@@ -264,6 +264,7 @@ export function ChessBoard({
     }
   }, [
     game,
+    currentFEN, // Needed to trigger effect on each move since game object is mutated in place
     isPlayMode,
     isLocalGame,
     playAs,

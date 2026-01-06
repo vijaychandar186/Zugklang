@@ -50,6 +50,8 @@ import {
   Users,
   Microscope,
   Menu,
+  Maximize2,
+  Minimize2,
   type LucideIcon
 } from 'lucide-react';
 
@@ -105,6 +107,9 @@ export const Icons = {
 
   volumeOn: Volume2,
   volumeOff: VolumeX,
+
+  fullscreen: Maximize2,
+  exitFullscreen: Minimize2,
 
   arrowUpRight: ArrowUpRight,
   arrowRight: ArrowRight,

@@ -10,14 +10,16 @@ export default function NotFound() {
     <div className='absolute inset-0 flex items-center justify-center'>
       <div className='flex max-w-xl flex-col items-center justify-center text-center'>
         <span className='from-foreground bg-linear-to-b to-transparent bg-clip-text text-[7rem] leading-none font-extrabold text-transparent'>
-          ♚ Checkmate
+          ♚
         </span>
 
-        <h2 className='mt-4 text-2xl font-bold tracking-tight'>Illegal Move</h2>
+        <h2 className='mt-4 text-2xl font-bold tracking-tight'>
+          Illegal Move — Page Not Found
+        </h2>
 
         <p className='text-muted-foreground mt-2 max-w-md'>
-          This square doesn’t exist on the board. The position you’re looking
-          for is lost or has been moved.
+          The URL you entered doesn’t point to a valid square on this board. The
+          page may have been moved, renamed, or never existed.
         </p>
 
         <div className='mt-8 flex justify-center gap-3'>
@@ -26,7 +28,7 @@ export default function NotFound() {
           </Button>
 
           <Button onClick={() => router.push('/')} variant='ghost' size='lg'>
-            Home
+            Return Home
           </Button>
         </div>
       </div>

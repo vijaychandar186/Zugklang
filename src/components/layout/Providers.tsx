@@ -81,7 +81,7 @@ export function Providers({
       />
       <ThemeCookieSync />
       <BoardSchemeSync />
-      <Toaster position='top-center' richColors />
+      <Toaster position='bottom-right' richColors duration={2000} />
       {children}
     </ThemeProvider>
   );

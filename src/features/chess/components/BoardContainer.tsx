@@ -27,7 +27,9 @@ export function BoardContainer({
       >
         {shouldShowEval && <EvaluationBar />}
       </div>
-      <div className='shrink-0'>{children}</div>
+      <div className='shrink-0' data-board-container>
+        {children}
+      </div>
     </div>
   );
 }

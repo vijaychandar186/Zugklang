@@ -1,16 +1,45 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import { Chess, Square, Move } from 'chess.js';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import { COOKIE_CONFIG } from '@/features/chess/config/board';
 import { TimeControl } from '@/features/game/types/rules';
+import {
+  createMultiModeStorage,
+  saveToModeStorage,
+  loadFromModeStorage
+} from './gameStorage';
 
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
 const PLAY_AS_COOKIE = 'playAs';
+
+// Play modes handled by this store (add new modes here)
+type PlayMode = 'computer' | 'local';
+
+type PersistedPlayState = {
+  mode: ChessMode;
+  gameType: PlayMode;
+  moves: string[];
+  positionHistory: string[];
+  viewingIndex: number;
+  currentFEN: string;
+  playAs: 'white' | 'black';
+  stockfishLevel: number;
+  gameStarted: boolean;
+  gameOver: boolean;
+  gameResult: string | null;
+  timeControl: TimeControl;
+  whiteTime: number | null;
+  blackTime: number | null;
+  activeTimer: 'white' | 'black' | null;
+  lastActiveTimestamp: number | null;
+  boardOrientation: 'white' | 'black';
+  autoFlipBoard: boolean;
+};
 
 export type ChessMode = 'play' | 'analysis';
 export type GameType = 'computer' | 'local';
@@ -380,7 +409,97 @@ export const useChessStore = create<ChessStore>()(
         });
       },
 
-      setGameType: (gameType) => set({ gameType }),
+      setGameType: (newGameType) => {
+        const state = get();
+        const oldGameType = state.gameType;
+
+        // If switching game types, save current state to old storage and load from new storage
+        if (oldGameType !== newGameType) {
+          // Save current state to old game type's storage
+          const currentState: PersistedPlayState = {
+            mode: state.mode,
+            gameType: oldGameType,
+            moves: state.moves,
+            positionHistory: state.positionHistory,
+            viewingIndex: state.viewingIndex,
+            currentFEN: state.currentFEN,
+            playAs: state.playAs,
+            stockfishLevel: state.stockfishLevel,
+            gameStarted: state.gameStarted,
+            gameOver: state.gameOver,
+            gameResult: state.gameResult,
+            timeControl: state.timeControl,
+            whiteTime: state.whiteTime,
+            blackTime: state.blackTime,
+            activeTimer: state.activeTimer,
+            lastActiveTimestamp: state.lastActiveTimestamp,
+            boardOrientation: state.boardOrientation,
+            autoFlipBoard: state.autoFlipBoard
+          };
+          saveToModeStorage(oldGameType, currentState);
+
+          // Load state from new game type's storage
+          const savedState =
+            loadFromModeStorage<PersistedPlayState>(newGameType);
+          if (savedState) {
+            try {
+              const game = new Chess(savedState.currentFEN || STARTING_FEN);
+              set({
+                gameType: newGameType,
+                game,
+                moves: savedState.moves || [],
+                positionHistory: savedState.positionHistory || [STARTING_FEN],
+                viewingIndex: savedState.viewingIndex || 0,
+                currentFEN: savedState.currentFEN || STARTING_FEN,
+                playAs: savedState.playAs || 'white',
+                stockfishLevel: savedState.stockfishLevel || 10,
+                gameStarted: savedState.gameStarted || false,
+                gameOver: savedState.gameOver || false,
+                gameResult: savedState.gameResult || null,
+                timeControl: savedState.timeControl || {
+                  mode: 'unlimited',
+                  minutes: 0,
+                  increment: 0
+                },
+                whiteTime: savedState.whiteTime,
+                blackTime: savedState.blackTime,
+                activeTimer: savedState.activeTimer,
+                lastActiveTimestamp: savedState.lastActiveTimestamp,
+                boardOrientation: savedState.boardOrientation || 'white',
+                autoFlipBoard: savedState.autoFlipBoard || false
+              });
+            } catch {
+              // If loading fails, reset to fresh state
+              set({
+                gameType: newGameType,
+                game: new Chess(),
+                moves: [],
+                positionHistory: [STARTING_FEN],
+                viewingIndex: 0,
+                currentFEN: STARTING_FEN,
+                gameStarted: false,
+                gameOver: false,
+                gameResult: null
+              });
+            }
+          } else {
+            // No saved state for this game type, reset to fresh state
+            set({
+              gameType: newGameType,
+              game: new Chess(),
+              moves: [],
+              positionHistory: [STARTING_FEN],
+              viewingIndex: 0,
+              currentFEN: STARTING_FEN,
+              gameStarted: false,
+              gameOver: false,
+              gameResult: null
+            });
+          }
+        } else {
+          set({ gameType: newGameType });
+        }
+      },
       setAutoFlipBoard: (enabled) => set({ autoFlipBoard: enabled }),
 
       resetGame: () => {
@@ -546,8 +665,11 @@ export const useChessStore = create<ChessStore>()(
       }
     }),
     {
-      name: 'zugklang-chess-storage',
-      storage: createJSONStorage(() => localStorage),
+      name: 'zugklang-play-storage',
+      storage: createMultiModeStorage(
+        (state) => (state as { gameType?: PlayMode })?.gameType,
+        'computer' // default mode
+      ),
       partialize: (state) => ({
         mode: state.mode,
         gameType: state.gameType,

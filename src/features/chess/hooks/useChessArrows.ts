@@ -7,7 +7,9 @@ type UseChessArrowsProps = {
   uciLines: string[][];
   showBestMoveArrow: boolean;
   showThreatArrow: boolean;
-  isPlayerTurn: boolean;
+  playerColor: 'w' | 'b';
+  gameTurn: 'w' | 'b';
+  analysisTurn: 'w' | 'b';
 };
 
 export function useChessArrows({
@@ -15,14 +17,21 @@ export function useChessArrows({
   uciLines,
   showBestMoveArrow,
   showThreatArrow,
-  isPlayerTurn
+  playerColor,
+  gameTurn,
+  analysisTurn
 }: UseChessArrowsProps): ChessArrow[] {
   return useMemo(() => {
     if (!isAnalysisOn || !uciLines[0]) return [];
 
+    // Only show arrows when analysis data matches the current game position
+    // This prevents showing stale analysis from a previous position
+    if (analysisTurn !== gameTurn) return [];
+
+    const isPlayerTurn = gameTurn === playerColor;
     const uniqueArrows = new Map<string, ChessArrow>();
 
-    // Best move arrow: Show player's best move when it's player's turn
+    // Best move arrow: Show current side's best move when it's player's turn
     if (showBestMoveArrow && isPlayerTurn) {
       uciLines.forEach((line) => {
         if (line.length > 0) {
@@ -39,7 +48,9 @@ export function useChessArrows({
       });
     }
 
-    // Threat arrow: Show opponent's best move when it's opponent's turn
+    // Threat arrow: Show opponent's best response when it's their turn
+    // The engine analyzes from the perspective of whoever's turn it is,
+    // so when it's opponent's turn, the engine shows opponent's best moves
     if (showThreatArrow && !isPlayerTurn) {
       uciLines.forEach((line) => {
         if (line.length > 0) {
@@ -64,6 +75,8 @@ export function useChessArrows({
     uciLines,
     showBestMoveArrow,
     showThreatArrow,
-    isPlayerTurn
+    playerColor,
+    gameTurn,
+    analysisTurn
   ]);
 }

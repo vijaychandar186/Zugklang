@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
+import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { MoveHistory } from '@/features/chess/components/sidebar/MoveHistory';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
 import { AnalysisLines } from '@/features/analysis/components/AnalysisLines';
@@ -335,7 +336,15 @@ export function AnalysisView() {
   return (
     <div className='flex min-h-screen flex-col gap-4 px-4 py-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
       {/* Board area */}
-      <div className='flex items-center gap-2'>
+      <div className='flex flex-col items-center gap-2'>
+        {/* Top player */}
+        <div className='flex w-full items-center py-2'>
+          <PlayerInfo
+            name={boardOrientation === 'white' ? 'Black' : 'White'}
+            isStockfish={false}
+          />
+        </div>
+
         {/* Board */}
         <BoardContainer showEvaluation={!isEditorMode}>
           {isEditorMode ? (
@@ -354,6 +363,14 @@ export function AnalysisView() {
             />
           )}
         </BoardContainer>
+
+        {/* Bottom player */}
+        <div className='flex w-full items-center py-2'>
+          <PlayerInfo
+            name={boardOrientation === 'white' ? 'White' : 'Black'}
+            isStockfish={false}
+          />
+        </div>
       </div>
 
       {/* Sidebar - same whether in editor mode or not */}

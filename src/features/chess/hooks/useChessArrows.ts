@@ -48,13 +48,13 @@ export function useChessArrows({
       });
     }
 
-    // Threat arrow: Show opponent's best response when it's their turn
-    // The engine analyzes from the perspective of whoever's turn it is,
-    // so when it's opponent's turn, the engine shows opponent's best moves
-    if (showThreatArrow && !isPlayerTurn) {
+    // Threat arrow: Show opponent's planned response when it's player's turn
+    // The engine's PV shows: [0] = your best move, [1] = opponent's response
+    // We show line[1] as the "threat" - what opponent will play after your move
+    if (showThreatArrow && isPlayerTurn) {
       uciLines.forEach((line) => {
-        if (line.length > 0) {
-          const uci = line[0];
+        if (line.length > 1) {
+          const uci = line[1]; // Opponent's response move
           const from = uci.slice(0, 2);
           const to = uci.slice(2, 4);
           const key = `${from}-${to}`;

@@ -20,7 +20,9 @@ export function BoardContainer({
   const shouldShowEval = showEvaluation && isAnalysisOn;
 
   return (
-    <div className={`flex items-start justify-center gap-2 ${className ?? ''}`}>
+    <div
+      className={`flex items-start justify-center gap-0 sm:gap-2 ${className ?? ''}`}
+    >
       {/* Desktop: always reserve space. Mobile: only show when analysis is on */}
       <div
         className={`shrink-0 ${shouldShowEval ? 'w-7' : 'hidden w-0 sm:block sm:w-7'}`}

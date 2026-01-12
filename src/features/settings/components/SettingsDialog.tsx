@@ -44,10 +44,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             onThemeChange={handleBoardThemeChange}
           />
           <SoundToggle enabled={soundEnabled} onToggle={setSoundEnabled} />
-          <FullscreenToggle
-            enabled={fullscreenEnabled}
-            onToggle={setFullscreenEnabled}
-          />
+          <div className='hidden sm:block'>
+            <FullscreenToggle
+              enabled={fullscreenEnabled}
+              onToggle={setFullscreenEnabled}
+            />
+          </div>
           <AppearanceSelector theme={theme} onThemeChange={setTheme} />
         </div>
       </DialogContent>

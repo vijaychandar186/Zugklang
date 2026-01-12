@@ -113,7 +113,7 @@ export function UnifiedChessBoard({
   );
 
   return (
-    <div className='w-[calc(100vw-5rem)] max-w-[380px] sm:w-[400px] sm:max-w-none lg:w-[560px]'>
+    <div className='w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]'>
       <Chessboard options={options} />
     </div>
   );

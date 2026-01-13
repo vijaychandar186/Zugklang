@@ -1,3 +1,11 @@
+// Use WebAssembly version if available for better performance
+const getStockfishPath = () => {
+  const supportsWasm = typeof WebAssembly === 'object';
+  return supportsWasm
+    ? '/stockfish/stockfish.wasm.js'
+    : '/stockfish/stockfish.js';
+};
+
 export class StockfishEngine {
   private worker: Worker | null = null;
   private currentHandler: ((e: MessageEvent) => void) | null = null;
@@ -22,7 +30,7 @@ export class StockfishEngine {
 
     if (typeof Worker !== 'undefined') {
       try {
-        this.worker = new Worker('/stockfish.js');
+        this.worker = new Worker(getStockfishPath());
         this.worker.onerror = (e) => {
           console.error('Stockfish Worker Error:', e);
         };

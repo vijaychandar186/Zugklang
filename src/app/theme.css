@@ -39,6 +39,18 @@
   --arrow-brilliant: oklch(0.85 0.2 85);
   --arrow-info: oklch(0.6 0 0);
 
+  /* Move classification colors */
+  --classification-brilliant: oklch(0.65 0.15 185);
+  --classification-great: oklch(0.6 0.12 240);
+  --classification-best: oklch(0.7 0.18 130);
+  --classification-excellent: oklch(0.7 0.18 130);
+  --classification-good: oklch(0.65 0.1 140);
+  --classification-inaccuracy: oklch(0.8 0.18 85);
+  --classification-mistake: oklch(0.7 0.2 55);
+  --classification-blunder: oklch(0.55 0.25 25);
+  --classification-forced: oklch(0.65 0.1 140);
+  --classification-book: oklch(0.6 0.1 55);
+
   /* Drop highlight */
   --highlight-drop: oklch(0.97 0.21 110 / 50%);
 

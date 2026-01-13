@@ -4,6 +4,14 @@ import { useShallow } from 'zustand/shallow';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import { ANALYSIS_DEFAULTS } from '@/features/analysis/config/defaults';
 
+// Use WebAssembly version if available for better performance
+const getStockfishPath = () => {
+  const supportsWasm = typeof WebAssembly === 'object';
+  return supportsWasm
+    ? '/stockfish/stockfish.wasm.js'
+    : '/stockfish/stockfish.js';
+};
+
 export type Advantage = 'white' | 'black' | 'equal';
 
 export type AnalysisLine = {
@@ -148,7 +156,7 @@ export const useAnalysisStore = create<AnalysisStore>()(
         }
 
         try {
-          const worker = new Worker('/stockfish.js');
+          const worker = new Worker(getStockfishPath());
 
           worker.onerror = (e) => {
             console.error('Stockfish Worker Error:', e);

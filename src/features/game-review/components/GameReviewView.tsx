@@ -31,7 +31,7 @@ import { toast } from 'sonner';
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
-import { MoveHistory } from '@/features/chess/components/sidebar/MoveHistory';
+import { ReviewMoveHistory } from './ReviewMoveHistory';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 
@@ -89,12 +89,6 @@ export function GameReviewView() {
     useCurrentPositionData();
 
   const theme = useBoardTheme();
-
-  // Build moves list from report positions
-  const moves = useMemo(() => {
-    if (!report) return [];
-    return report.positions.slice(1).map((p) => p.move?.san || '');
-  }, [report]);
 
   const totalPositions = report?.positions.length || 1;
   const canGoBack = currentMoveIndex > 0;
@@ -164,6 +158,7 @@ export function GameReviewView() {
     setReviewDialogOpen(false);
 
     try {
+      // Step 1: Parse the PGN/FEN into positions
       const parseRes = await fetch('/api/game-review/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -177,13 +172,46 @@ export function GameReviewView() {
         return;
       }
 
-      const positions = parseData.positions;
+      let positions = parseData.positions;
       if (!positions || positions.length === 0) {
         setErrorMsg('No positions found');
         setStatus('error');
         return;
       }
 
+      setProgress(10);
+
+      // Step 2: Evaluate positions with Stockfish (THE MISSING STEP!)
+      setStatus('evaluating');
+
+      const { evaluatePositions } = await import('@/lib/evaluation');
+      positions = await evaluatePositions(
+        positions,
+        depth,
+        (current, total, percent, currentPositions) => {
+          // Update progress: 10% to 90% for evaluation
+          const evalProgress = 10 + Math.round(percent * 0.8);
+          setProgress(evalProgress);
+
+          // Update live evaluations for progressive graph display
+          const liveEvals = currentPositions.map((pos) => {
+            const topLine = pos.topLines?.[0];
+            if (topLine?.evaluation) {
+              return {
+                type: topLine.evaluation.type,
+                value: topLine.evaluation.value
+              };
+            }
+            return null;
+          });
+          setLiveEvaluations(liveEvals);
+
+          // Move the yellow indicator to show current position being evaluated
+          goToMove(current);
+        }
+      );
+
+      // Step 3: Generate the analysis report
       setStatus('reporting');
       setProgress(95);
 
@@ -209,7 +237,7 @@ export function GameReviewView() {
       setErrorMsg('An error occurred');
       setStatus('error');
     }
-  }, [pgn, resetReview, setStatus, setProgress, setErrorMsg, setReport]);
+  }, [pgn, depth, resetReview, setStatus, setProgress, setErrorMsg, setReport]);
 
   const copyFEN = () => {
     navigator.clipboard.writeText(currentFen || STARTING_FEN);
@@ -231,8 +259,8 @@ export function GameReviewView() {
     status === 'parsing' || status === 'evaluating' || status === 'reporting';
 
   return (
-    <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-      {/* Board area */}
+    <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-4 lg:overflow-hidden lg:px-6'>
+      {/* Board area - Center */}
       <div className='flex flex-col items-center gap-2'>
         {/* Top player */}
         <div className='flex w-full items-center py-2'>
@@ -264,13 +292,29 @@ export function GameReviewView() {
         </div>
       </div>
 
-      {/* Sidebar */}
+      {/* Primary Sidebar - Move History, Controls & Evaluation Graph */}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {/* Evaluation graph when review is complete */}
-        {report && (
+        {/* Evaluation graph - show during evaluation or when complete */}
+        {(report ||
+          (status === 'evaluating' && liveEvaluations.length > 0)) && (
           <div className='bg-card shrink-0 rounded-lg border p-3'>
             <EvaluationGraph
-              positions={report.positions}
+              positions={
+                report?.positions ||
+                liveEvaluations.map((evaluation, i) => ({
+                  fen: '',
+                  topLines: evaluation
+                    ? [
+                        {
+                          id: 1,
+                          depth: 0,
+                          evaluation: evaluation,
+                          moveUCI: ''
+                        }
+                      ]
+                    : []
+                }))
+              }
               currentMoveIndex={currentMoveIndex}
               onMoveClick={goToMove}
             />
@@ -355,12 +399,12 @@ export function GameReviewView() {
             </div>
           </div>
 
-          {/* Content: Move history or classification report */}
+          {/* Content: Move history or status */}
           {report ? (
             <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
               <div className='px-4 py-2'>
-                <MoveHistory
-                  moves={moves}
+                <ReviewMoveHistory
+                  positions={report.positions}
                   viewingIndex={currentMoveIndex}
                   onMoveClick={(idx) => goToMove(idx + 1)}
                 />
@@ -484,10 +528,12 @@ export function GameReviewView() {
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Classification breakdown when review is complete */}
-        {report && (
-          <div className='bg-card max-h-[200px] shrink-0 overflow-hidden rounded-lg border'>
+      {/* Secondary Sidebar - Review Report Only */}
+      {report && (
+        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
+          <div className='bg-card flex-1 overflow-hidden rounded-lg border'>
             <ScrollArea className='h-full'>
               <ReviewReport
                 report={report}
@@ -496,8 +542,8 @@ export function GameReviewView() {
               />
             </ScrollArea>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>

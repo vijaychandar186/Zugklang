@@ -1,0 +1,43 @@
+body {
+  margin: 0;
+  background-color: var(--primary-color);
+  overflow-x: hidden;
+}
+
+.white {
+  color: white;
+}
+
+@media (min-width: 1000px) and (min-height: 860px) {
+  #review-container {
+    display: grid;
+
+    grid-template-columns: 68vw 28vw;
+    grid-template-rows: 90vh;
+  }
+
+  #review-panel {
+    margin: 20px;
+  }
+}
+
+@media (max-width: 999px), (max-height: 860px) {
+  #review-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  #review-panel {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #secondary-message {
+    width: 60%;
+  }
+
+  #review-panel-toolbar {
+    padding: 10px;
+  }
+}

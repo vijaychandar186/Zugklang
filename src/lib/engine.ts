@@ -138,7 +138,15 @@ export class StockfishEngine {
     }
   }
 
-  private sendCommand(command: string) {
+  sendCommand(command: string) {
     this.worker?.postMessage(command);
+  }
+
+  addEventListener(type: 'message', listener: (e: MessageEvent) => void) {
+    this.worker?.addEventListener(type, listener);
+  }
+
+  removeEventListener(type: 'message', listener: (e: MessageEvent) => void) {
+    this.worker?.removeEventListener(type, listener);
   }
 }

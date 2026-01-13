@@ -43,13 +43,17 @@ export function ReviewReport({
         <div className='flex justify-around'>
           <div className='text-center'>
             <div className='text-3xl font-bold'>
-              {report.accuracies.white.toFixed(1)}%
+              {report.accuracies.white != null
+                ? `${report.accuracies.white.toFixed(1)}%`
+                : '-'}
             </div>
             <div className='text-muted-foreground text-sm'>White</div>
           </div>
           <div className='text-center'>
             <div className='text-3xl font-bold'>
-              {report.accuracies.black.toFixed(1)}%
+              {report.accuracies.black != null
+                ? `${report.accuracies.black.toFixed(1)}%`
+                : '-'}
             </div>
             <div className='text-muted-foreground text-sm'>Black</div>
           </div>

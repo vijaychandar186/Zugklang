@@ -1,5 +1,6 @@
 import { Chess, Square } from 'chess.js';
 import type { Position, EvaluatedPosition } from '@/lib/types/Position';
+import openingsData from '@/resources/openings.json';
 
 export enum Classification {
   BRILLIANT = 'brilliant',
@@ -439,6 +440,27 @@ async function analyse(positions: Position[]): Promise<Report> {
     }
 
     position.classification = position.classification ?? Classification.BOOK;
+  }
+
+  // Generate opening names for named positions
+  for (const position of positions) {
+    const opening = openingsData.find((o: { name: string; fen: string }) =>
+      position.fen.includes(o.fen)
+    );
+    position.opening = opening?.name;
+  }
+
+  // Apply book moves for named positions
+  const positiveClassifs = ['excellent', 'good', 'best', 'great'];
+  for (const position of positions.slice(1)) {
+    if (
+      position.opening ||
+      positiveClassifs.includes(position.classification!)
+    ) {
+      position.classification = Classification.BOOK;
+    } else {
+      break;
+    }
   }
 
   // Generate SAN moves from engine lines

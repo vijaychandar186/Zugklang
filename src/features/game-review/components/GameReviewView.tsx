@@ -37,10 +37,7 @@ import { EvaluationBarConnected } from '@/features/analysis/components/Evaluatio
 
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
-import {
-  MOVE_DELAY,
-  ANIMATION_CONFIG
-} from '@/features/chess/config/animation';
+import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ARROW_COLORS } from '@/features/chess/config/colors';
 import type { ChessArrow } from '@/features/chess/types/visualization';
 
@@ -201,7 +198,7 @@ export function GameReviewView() {
         } else {
           setIsPlaying(false);
         }
-      }, MOVE_DELAY);
+      }, 500);
     }
     return () => clearInterval(interval);
   }, [isPlaying, currentMoveIndex, report, navigate]);
@@ -215,8 +212,12 @@ export function GameReviewView() {
       const toSquare = uci.slice(2, 4);
       const color = CLASSIFICATION_COLORS[classification || 'book'];
 
-      styles[fromSquare] = { backgroundColor: color, opacity: 0.7 };
-      styles[toSquare] = { backgroundColor: color, opacity: 0.7 };
+      styles[fromSquare] = {
+        backgroundColor: `color-mix(in srgb, ${color}, transparent 30%)`
+      };
+      styles[toSquare] = {
+        backgroundColor: `color-mix(in srgb, ${color}, transparent 30%)`
+      };
     }
     return styles;
   }, [position, currentMoveIndex, classification]);
@@ -450,14 +451,14 @@ export function GameReviewView() {
               arrows={combinedArrows}
               animationDuration={ANIMATION_CONFIG.durationMs}
             />
-            {/* Classification icon overlay - always mounted for smooth transitions */}
             {classificationIcon.icon && (
               <Image
+                key={currentMoveIndex}
                 src={classificationIcon.icon}
                 alt={classification || ''}
                 width={28}
                 height={28}
-                className='pointer-events-none absolute z-50 transition-all duration-200'
+                className='pointer-events-none absolute z-50'
                 style={{
                   left: classificationIcon.left,
                   top: classificationIcon.top,

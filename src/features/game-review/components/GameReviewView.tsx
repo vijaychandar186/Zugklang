@@ -33,7 +33,6 @@ import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { ReviewMoveHistory } from './ReviewMoveHistory';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
-import { EvaluationBar } from '@/features/analysis/components/EvaluationBar';
 import { EvaluationBarConnected } from '@/features/analysis/components/EvaluationBarConnected';
 
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
@@ -187,26 +186,6 @@ export function GameReviewView() {
     }
     return storedPositionArrows;
   }, [isAnalysisOn, analysisArrows, storedPositionArrows]);
-
-  // Position-based evaluation for the review (from stored data, not live analysis)
-  // Use .find() to get line with id=1 (like reference implementation) instead of [0]
-  const positionEvaluation = useMemo(() => {
-    const topLine = position?.topLines?.find((l) => l.id === 1);
-    // Default to 0 (equal position) like the reference implementation
-    const eval_ = topLine?.evaluation ?? { type: 'cp' as const, value: 0 };
-    const cp = eval_.type === 'cp' ? eval_.value : null;
-    const mate = eval_.type === 'mate' ? eval_.value : null;
-
-    let advantage: 'white' | 'black' | 'equal' = 'equal';
-    if (cp !== null) {
-      if (cp > 30) advantage = 'white';
-      else if (cp < -30) advantage = 'black';
-    } else if (mate !== null) {
-      advantage = mate > 0 ? 'white' : mate < 0 ? 'black' : 'equal';
-    }
-
-    return { advantage, cp, mate };
-  }, [position]);
 
   const totalPositions = report?.positions.length || 1;
   const canGoBack = currentMoveIndex > 0;
@@ -646,11 +625,6 @@ export function GameReviewView() {
                   />
                 </div>
               </div>
-
-              {/* optional error message area kept (will show when status==='error') */}
-              {status === 'error' && (
-                <p className='text-destructive mt-2 text-sm'>{errorMsg}</p>
-              )}
             </div>
           ) : (
             <div className='flex min-h-[180px] flex-1 flex-col items-center justify-center gap-4 p-4 text-center'>

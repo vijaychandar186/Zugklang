@@ -52,6 +52,11 @@ import {
   Menu,
   Maximize2,
   Minimize2,
+  Loader2,
+  Zap,
+  Rabbit,
+  Turtle,
+  FlipVertical,
   type LucideIcon
 } from 'lucide-react';
 
@@ -117,7 +122,12 @@ export const Icons = {
   users: Users,
   microscope: Microscope,
   menu: Menu,
-  crown: Crown
+  crown: Crown,
+  spinner: Loader2,
+  zap: Zap,
+  rabbit: Rabbit,
+  turtle: Turtle,
+  flipVertical: FlipVertical
 } as const;
 
 export type { LucideIcon };

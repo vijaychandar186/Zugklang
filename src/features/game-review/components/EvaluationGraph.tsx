@@ -1,142 +1,231 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
+import { Card } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 import type { Position, LiveEvaluation } from '@/features/game-review/types';
+import {
+  CLASSIFICATION_COLORS,
+  CLASSIFICATION_ICONS
+} from '@/features/game-review/types';
 
-type EvaluationGraphProps = {
-  positions?: Position[];
-  liveEvaluations?: (LiveEvaluation | null)[];
-  currentMoveIndex: number;
-  onMoveClick?: (index: number) => void;
+/* ---------------- utilities ---------------- */
+
+const clamp = (v: number, min = 0, max = 100) =>
+  Math.min(max, Math.max(min, v));
+
+const getControlPoint = (
+  current: number[],
+  prev: number[] | undefined,
+  next: number[] | undefined,
+  reverse = false
+) => {
+  const smoothing = 0.15; // reduced to prevent overshoot
+  const p = prev ?? current;
+  const n = next ?? current;
+
+  return [
+    current[0] + (n[0] - p[0]) * smoothing * (reverse ? -1 : 1),
+    current[1] + (n[1] - p[1]) * smoothing * (reverse ? -1 : 1)
+  ];
 };
+
+const getSmoothPath = (points: number[][]) => {
+  if (!points.length) return '';
+
+  let d = `M ${points[0][0]},${points[0][1]}`;
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const cp1 = getControlPoint(points[i], points[i - 1], points[i + 1]);
+    const cp2 = getControlPoint(points[i + 1], points[i], points[i + 2], true);
+
+    d += ` C ${cp1[0]},${cp1[1]} ${cp2[0]},${cp2[1]} ${points[i + 1][0]},${points[i + 1][1]}`;
+  }
+
+  return d;
+};
+
+/* ---------------- component ---------------- */
 
 export function EvaluationGraph({
   positions,
   liveEvaluations,
   currentMoveIndex,
   onMoveClick
-}: EvaluationGraphProps) {
-  const graphData = useMemo(() => {
-    const sourceData = positions || liveEvaluations || [];
-    if (!sourceData.length) return { points: '', fillPoints: '' };
-
-    const total = sourceData.length;
-    const pointsArr: string[] = [];
-
-    sourceData.forEach((item, i) => {
-      let evalItem: { value: number; type: 'cp' | 'mate' } | null | undefined;
-
-      if (positions) {
-        const pos = item as Position;
-        evalItem = pos.topLines?.find((l) => l.id === 1)?.evaluation;
-      } else {
-        evalItem = item as LiveEvaluation | null;
-      }
-
-      if (!evalItem) return;
-
-      const x = (i / Math.max(total - 1, 1)) * 100;
-      let y = 50;
-
-      if (evalItem.type === 'cp') {
-        y = 50 - Math.max(-45, Math.min(45, evalItem.value / 10));
-      } else {
-        y = evalItem.value > 0 ? 5 : evalItem.value < 0 ? 95 : 50;
-      }
-
-      pointsArr.push(`${x},${y}`);
-    });
-
-    if (pointsArr.length === 0) return { points: '', fillPoints: '' };
-
-    const firstX = pointsArr[0].split(',')[0];
-    const lastX = pointsArr[pointsArr.length - 1].split(',')[0];
-
-    return {
-      points: pointsArr.join(' '),
-      fillPoints: `${firstX},100 ${pointsArr.join(' ')} ${lastX},100`
-    };
-  }, [positions, liveEvaluations]);
+}: {
+  positions?: Position[];
+  liveEvaluations?: (LiveEvaluation | null)[];
+  currentMoveIndex: number;
+  onMoveClick?: (index: number) => void;
+}) {
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   const totalMoves = positions?.length || liveEvaluations?.length || 0;
 
-  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!onMoveClick || totalMoves === 0) return;
-    const rect = e.currentTarget.getBoundingClientRect();
+  const graph = useMemo(() => {
+    const source = positions || liveEvaluations || [];
+    if (!source.length) return { points: [], d: '', fill: '' };
+
+    const points: number[][] = [];
+
+    source.forEach((item, i) => {
+      const evaluation = positions
+        ? (item as Position).topLines?.[0]?.evaluation
+        : (item as LiveEvaluation | null);
+
+      const x = (i / Math.max(source.length - 1, 1)) * 100;
+      let y = 50;
+
+      if (evaluation?.type === 'cp') {
+        const val = Math.max(-600, Math.min(600, evaluation.value));
+        y = 50 - (val / 600) * 50;
+      } else if (evaluation?.type === 'mate') {
+        y = evaluation.value > 0 ? 0 : 100;
+      }
+
+      points.push([x, clamp(y)]);
+    });
+
+    const d = getSmoothPath(points);
+    const fill = `${d} L 100 100 L 0 100 Z`;
+
+    return { points, d, fill };
+  }, [positions, liveEvaluations]);
+
+  if (!totalMoves) return null;
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const idx = Math.floor((x / rect.width) * totalMoves);
-    const clampedIdx = Math.max(0, Math.min(idx, totalMoves - 1));
-    onMoveClick(clampedIdx);
+    const index = Math.floor((x / rect.width) * totalMoves);
+    setHoverIndex(Math.max(0, Math.min(index, totalMoves - 1)));
   };
 
-  if (totalMoves === 0) return null;
+  const hovered = hoverIndex !== null && positions?.[hoverIndex];
 
   return (
-    <div
-      className='relative h-20 cursor-pointer overflow-hidden rounded-md border'
-      onClick={handleClick}
+    <Card
+      ref={ref}
+      className='relative h-24 w-full cursor-crosshair overflow-hidden'
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => setHoverIndex(null)}
+      onClick={() => hoverIndex !== null && onMoveClick?.(hoverIndex)}
     >
-      {/* Background split */}
-      <div className='absolute inset-0 flex flex-col'>
-        <div
-          className='flex-1'
-          style={{ backgroundColor: 'var(--eval-black)' }}
-        />
-        <div
-          className='flex-1'
-          style={{ backgroundColor: 'var(--eval-white)' }}
-        />
+      {/* background split */}
+      <div className='absolute inset-0 grid grid-rows-2'>
+        <div className='bg-muted' />
+        <div className='bg-background' />
       </div>
 
-      {/* SVG graph */}
       <svg
         className='absolute inset-0 h-full w-full'
-        viewBox='0 0 100 100'
+        viewBox='-2 -2 104 104'
         preserveAspectRatio='none'
       >
-        {/* Center equality line */}
+        {/* zero line */}
         <line
           x1='0'
           y1='50'
           x2='100'
           y2='50'
-          stroke='currentColor'
-          strokeOpacity='0.1'
-          strokeWidth='0.5'
+          className='stroke-muted-foreground'
           strokeDasharray='2 2'
           vectorEffect='non-scaling-stroke'
         />
 
-        {/* Filled area */}
-        {graphData.fillPoints && (
-          <polygon
-            fill='var(--eval-white)'
-            fillOpacity='1'
-            points={graphData.fillPoints}
-          />
-        )}
+        {/* fill */}
+        <path
+          d={graph.fill}
+          className='fill-background/70'
+          vectorEffect='non-scaling-stroke'
+        />
 
-        {/* Line on top */}
-        {graphData.points && (
-          <polyline
-            fill='none'
-            stroke='hsl(var(--primary))'
-            strokeWidth='1.5'
-            vectorEffect='non-scaling-stroke'
-            points={graphData.points}
-          />
+        {/* line */}
+        <path
+          d={graph.d}
+          fill='none'
+          className='stroke-foreground'
+          strokeWidth='1'
+          vectorEffect='non-scaling-stroke'
+        />
+
+        {/* current move */}
+        <line
+          x1={(currentMoveIndex / Math.max(totalMoves - 1, 1)) * 100}
+          y1='0'
+          x2={(currentMoveIndex / Math.max(totalMoves - 1, 1)) * 100}
+          y2='100'
+          className='stroke-primary'
+          strokeWidth='2'
+          vectorEffect='non-scaling-stroke'
+        />
+
+        {/* hover */}
+        {hoverIndex !== null && graph.points[hoverIndex] && (
+          <>
+            <line
+              x1={(hoverIndex / Math.max(totalMoves - 1, 1)) * 100}
+              y1='0'
+              x2={(hoverIndex / Math.max(totalMoves - 1, 1)) * 100}
+              y2='100'
+              className='stroke-ring'
+              strokeDasharray='4 4'
+              vectorEffect='non-scaling-stroke'
+            />
+            <circle
+              cx={graph.points[hoverIndex][0]}
+              cy={graph.points[hoverIndex][1]}
+              r='3'
+              className='fill-card stroke-border'
+              vectorEffect='non-scaling-stroke'
+            />
+          </>
         )}
       </svg>
 
-      {/* Current position indicator */}
-      {positions && (
-        <div
-          className='pointer-events-none absolute top-0 bottom-0 w-0.5 bg-yellow-400 transition-all'
-          style={{
-            left: `${(currentMoveIndex / Math.max(totalMoves - 1, 1)) * 100}%`
-          }}
-        />
+      {hovered && (
+        <TooltipProvider>
+          <Tooltip open>
+            <TooltipTrigger asChild>
+              <div className='absolute inset-0' />
+            </TooltipTrigger>
+
+            <TooltipContent
+              className='flex items-center gap-2 border text-xs'
+              style={{
+                borderColor: CLASSIFICATION_COLORS[hovered.classification!]
+              }}
+            >
+              {hovered.classification && (
+                <Image
+                  src={CLASSIFICATION_ICONS[hovered.classification]}
+                  alt=''
+                  width={16}
+                  height={16}
+                />
+              )}
+              <div>
+                <div className='font-medium'>
+                  {hovered.topLines?.[0]?.evaluation?.type === 'mate'
+                    ? `M${Math.abs(hovered.topLines[0].evaluation.value)}`
+                    : (
+                        (hovered.topLines?.[0]?.evaluation?.value ?? 0) / 100
+                      ).toFixed(2)}
+                </div>
+                <div className='font-bold'>{hovered.move?.san}</div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
-    </div>
+    </Card>
   );
 }

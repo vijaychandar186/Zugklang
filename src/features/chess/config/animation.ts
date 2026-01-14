@@ -1,5 +1,5 @@
 export const ANIMATION_CONFIG = {
-  durationMs: 300,
+  durationMs: 200,
   bufferMs: 50
 } as const;
 

@@ -17,14 +17,14 @@ export enum Classification {
 
 const classificationValues: Record<string, number> = {
   blunder: 0,
-  mistake: 0.2,
-  inaccuracy: 0.4,
-  good: 0.65,
-  excellent: 0.9,
+  mistake: 0.15,
+  inaccuracy: 0.35,
+  good: 0.55,
+  excellent: 0.85,
   best: 1,
   great: 1,
   brilliant: 1,
-  book: 1,
+  book: 0.9, // Opening theory - slightly less than perfect
   forced: 1
 };
 
@@ -54,34 +54,41 @@ function getEvaluationLossThreshold(
   prevEval: number
 ): number {
   const absPrevEval = Math.abs(prevEval);
-  let threshold = 0;
+
+  // Scaling factor: allow slightly more leeway in winning/losing positions
+  // At eval 0: factor = 1.0, at eval 500: factor = 1.25, at eval 1000: factor = 1.5
+  const scaleFactor = 1 + absPrevEval / 2000;
+
+  // Base thresholds (stricter, chess.com-style)
+  let baseThreshold = 0;
 
   switch (classif) {
     case Classification.BEST:
-      threshold =
-        0.0001 * Math.pow(absPrevEval, 2) + 0.0236 * absPrevEval - 3.7143;
+      // Must match top move or be within 5cp
+      baseThreshold = 5;
       break;
     case Classification.EXCELLENT:
-      threshold =
-        0.0002 * Math.pow(absPrevEval, 2) + 0.1231 * absPrevEval + 27.5455;
+      // Very good move, minor inaccuracy (5-15cp loss)
+      baseThreshold = 15;
       break;
     case Classification.GOOD:
-      threshold =
-        0.0002 * Math.pow(absPrevEval, 2) + 0.2643 * absPrevEval + 60.5455;
+      // Decent move (15-35cp loss)
+      baseThreshold = 35;
       break;
     case Classification.INACCURACY:
-      threshold =
-        0.0002 * Math.pow(absPrevEval, 2) + 0.3624 * absPrevEval + 108.0909;
+      // Noticeable inaccuracy (35-70cp loss)
+      baseThreshold = 70;
       break;
     case Classification.MISTAKE:
-      threshold =
-        0.0003 * Math.pow(absPrevEval, 2) + 0.4027 * absPrevEval + 225.8182;
+      // Significant mistake (70-150cp loss)
+      baseThreshold = 150;
       break;
     default:
-      threshold = Infinity;
+      // BLUNDER: anything worse than 150cp loss
+      return Infinity;
   }
 
-  return Math.max(threshold, 0);
+  return baseThreshold * scaleFactor;
 }
 
 interface InfluencingPiece {
@@ -258,12 +265,16 @@ async function analyse(positions: Position[]): Promise<Report> {
         evaluation.type === 'mate'
       ) {
         if (absoluteEvaluation > 0) {
+          // Finding mate for yourself
           position.classification = Classification.BEST;
-        } else if (absoluteEvaluation >= -2) {
+        } else if (absoluteEvaluation >= -3) {
+          // Allowing mate in 1-3 is a blunder
           position.classification = Classification.BLUNDER;
-        } else if (absoluteEvaluation >= -5) {
+        } else if (absoluteEvaluation >= -8) {
+          // Allowing mate in 4-8 is a mistake
           position.classification = Classification.MISTAKE;
         } else {
+          // Allowing mate in 9+ is still an inaccuracy (it's far off)
           position.classification = Classification.INACCURACY;
         }
       } else if (
@@ -271,14 +282,22 @@ async function analyse(positions: Position[]): Promise<Report> {
         evaluation.type === 'cp'
       ) {
         if (previousAbsoluteEvaluation < 0 && absoluteEvaluation < 0) {
+          // You were getting mated and still losing - escaping mate is good
           position.classification = Classification.BEST;
-        } else if (absoluteEvaluation >= 400) {
-          position.classification = Classification.GOOD;
-        } else if (absoluteEvaluation >= 150) {
+        } else if (previousAbsoluteEvaluation < 0) {
+          // You escaped getting mated and are now better
+          position.classification = Classification.BEST;
+        } else if (absoluteEvaluation >= 600) {
+          // Had mate, still completely winning - inaccuracy at worst
           position.classification = Classification.INACCURACY;
-        } else if (absoluteEvaluation >= -100) {
+        } else if (absoluteEvaluation >= 300) {
+          // Had mate, gave up significant advantage - mistake
           position.classification = Classification.MISTAKE;
+        } else if (absoluteEvaluation >= 0) {
+          // Had mate, now only slightly better or equal - blunder
+          position.classification = Classification.BLUNDER;
         } else {
+          // Had mate, now losing - major blunder
           position.classification = Classification.BLUNDER;
         }
       } else if (
@@ -286,22 +305,36 @@ async function analyse(positions: Position[]): Promise<Report> {
         evaluation.type === 'mate'
       ) {
         if (previousAbsoluteEvaluation > 0) {
-          if (absoluteEvaluation <= -4) {
-            position.classification = Classification.MISTAKE;
-          } else if (absoluteEvaluation < 0) {
+          // You had mate, what happened?
+          if (absoluteEvaluation < 0) {
+            // Went from giving mate to getting mated - always blunder
             position.classification = Classification.BLUNDER;
           } else if (absoluteEvaluation < previousAbsoluteEvaluation) {
+            // Shortened the mate - best
             position.classification = Classification.BEST;
-          } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 2) {
+          } else if (absoluteEvaluation === previousAbsoluteEvaluation) {
+            // Same mate distance - excellent
             position.classification = Classification.EXCELLENT;
-          } else {
+          } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 2) {
+            // Extended mate by 1-2 moves - good
             position.classification = Classification.GOOD;
+          } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 5) {
+            // Extended mate by 3-5 moves - inaccuracy
+            position.classification = Classification.INACCURACY;
+          } else {
+            // Extended mate significantly - mistake
+            position.classification = Classification.MISTAKE;
           }
         } else {
+          // You were getting mated
           if (absoluteEvaluation === previousAbsoluteEvaluation) {
             position.classification = Classification.BEST;
-          } else {
+          } else if (absoluteEvaluation > previousAbsoluteEvaluation) {
+            // Delayed getting mated - good
             position.classification = Classification.GOOD;
+          } else {
+            // Let them mate faster - mistake
+            position.classification = Classification.MISTAKE;
           }
         }
       }
@@ -425,18 +458,20 @@ async function analyse(positions: Position[]): Promise<Report> {
       }
     }
 
+    // Only downgrade blunder to mistake if position is completely won/lost
+    // (>= 1000cp or <= -1000cp) to maintain accuracy
     if (
       position.classification === Classification.BLUNDER &&
-      absoluteEvaluation >= 600
+      absoluteEvaluation >= 1000
     ) {
-      position.classification = Classification.GOOD;
+      position.classification = Classification.MISTAKE;
     }
 
     if (
       position.classification === Classification.BLUNDER &&
-      previousAbsoluteEvaluation <= -600
+      previousAbsoluteEvaluation <= -1000
     ) {
-      position.classification = Classification.GOOD;
+      position.classification = Classification.MISTAKE;
     }
 
     position.classification = position.classification ?? Classification.BOOK;

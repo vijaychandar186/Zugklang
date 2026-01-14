@@ -1,5 +1,17 @@
 /* Chess theme colors */
 :root {
+  /* Classification colors (move quality) */
+  --classification-brilliant: #1baaa6;
+  --classification-great: #5b8baf;
+  --classification-best: #98bc49;
+  --classification-excellent: #98bc49;
+  --classification-good: #97af8b;
+  --classification-inaccuracy: #f4bf44;
+  --classification-mistake: #e28c28;
+  --classification-blunder: #c93230;
+  --classification-forced: #97af8b;
+  --classification-book: #a88764;
+
   /* Board highlight colors */
   --highlight-move-option: oklch(0 0 0 / 10%);
   --highlight-selected: oklch(0.97 0.21 110 / 40%);

@@ -148,7 +148,12 @@ export const useAnalysisStore = create<AnalysisStore>()(
         }
 
         try {
-          const worker = new Worker('/stockfish.js');
+          // Use WASM version for better performance if supported
+          const stockfishPath =
+            typeof WebAssembly === 'object'
+              ? '/stockfish/stockfish.wasm.js'
+              : '/stockfish/stockfish.js';
+          const worker = new Worker(stockfishPath);
 
           worker.onerror = (e) => {
             console.error('Stockfish Worker Error:', e);

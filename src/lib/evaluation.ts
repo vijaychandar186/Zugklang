@@ -12,7 +12,7 @@ interface InfoLine {
 }
 
 // Parse Stockfish UCI "info" output lines
-function parseInfoLine(line: string): InfoLine | null {
+function parseInfoLine(line: string, isBlackToMove: boolean): InfoLine | null {
   const depthMatch = line.match(/depth (\d+)/);
   const multipvMatch = line.match(/multipv (\d+)/);
   const cpMatch = line.match(/score cp (-?\d+)/);
@@ -27,14 +27,25 @@ function parseInfoLine(line: string): InfoLine | null {
   };
 
   if (cpMatch) {
+    let value = parseInt(cpMatch[1]);
+    // Invert evaluation if black to play since Stockfish scores are from
+    // the side-to-move's perspective, and we want them from White's perspective
+    if (isBlackToMove) {
+      value *= -1;
+    }
     info.score = {
       type: 'cp',
-      value: parseInt(cpMatch[1])
+      value
     };
   } else if (mateMatch) {
+    let value = parseInt(mateMatch[1]);
+    // Invert mate score as well when black to play
+    if (isBlackToMove) {
+      value *= -1;
+    }
     info.score = {
       type: 'mate',
-      value: parseInt(mateMatch[1])
+      value
     };
   }
 
@@ -54,6 +65,9 @@ export async function evaluatePosition(
   const engine = StockfishEngine.getInstance();
   await engine.waitUntilReady();
 
+  // Check if it's Black's turn from the FEN (second field is 'b')
+  const isBlackToMove = fen.includes(' b ');
+
   return new Promise((resolve) => {
     const lines = new Map<number, InfoLine>();
 
@@ -62,7 +76,7 @@ export async function evaluatePosition(
 
       // Parse info lines
       if (message.startsWith('info')) {
-        const info = parseInfoLine(message);
+        const info = parseInfoLine(message, isBlackToMove);
         if (info && info.score && info.pv && info.pv.length > 0) {
           // Store the best info for each multipv line
           const existing = lines.get(info.multipv);

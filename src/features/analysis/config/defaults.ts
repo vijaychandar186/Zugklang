@@ -1,6 +1,6 @@
 export const ANALYSIS_DEFAULTS = {
   multiPV: 3,
-  searchTime: 8,
+  searchTime: 1,
   threads: 4,
   hashSize: 128,
   updateInterval: 100

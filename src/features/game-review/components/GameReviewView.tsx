@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 
 import {
   Tooltip,
@@ -28,15 +29,21 @@ import {
 import { toast } from 'sonner';
 
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
-import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { ReviewMoveHistory } from './ReviewMoveHistory';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
+import { EvaluationBar } from '@/features/analysis/components/EvaluationBar';
+import { EvaluationBarConnected } from '@/features/analysis/components/EvaluationBarConnected';
 
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
-import { MOVE_DELAY } from '@/features/chess/config/animation';
+import {
+  MOVE_DELAY,
+  ANIMATION_CONFIG
+} from '@/features/chess/config/animation';
+import { ARROW_COLORS } from '@/features/chess/config/colors';
+import type { ChessArrow } from '@/features/chess/types/visualization';
 
 import { EvaluationGraph } from './EvaluationGraph';
 import { ReviewReport } from './ReviewReport';
@@ -109,7 +116,7 @@ export function GameReviewView() {
   // Get the current turn from the FEN
   const gameTurn = (currentFen?.split(' ')[1] || 'w') as 'w' | 'b';
 
-  // Use the standard chess arrows hook for analysis arrows
+  // Use the standard chess arrows hook for live analysis arrows
   const analysisArrows = useChessArrows({
     isAnalysisOn,
     uciLines,
@@ -119,6 +126,87 @@ export function GameReviewView() {
     gameTurn,
     analysisTurn
   });
+
+  // Generate arrows from stored position's top lines (for review mode)
+  const storedPositionArrows = useMemo((): ChessArrow[] => {
+    if (!report || isAnalysisOn) return [];
+    if (!showBestMoveArrow && !showThreatArrow) return [];
+
+    // Get the current position's top lines (engine suggestions for current position)
+    const currentPosition = report.positions[currentMoveIndex];
+    if (!currentPosition?.topLines) return [];
+
+    const arrows: ChessArrow[] = [];
+
+    // Show best move arrow for current position
+    if (showBestMoveArrow) {
+      currentPosition.topLines.slice(0, 2).forEach((line, index) => {
+        if (!line.moveUCI || line.moveUCI.length < 4) return;
+        const from = line.moveUCI.slice(0, 2);
+        const to = line.moveUCI.slice(2, 4);
+        arrows.push({
+          startSquare: from,
+          endSquare: to,
+          color: index === 0 ? ARROW_COLORS.bestMove : ARROW_COLORS.alternative
+        });
+      });
+    }
+
+    // Show threat arrow (opponent's threat from previous position analysis)
+    // This shows what the opponent's best move would have been
+    if (showThreatArrow && currentMoveIndex > 0) {
+      const prevPosition = report.positions[currentMoveIndex - 1];
+      const threatLine = prevPosition?.topLines?.[0];
+      if (threatLine?.moveUCI && threatLine.moveUCI.length >= 4) {
+        const from = threatLine.moveUCI.slice(0, 2);
+        const to = threatLine.moveUCI.slice(2, 4);
+        // Only add if not already in arrows
+        if (!arrows.some((a) => a.startSquare === from && a.endSquare === to)) {
+          arrows.push({
+            startSquare: from,
+            endSquare: to,
+            color: ARROW_COLORS.threat
+          });
+        }
+      }
+    }
+
+    return arrows;
+  }, [
+    report,
+    currentMoveIndex,
+    showBestMoveArrow,
+    showThreatArrow,
+    isAnalysisOn
+  ]);
+
+  // Combine arrows: use live analysis arrows when analysis is on, otherwise use stored
+  const combinedArrows = useMemo(() => {
+    if (isAnalysisOn && analysisArrows.length > 0) {
+      return analysisArrows;
+    }
+    return storedPositionArrows;
+  }, [isAnalysisOn, analysisArrows, storedPositionArrows]);
+
+  // Position-based evaluation for the review (from stored data, not live analysis)
+  // Use .find() to get line with id=1 (like reference implementation) instead of [0]
+  const positionEvaluation = useMemo(() => {
+    const topLine = position?.topLines?.find((l) => l.id === 1);
+    // Default to 0 (equal position) like the reference implementation
+    const eval_ = topLine?.evaluation ?? { type: 'cp' as const, value: 0 };
+    const cp = eval_.type === 'cp' ? eval_.value : null;
+    const mate = eval_.type === 'mate' ? eval_.value : null;
+
+    let advantage: 'white' | 'black' | 'equal' = 'equal';
+    if (cp !== null) {
+      if (cp > 30) advantage = 'white';
+      else if (cp < -30) advantage = 'black';
+    } else if (mate !== null) {
+      advantage = mate > 0 ? 'white' : mate < 0 ? 'black' : 'equal';
+    }
+
+    return { advantage, cp, mate };
+  }, [position]);
 
   const totalPositions = report?.positions.length || 1;
   const canGoBack = currentMoveIndex > 0;
@@ -154,10 +242,16 @@ export function GameReviewView() {
     return styles;
   }, [position, currentMoveIndex, classification]);
 
-  // Classification icon position calculation
-  const classificationIconPosition = useMemo(() => {
-    if (!position?.move?.uci || currentMoveIndex <= 0 || !classification) {
-      return null;
+  // Classification icon position and visibility calculation
+  const classificationIcon = useMemo(() => {
+    const shouldShow =
+      position?.move?.uci &&
+      currentMoveIndex > 0 &&
+      classification &&
+      CLASSIFICATION_ICONS[classification];
+
+    if (!shouldShow || !position?.move?.uci) {
+      return { show: false, left: '0%', top: '0%', icon: null };
     }
 
     const toSquare = position.move.uci.slice(2, 4);
@@ -173,7 +267,12 @@ export function GameReviewView() {
     const left = x * 12.5 + 9; // Position near right edge of square
     const top = y * 12.5 - 1.5; // Position near top edge of square
 
-    return { left: `${left}%`, top: `${top}%` };
+    return {
+      show: true,
+      left: `${left}%`,
+      top: `${top}%`,
+      icon: CLASSIFICATION_ICONS[classification]
+    };
   }, [position, currentMoveIndex, classification, boardFlipped]);
 
   // Initialize analysis engine
@@ -351,9 +450,17 @@ export function GameReviewView() {
           />
         </div>
 
-        {/* Board */}
-        <BoardContainer showEvaluation={!!report}>
-          <div className='relative'>
+        {/* Board with Evaluation Bar */}
+        <div className='flex items-start justify-center gap-0 sm:gap-2'>
+          {/* Evaluation bar - only show when analysis is on */}
+          {isAnalysisOn && (
+            <div className='hidden shrink-0 sm:block sm:w-7'>
+              <EvaluationBarConnected />
+            </div>
+          )}
+
+          {/* Board */}
+          <div className='relative shrink-0'>
             <Board
               position={currentFen || STARTING_FEN}
               boardOrientation={boardFlipped ? 'black' : 'white'}
@@ -361,27 +468,26 @@ export function GameReviewView() {
               darkSquareStyle={theme.darkSquareStyle}
               lightSquareStyle={theme.lightSquareStyle}
               squareStyles={squareStyles}
-              arrows={analysisArrows}
-              animationDuration={0}
+              arrows={combinedArrows}
+              animationDuration={ANIMATION_CONFIG.durationMs}
             />
-            {/* Classification icon overlay */}
-            {classificationIconPosition &&
-              classification &&
-              CLASSIFICATION_ICONS[classification] && (
-                <Image
-                  src={CLASSIFICATION_ICONS[classification]}
-                  alt={classification}
-                  width={28}
-                  height={28}
-                  className='pointer-events-none absolute z-10'
-                  style={{
-                    left: classificationIconPosition.left,
-                    top: classificationIconPosition.top
-                  }}
-                />
-              )}
+            {/* Classification icon overlay - always mounted for smooth transitions */}
+            {classificationIcon.icon && (
+              <Image
+                src={classificationIcon.icon}
+                alt={classification || ''}
+                width={28}
+                height={28}
+                className='pointer-events-none absolute z-50 transition-all duration-200'
+                style={{
+                  left: classificationIcon.left,
+                  top: classificationIcon.top,
+                  opacity: classificationIcon.show ? 1 : 0
+                }}
+              />
+            )}
           </div>
-        </BoardContainer>
+        </div>
 
         {/* Bottom player */}
         <div className='flex w-full items-center py-2'>
@@ -513,29 +619,48 @@ export function GameReviewView() {
                 />
               </div>
             </ScrollArea>
+          ) : isLoading ? (
+            // --- Updated: skeleton that mirrors "No game loaded" layout + keeps icon ---
+            <div className='flex min-h-[180px] flex-1 flex-col items-center justify-center gap-4 p-4 text-center'>
+              {/* keep the icon */}
+              <Icons.circlestar className='text-muted-foreground h-12 w-12' />
+
+              {/* replace text block with matching-width skeletons */}
+              <div className='w-full max-w-xs space-y-2'>
+                <Skeleton className='h-6 w-full rounded' />{' '}
+                {/* replaces "No game loaded" */}
+                <Skeleton className='h-4 w-full rounded' />{' '}
+                {/* replaces "Import a PGN..." */}
+              </div>
+
+              {/* keep the progress UI like before */}
+              <div className='w-full max-w-xs space-y-1'>
+                <div className='text-muted-foreground flex justify-between text-xs'>
+                  <span className='capitalize'>{status}...</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className='bg-secondary h-2 overflow-hidden rounded-full'>
+                  <div
+                    className='bg-primary h-full transition-all'
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* optional error message area kept (will show when status==='error') */}
+              {status === 'error' && (
+                <p className='text-destructive mt-2 text-sm'>{errorMsg}</p>
+              )}
+            </div>
           ) : (
-            <div className='flex flex-1 flex-col items-center justify-center gap-4 p-4 text-center'>
-              <Icons.microscope className='text-muted-foreground h-12 w-12' />
+            <div className='flex min-h-[180px] flex-1 flex-col items-center justify-center gap-4 p-4 text-center'>
+              <Icons.circlestar className='text-muted-foreground h-12 w-12' />
               <div className='space-y-1'>
                 <p className='font-medium'>No game loaded</p>
                 <p className='text-muted-foreground text-sm'>
                   Import a PGN or paste moves to review
                 </p>
               </div>
-              {isLoading && (
-                <div className='w-full space-y-1'>
-                  <div className='text-muted-foreground flex justify-between text-xs'>
-                    <span className='capitalize'>{status}...</span>
-                    <span>{progress}%</span>
-                  </div>
-                  <div className='bg-secondary h-2 overflow-hidden rounded-full'>
-                    <div
-                      className='bg-primary h-full transition-all'
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </div>
-              )}
               {status === 'error' && (
                 <p className='text-destructive text-sm'>{errorMsg}</p>
               )}

@@ -83,7 +83,9 @@ export function EvaluationBar({
   const sizeClasses = {
     sm: 'h-[200px] w-5',
     md: 'h-[400px] w-6',
-    lg: 'h-[calc(100vw-5rem)] max-h-[380px] w-7 sm:h-[400px] sm:max-h-none lg:h-[560px]'
+    // Mobile: height matches board size (calc(100vw - 2rem)) when eval bar is showing
+    // SM+: fixed heights that match the fixed board widths
+    lg: 'h-[calc(100vw-2rem)] w-5 sm:h-[400px] sm:w-7 lg:h-[560px]'
   };
 
   if (!isActive) {

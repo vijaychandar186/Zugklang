@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { useShallow } from 'zustand/shallow';
 import type {
   Position,
@@ -47,100 +48,126 @@ type GameReviewStore = {
   getTotalMoves: () => number;
 };
 
-export const useGameReviewStore = create<GameReviewStore>()((set, get) => ({
-  // Initial state
-  pgn: '',
-  depth: 16,
-  status: 'idle',
-  progress: 0,
-  errorMsg: '',
-  report: null,
-  liveEvaluations: [],
-
-  currentMoveIndex: 0,
-  boardFlipped: false,
-
-  // Setters
-  setPgn: (pgn) => set({ pgn }),
-  setDepth: (depth) => set({ depth }),
-  setStatus: (status) => set({ status }),
-  setProgress: (progress) => set({ progress }),
-  setErrorMsg: (msg) => set({ errorMsg: msg }),
-  setReport: (report) =>
-    set({
-      report,
-      currentMoveIndex: 0
-    }),
-  setLiveEvaluations: (evals) => set({ liveEvaluations: evals }),
-
-  updateLiveEvaluation: (index, evaluation) =>
-    set((state) => {
-      const newEvals = [...state.liveEvaluations];
-      newEvals[index] = evaluation;
-      return { liveEvaluations: newEvals };
-    }),
-
-  // Navigation
-  navigate: (delta) =>
-    set((state) => {
-      const { report, currentMoveIndex } = state;
-      if (!report) return state;
-
-      const maxIndex = report.positions.length - 1;
-      let newIndex: number;
-
-      if (delta === Infinity) {
-        newIndex = maxIndex;
-      } else if (delta === -Infinity) {
-        newIndex = 0;
-      } else {
-        newIndex = Math.max(0, Math.min(currentMoveIndex + delta, maxIndex));
-      }
-
-      if (newIndex === currentMoveIndex) return state;
-      return { currentMoveIndex: newIndex };
-    }),
-
-  goToMove: (index) =>
-    set((state) => {
-      const { report } = state;
-      if (!report) return state;
-
-      const maxIndex = report.positions.length - 1;
-      const clampedIndex = Math.max(0, Math.min(index, maxIndex));
-      return { currentMoveIndex: clampedIndex };
-    }),
-
-  toggleBoardFlip: () =>
-    set((state) => ({ boardFlipped: !state.boardFlipped })),
-
-  // Reset
-  resetReview: () =>
-    set({
+export const useGameReviewStore = create<GameReviewStore>()(
+  persist(
+    (set, get) => ({
+      // Initial state
+      pgn: '',
+      depth: 16,
       status: 'idle',
       progress: 0,
       errorMsg: '',
       report: null,
       liveEvaluations: [],
-      currentMoveIndex: 0
+
+      currentMoveIndex: 0,
+      boardFlipped: false,
+
+      // Setters
+      setPgn: (pgn) => set({ pgn }),
+      setDepth: (depth) => set({ depth }),
+      setStatus: (status) => set({ status }),
+      setProgress: (progress) => set({ progress }),
+      setErrorMsg: (msg) => set({ errorMsg: msg }),
+      setReport: (report) =>
+        set({
+          report,
+          currentMoveIndex: 0
+        }),
+      setLiveEvaluations: (evals) => set({ liveEvaluations: evals }),
+
+      updateLiveEvaluation: (index, evaluation) =>
+        set((state) => {
+          const newEvals = [...state.liveEvaluations];
+          newEvals[index] = evaluation;
+          return { liveEvaluations: newEvals };
+        }),
+
+      // Navigation
+      navigate: (delta) =>
+        set((state) => {
+          const { report, currentMoveIndex } = state;
+          if (!report) return state;
+
+          const maxIndex = report.positions.length - 1;
+          let newIndex: number;
+
+          if (delta === Infinity) {
+            newIndex = maxIndex;
+          } else if (delta === -Infinity) {
+            newIndex = 0;
+          } else {
+            newIndex = Math.max(
+              0,
+              Math.min(currentMoveIndex + delta, maxIndex)
+            );
+          }
+
+          if (newIndex === currentMoveIndex) return state;
+          return { currentMoveIndex: newIndex };
+        }),
+
+      goToMove: (index) =>
+        set((state) => {
+          const { report } = state;
+          if (!report) return state;
+
+          const maxIndex = report.positions.length - 1;
+          const clampedIndex = Math.max(0, Math.min(index, maxIndex));
+          return { currentMoveIndex: clampedIndex };
+        }),
+
+      toggleBoardFlip: () =>
+        set((state) => ({ boardFlipped: !state.boardFlipped })),
+
+      // Reset
+      resetReview: () =>
+        set({
+          status: 'idle',
+          progress: 0,
+          errorMsg: '',
+          report: null,
+          liveEvaluations: [],
+          currentMoveIndex: 0
+        }),
+
+      // Computed
+      getCurrentPosition: () => {
+        const { report, currentMoveIndex } = get();
+        return report?.positions[currentMoveIndex];
+      },
+
+      getCurrentFen: () => {
+        const position = get().getCurrentPosition();
+        return position?.fen || STARTING_FEN;
+      },
+
+      getTotalMoves: () => {
+        const { report, liveEvaluations } = get();
+        return report ? report.positions.length : liveEvaluations.length;
+      }
     }),
-
-  // Computed
-  getCurrentPosition: () => {
-    const { report, currentMoveIndex } = get();
-    return report?.positions[currentMoveIndex];
-  },
-
-  getCurrentFen: () => {
-    const position = get().getCurrentPosition();
-    return position?.fen || STARTING_FEN;
-  },
-
-  getTotalMoves: () => {
-    const { report, liveEvaluations } = get();
-    return report ? report.positions.length : liveEvaluations.length;
-  }
-}));
+    {
+      name: 'zugklang-game-review',
+      storage: createJSONStorage(() => localStorage),
+      // Only persist the data that should survive refreshes
+      // Don't persist transient state like status, progress, errorMsg, liveEvaluations
+      partialize: (state) => ({
+        pgn: state.pgn,
+        depth: state.depth,
+        report: state.report,
+        currentMoveIndex: state.currentMoveIndex,
+        boardFlipped: state.boardFlipped
+      }),
+      // When loading from storage, set status to 'complete' if we have a report
+      onRehydrateStorage: () => (state) => {
+        if (state && state.report) {
+          state.status = 'complete';
+        }
+      }
+    }
+  )
+);
 
 // State selector
 export const useGameReviewState = () =>

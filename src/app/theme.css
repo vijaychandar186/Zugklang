@@ -1,16 +1,16 @@
 /* Chess theme colors */
 :root {
   /* Classification colors (move quality) */
-  --classification-brilliant: #1baaa6;
-  --classification-great: #5b8baf;
-  --classification-best: #98bc49;
-  --classification-excellent: #98bc49;
-  --classification-good: #97af8b;
-  --classification-inaccuracy: #f4bf44;
-  --classification-mistake: #e28c28;
-  --classification-blunder: #c93230;
-  --classification-forced: #97af8b;
-  --classification-book: #a88764;
+  --classification-brilliant: oklch(0.604 0.212 188.2);
+  --classification-great: oklch(0.558 0.11 259);
+  --classification-best: oklch(0.705 0.197 108.3);
+  --classification-excellent: oklch(0.705 0.197 108.3);
+  --classification-good: oklch(0.657 0.101 122.2);
+  --classification-inaccuracy: oklch(79.913% 0.16093 88.295);
+  --classification-mistake: oklch(67.123% 0.1615 52.742 / 0.689);
+  --classification-blunder: oklch(0.468 0.196 17.6);
+  --classification-forced: oklch(0.657 0.101 122.2);
+  --classification-book: oklch(0.554 0.132 46);
 
   /* Board highlight colors */
   --highlight-move-option: oklch(0 0 0 / 10%);
@@ -40,7 +40,7 @@
   --arrow-user-tertiary: oklch(0.63 0.26 25);
 
   /* Arrow colors - Analysis arrows */
-  --arrow-best-move: oklch(0.55 0 0);
+  --arrow-best-move: oklch(0.7 0.22 130);
   --arrow-threat: oklch(0.5 0.22 25);
 
   /* Arrow colors - Move quality */

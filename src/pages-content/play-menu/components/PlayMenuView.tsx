@@ -26,6 +26,14 @@ const gameModes = [
     description:
       'Access a fully featured analysis board. Import PGNs, evaluate positions, and study grandmaster games.',
     actionText: 'Start Analysis'
+  },
+  {
+    href: '/game-review',
+    icon: Icons.circlestar,
+    title: 'Game Review',
+    description:
+      'Review your past games, explore move accuracy, and learn from mistakes to improve your play.',
+    actionText: 'Review Game'
   }
 ];
 

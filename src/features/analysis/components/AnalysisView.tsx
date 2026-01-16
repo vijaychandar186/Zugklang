@@ -199,19 +199,70 @@ export function AnalysisView() {
     }
   };
 
+  const detectInputType = (input: string): 'pgn' | 'fen' | 'moves' => {
+    // Check if it looks like a FEN
+    const fenPattern =
+      /^[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+/;
+    if (fenPattern.test(input)) {
+      return 'fen';
+    }
+    // Check if it has PGN headers
+    if (
+      input.includes('[Event ') ||
+      input.includes('[White ') ||
+      input.includes('[Black ')
+    ) {
+      return 'pgn';
+    }
+    // Check if it has move numbers like "1. e4"
+    if (/\d+\./.test(input)) {
+      return 'pgn';
+    }
+    // Otherwise treat as simple move list
+    return 'moves';
+  };
+
+  const loadMoveList = (input: string): boolean => {
+    try {
+      const board = new Chess();
+      // Clean up: remove move numbers, extra whitespace, result indicators
+      const cleaned = input
+        .replace(/\d+\.\s*/g, '')
+        .replace(/\s+/g, ' ')
+        .replace(/1-0|0-1|1\/2-1\/2|\*/g, '')
+        .trim();
+
+      const movesList = cleaned.split(' ').filter((m) => m.length > 0);
+      let moveCount = 0;
+
+      for (const moveSAN of movesList) {
+        try {
+          const move = board.move(moveSAN);
+          if (move) moveCount++;
+        } catch {
+          // Skip invalid moves
+        }
+      }
+
+      if (moveCount === 0) return false;
+
+      // Now load via PGN format
+      return loadPGN(board.pgn());
+    } catch {
+      return false;
+    }
+  };
+
   const handleImport = () => {
     const trimmed = pgnFenInput.trim();
     if (!trimmed) {
-      toast.error('Please enter a PGN or FEN string');
+      toast.error('Please enter a PGN, FEN, or moves');
       return;
     }
 
-    const isFEN =
-      trimmed.includes('/') &&
-      !trimmed.includes('[') &&
-      trimmed.split('\n').length === 1;
+    const inputType = detectInputType(trimmed);
 
-    if (isFEN) {
+    if (inputType === 'fen') {
       if (isEditorMode) {
         // In editor mode, load directly to editor position
         try {
@@ -233,7 +284,7 @@ export function AnalysisView() {
           toast.error('Invalid FEN string');
         }
       }
-    } else {
+    } else if (inputType === 'pgn') {
       const success = loadPGN(trimmed);
       if (success) {
         toast.success('PGN loaded successfully');
@@ -241,6 +292,16 @@ export function AnalysisView() {
         setPgnFenInput('');
       } else {
         toast.error('Invalid PGN format');
+      }
+    } else {
+      // moves list
+      const success = loadMoveList(trimmed);
+      if (success) {
+        toast.success('Moves loaded successfully');
+        setImportDialogOpen(false);
+        setPgnFenInput('');
+      } else {
+        toast.error('No valid moves found');
       }
     }
   };
@@ -431,17 +492,28 @@ export function AnalysisView() {
                   <DialogHeader>
                     <DialogTitle>Import Position or Game</DialogTitle>
                     <DialogDescription>
-                      Paste a PGN (game notation) or FEN (position) string.
+                      Paste a PGN, FEN, or move list to analyze.
                     </DialogDescription>
                   </DialogHeader>
                   <div className='space-y-4 py-4'>
                     <Textarea
-                      placeholder='Paste PGN or FEN here...'
+                      placeholder='Paste PGN, FEN, or moves here...'
                       value={pgnFenInput}
                       onChange={(e) => setPgnFenInput(e.target.value)}
                       className='min-h-[200px] font-mono text-sm'
                     />
-                    <div className='flex gap-2'>
+                    <div className='flex flex-wrap gap-2'>
+                      <Button
+                        variant='secondary'
+                        size='sm'
+                        onClick={() =>
+                          setPgnFenInput(
+                            '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7'
+                          )
+                        }
+                      >
+                        Sample PGN
+                      </Button>
                       <Button
                         variant='secondary'
                         size='sm'
@@ -452,6 +524,13 @@ export function AnalysisView() {
                         }
                       >
                         Sample FEN
+                      </Button>
+                      <Button
+                        variant='secondary'
+                        size='sm'
+                        onClick={() => setPgnFenInput('e4 e5 Nf3 Nc6 Bb5 a6')}
+                      >
+                        Sample Moves
                       </Button>
                       {pgnFenInput && (
                         <Button

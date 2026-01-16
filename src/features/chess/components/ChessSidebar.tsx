@@ -99,6 +99,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
   const [newGameOpen, setNewGameOpen] = useState(false);
   const [copiedMoves, setCopiedMoves] = useState(false);
   const [copiedPGN, setCopiedPGN] = useState(false);
+  const [copiedFEN, setCopiedFEN] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const hasAutoPlayed = useRef(false);
 
@@ -122,6 +123,13 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
       return () => clearTimeout(timer);
     }
   }, [copiedPGN]);
+
+  useEffect(() => {
+    if (copiedFEN) {
+      const timer = setTimeout(() => setCopiedFEN(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [copiedFEN]);
 
   useEffect(() => {
     if (
@@ -231,6 +239,12 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     setCopiedPGN(true);
   };
 
+  const handleCopyFEN = () => {
+    const currentFEN = positionHistory[viewingIndex] || positionHistory[0];
+    navigator.clipboard.writeText(currentFEN);
+    setCopiedFEN(true);
+  };
+
   const handleResign = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('You resigned');
@@ -289,17 +303,17 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                   </DialogHeader>
                   <div className='flex flex-col gap-3 pt-2'>
                     <Button
-                      onClick={handleCopyMoves}
+                      onClick={handleCopyFEN}
                       variant='outline'
                       className='h-auto justify-between py-3'
                     >
                       <div className='flex flex-col items-start'>
-                        <span className='font-medium'>Copy Moves List</span>
+                        <span className='font-medium'>Copy FEN</span>
                         <span className='text-muted-foreground text-xs'>
-                          Simple list of moves
+                          Current position
                         </span>
                       </div>
-                      {copiedMoves ? (
+                      {copiedFEN ? (
                         <Icons.check className='h-4 w-4 text-green-500' />
                       ) : (
                         <Icons.copy className='text-muted-foreground h-4 w-4' />
@@ -317,6 +331,23 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                         </span>
                       </div>
                       {copiedPGN ? (
+                        <Icons.check className='h-4 w-4 text-green-500' />
+                      ) : (
+                        <Icons.copy className='text-muted-foreground h-4 w-4' />
+                      )}
+                    </Button>
+                    <Button
+                      onClick={handleCopyMoves}
+                      variant='outline'
+                      className='h-auto justify-between py-3'
+                    >
+                      <div className='flex flex-col items-start'>
+                        <span className='font-medium'>Copy Moves</span>
+                        <span className='text-muted-foreground text-xs'>
+                          Simple move list
+                        </span>
+                      </div>
+                      {copiedMoves ? (
                         <Icons.check className='h-4 w-4 text-green-500' />
                       ) : (
                         <Icons.copy className='text-muted-foreground h-4 w-4' />

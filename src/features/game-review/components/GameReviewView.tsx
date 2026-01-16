@@ -321,6 +321,15 @@ export function GameReviewView() {
         return;
       }
 
+      // Check if this is a FEN-only import (just one position, no moves)
+      if (positions.length === 1) {
+        setErrorMsg(
+          'FEN positions have no moves to review. For position analysis, use the Analysis page instead.'
+        );
+        setStatus('error');
+        return;
+      }
+
       setProgress(10);
 
       // Step 2: Evaluate positions with Stockfish (THE MISSING STEP!)
@@ -407,6 +416,21 @@ export function GameReviewView() {
   const copyPGN = () => {
     navigator.clipboard.writeText(pgn || '[No game loaded]');
     toast.success('PGN copied');
+  };
+
+  const copyMoves = () => {
+    if (!report || !report.positions) {
+      toast.error('No moves to copy');
+      return;
+    }
+    // Extract moves from positions (skip first position which is starting position)
+    const movesList = report.positions
+      .slice(1)
+      .map((pos) => pos.move?.san)
+      .filter(Boolean)
+      .join(' ');
+    navigator.clipboard.writeText(movesList || 'No moves');
+    toast.success('Moves copied');
   };
 
   const handleNewReview = () => {
@@ -533,6 +557,10 @@ export function GameReviewView() {
                     <Icons.fileText className='mr-2 h-4 w-4' />
                     Copy PGN
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={copyMoves}>
+                    <Icons.arrowRight className='mr-2 h-4 w-4' />
+                    Copy Moves
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -555,26 +583,48 @@ export function GameReviewView() {
                   <DialogHeader>
                     <DialogTitle>Import Game</DialogTitle>
                     <DialogDescription>
-                      Paste a PGN, FEN, or move list to review.
+                      Paste a PGN or move list to review.
                     </DialogDescription>
                   </DialogHeader>
                   <div className='space-y-4 py-4'>
                     <Textarea
-                      placeholder='Paste PGN, FEN, or moves here...'
+                      placeholder='Paste PGN or moves here...'
                       value={pgnFenInput}
                       onChange={(e) => setPgnFenInput(e.target.value)}
                       className='min-h-[200px] font-mono text-sm'
                     />
-                    {pgnFenInput && (
+                    <div className='flex flex-wrap gap-2'>
                       <Button
-                        variant='ghost'
+                        variant='secondary'
                         size='sm'
-                        onClick={() => setPgnFenInput('')}
+                        onClick={() =>
+                          setPgnFenInput(
+                            '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O'
+                          )
+                        }
                       >
-                        <Icons.close className='mr-1 h-3 w-3' />
-                        Clear
+                        Sample PGN
                       </Button>
-                    )}
+                      <Button
+                        variant='secondary'
+                        size='sm'
+                        onClick={() =>
+                          setPgnFenInput('e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7')
+                        }
+                      >
+                        Sample Moves
+                      </Button>
+                      {pgnFenInput && (
+                        <Button
+                          variant='ghost'
+                          size='sm'
+                          onClick={() => setPgnFenInput('')}
+                        >
+                          <Icons.close className='mr-1 h-3 w-3' />
+                          Clear
+                        </Button>
+                      )}
+                    </div>
                   </div>
                   <div className='flex justify-end gap-2'>
                     <Button

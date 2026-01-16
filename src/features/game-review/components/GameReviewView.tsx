@@ -431,16 +431,18 @@ export function GameReviewView() {
         </div>
 
         {/* Board with Evaluation Bar */}
-        <div className='flex items-start justify-center gap-0 sm:gap-2'>
-          {/* Evaluation bar - only show when analysis is on */}
-          {isAnalysisOn && (
-            <div className='hidden shrink-0 sm:block sm:w-7'>
-              <EvaluationBarConnected />
-            </div>
-          )}
+        <div className='flex items-start justify-center gap-1 sm:gap-2'>
+          {/* Evaluation bar - shown on all screen sizes when analysis is on */}
+          <div
+            className={`shrink-0 ${isAnalysisOn ? 'w-5 sm:w-7' : 'hidden w-0 sm:block sm:w-7'}`}
+          >
+            {isAnalysisOn && <EvaluationBarConnected />}
+          </div>
 
-          {/* Board */}
-          <div className='relative shrink-0'>
+          {/* Board - shrinks on mobile when eval bar is visible */}
+          <div
+            className={`relative shrink-0 ${isAnalysisOn ? '[&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[560px]' : ''}`}
+          >
             <Board
               position={currentFen || STARTING_FEN}
               boardOrientation={boardFlipped ? 'black' : 'white'}

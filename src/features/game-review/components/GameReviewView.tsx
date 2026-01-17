@@ -33,7 +33,7 @@ import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { ReviewMoveHistory } from './ReviewMoveHistory';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
-import { EvaluationBarConnected } from '@/features/analysis/components/EvaluationBarConnected';
+import { ReviewEvaluationBar } from './ReviewEvaluationBar';
 
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
@@ -430,9 +430,9 @@ export function GameReviewView() {
 
         <div className='flex items-start justify-center gap-1 sm:gap-2'>
           <div
-            className={`shrink-0 ${isAnalysisOn ? 'w-5 sm:w-7' : 'hidden w-0 sm:block sm:w-7'}`}
+            className={`shrink-0 ${report || isAnalysisOn ? 'w-5 sm:w-7' : 'hidden w-0 sm:block sm:w-7'}`}
           >
-            {isAnalysisOn && <EvaluationBarConnected />}
+            {(report || isAnalysisOn) && <ReviewEvaluationBar />}
           </div>
 
           <div

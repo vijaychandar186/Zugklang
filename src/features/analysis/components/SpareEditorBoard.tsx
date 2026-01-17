@@ -1,8 +1,15 @@
 'use client';
 
-import { useCallback, useRef, useEffect, createContext, useContext } from 'react';
+import {
+  useCallback,
+  useRef,
+  useEffect,
+  createContext,
+  useContext
+} from 'react';
 import { Chess, Square, Color, PieceSymbol } from 'chess.js';
 import { ChessboardProvider, Chessboard } from 'react-chessboard';
+import { toast } from 'sonner';
 import type { PieceDropHandlerArgs } from 'react-chessboard';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import {
@@ -13,7 +20,8 @@ import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 
 // Context to pass through the ChessboardProvider wrapper status
 const EditorProviderContext = createContext(false);
-export const useIsInsideEditorProvider = () => useContext(EditorProviderContext);
+export const useIsInsideEditorProvider = () =>
+  useContext(EditorProviderContext);
 
 interface EditorProviderProps {
   boardOrientation?: 'white' | 'black';
@@ -85,8 +93,8 @@ export function EditorProvider({
             sourceSquare as Square
           );
         }
-        alert(
-          `The board already contains a ${color === 'w' ? 'white' : 'black'} King piece`
+        toast.error(
+          `The board already contains a ${color === 'w' ? 'white' : 'black'} King`
         );
         return false;
       }

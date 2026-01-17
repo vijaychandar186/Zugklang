@@ -4,8 +4,7 @@ import Image from 'next/image';
 import { useGameReviewStore } from '../stores/useGameReviewStore';
 import {
   CLASSIFICATION_ICONS,
-  CLASSIFICATION_LABELS,
-  type Classification
+  CLASSIFICATION_LABELS
 } from '../types';
 
 export function MoveInfo() {
@@ -24,7 +23,9 @@ export function MoveInfo() {
 
   const classification = position.classification;
   const playedMove = position.move?.san;
-  const bestMove = lastPosition.topLines?.[0]?.moveSAN;
+  const bestMoveLine = lastPosition.topLines?.[0];
+  const bestMove = bestMoveLine?.moveSAN || 
+    (bestMoveLine?.moveUCI && bestMoveLine.moveUCI.length >= 4 ? bestMoveLine.moveUCI : null);
 
   if (!classification || !playedMove) {
     return null;

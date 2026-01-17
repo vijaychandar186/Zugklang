@@ -3,7 +3,7 @@ import type { Position } from '@/types/Position';
 import openingsData from '@/resources/openings.json';
 import {
   getWinPercentageFromEval,
-  computeEstimatedElo,
+  computeEstimatedEloFromPositions,
   type Evaluation
 } from './winPercentage';
 
@@ -475,13 +475,14 @@ async function analyse(positions: Position[]): Promise<Report> {
   // Generate SAN moves from engine lines
   for (const position of positions) {
     for (const line of position.topLines || []) {
-      if (line.evaluation.type === 'mate' && line.evaluation.value === 0)
-        continue;
+      // Skip if no valid UCI move or if it's mate in 0 (game already over)
+      if (!line.moveUCI || line.moveUCI.length < 4) continue;
+      if (line.evaluation.type === 'mate' && line.evaluation.value === 0) continue;
 
       const board = new Chess(position.fen);
 
       try {
-        line.moveSAN = board.move({
+        const move = board.move({
           from: line.moveUCI.slice(0, 2),
           to: line.moveUCI.slice(2, 4),
           promotion: (line.moveUCI.slice(4) || undefined) as
@@ -490,8 +491,10 @@ async function analyse(positions: Position[]): Promise<Report> {
             | 'b'
             | 'n'
             | undefined
-        }).san;
+        });
+        line.moveSAN = move.san;
       } catch {
+        // Keep moveUCI as fallback if SAN conversion fails
         line.moveSAN = '';
       }
     }
@@ -510,15 +513,8 @@ async function analyse(positions: Position[]): Promise<Report> {
     accuracies[moveColour].maximum++;
   }
 
-  // Calculate win percentages for estimated Elo
-  const winPercentages = positions
-    .filter((p) => p.topLines && p.topLines.length > 0)
-    .map((p) => {
-      const topLine = p.topLines![0];
-      return getWinPercentageFromEval(topLine.evaluation);
-    });
-
-  const estimatedElo = computeEstimatedElo(winPercentages);
+  // Calculate estimated Elo from actual centipawn loss
+  const estimatedElo = computeEstimatedEloFromPositions(positions);
 
   return {
     accuracies: {

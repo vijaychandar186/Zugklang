@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { Square } from 'chess.js';
+import { useEffect, useCallback } from 'react';
 import { UnifiedChessBoard as Board } from './Board';
+import { PromotionDialog } from './PromotionDialog';
 import {
   useChessState,
   useChessActions,
@@ -19,8 +19,6 @@ import { useChessBoardLogic } from '../hooks/useChessBoardLogic';
 import { useBoardTheme } from '../hooks/useSquareInteraction';
 import { useStockfish } from '@/features/engine/hooks/useStockfish';
 import { playSound } from '@/features/game/utils/sounds';
-import { BOARD_STYLES } from '@/features/chess/config/board-themes';
-import { SquareStyles } from '@/features/chess/types/core';
 
 export function ChessBoard({
   serverOrientation
@@ -65,14 +63,10 @@ export function ChessBoard({
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
   const { turn: analysisTurn } = useAnalysisPosition();
 
-  const [premoves, setPremoves] = useState<
-    Array<{ from: Square; to: Square; promotion?: string }>
-  >([]);
-
-  const soundEnabledRef = useRef(soundEnabled);
-  soundEnabledRef.current = soundEnabled;
-
   const theme = useBoardTheme();
+
+  const stockfishEnabled =
+    (isPlayMode && !isLocalGame) || playingAgainstStockfish;
 
   const onMoveExecuted = useCallback(() => {
     if (isPlayMode) {
@@ -85,21 +79,25 @@ export function ChessBoard({
     }
   }, [isPlayMode, game, switchTimer, isLocalGame, autoFlipBoard, flipBoard]);
 
+  const onPremoveAdded = useCallback(() => {
+    if (soundEnabled) playSound('premove');
+  }, [soundEnabled]);
+
   const {
     isMounted,
     position,
     isViewingHistory,
-    isPlayerTurn,
     gameTurn,
     playerColorShort,
     executeMove,
-    handleSquareRightClick: baseHandleSquareRightClick,
+    onDrop,
+    handleSquareClick,
+    handleSquareRightClick,
     clearState,
-    squareStyles: baseSquareStyles,
-    moveFrom,
-    setMoveFrom,
-    setOptionSquares,
-    getMoveOptions
+    squareStyles,
+    pendingPromotion,
+    completePromotion,
+    cancelPromotion
   } = useChessBoardLogic({
     game,
     currentFEN,
@@ -111,14 +109,10 @@ export function ChessBoard({
     goToEnd,
     isGameOver: gameOver,
     onMoveExecuted,
-    allowOpponentMoves: !(
-      (isPlayMode && !isLocalGame) ||
-      playingAgainstStockfish
-    )
+    allowOpponentMoves: !stockfishEnabled,
+    enablePremoves: stockfishEnabled && isPlayMode,
+    onPremoveAdded
   });
-
-  const stockfishEnabled =
-    (isPlayMode && !isLocalGame) || playingAgainstStockfish;
 
   useStockfish({
     game,
@@ -150,65 +144,7 @@ export function ChessBoard({
       : playAs
     : boardOrientation;
 
-  const handleUserMove = useCallback(
-    (from: Square, to: Square, promotion?: string): boolean => {
-      if (gameOver) return false;
-
-      if (isViewingHistory) {
-        goToEnd();
-        return false;
-      }
-
-      if (stockfishEnabled) {
-        const piece = game.get(from);
-        const colorShort = effectivePlayAs === 'white' ? 'w' : 'b';
-        if (piece?.color !== colorShort) return false;
-
-        if (!isPlayerTurn && isPlayMode) {
-          setPremoves((prev) => [
-            ...prev,
-            { from, to, promotion: promotion || 'q' }
-          ]);
-          if (soundEnabledRef.current) playSound('premove');
-          setMoveFrom(null);
-          setOptionSquares({});
-          return true;
-        }
-      }
-
-      const success = executeMove(from, to, promotion);
-      if (!success && soundEnabledRef.current) {
-        playSound('illegal');
-      }
-      return success;
-    },
-    [
-      gameOver,
-      isViewingHistory,
-      goToEnd,
-      stockfishEnabled,
-      game,
-      effectivePlayAs,
-      isPlayerTurn,
-      isPlayMode,
-      executeMove,
-      setMoveFrom,
-      setOptionSquares
-    ]
-  );
-
-  useEffect(() => {
-    if (premoves.length > 0 && isPlayerTurn && !game.isGameOver()) {
-      const [first, ...rest] = premoves;
-      const success = executeMove(first.from, first.to, first.promotion);
-      if (success) {
-        setPremoves(rest);
-      } else {
-        setPremoves([]);
-      }
-    }
-  }, [premoves, isPlayerTurn, game, executeMove]);
-
+  // Handle game over detection
   useEffect(() => {
     if (!isPlayMode) return;
 
@@ -242,128 +178,43 @@ export function ChessBoard({
     soundEnabled
   ]);
 
+  // Setup new game handler
   const onNewGame = useCallback(() => {
-    if (soundEnabledRef.current) playSound('game-start');
+    if (soundEnabled) playSound('game-start');
     clearState();
-    setPremoves([]);
-  }, [clearState]);
+  }, [clearState, soundEnabled]);
 
   useEffect(() => {
     setOnNewGame(onNewGame);
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
 
-  const onDrop = useCallback(
-    ({
-      sourceSquare,
-      targetSquare
-    }: {
-      sourceSquare: string;
-      targetSquare: string | null;
-    }): boolean => {
-      if (!targetSquare) return false;
-      return handleUserMove(sourceSquare as Square, targetSquare as Square);
-    },
-    [handleUserMove]
-  );
-
-  const handleSquareClick = useCallback(
-    ({ square }: { square: string }) => {
-      if (gameOver) return;
-
-      if (isViewingHistory) {
-        goToEnd();
-        return;
-      }
-
-      const sq = square as Square;
-
-      if (!moveFrom) {
-        if (getMoveOptions(sq)) setMoveFrom(sq);
-        return;
-      }
-
-      const moves = game.moves({ square: moveFrom, verbose: true });
-      const found = moves.find((m) => m.from === moveFrom && m.to === sq);
-
-      if (!found) {
-        if (getMoveOptions(sq)) {
-          setMoveFrom(sq);
-        } else {
-          if (!isPlayerTurn && isPlayMode && stockfishEnabled) {
-            handleUserMove(moveFrom, sq);
-            setMoveFrom(null);
-            setOptionSquares({});
-          } else {
-            setMoveFrom(null);
-            setOptionSquares({});
-          }
-        }
-        return;
-      }
-
-      const piece = game.get(moveFrom);
-      const promotion =
-        piece?.type === 'p' && (sq[1] === '8' || sq[1] === '1')
-          ? 'q'
-          : undefined;
-      handleUserMove(moveFrom, sq, promotion);
-      setMoveFrom(null);
-      setOptionSquares({});
-    },
-    [
-      gameOver,
-      isViewingHistory,
-      goToEnd,
-      moveFrom,
-      getMoveOptions,
-      game,
-      isPlayerTurn,
-      isPlayMode,
-      stockfishEnabled,
-      handleUserMove,
-      setMoveFrom,
-      setOptionSquares
-    ]
-  );
-
-  const handleSquareRightClick = useCallback(
-    ({ square }: { square: string }) => {
-      if (premoves.length > 0) {
-        setPremoves([]);
-        return;
-      }
-      baseHandleSquareRightClick({ square });
-    },
-    [premoves, baseHandleSquareRightClick]
-  );
-
-  const squareStyles: SquareStyles = {
-    ...baseSquareStyles,
-    ...premoves.reduce(
-      (acc, p) => ({
-        ...acc,
-        [p.from]: BOARD_STYLES.premoveSquare,
-        [p.to]: BOARD_STYLES.premoveSquare
-      }),
-      {}
-    )
-  };
+  const resolvedOrientation = isMounted
+    ? effectiveBoardOrientation
+    : serverOrientation || 'white';
 
   return (
-    <Board
-      position={position}
-      boardOrientation={
-        isMounted ? effectiveBoardOrientation : serverOrientation || 'white'
-      }
-      canDrag={isMounted && !isViewingHistory}
-      squareStyles={isMounted ? squareStyles : {}}
-      darkSquareStyle={theme.darkSquareStyle}
-      lightSquareStyle={theme.lightSquareStyle}
-      onPieceDrop={onDrop}
-      onSquareClick={handleSquareClick}
-      onSquareRightClick={handleSquareRightClick}
-      arrows={analysisArrows}
-    />
+    <div className='relative'>
+      <Board
+        position={position}
+        boardOrientation={resolvedOrientation}
+        canDrag={isMounted && !isViewingHistory && !pendingPromotion}
+        squareStyles={isMounted ? squareStyles : {}}
+        darkSquareStyle={theme.darkSquareStyle}
+        lightSquareStyle={theme.lightSquareStyle}
+        onPieceDrop={onDrop}
+        onSquareClick={handleSquareClick}
+        onSquareRightClick={handleSquareRightClick}
+        arrows={analysisArrows}
+      />
+      <PromotionDialog
+        isOpen={!!pendingPromotion}
+        color={pendingPromotion?.color || 'white'}
+        targetSquare={pendingPromotion?.to || 'a8'}
+        boardOrientation={resolvedOrientation}
+        onSelect={completePromotion}
+        onCancel={cancelPromotion}
+      />
+    </div>
   );
 }

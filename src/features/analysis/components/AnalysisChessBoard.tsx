@@ -1,6 +1,7 @@
 'use client';
 
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
+import { PromotionDialog } from '@/features/chess/components/PromotionDialog';
 import {
   useAnalysisBoardState,
   useAnalysisBoardActions
@@ -50,7 +51,10 @@ export function AnalysisChessBoard() {
     onDrop,
     handleSquareClick,
     handleSquareRightClick,
-    squareStyles
+    squareStyles,
+    pendingPromotion,
+    completePromotion,
+    cancelPromotion
   } = useChessBoardLogic({
     game,
     currentFEN,
@@ -85,18 +89,30 @@ export function AnalysisChessBoard() {
     analysisTurn
   });
 
+  const resolvedOrientation = isMounted ? boardOrientation : 'white';
+
   return (
-    <Board
-      position={position}
-      boardOrientation={isMounted ? boardOrientation : 'white'}
-      canDrag={isMounted && !isViewingHistory}
-      squareStyles={isMounted ? squareStyles : {}}
-      darkSquareStyle={theme.darkSquareStyle}
-      lightSquareStyle={theme.lightSquareStyle}
-      onPieceDrop={onDrop}
-      onSquareClick={handleSquareClick}
-      onSquareRightClick={handleSquareRightClick}
-      arrows={analysisArrows}
-    />
+    <div className='relative'>
+      <Board
+        position={position}
+        boardOrientation={resolvedOrientation}
+        canDrag={isMounted && !isViewingHistory && !pendingPromotion}
+        squareStyles={isMounted ? squareStyles : {}}
+        darkSquareStyle={theme.darkSquareStyle}
+        lightSquareStyle={theme.lightSquareStyle}
+        onPieceDrop={onDrop}
+        onSquareClick={handleSquareClick}
+        onSquareRightClick={handleSquareRightClick}
+        arrows={analysisArrows}
+      />
+      <PromotionDialog
+        isOpen={!!pendingPromotion}
+        color={pendingPromotion?.color || 'white'}
+        targetSquare={pendingPromotion?.to || 'a8'}
+        boardOrientation={resolvedOrientation}
+        onSelect={completePromotion}
+        onCancel={cancelPromotion}
+      />
+    </div>
   );
 }

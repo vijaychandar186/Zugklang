@@ -1,13 +1,63 @@
 'use client';
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { Chess, Square, Move } from 'chess.js';
+import { Chess, Square, Move, PieceSymbol } from 'chess.js';
 import { SquareStyles, RightClickedSquares } from '@/features/chess/types/core';
 import { getMoveOptionStyles } from '@/features/chess/hooks/useSquareInteraction';
 import { playSound, getSoundType } from '@/features/game/utils/sounds';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
+// Convert FEN to position object for react-chessboard
+type PositionObject = Record<string, { pieceType: string }>;
+
+function fenToPosition(fen: string): PositionObject {
+  const position: PositionObject = {};
+  const [boardPart] = fen.split(' ');
+  const rows = boardPart.split('/');
+  const pieceMap: Record<string, string> = {
+    k: 'bK',
+    q: 'bQ',
+    r: 'bR',
+    b: 'bB',
+    n: 'bN',
+    p: 'bP',
+    K: 'wK',
+    Q: 'wQ',
+    R: 'wR',
+    B: 'wB',
+    N: 'wN',
+    P: 'wP'
+  };
+
+  rows.forEach((row, rowIndex) => {
+    let fileIndex = 0;
+    for (const char of row) {
+      if (/\d/.test(char)) {
+        fileIndex += parseInt(char);
+      } else {
+        const square = `${String.fromCharCode(97 + fileIndex)}${8 - rowIndex}`;
+        position[square] = { pieceType: pieceMap[char] };
+        fileIndex++;
+      }
+    }
+  });
+
+  return position;
+}
+
+export type Premove = {
+  from: Square;
+  to: Square;
+  promotion?: string;
+};
+
+export type PendingPromotion = {
+  from: Square;
+  to: Square;
+  color: 'white' | 'black';
+};
 
 export type ChessBoardLogicOptions = {
   game: Chess;
@@ -21,6 +71,10 @@ export type ChessBoardLogicOptions = {
   isGameOver?: boolean;
   onMoveExecuted?: (move: Move) => void;
   allowOpponentMoves?: boolean;
+  /** Enable premove support (for playing against engine) */
+  enablePremoves?: boolean;
+  /** Called when premove sound should play */
+  onPremoveAdded?: () => void;
 };
 
 export function useChessBoardLogic({
@@ -34,13 +88,18 @@ export function useChessBoardLogic({
   goToEnd,
   isGameOver = false,
   onMoveExecuted,
-  allowOpponentMoves = true
+  allowOpponentMoves = true,
+  enablePremoves = false,
+  onPremoveAdded
 }: ChessBoardLogicOptions) {
   const [isMounted, setIsMounted] = useState(false);
   const [moveFrom, setMoveFrom] = useState<Square | null>(null);
   const [optionSquares, setOptionSquares] = useState<SquareStyles>({});
   const [rightClickedSquares, setRightClickedSquares] =
     useState<RightClickedSquares>({});
+  const [premoves, setPremoves] = useState<Premove[]>([]);
+  const [pendingPromotion, setPendingPromotion] =
+    useState<PendingPromotion | null>(null);
 
   const gameRef = useRef(game);
   gameRef.current = game;
@@ -84,6 +143,7 @@ export function useChessBoardLogic({
         playMoveSound(move, gameRef.current);
         setMoveFrom(null);
         setOptionSquares({});
+        setPendingPromotion(null);
         onMoveExecuted?.(move);
         return true;
       }
@@ -91,6 +151,33 @@ export function useChessBoardLogic({
     },
     [makeMove, playMoveSound, onMoveExecuted]
   );
+
+  // Check if a move is a promotion
+  const isPromotionMove = useCallback(
+    (from: Square, to: Square): boolean => {
+      const piece = game.get(from);
+      if (!piece || piece.type !== 'p') return false;
+      const targetRank = to[1];
+      return targetRank === '8' || targetRank === '1';
+    },
+    [game]
+  );
+
+  // Complete a pending promotion with selected piece
+  const completePromotion = useCallback(
+    (piece: PieceSymbol) => {
+      if (!pendingPromotion) return;
+      executeMove(pendingPromotion.from, pendingPromotion.to, piece);
+    },
+    [pendingPromotion, executeMove]
+  );
+
+  // Cancel pending promotion
+  const cancelPromotion = useCallback(() => {
+    setPendingPromotion(null);
+    setMoveFrom(null);
+    setOptionSquares({});
+  }, []);
 
   const getMoveOptions = useCallback(
     (square: Square): boolean => {
@@ -122,8 +209,37 @@ export function useChessBoardLogic({
         if (piece?.color !== playerColorShort) {
           return false;
         }
+        // If premoves enabled and not player's turn, queue as premove
+        if (!isPlayerTurn && enablePremoves) {
+          setPremoves((prev) => [
+            ...prev,
+            { from, to, promotion: promotion || 'q' }
+          ]);
+          onPremoveAdded?.();
+          setMoveFrom(null);
+          setOptionSquares({});
+          return true;
+        }
         if (!isPlayerTurn) {
           return false;
+        }
+      }
+
+      // Check if this is a promotion move and no promotion piece specified
+      if (!promotion && isPromotionMove(from, to)) {
+        // Validate the move is legal before showing dialog
+        const moves = game.moves({ square: from, verbose: true });
+        const isLegal = moves.some((m) => m.to === to);
+        if (isLegal) {
+          const piece = game.get(from);
+          setPendingPromotion({
+            from,
+            to,
+            color: piece?.color === 'w' ? 'white' : 'black'
+          });
+          setMoveFrom(null);
+          setOptionSquares({});
+          return true; // Return true to prevent piece snapping back
         }
       }
 
@@ -141,6 +257,9 @@ export function useChessBoardLogic({
       allowOpponentMoves,
       playerColorShort,
       isPlayerTurn,
+      enablePremoves,
+      onPremoveAdded,
+      isPromotionMove,
       executeMove
     ]
   );
@@ -191,12 +310,8 @@ export function useChessBoardLogic({
         return;
       }
 
-      const piece = game.get(moveFrom);
-      const promotion =
-        piece?.type === 'p' && (sq[1] === '8' || sq[1] === '1')
-          ? 'q'
-          : undefined;
-      handleUserMove(moveFrom, sq, promotion);
+      // Let handleUserMove handle promotion detection
+      handleUserMove(moveFrom, sq);
       setMoveFrom(null);
       setOptionSquares({});
     },
@@ -213,30 +328,86 @@ export function useChessBoardLogic({
 
   const handleSquareRightClick = useCallback(
     ({ square }: { square: string }) => {
+      // If premoves are queued, right-click clears them
+      if (enablePremoves && premoves.length > 0) {
+        setPremoves([]);
+        return;
+      }
       const sq = square as Square;
       setRightClickedSquares((p) => ({
         ...p,
         [sq]: p[sq]?.backgroundColor ? undefined : BOARD_STYLES.rightClickSquare
       }));
     },
-    []
+    [enablePremoves, premoves.length]
   );
 
+  // Execute premoves when it becomes player's turn
+  useEffect(() => {
+    if (!enablePremoves || premoves.length === 0) return;
+    if (!isPlayerTurn || game.isGameOver()) return;
+
+    const [first, ...rest] = premoves;
+    const success = executeMove(first.from, first.to, first.promotion);
+    if (success) {
+      setPremoves(rest);
+    } else {
+      // Invalid premove, clear all
+      setPremoves([]);
+    }
+  }, [enablePremoves, premoves, isPlayerTurn, game, executeMove]);
+
+  // Premove square highlighting
+  const premoveStyles = useMemo<SquareStyles>(() => {
+    if (!enablePremoves || premoves.length === 0) return {};
+    return premoves.reduce(
+      (acc, p) => ({
+        ...acc,
+        [p.from]: BOARD_STYLES.premoveSquare,
+        [p.to]: BOARD_STYLES.premoveSquare
+      }),
+      {} as SquareStyles
+    );
+  }, [enablePremoves, premoves]);
+
   const squareStyles = useMemo<SquareStyles>(() => {
-    return { ...optionSquares, ...rightClickedSquares };
-  }, [optionSquares, rightClickedSquares]);
+    return { ...optionSquares, ...rightClickedSquares, ...premoveStyles };
+  }, [optionSquares, rightClickedSquares, premoveStyles]);
 
   const clearState = useCallback(() => {
     setOptionSquares({});
     setRightClickedSquares({});
     setMoveFrom(null);
+    setPremoves([]);
+    setPendingPromotion(null);
   }, []);
 
-  const position = isMounted
-    ? isViewingHistory
-      ? currentFEN
-      : game.fen()
-    : STARTING_FEN;
+  // Calculate position - use object format when premoves exist to show pieces
+  const position = useMemo(() => {
+    const baseFen = isMounted
+      ? isViewingHistory
+        ? currentFEN
+        : game.fen()
+      : STARTING_FEN;
+
+    // If no premoves, return FEN string directly
+    if (!enablePremoves || premoves.length === 0) {
+      return baseFen;
+    }
+
+    // Convert to position object and apply premoves
+    const posObj = fenToPosition(baseFen);
+
+    for (const premove of premoves) {
+      const piece = posObj[premove.from];
+      if (piece) {
+        delete posObj[premove.from];
+        posObj[premove.to] = piece;
+      }
+    }
+
+    return posObj;
+  }, [isMounted, isViewingHistory, currentFEN, game, enablePremoves, premoves]);
 
   return {
     isMounted,
@@ -247,6 +418,8 @@ export function useChessBoardLogic({
     gameTurn,
     playerColorShort,
     moveFrom,
+    premoves,
+    pendingPromotion,
     executeMove,
     handleUserMove,
     onDrop,
@@ -254,8 +427,11 @@ export function useChessBoardLogic({
     handleSquareRightClick,
     getMoveOptions,
     clearState,
+    completePromotion,
+    cancelPromotion,
     setMoveFrom,
     setOptionSquares,
-    setRightClickedSquares
+    setRightClickedSquares,
+    setPremoves
   };
 }

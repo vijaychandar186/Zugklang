@@ -1,14 +1,17 @@
 'use client';
 
+import { useMemo } from 'react';
 import { Chessboard } from 'react-chessboard';
-import { useCallback, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
 
+// Position can be FEN string or position object
+type PositionObject = Record<string, { pieceType: string }>;
+
 export type UnifiedChessBoardProps = {
-  position: string;
+  position: string | PositionObject;
   boardOrientation?: 'white' | 'black';
   canDrag?: boolean;
   squareStyles?: Record<string, CSSProperties>;
@@ -37,48 +40,6 @@ export function UnifiedChessBoard({
   arrows = [],
   animationDuration = ANIMATION_CONFIG.durationMs
 }: UnifiedChessBoardProps) {
-  const handlePieceDrop = useCallback(
-    ({
-      sourceSquare,
-      targetSquare
-    }: {
-      sourceSquare: string;
-      targetSquare: string | null;
-    }): boolean => {
-      if (!onPieceDrop) return false;
-      return onPieceDrop({ sourceSquare, targetSquare });
-    },
-    [onPieceDrop]
-  );
-
-  const handleSquareClick = useCallback(
-    ({ square }: { square: string }) => {
-      if (onSquareClick) {
-        onSquareClick({ square });
-      }
-    },
-    [onSquareClick]
-  );
-
-  const handleSquareRightClick = useCallback(
-    ({ square }: { square: string }) => {
-      if (onSquareRightClick) {
-        onSquareRightClick({ square });
-      }
-    },
-    [onSquareRightClick]
-  );
-
-  const chessboardArrows = useMemo(
-    () =>
-      arrows.map((arrow) => ({
-        startSquare: arrow.startSquare,
-        endSquare: arrow.endSquare,
-        color: arrow.color
-      })),
-    [arrows]
-  );
-
   const options = useMemo(
     () => ({
       position,
@@ -92,10 +53,14 @@ export function UnifiedChessBoard({
       dropSquareStyle: {
         boxShadow: 'inset 0 0 1px 4px var(--highlight-drop)'
       },
-      arrows: chessboardArrows,
-      onSquareClick: handleSquareClick,
-      onSquareRightClick: handleSquareRightClick,
-      onPieceDrop: handlePieceDrop
+      arrows: arrows.map((a) => ({
+        startSquare: a.startSquare,
+        endSquare: a.endSquare,
+        color: a.color
+      })),
+      onSquareClick,
+      onSquareRightClick,
+      onPieceDrop
     }),
     [
       position,
@@ -105,10 +70,10 @@ export function UnifiedChessBoard({
       squareStyles,
       darkSquareStyle,
       lightSquareStyle,
-      chessboardArrows,
-      handleSquareClick,
-      handleSquareRightClick,
-      handlePieceDrop
+      arrows,
+      onSquareClick,
+      onSquareRightClick,
+      onPieceDrop
     ]
   );
 

@@ -23,12 +23,14 @@ export function SparePiecePalette({
   const bottomPieces =
     orientation === 'white' ? BLACK_PIECE_TYPES : WHITE_PIECE_TYPES;
 
+  const topLabel = orientation === 'white' ? 'White Pieces' : 'Black Pieces';
+  const bottomLabel = orientation === 'white' ? 'Black Pieces' : 'White Pieces';
+
   return (
     <div className='space-y-4 p-4'>
-      {/* White pieces section */}
       <div>
         <p className='text-muted-foreground mb-2 text-xs font-medium'>
-          White Pieces
+          {topLabel}
         </p>
         <div className='bg-muted/30 grid grid-cols-6 gap-1 rounded-lg border p-2'>
           {topPieces.map((pieceType) => (
@@ -42,10 +44,9 @@ export function SparePiecePalette({
         </div>
       </div>
 
-      {/* Black pieces section */}
       <div>
         <p className='text-muted-foreground mb-2 text-xs font-medium'>
-          Black Pieces
+          {bottomLabel}
         </p>
         <div className='bg-muted/30 grid grid-cols-6 gap-1 rounded-lg border p-2'>
           {bottomPieces.map((pieceType) => (

@@ -18,23 +18,23 @@ export function GameModeCard({
 }: GameModeCardProps) {
   return (
     <Link href={href} className='group block h-full'>
-      <div className='bg-card border-border hover:border-primary/50 h-full rounded-2xl border p-6 transition-all hover:shadow-md md:p-8'>
-        <div className='flex h-full flex-col gap-6'>
+      <div className='bg-card border-border hover:border-primary/50 h-full rounded-xl border p-4 transition-all hover:shadow-md'>
+        <div className='flex h-full flex-col gap-3'>
           <div className='flex items-start justify-between'>
-            <div className='bg-primary/10 text-primary ring-primary/20 w-fit rounded-xl p-3 ring-1'>
-              <Icon className='h-8 w-8' />
+            <div className='bg-primary/10 text-primary ring-primary/20 w-fit rounded-lg p-2 ring-1'>
+              <Icon className='h-5 w-5' />
             </div>
-            <Icons.arrowUpRight className='text-muted-foreground h-5 w-5' />
+            <Icons.arrowUpRight className='text-muted-foreground h-4 w-4' />
           </div>
 
-          <div className='space-y-2'>
-            <h2 className='text-2xl font-bold tracking-tight'>{title}</h2>
-            <p className='text-muted-foreground leading-relaxed'>
+          <div className='space-y-1'>
+            <h2 className='text-base font-semibold tracking-tight'>{title}</h2>
+            <p className='text-muted-foreground text-xs leading-relaxed'>
               {description}
             </p>
           </div>
 
-          <div className='text-primary mt-auto flex items-center pt-4 text-sm font-medium'>
+          <div className='text-primary mt-auto flex items-center text-xs font-medium'>
             <span className='underline-offset-4 group-hover:underline'>
               {actionText}
             </span>

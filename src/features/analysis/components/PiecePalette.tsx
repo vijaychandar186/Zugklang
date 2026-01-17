@@ -7,9 +7,24 @@ import {
   useBoardEditorActions
 } from '../stores/useBoardEditorStore';
 
-// Use the same piece images as react-chessboard (lichess cburnett set)
+// Mapping from piece codes to file names
+const PIECE_FILE_NAMES: Record<PieceCode, string> = {
+  wK: 'white-king',
+  wQ: 'white-queen',
+  wR: 'white-rook',
+  wB: 'white-bishop',
+  wN: 'white-knight',
+  wP: 'white-pawn',
+  bK: 'black-king',
+  bQ: 'black-queen',
+  bR: 'black-rook',
+  bB: 'black-bishop',
+  bN: 'black-knight',
+  bP: 'black-pawn'
+};
+
 const PIECE_IMAGE_URL = (piece: PieceCode) =>
-  `https://lichess1.org/assets/piece/cburnett/${piece}.svg`;
+  `/pieces/${PIECE_FILE_NAMES[piece]}.svg`;
 
 // All pieces in order for 4-column grid (white on top row, black on bottom)
 const ALL_PIECES: PieceCode[] = [

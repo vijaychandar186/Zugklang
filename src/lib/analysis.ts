@@ -1,6 +1,11 @@
 import { Chess, Square } from 'chess.js';
 import type { Position } from '@/types/Position';
 import openingsData from '@/resources/openings.json';
+import {
+  getWinPercentageFromEval,
+  computeEstimatedElo,
+  type Evaluation
+} from './winPercentage';
 
 export enum Classification {
   BRILLIANT = 'brilliant',
@@ -10,6 +15,7 @@ export enum Classification {
   GOOD = 'good',
   INACCURACY = 'inaccuracy',
   MISTAKE = 'mistake',
+  MISS = 'miss',
   BLUNDER = 'blunder',
   BOOK = 'book',
   FORCED = 'forced'
@@ -18,24 +24,16 @@ export enum Classification {
 const classificationValues: Record<string, number> = {
   blunder: 0,
   mistake: 0.15,
+  miss: 0.25,
   inaccuracy: 0.35,
   good: 0.55,
   excellent: 0.85,
   best: 1,
   great: 1,
   brilliant: 1,
-  book: 0.9, // Opening theory - slightly less than perfect
+  book: 0.9,
   forced: 1
 };
-
-const centipawnClassifications = [
-  Classification.BEST,
-  Classification.EXCELLENT,
-  Classification.GOOD,
-  Classification.INACCURACY,
-  Classification.MISTAKE,
-  Classification.BLUNDER
-];
 
 const pieceValues: Record<string, number> = {
   p: 1,
@@ -49,46 +47,25 @@ const pieceValues: Record<string, number> = {
 
 const promotions = [undefined, 'b', 'n', 'r', 'q'] as const;
 
-function getEvaluationLossThreshold(
-  classif: Classification,
-  prevEval: number
-): number {
-  const absPrevEval = Math.abs(prevEval);
+// Win percentage based move classification
+// Based on Lichess/Chesskit approach
+function classifyByWinPercentage(
+  prevEval: Evaluation,
+  currEval: Evaluation,
+  isWhiteMove: boolean
+): Classification {
+  const prevWinPct = getWinPercentageFromEval(prevEval);
+  const currWinPct = getWinPercentageFromEval(currEval);
 
-  // Scaling factor: allow slightly more leeway in winning/losing positions
-  // At eval 0: factor = 1.0, at eval 500: factor = 1.25, at eval 1000: factor = 1.5
-  const scaleFactor = 1 + absPrevEval / 2000;
+  // Win percentage diff from the moving player's perspective
+  const winPctDiff = (currWinPct - prevWinPct) * (isWhiteMove ? 1 : -1);
 
-  // Base thresholds (stricter, chess.com-style)
-  let baseThreshold = 0;
-
-  switch (classif) {
-    case Classification.BEST:
-      // Must match top move or be within 5cp
-      baseThreshold = 5;
-      break;
-    case Classification.EXCELLENT:
-      // Very good move, minor inaccuracy (5-15cp loss)
-      baseThreshold = 15;
-      break;
-    case Classification.GOOD:
-      // Decent move (15-35cp loss)
-      baseThreshold = 35;
-      break;
-    case Classification.INACCURACY:
-      // Noticeable inaccuracy (35-70cp loss)
-      baseThreshold = 70;
-      break;
-    case Classification.MISTAKE:
-      // Significant mistake (70-150cp loss)
-      baseThreshold = 150;
-      break;
-    default:
-      // BLUNDER: anything worse than 150cp loss
-      return Infinity;
-  }
-
-  return baseThreshold * scaleFactor;
+  if (winPctDiff < -20) return Classification.BLUNDER;
+  if (winPctDiff < -10) return Classification.MISTAKE;
+  if (winPctDiff < -7) return Classification.MISS;
+  if (winPctDiff < -5) return Classification.INACCURACY;
+  if (winPctDiff < -2) return Classification.GOOD;
+  return Classification.EXCELLENT;
 }
 
 interface InfluencingPiece {
@@ -162,6 +139,10 @@ function isPieceHanging(lastFen: string, fen: string, square: Square): boolean {
 
 interface Report {
   accuracies: {
+    white: number;
+    black: number;
+  };
+  estimatedElo?: {
     white: number;
     black: number;
   };
@@ -250,20 +231,16 @@ async function analyse(positions: Position[]): Promise<Report> {
     if (topMove.moveUCI === position.move?.uci) {
       position.classification = Classification.BEST;
     } else {
-      if (noMate) {
-        for (const classif of centipawnClassifications) {
-          if (
-            evalLoss <=
-            getEvaluationLossThreshold(classif, previousEvaluation.value)
-          ) {
-            position.classification = classif;
-            break;
-          }
-        }
-      } else if (
-        previousEvaluation.type === 'cp' &&
-        evaluation.type === 'mate'
-      ) {
+      // Use win percentage based classification
+      const isWhiteMove = moveColour === 'white';
+      position.classification = classifyByWinPercentage(
+        previousEvaluation,
+        evaluation,
+        isWhiteMove
+      );
+
+      // Special handling for mate transitions
+      if (previousEvaluation.type === 'cp' && evaluation.type === 'mate') {
         if (absoluteEvaluation > 0) {
           // Finding mate for yourself
           position.classification = Classification.BEST;
@@ -533,6 +510,16 @@ async function analyse(positions: Position[]): Promise<Report> {
     accuracies[moveColour].maximum++;
   }
 
+  // Calculate win percentages for estimated Elo
+  const winPercentages = positions
+    .filter((p) => p.topLines && p.topLines.length > 0)
+    .map((p) => {
+      const topLine = p.topLines![0];
+      return getWinPercentageFromEval(topLine.evaluation);
+    });
+
+  const estimatedElo = computeEstimatedElo(winPercentages);
+
   return {
     accuracies: {
       white:
@@ -544,6 +531,7 @@ async function analyse(positions: Position[]): Promise<Report> {
           ? (accuracies.black.current / accuracies.black.maximum) * 100
           : 0
     },
+    estimatedElo,
     positions: positions
   };
 }

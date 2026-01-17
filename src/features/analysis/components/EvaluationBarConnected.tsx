@@ -1,75 +1,73 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   useEngineAnalysis,
   useAnalysisState
 } from '@/features/chess/stores/useAnalysisStore';
-import { EvaluationBar, type EvaluationBarProps } from './EvaluationBar';
-import type { Advantage } from '@/features/analysis/types/core';
+import {
+  EvaluationBar,
+  getWinPercentage,
+  formatEvalLabel,
+  type EvaluationBarProps
+} from './EvaluationBar';
 
 type EvaluationBarConnectedProps = Omit<
   EvaluationBarProps,
-  'advantage' | 'cp' | 'mate' | 'isActive'
+  'whitePercentage' | 'label' | 'isActive'
 >;
 
-type StableEvaluation = {
-  advantage: Advantage;
-  cp: number | null;
-  mate: number | null;
+type EvalBarState = {
+  whitePercentage: number;
+  label: string;
 };
 
-/**
- * Stabilized evaluation bar that doesn't flicker when position changes.
- * Holds onto the last valid evaluation until a new real evaluation arrives,
- * preventing the bar from jumping to 0 during position transitions.
- */
+const MIN_STABLE_DEPTH = 6;
+
 export function EvaluationBarConnected(props: EvaluationBarConnectedProps) {
-  const { advantage, cp, mate } = useEngineAnalysis();
+  const { cp: rawCp, mate: rawMate, advantage } = useEngineAnalysis();
   const { isAnalysisOn, currentSearchDepth } = useAnalysisState();
 
-  // Store the last valid (non-reset) evaluation
-  const [stableEval, setStableEval] = useState<StableEvaluation>({
-    advantage: 'equal',
-    cp: null,
-    mate: null
+  // Keep the last valid evaluation - never reset
+  const [evalBar, setEvalBar] = useState<EvalBarState>({
+    whitePercentage: 50,
+    label: '0.0'
   });
 
-  // Track if we've received a real evaluation for the current position
-  const hasReceivedEvalRef = useRef(false);
-
   useEffect(() => {
-    // When depth resets to 0, it means position changed - wait for new eval
-    if (currentSearchDepth === 0) {
-      hasReceivedEvalRef.current = false;
+    // Don't update if depth is too low
+    if (currentSearchDepth < MIN_STABLE_DEPTH) {
       return;
     }
 
-    // Only update stable eval when we have real data at sufficient depth.
-    // Early depths (1-7) produce unstable evaluations that cause flickering.
-    // Wait for depth >= 8 before showing the new evaluation.
-    const hasRealEval = cp !== null || mate !== null;
-    const MIN_STABLE_DEPTH = 8;
-
-    if (hasRealEval && currentSearchDepth >= MIN_STABLE_DEPTH) {
-      hasReceivedEvalRef.current = true;
-      setStableEval({ advantage, cp, mate });
+    const hasRealEval = rawCp !== null || rawMate !== null;
+    if (!hasRealEval) {
+      return;
     }
-  }, [advantage, cp, mate, currentSearchDepth]);
 
-  // Reset stable eval when analysis is turned off
-  useEffect(() => {
-    if (!isAnalysisOn) {
-      setStableEval({ advantage: 'equal', cp: null, mate: null });
-      hasReceivedEvalRef.current = false;
+    // Convert unsigned cp/mate to signed (positive = white better, negative = black better)
+    let cp = rawCp;
+    let mate = rawMate;
+
+    if (mate !== null) {
+      // Ensure non-zero mate value and apply correct sign
+      const mateValue = Math.max(mate, 1);
+      mate = advantage === 'black' ? -mateValue : mateValue;
+      cp = null;
+    } else if (cp !== null && advantage === 'black') {
+      cp = -cp;
     }
-  }, [isAnalysisOn]);
+
+    const whitePercentage = getWinPercentage(cp, mate);
+    const label = formatEvalLabel(cp, mate);
+
+    setEvalBar({ whitePercentage, label });
+  }, [rawCp, rawMate, advantage, currentSearchDepth]);
 
   return (
     <EvaluationBar
-      advantage={stableEval.advantage}
-      cp={stableEval.cp}
-      mate={stableEval.mate}
+      whitePercentage={evalBar.whitePercentage}
+      label={evalBar.label}
       isActive={isAnalysisOn}
       {...props}
     />

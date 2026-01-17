@@ -11,38 +11,30 @@ import type {
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 type GameReviewStore = {
-  // Review state
   pgn: string;
   depth: number;
   status: ReviewStatus;
   progress: number;
   errorMsg: string;
   report: GameReport | null;
+  livePositions: Position[];
   liveEvaluations: (LiveEvaluation | null)[];
-
-  // Navigation state
   currentMoveIndex: number;
   boardFlipped: boolean;
 
-  // Actions
   setPgn: (pgn: string) => void;
   setDepth: (depth: number) => void;
   setStatus: (status: ReviewStatus) => void;
   setProgress: (progress: number) => void;
   setErrorMsg: (msg: string) => void;
   setReport: (report: GameReport | null) => void;
+  setLivePositions: (positions: Position[]) => void;
   setLiveEvaluations: (evals: (LiveEvaluation | null)[]) => void;
   updateLiveEvaluation: (index: number, evaluation: LiveEvaluation) => void;
-
-  // Navigation actions
   navigate: (delta: number) => void;
   goToMove: (index: number) => void;
   toggleBoardFlip: () => void;
-
-  // Reset
   resetReview: () => void;
-
-  // Computed
   getCurrentPosition: () => Position | undefined;
   getCurrentFen: () => string;
   getTotalMoves: () => number;
@@ -51,19 +43,17 @@ type GameReviewStore = {
 export const useGameReviewStore = create<GameReviewStore>()(
   persist(
     (set, get) => ({
-      // Initial state
       pgn: '',
       depth: 16,
       status: 'idle',
       progress: 0,
       errorMsg: '',
       report: null,
+      livePositions: [],
       liveEvaluations: [],
-
       currentMoveIndex: 0,
       boardFlipped: false,
 
-      // Setters
       setPgn: (pgn) => set({ pgn }),
       setDepth: (depth) => set({ depth }),
       setStatus: (status) => set({ status }),
@@ -72,8 +62,10 @@ export const useGameReviewStore = create<GameReviewStore>()(
       setReport: (report) =>
         set({
           report,
+          livePositions: [],
           currentMoveIndex: 0
         }),
+      setLivePositions: (positions) => set({ livePositions: positions }),
       setLiveEvaluations: (evals) => set({ liveEvaluations: evals }),
 
       updateLiveEvaluation: (index, evaluation) =>
@@ -83,13 +75,13 @@ export const useGameReviewStore = create<GameReviewStore>()(
           return { liveEvaluations: newEvals };
         }),
 
-      // Navigation
       navigate: (delta) =>
         set((state) => {
-          const { report, currentMoveIndex } = state;
-          if (!report) return state;
+          const { report, livePositions, currentMoveIndex } = state;
+          const positions = report?.positions || livePositions;
+          if (positions.length === 0) return state;
 
-          const maxIndex = report.positions.length - 1;
+          const maxIndex = positions.length - 1;
           let newIndex: number;
 
           if (delta === Infinity) {
@@ -109,10 +101,11 @@ export const useGameReviewStore = create<GameReviewStore>()(
 
       goToMove: (index) =>
         set((state) => {
-          const { report } = state;
-          if (!report) return state;
+          const { report, livePositions } = state;
+          const positions = report?.positions || livePositions;
+          if (positions.length === 0) return { currentMoveIndex: index };
 
-          const maxIndex = report.positions.length - 1;
+          const maxIndex = positions.length - 1;
           const clampedIndex = Math.max(0, Math.min(index, maxIndex));
           return { currentMoveIndex: clampedIndex };
         }),
@@ -120,21 +113,21 @@ export const useGameReviewStore = create<GameReviewStore>()(
       toggleBoardFlip: () =>
         set((state) => ({ boardFlipped: !state.boardFlipped })),
 
-      // Reset
       resetReview: () =>
         set({
           status: 'idle',
           progress: 0,
           errorMsg: '',
           report: null,
+          livePositions: [],
           liveEvaluations: [],
           currentMoveIndex: 0
         }),
 
-      // Computed
       getCurrentPosition: () => {
-        const { report, currentMoveIndex } = get();
-        return report?.positions[currentMoveIndex];
+        const { report, livePositions, currentMoveIndex } = get();
+        const positions = report?.positions || livePositions;
+        return positions[currentMoveIndex];
       },
 
       getCurrentFen: () => {
@@ -143,15 +136,13 @@ export const useGameReviewStore = create<GameReviewStore>()(
       },
 
       getTotalMoves: () => {
-        const { report, liveEvaluations } = get();
-        return report ? report.positions.length : liveEvaluations.length;
+        const { report, livePositions } = get();
+        return report ? report.positions.length : livePositions.length;
       }
     }),
     {
       name: 'zugklang-game-review',
       storage: createJSONStorage(() => localStorage),
-      // Only persist the data that should survive refreshes
-      // Don't persist transient state like status, progress, errorMsg, liveEvaluations
       partialize: (state) => ({
         pgn: state.pgn,
         depth: state.depth,
@@ -159,7 +150,6 @@ export const useGameReviewStore = create<GameReviewStore>()(
         currentMoveIndex: state.currentMoveIndex,
         boardFlipped: state.boardFlipped
       }),
-      // When loading from storage, set status to 'complete' if we have a report
       onRehydrateStorage: () => (state) => {
         if (state && state.report) {
           state.status = 'complete';
@@ -169,7 +159,6 @@ export const useGameReviewStore = create<GameReviewStore>()(
   )
 );
 
-// State selector
 export const useGameReviewState = () =>
   useGameReviewStore(
     useShallow((s) => ({
@@ -179,13 +168,13 @@ export const useGameReviewState = () =>
       progress: s.progress,
       errorMsg: s.errorMsg,
       report: s.report,
+      livePositions: s.livePositions,
       liveEvaluations: s.liveEvaluations,
       currentMoveIndex: s.currentMoveIndex,
       boardFlipped: s.boardFlipped
     }))
   );
 
-// Actions selector
 export const useGameReviewActions = () =>
   useGameReviewStore(
     useShallow((s) => ({
@@ -195,6 +184,7 @@ export const useGameReviewActions = () =>
       setProgress: s.setProgress,
       setErrorMsg: s.setErrorMsg,
       setReport: s.setReport,
+      setLivePositions: s.setLivePositions,
       setLiveEvaluations: s.setLiveEvaluations,
       updateLiveEvaluation: s.updateLiveEvaluation,
       navigate: s.navigate,
@@ -207,11 +197,11 @@ export const useGameReviewActions = () =>
     }))
   );
 
-// Derived state selector for current position data
 export const useCurrentPositionData = () =>
   useGameReviewStore(
     useShallow((s) => {
-      const position = s.report?.positions[s.currentMoveIndex];
+      const positions = s.report?.positions || s.livePositions;
+      const position = positions[s.currentMoveIndex];
       const topLine = position?.topLines?.find((l) => l.id === 1);
 
       return {

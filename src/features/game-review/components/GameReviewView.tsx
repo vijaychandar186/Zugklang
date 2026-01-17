@@ -90,6 +90,7 @@ export function GameReviewView() {
     setProgress,
     setErrorMsg,
     setReport,
+    setLivePositions,
     setLiveEvaluations,
     navigate,
     goToMove,
@@ -99,7 +100,6 @@ export function GameReviewView() {
 
   const { position, classification, currentFen } = useCurrentPositionData();
 
-  // Analysis store for real-time engine analysis
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { initializeEngine, setPosition, cleanup, startAnalysis, endAnalysis } =
     useAnalysisActions();
@@ -109,10 +109,8 @@ export function GameReviewView() {
 
   const theme = useBoardTheme();
 
-  // Get the current turn from the FEN
   const gameTurn = (currentFen?.split(' ')[1] || 'w') as 'w' | 'b';
 
-  // Use the standard chess arrows hook for live analysis arrows
   const analysisArrows = useChessArrows({
     isAnalysisOn,
     uciLines,
@@ -123,18 +121,15 @@ export function GameReviewView() {
     analysisTurn
   });
 
-  // Generate arrows from stored position's top lines (for review mode)
   const storedPositionArrows = useMemo((): ChessArrow[] => {
     if (!report || isAnalysisOn) return [];
     if (!showBestMoveArrow && !showThreatArrow) return [];
 
-    // Get the current position's top lines (engine suggestions for current position)
     const currentPosition = report.positions[currentMoveIndex];
     if (!currentPosition?.topLines) return [];
 
     const arrows: ChessArrow[] = [];
 
-    // Show best move arrow for current position
     if (showBestMoveArrow) {
       currentPosition.topLines.slice(0, 2).forEach((line, index) => {
         if (!line.moveUCI || line.moveUCI.length < 4) return;
@@ -148,15 +143,12 @@ export function GameReviewView() {
       });
     }
 
-    // Show threat arrow (opponent's threat from previous position analysis)
-    // This shows what the opponent's best move would have been
     if (showThreatArrow && currentMoveIndex > 0) {
       const prevPosition = report.positions[currentMoveIndex - 1];
       const threatLine = prevPosition?.topLines?.[0];
       if (threatLine?.moveUCI && threatLine.moveUCI.length >= 4) {
         const from = threatLine.moveUCI.slice(0, 2);
         const to = threatLine.moveUCI.slice(2, 4);
-        // Only add if not already in arrows
         if (!arrows.some((a) => a.startSquare === from && a.endSquare === to)) {
           arrows.push({
             startSquare: from,
@@ -176,7 +168,6 @@ export function GameReviewView() {
     isAnalysisOn
   ]);
 
-  // Combine arrows: use live analysis arrows when analysis is on, otherwise use stored
   const combinedArrows = useMemo(() => {
     if (isAnalysisOn && analysisArrows.length > 0) {
       return analysisArrows;
@@ -188,7 +179,6 @@ export function GameReviewView() {
   const canGoBack = currentMoveIndex > 0;
   const canGoForward = currentMoveIndex < totalPositions - 1;
 
-  // Playback control - use MOVE_DELAY for smooth animation sync
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isPlaying && report) {
@@ -203,7 +193,6 @@ export function GameReviewView() {
     return () => clearInterval(interval);
   }, [isPlaying, currentMoveIndex, report, navigate]);
 
-  // Square styles for move highlighting based on classification
   const squareStyles = useMemo(() => {
     const styles: Record<string, React.CSSProperties> = {};
     if (position?.move?.uci && currentMoveIndex > 0) {
@@ -222,7 +211,6 @@ export function GameReviewView() {
     return styles;
   }, [position, currentMoveIndex, classification]);
 
-  // Classification icon position and visibility calculation
   const classificationIcon = useMemo(() => {
     const shouldShow =
       position?.move?.uci &&
@@ -235,17 +223,14 @@ export function GameReviewView() {
     }
 
     const toSquare = position.move.uci.slice(2, 4);
-    const file = toSquare.charCodeAt(0) - 97; // a=0, b=1, ..., h=7
-    const rank = parseInt(toSquare[1]) - 1; // 1=0, 2=1, ..., 8=7
+    const file = toSquare.charCodeAt(0) - 97;
+    const rank = parseInt(toSquare[1]) - 1;
 
-    // Calculate position based on board orientation
     const x = boardFlipped ? 7 - file : file;
     const y = boardFlipped ? rank : 7 - rank;
 
-    // Position at top-right corner of square (percentage-based)
-    // Each square is 12.5% of the board
-    const left = x * 12.5 + 9; // Position near right edge of square
-    const top = y * 12.5 - 1.5; // Position near top edge of square
+    const left = x * 12.5 + 9;
+    const top = y * 12.5 - 1.5;
 
     return {
       show: true,
@@ -255,20 +240,17 @@ export function GameReviewView() {
     };
   }, [position, currentMoveIndex, classification, boardFlipped]);
 
-  // Initialize analysis engine
   useEffect(() => {
     initializeEngine();
     return () => cleanup();
   }, [initializeEngine, cleanup]);
 
-  // Update analysis position when current FEN changes
   useEffect(() => {
     if (!currentFen) return;
     const turn = currentFen.split(' ')[1] as 'w' | 'b';
     setPosition(currentFen, turn);
   }, [currentFen, setPosition]);
 
-  // Toggle analysis on/off
   const handleToggleAnalysis = useCallback(() => {
     if (isAnalysisOn) {
       endAnalysis();
@@ -300,7 +282,6 @@ export function GameReviewView() {
     setProgress(0);
 
     try {
-      // Step 1: Parse the PGN/FEN into positions
       const parseRes = await fetch('/api/game-review/parse', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -321,7 +302,6 @@ export function GameReviewView() {
         return;
       }
 
-      // Check if this is a FEN-only import (just one position, no moves)
       if (positions.length === 1) {
         setErrorMsg(
           'FEN positions have no moves to review. For position analysis, use the Analysis page instead.'
@@ -330,9 +310,10 @@ export function GameReviewView() {
         return;
       }
 
+      // Set live positions for incremental board updates during evaluation
+      setLivePositions(positions);
       setProgress(10);
 
-      // Step 2: Evaluate positions with Stockfish (THE MISSING STEP!)
       setStatus('evaluating');
 
       const { evaluatePositions } = await import('@/lib/evaluation');
@@ -340,11 +321,9 @@ export function GameReviewView() {
         positions,
         depth,
         (current, _total, percent, currentPositions) => {
-          // Update progress: 10% to 90% for evaluation
           const evalProgress = 10 + Math.round(percent * 0.8);
           setProgress(evalProgress);
 
-          // Update live evaluations for progressive graph display
           const liveEvals = currentPositions.map((pos) => {
             const topLine = pos.topLines?.[0];
             if (topLine?.evaluation) {
@@ -357,12 +336,10 @@ export function GameReviewView() {
           });
           setLiveEvaluations(liveEvals);
 
-          // Move the yellow indicator to show current position being evaluated
           goToMove(current);
         }
       );
 
-      // Step 3: Generate the analysis report
       setStatus('reporting');
       setProgress(95);
 
@@ -396,11 +373,11 @@ export function GameReviewView() {
     setProgress,
     setErrorMsg,
     setReport,
+    setLivePositions,
     setLiveEvaluations,
     goToMove
   ]);
 
-  // Auto-start review when PGN is imported
   useEffect(() => {
     if (shouldAutoReview && pgn.trim()) {
       setShouldAutoReview(false);
@@ -423,7 +400,6 @@ export function GameReviewView() {
       toast.error('No moves to copy');
       return;
     }
-    // Extract moves from positions (skip first position which is starting position)
     const movesList = report.positions
       .slice(1)
       .map((pos) => pos.move?.san)
@@ -444,9 +420,7 @@ export function GameReviewView() {
 
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-4 lg:overflow-hidden lg:px-6'>
-      {/* Board area - Center */}
       <div className='flex flex-col items-center gap-2'>
-        {/* Top player */}
         <div className='flex w-full items-center py-2'>
           <PlayerInfo
             name={boardFlipped ? 'White' : 'Black'}
@@ -454,16 +428,13 @@ export function GameReviewView() {
           />
         </div>
 
-        {/* Board with Evaluation Bar */}
         <div className='flex items-start justify-center gap-1 sm:gap-2'>
-          {/* Evaluation bar - shown on all screen sizes when analysis is on */}
           <div
             className={`shrink-0 ${isAnalysisOn ? 'w-5 sm:w-7' : 'hidden w-0 sm:block sm:w-7'}`}
           >
             {isAnalysisOn && <EvaluationBarConnected />}
           </div>
 
-          {/* Board - shrinks on mobile when eval bar is visible */}
           <div
             className={`relative shrink-0 ${isAnalysisOn ? '[&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[560px]' : ''}`}
           >
@@ -495,7 +466,6 @@ export function GameReviewView() {
           </div>
         </div>
 
-        {/* Bottom player */}
         <div className='flex w-full items-center py-2'>
           <PlayerInfo
             name={boardFlipped ? 'Black' : 'White'}
@@ -504,12 +474,9 @@ export function GameReviewView() {
         </div>
       </div>
 
-      {/* Primary Sidebar - Move History, Controls & Evaluation Graph */}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {/* Analysis lines - show when analysis is on */}
         <AnalysisLines />
 
-        {/* Evaluation graph - show during evaluation or when complete */}
         {(report ||
           (status === 'evaluating' && liveEvaluations.length > 0)) && (
           <div className='bg-card shrink-0 rounded-lg border p-3'>
@@ -536,12 +503,10 @@ export function GameReviewView() {
           </div>
         )}
 
-        {/* Move history and controls */}
         <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:min-h-0 lg:flex-1'>
           <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
             <h3 className='font-semibold'>Game Review</h3>
             <div className='flex items-center gap-1'>
-              {/* Share dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant='ghost' size='icon' className='h-8 w-8'>
@@ -564,7 +529,6 @@ export function GameReviewView() {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* Import PGN/FEN */}
               <Dialog
                 open={importDialogOpen}
                 onOpenChange={setImportDialogOpen}
@@ -640,7 +604,6 @@ export function GameReviewView() {
             </div>
           </div>
 
-          {/* Content: Move history or status */}
           {report ? (
             <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
               <div className='px-4 py-2'>
@@ -652,20 +615,12 @@ export function GameReviewView() {
               </div>
             </ScrollArea>
           ) : isLoading ? (
-            // --- Updated: skeleton that mirrors "No game loaded" layout + keeps icon ---
             <div className='flex min-h-[180px] flex-1 flex-col items-center justify-center gap-4 p-4 text-center'>
-              {/* keep the icon */}
               <Icons.circlestar className='text-muted-foreground h-12 w-12' />
-
-              {/* replace text block with matching-width skeletons */}
               <div className='w-full max-w-xs space-y-2'>
-                <Skeleton className='h-6 w-full rounded' />{' '}
-                {/* replaces "No game loaded" */}
-                <Skeleton className='h-4 w-full rounded' />{' '}
-                {/* replaces "Import a PGN..." */}
+                <Skeleton className='h-6 w-full rounded' />
+                <Skeleton className='h-4 w-full rounded' />
               </div>
-
-              {/* keep the progress UI like before */}
               <div className='w-full max-w-xs space-y-1'>
                 <div className='text-muted-foreground flex justify-between text-xs'>
                   <span className='capitalize'>{status}...</span>
@@ -709,7 +664,6 @@ export function GameReviewView() {
             />
           )}
 
-          {/* Bottom toolbar */}
           <div className='bg-muted/50 flex items-center justify-between border-t p-2'>
             <div className='flex items-center gap-1'>
               <Tooltip>
@@ -765,7 +719,6 @@ export function GameReviewView() {
         </div>
       </div>
 
-      {/* Secondary Sidebar - Review Report Only */}
       {report && (
         <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
           <div className='bg-card flex-1 overflow-hidden rounded-lg border'>

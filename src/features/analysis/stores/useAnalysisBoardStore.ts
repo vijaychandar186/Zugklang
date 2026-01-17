@@ -7,34 +7,27 @@ import { createModeStorage } from '@/features/chess/stores/gameStorage';
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 type AnalysisBoardStore = {
-  // Game state
   game: Chess;
   currentFEN: string;
   moves: string[];
   positionHistory: string[];
   viewingIndex: number;
   boardOrientation: 'white' | 'black';
-
-  // Playing against stockfish from analysis
   playingAgainstStockfish: boolean;
   playerColor: 'white' | 'black';
   stockfishLevel: number;
 
-  // Actions
   makeMove: (from: string, to: string, promotion?: string) => Move | null;
   addMove: (move: string, fen: string) => void;
-
   goToStart: () => void;
   goToEnd: () => void;
   goToPrev: () => void;
   goToNext: () => void;
   goToMove: (moveIndex: number) => void;
   isViewingHistory: () => boolean;
-
   loadPGN: (pgn: string) => boolean;
   loadFEN: (fen: string) => boolean;
   resetToStarting: () => void;
-
   toggleBoardOrientation: () => void;
   startPlayingFromPosition: (color: 'white' | 'black', level?: number) => void;
   stopPlayingFromPosition: () => void;
@@ -49,7 +42,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
       positionHistory: [STARTING_FEN],
       viewingIndex: 0,
       boardOrientation: 'white',
-
       playingAgainstStockfish: false,
       playerColor: 'white',
       stockfishLevel: 10,
@@ -249,7 +241,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
   )
 );
 
-// Selectors
 export const useAnalysisBoardState = () =>
   useAnalysisBoardStore(
     useShallow((s) => ({

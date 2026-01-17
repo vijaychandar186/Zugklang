@@ -6,8 +6,9 @@
   --classification-best: oklch(0.705 0.197 108.3);
   --classification-excellent: oklch(0.705 0.197 108.3);
   --classification-good: oklch(0.657 0.101 122.2);
-  --classification-inaccuracy: oklch(79.913% 0.16093 88.295);
-  --classification-mistake: oklch(67.123% 0.1615 52.742 / 0.689);
+  --classification-inaccuracy: oklch(0.799 0.16093 88.295);
+  --classification-mistake: oklch(0.671 0.1615 52.742 / 0.689);
+  --classification-miss: oklch(0.657 0.15185 35.167 / 0.7);
   --classification-blunder: oklch(0.468 0.196 17.6);
   --classification-forced: oklch(0.657 0.101 122.2);
   --classification-book: oklch(0.554 0.132 46);

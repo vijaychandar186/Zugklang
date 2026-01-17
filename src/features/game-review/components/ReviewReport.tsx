@@ -33,7 +33,6 @@ export function ReviewReport({
   currentMoveIndex
 }: ReviewReportProps) {
   const classification = currentPosition?.classification;
-  const topLine = currentPosition?.topLines?.find((l) => l.id === 1);
 
   // Get the best move from the PREVIOUS position (what should have been played)
   const previousPosition =
@@ -151,7 +150,7 @@ export function ReviewReport({
                 className='font-bold uppercase'
                 style={{ color: CLASSIFICATION_COLORS[classification || ''] }}
               >
-                {classification || 'Starting Position'}
+                {classification || 'Base Position'}
               </span>
               {currentPosition.move?.san && (
                 <span className='text-muted-foreground'>
@@ -166,7 +165,9 @@ export function ReviewReport({
               classification !== 'book' &&
               classification !== 'forced' &&
               classification !== 'brilliant' &&
-              classification !== 'great' && (
+              classification !== 'great' &&
+              // Only show if we have a valid move string
+              (bestMoveLine.moveSAN || (bestMoveLine.moveUCI && bestMoveLine.moveUCI.length >= 4)) && (
                 <div className='flex items-center gap-2 text-sm'>
                   <Image
                     src={CLASSIFICATION_ICONS.best}
@@ -187,25 +188,31 @@ export function ReviewReport({
               currentPosition.topLines.length > 0 && (
                 <div className='space-y-1'>
                   <div className='text-sm font-medium'>Engine Lines</div>
-                  {currentPosition.topLines.map((line, i) => (
-                    <div
-                      key={i}
-                      className='bg-muted/50 flex justify-between rounded px-2 py-1 font-mono text-sm'
-                    >
-                      <span>{line.moveSAN || line.moveUCI}</span>
-                      <span
-                        className={
-                          line.evaluation.value >= 0
-                            ? 'text-green-500'
-                            : 'text-red-500'
-                        }
+                  {currentPosition.topLines.map((line, i) => {
+                    // Determine the move to display
+                    const moveText = line.moveSAN || 
+                      (line.moveUCI && line.moveUCI.length >= 4 ? line.moveUCI : null);
+                    
+                    return (
+                      <div
+                        key={i}
+                        className='bg-muted/50 flex justify-between rounded px-2 py-1 font-mono text-sm'
                       >
-                        {line.evaluation.type === 'mate'
-                          ? `M${line.evaluation.value}`
-                          : (line.evaluation.value / 100).toFixed(2)}
-                      </span>
-                    </div>
-                  ))}
+                        <span>{moveText || `Line ${line.id}`}</span>
+                        <span
+                          className={
+                            line.evaluation.value >= 0
+                              ? 'text-green-500'
+                              : 'text-red-500'
+                          }
+                        >
+                          {line.evaluation.type === 'mate'
+                            ? `M${line.evaluation.value}`
+                            : (line.evaluation.value / 100).toFixed(2)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 

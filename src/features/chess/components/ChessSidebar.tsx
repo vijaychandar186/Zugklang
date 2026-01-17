@@ -351,7 +351,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={resetToStarting}>
                         <Icons.rematch className='mr-2 h-4 w-4' />
-                        Starting Position
+                        Base Position
                       </DropdownMenuItem>
                     </>
                   )}

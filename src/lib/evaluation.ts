@@ -17,7 +17,7 @@ function parseInfoLine(line: string, isBlackToMove: boolean): InfoLine | null {
   const multipvMatch = line.match(/multipv (\d+)/);
   const cpMatch = line.match(/score cp (-?\d+)/);
   const mateMatch = line.match(/score mate (-?\d+)/);
-  const pvMatch = line.match(/pv (.+)/);
+  const pvMatch = line.match(/ pv (.+)/);
 
   if (!depthMatch || !multipvMatch) return null;
 

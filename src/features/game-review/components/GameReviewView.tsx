@@ -563,7 +563,7 @@ export function GameReviewView() {
                         size='sm'
                         onClick={() =>
                           setPgnFenInput(
-                            '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O'
+                            '1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. Ng5 d5 5. exd5 Nxd5 6. Nxf7 Kxf7 7. Qf3+ Kg8 8. Bxd5+ Be6 9. Bxe6#'
                           )
                         }
                       >
@@ -573,7 +573,7 @@ export function GameReviewView() {
                         variant='secondary'
                         size='sm'
                         onClick={() =>
-                          setPgnFenInput('e4 e5 Nf3 Nc6 Bb5 a6 Ba4 Nf6 O-O Be7')
+                          setPgnFenInput('e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Nxd5 Nxf7 Kxf7 Qf3+ Kg8 Bxd5+ Be6 Bxe6#')
                         }
                       >
                         Sample Moves

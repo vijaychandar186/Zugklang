@@ -35,8 +35,8 @@ import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { MoveHistory } from '@/features/chess/components/sidebar/MoveHistory';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
 import { AnalysisLines } from '@/features/analysis/components/AnalysisLines';
-import { PiecePalette } from './PiecePalette';
-import { EditorBoard } from './EditorBoard';
+import { EditorProvider, EditorChessboard } from './SpareEditorBoard';
+import { SparePiecePalette } from './SparePiecePalette';
 import { AnalysisChessBoard } from './AnalysisChessBoard';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 
@@ -351,8 +351,10 @@ export function AnalysisView() {
     return !!move;
   };
 
-  return (
-    <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
+  // Main layout content - reused for both editor and non-editor modes
+  const layoutContent = (
+    <>
+      {/* Left column - Board */}
       <div className='flex flex-col items-center gap-2'>
         <div className='flex w-full items-center py-2'>
           <PlayerInfo
@@ -361,23 +363,25 @@ export function AnalysisView() {
           />
         </div>
 
-        <BoardContainer showEvaluation={!isEditorMode}>
-          {isEditorMode ? (
-            <EditorBoard boardOrientation={boardOrientation} />
-          ) : playingAgainstStockfish ? (
-            <AnalysisChessBoard />
-          ) : (
-            <Board
-              position={currentFEN}
-              boardOrientation={boardOrientation}
-              canDrag={true}
-              onPieceDrop={handlePieceDrop}
-              darkSquareStyle={theme.darkSquareStyle}
-              lightSquareStyle={theme.lightSquareStyle}
-              arrows={analysisArrows}
-            />
-          )}
-        </BoardContainer>
+        {isEditorMode ? (
+          <EditorChessboard />
+        ) : (
+          <BoardContainer showEvaluation={true}>
+            {playingAgainstStockfish ? (
+              <AnalysisChessBoard />
+            ) : (
+              <Board
+                position={currentFEN}
+                boardOrientation={boardOrientation}
+                canDrag={true}
+                onPieceDrop={handlePieceDrop}
+                darkSquareStyle={theme.darkSquareStyle}
+                lightSquareStyle={theme.lightSquareStyle}
+                arrows={analysisArrows}
+              />
+            )}
+          </BoardContainer>
+        )}
 
         <div className='flex w-full items-center py-2'>
           <PlayerInfo
@@ -387,6 +391,7 @@ export function AnalysisView() {
         </div>
       </div>
 
+      {/* Right column - Sidebar */}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
         {isAnalysisOn && !isEditorMode && (
           <div className='bg-card shrink-0 rounded-lg border'>
@@ -506,9 +511,10 @@ export function AnalysisView() {
             </div>
           </div>
 
+          {/* Editor mode: show spare pieces palette in sidebar */}
           {isEditorMode ? (
             <div className='flex-1 overflow-auto'>
-              <PiecePalette />
+              <SparePiecePalette orientation={boardOrientation} />
             </div>
           ) : (
             <>
@@ -673,6 +679,7 @@ export function AnalysisView() {
         </div>
       </div>
 
+      {/* Dialogs */}
       <Dialog open={continueDialogOpen} onOpenChange={setContinueDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -720,6 +727,19 @@ export function AnalysisView() {
       </Dialog>
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </>
+  );
+
+  // Wrap with EditorProvider when in editor mode
+  return (
+    <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
+      {isEditorMode ? (
+        <EditorProvider boardOrientation={boardOrientation}>
+          {layoutContent}
+        </EditorProvider>
+      ) : (
+        layoutContent
+      )}
     </div>
   );
 }

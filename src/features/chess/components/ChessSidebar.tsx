@@ -52,6 +52,12 @@ import {
   useAnalysisState,
   useAnalysisActions
 } from '../stores/useAnalysisStore';
+import { usePlayback } from '../hooks/usePlayback';
+import {
+  useClipboard,
+  formatMovesText,
+  formatPGN
+} from '../hooks/useClipboard';
 import { playSound } from '@/features/game/utils/sounds';
 
 interface ChessSidebarProps {
@@ -74,7 +80,6 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     hasHydrated
   } = useChessState();
 
-  // gameType is set by GameView on mount, so we can use it directly
   const isLocalGame = gameType === 'local';
 
   const {
@@ -97,10 +102,6 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newGameOpen, setNewGameOpen] = useState(false);
-  const [copiedMoves, setCopiedMoves] = useState(false);
-  const [copiedPGN, setCopiedPGN] = useState(false);
-  const [copiedFEN, setCopiedFEN] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const hasAutoPlayed = useRef(false);
 
   const isPlayMode = mode === 'play';
@@ -110,26 +111,12 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
   const canGoForward = viewingIndex < positionHistory.length - 1;
   const canAbort = moves.length < 4;
 
-  useEffect(() => {
-    if (copiedMoves) {
-      const timer = setTimeout(() => setCopiedMoves(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [copiedMoves]);
-
-  useEffect(() => {
-    if (copiedPGN) {
-      const timer = setTimeout(() => setCopiedPGN(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [copiedPGN]);
-
-  useEffect(() => {
-    if (copiedFEN) {
-      const timer = setTimeout(() => setCopiedFEN(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [copiedFEN]);
+  const { copy, isCopied } = useClipboard();
+  const { isPlaying, togglePlay } = usePlayback({
+    currentIndex: viewingIndex,
+    totalItems: positionHistory.length,
+    onNext: goToNext
+  });
 
   useEffect(() => {
     if (
@@ -140,28 +127,10 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
       hasAutoPlayed.current = true;
       setTimeout(() => {
         goToStart();
-        setIsPlaying(true);
       }, 100);
     }
   }, [isAnalysisMode, positionHistory.length, goToStart]);
 
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        if (viewingIndex < positionHistory.length - 1) {
-          goToNext();
-        } else {
-          setIsPlaying(false);
-        }
-      }, 600);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying, viewingIndex, positionHistory.length, goToNext]);
-
-  const togglePlay = () => setIsPlaying(!isPlaying);
-
-  // Auto-show game selection dialog when in play mode with no active game and no moves
   useEffect(() => {
     if (
       hasHydrated &&
@@ -174,75 +143,15 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     }
   }, [hasHydrated, isPlayMode, gameStarted, gameOver, moves.length]);
 
-  const formatMovesText = () => {
-    const pairs: string[] = [];
-    for (let i = 0; i < moves.length; i += 2) {
-      const moveNum = Math.floor(i / 2) + 1;
-      const whiteMove = moves[i];
-      const blackMove = moves[i + 1] || '';
-      pairs.push(`${moveNum}. ${whiteMove}${blackMove ? ' ' + blackMove : ''}`);
-    }
-    return pairs.join(' ');
-  };
-
-  const formatPGN = () => {
-    const date = new Date();
-    const dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-
-    let result = '*';
-    if (gameOver) {
-      if (gameResult?.includes('White wins')) {
-        result = '1-0';
-      } else if (gameResult?.includes('Black wins')) {
-        result = '0-1';
-      } else if (gameResult?.includes('You win')) {
-        result = playAs === 'white' ? '1-0' : '0-1';
-      } else if (
-        gameResult?.includes('Stockfish wins') ||
-        gameResult?.includes('resigned')
-      ) {
-        result = playAs === 'white' ? '0-1' : '1-0';
-      } else {
-        result = '1/2-1/2';
-      }
-    }
-
-    const whiteName = isLocalGame
-      ? 'White'
-      : playAs === 'white'
-        ? 'Player'
-        : 'Stockfish';
-    const blackName = isLocalGame
-      ? 'Black'
-      : playAs === 'black'
-        ? 'Player'
-        : 'Stockfish';
-
-    const headers = [
-      '[Site "Zugklang"]',
-      `[Date "${dateStr}"]`,
-      `[White "${whiteName}"]`,
-      `[Black "${blackName}"]`,
-      `[Result "${result}"]`
-    ].join('\n');
-
-    return `${headers}\n\n${formatMovesText()} ${result}`;
-  };
-
-  const handleCopyMoves = () => {
-    navigator.clipboard.writeText(formatMovesText());
-    setCopiedMoves(true);
-  };
-
-  const handleCopyPGN = () => {
-    navigator.clipboard.writeText(formatPGN());
-    setCopiedPGN(true);
-  };
-
+  const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
+  const handleCopyPGN = () =>
+    copy(
+      formatPGN(moves, { gameOver, gameResult, playAs, isLocalGame }),
+      'pgn'
+    );
   const handleCopyFEN = () => {
     const currentFEN = positionHistory[viewingIndex] || positionHistory[0];
-    navigator.clipboard.writeText(currentFEN);
-    setCopiedFEN(true);
+    copy(currentFEN, 'fen');
   };
 
   const handleResign = () => {
@@ -257,9 +166,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     setGameOver(true);
   };
 
-  const handleNewGame = () => {
-    setNewGameOpen(true);
-  };
+  const handleNewGame = () => setNewGameOpen(true);
 
   const handleToggleAnalysis = () => {
     if (isAnalysisOn) {
@@ -313,7 +220,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                           Current position
                         </span>
                       </div>
-                      {copiedFEN ? (
+                      {isCopied('fen') ? (
                         <Icons.check className='h-4 w-4 text-green-500' />
                       ) : (
                         <Icons.copy className='text-muted-foreground h-4 w-4' />
@@ -330,7 +237,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                           Standard PGN format
                         </span>
                       </div>
-                      {copiedPGN ? (
+                      {isCopied('pgn') ? (
                         <Icons.check className='h-4 w-4 text-green-500' />
                       ) : (
                         <Icons.copy className='text-muted-foreground h-4 w-4' />
@@ -347,7 +254,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                           Simple move list
                         </span>
                       </div>
-                      {copiedMoves ? (
+                      {isCopied('moves') ? (
                         <Icons.check className='h-4 w-4 text-green-500' />
                       ) : (
                         <Icons.copy className='text-muted-foreground h-4 w-4' />

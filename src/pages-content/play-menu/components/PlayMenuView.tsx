@@ -39,11 +39,11 @@ const gameModes = [
 
 export function PlayMenuView() {
   return (
-    <div className='bg-background relative flex min-h-screen w-full flex-col'>
-      <div className='mx-auto flex max-w-7xl flex-1 flex-col px-4 py-8 md:py-16'>
+    <div className='bg-background relative flex h-full w-full flex-col'>
+      <div className='mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-6'>
         <PlayMenuHeader />
 
-        <div className='grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3'>
+        <div className='grid grid-cols-2 gap-4 lg:grid-cols-4'>
           {gameModes.map((mode) => (
             <GameModeCard key={mode.href} {...mode} />
           ))}

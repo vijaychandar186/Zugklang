@@ -22,6 +22,7 @@ const CLASSIFICATION_LABELS = [
   { key: 'good', label: 'Good' },
   { key: 'inaccuracy', label: 'Inaccuracy' },
   { key: 'mistake', label: 'Mistake' },
+  { key: 'miss', label: 'Miss' },
   { key: 'blunder', label: 'Blunder' },
   { key: 'book', label: 'Book' }
 ];
@@ -33,6 +34,11 @@ export function ReviewReport({
 }: ReviewReportProps) {
   const classification = currentPosition?.classification;
   const topLine = currentPosition?.topLines?.find((l) => l.id === 1);
+
+  // Get the best move from the PREVIOUS position (what should have been played)
+  const previousPosition =
+    currentMoveIndex > 0 ? report.positions[currentMoveIndex - 1] : undefined;
+  const bestMoveLine = previousPosition?.topLines?.find((l) => l.id === 1);
 
   return (
     <Card>
@@ -59,6 +65,27 @@ export function ReviewReport({
             <div className='text-muted-foreground text-sm'>Black</div>
           </div>
         </div>
+
+        {/* Estimated Elo */}
+        {report.estimatedElo && (
+          <div className='border-t pt-3'>
+            <div className='text-muted-foreground mb-2 text-center text-xs uppercase'>
+              Game Rating
+            </div>
+            <div className='flex justify-around'>
+              <div className='text-center'>
+                <div className='text-2xl font-bold'>
+                  {report.estimatedElo.white}
+                </div>
+              </div>
+              <div className='text-center'>
+                <div className='text-2xl font-bold'>
+                  {report.estimatedElo.black}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Classification breakdown */}
         <div className='border-t pt-3'>
@@ -133,14 +160,28 @@ export function ReviewReport({
               )}
             </div>
 
-            {topLine && currentMoveIndex > 0 && (
-              <div className='text-sm'>
-                <span className='text-muted-foreground'>Best: </span>
-                <span className='font-mono font-semibold'>
-                  {topLine.moveSAN || topLine.moveUCI}
-                </span>
-              </div>
-            )}
+            {bestMoveLine &&
+              currentMoveIndex > 0 &&
+              classification !== 'best' &&
+              classification !== 'book' &&
+              classification !== 'forced' &&
+              classification !== 'brilliant' &&
+              classification !== 'great' && (
+                <div className='flex items-center gap-2 text-sm'>
+                  <Image
+                    src={CLASSIFICATION_ICONS.best}
+                    alt='best'
+                    width={18}
+                    height={18}
+                  />
+                  <span className='font-mono font-semibold'>
+                    {bestMoveLine.moveSAN || bestMoveLine.moveUCI}
+                  </span>
+                  <span className='text-muted-foreground'>
+                    was the best move
+                  </span>
+                </div>
+              )}
 
             {currentPosition.topLines &&
               currentPosition.topLines.length > 0 && (

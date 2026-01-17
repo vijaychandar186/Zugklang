@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
-import { Chess, Square, Move } from 'chess.js';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Square } from 'chess.js';
 import { UnifiedChessBoard as Board } from './Board';
 import {
   useChessState,
@@ -15,16 +15,12 @@ import {
   useAnalysisPosition
 } from '../stores/useAnalysisStore';
 import { useChessArrows } from '../hooks/useChessArrows';
-import {
-  useBoardTheme,
-  getMoveOptionStyles
-} from '../hooks/useSquareInteraction';
+import { useChessBoardLogic } from '../hooks/useChessBoardLogic';
+import { useBoardTheme } from '../hooks/useSquareInteraction';
 import { useStockfish } from '@/features/engine/hooks/useStockfish';
-import { playSound, getSoundType } from '@/features/game/utils/sounds';
+import { playSound } from '@/features/game/utils/sounds';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
-import { SquareStyles, RightClickedSquares } from '@/features/chess/types/core';
-
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+import { SquareStyles } from '@/features/chess/types/core';
 
 export function ChessBoard({
   serverOrientation
@@ -61,114 +57,66 @@ export function ChessBoard({
   const { switchTimer } = useTimerState();
 
   const isLocalGame = gameType === 'local';
+  const isPlayMode = mode === 'play';
+  const effectivePlayAs = isPlayMode ? playAs : playerColor;
 
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
   const { turn: analysisTurn } = useAnalysisPosition();
 
-  const [isMounted, setIsMounted] = useState(false);
-  const [moveFrom, setMoveFrom] = useState<Square | null>(null);
-  const [optionSquares, setOptionSquares] = useState<SquareStyles>({});
-  const [rightClickedSquares, setRightClickedSquares] =
-    useState<RightClickedSquares>({});
   const [premoves, setPremoves] = useState<
     Array<{ from: Square; to: Square; promotion?: string }>
   >([]);
-
-  const gameRef = useRef(game);
-  gameRef.current = game;
 
   const soundEnabledRef = useRef(soundEnabled);
   soundEnabledRef.current = soundEnabled;
 
   const theme = useBoardTheme();
 
-  const isViewingHistory = viewingIndex < positionHistory.length - 1;
-  const isPlayMode = mode === 'play';
+  const onMoveExecuted = useCallback(() => {
+    if (isPlayMode) {
+      const activeColor = game.turn() === 'w' ? 'white' : 'black';
+      switchTimer(activeColor);
 
-  const effectivePlayAs = isPlayMode ? playAs : playerColor;
-  const playerColorShort = effectivePlayAs === 'white' ? 'w' : 'b';
-  const gameTurn = game.turn();
-  const isPlayerTurn = gameTurn === playerColorShort;
+      if (isLocalGame && autoFlipBoard) {
+        flipBoard();
+      }
+    }
+  }, [isPlayMode, game, switchTimer, isLocalGame, autoFlipBoard, flipBoard]);
 
-  const analysisArrows = useChessArrows({
-    isAnalysisOn,
-    uciLines,
-    showBestMoveArrow,
-    showThreatArrow,
-    playerColor: playerColorShort,
+  const {
+    isMounted,
+    position,
+    isViewingHistory,
+    isPlayerTurn,
     gameTurn,
-    analysisTurn
+    playerColorShort,
+    executeMove,
+    handleSquareRightClick: baseHandleSquareRightClick,
+    clearState,
+    squareStyles: baseSquareStyles,
+    moveFrom,
+    setMoveFrom,
+    setOptionSquares,
+    getMoveOptions
+  } = useChessBoardLogic({
+    game,
+    currentFEN,
+    viewingIndex,
+    positionHistory,
+    playerColor: effectivePlayAs,
+    soundEnabled,
+    makeMove,
+    goToEnd,
+    isGameOver: gameOver,
+    onMoveExecuted,
+    allowOpponentMoves: !(
+      (isPlayMode && !isLocalGame) ||
+      playingAgainstStockfish
+    )
   });
 
-  const effectiveBoardOrientation = useMemo(() => {
-    if (isPlayMode) {
-      return boardFlipped ? (playAs === 'white' ? 'black' : 'white') : playAs;
-    }
-    return boardOrientation;
-  }, [isPlayMode, boardFlipped, playAs, boardOrientation]);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const playMoveSound = useCallback(
-    (move: Move, gameAfterMove: Chess) => {
-      if (!soundEnabledRef.current) return;
-      const isCapture = move.captured !== undefined;
-      const isCheck = gameAfterMove.isCheck();
-      const isCastle = move.san === 'O-O' || move.san === 'O-O-O';
-      const isPromotion = move.promotion !== undefined;
-      const isPlayerMove =
-        move.color === (effectivePlayAs === 'white' ? 'w' : 'b');
-      const soundType = getSoundType(
-        isCapture,
-        isCheck,
-        isCastle,
-        isPromotion,
-        isPlayerMove
-      );
-      playSound(soundType);
-    },
-    [effectivePlayAs]
-  );
-
-  const executeMove = useCallback(
-    (from: Square, to: Square, promotion?: string): boolean => {
-      const move = makeMove(from, to, promotion || 'q');
-      if (move) {
-        playMoveSound(move, gameRef.current);
-        setMoveFrom(null);
-        setOptionSquares({});
-
-        if (isPlayMode) {
-          const activeColor =
-            gameRef.current.turn() === 'w' ? 'white' : 'black';
-          switchTimer(activeColor);
-
-          // Auto-flip board in local (pass and play) mode
-          if (isLocalGame && autoFlipBoard) {
-            flipBoard();
-          }
-        }
-
-        return true;
-      }
-      return false;
-    },
-    [
-      makeMove,
-      playMoveSound,
-      isPlayMode,
-      switchTimer,
-      isLocalGame,
-      autoFlipBoard,
-      flipBoard
-    ]
-  );
-
-  // Stockfish is only enabled for computer games, not local (pass and play)
   const stockfishEnabled =
     (isPlayMode && !isLocalGame) || playingAgainstStockfish;
 
@@ -184,11 +132,27 @@ export function ChessBoard({
     playSound
   });
 
+  const analysisArrows = useChessArrows({
+    isAnalysisOn,
+    uciLines,
+    showBestMoveArrow,
+    showThreatArrow,
+    playerColor: playerColorShort,
+    gameTurn,
+    analysisTurn
+  });
+
+  const effectiveBoardOrientation = isPlayMode
+    ? boardFlipped
+      ? playAs === 'white'
+        ? 'black'
+        : 'white'
+      : playAs
+    : boardOrientation;
+
   const handleUserMove = useCallback(
     (from: Square, to: Square, promotion?: string): boolean => {
-      if (gameOver) {
-        return false;
-      }
+      if (gameOver) return false;
 
       if (isViewingHistory) {
         goToEnd();
@@ -197,10 +161,8 @@ export function ChessBoard({
 
       if (stockfishEnabled) {
         const piece = game.get(from);
-        const playerColorShort = effectivePlayAs === 'white' ? 'w' : 'b';
-        if (piece?.color !== playerColorShort) {
-          return false;
-        }
+        const colorShort = effectivePlayAs === 'white' ? 'w' : 'b';
+        if (piece?.color !== colorShort) return false;
 
         if (!isPlayerTurn && isPlayMode) {
           setPremoves((prev) => [
@@ -224,12 +186,14 @@ export function ChessBoard({
       gameOver,
       isViewingHistory,
       goToEnd,
+      stockfishEnabled,
       game,
       effectivePlayAs,
       isPlayerTurn,
       isPlayMode,
       executeMove,
-      stockfishEnabled
+      setMoveFrom,
+      setOptionSquares
     ]
   );
 
@@ -269,7 +233,7 @@ export function ChessBoard({
     }
   }, [
     game,
-    currentFEN, // Needed to trigger effect on each move since game object is mutated in place
+    currentFEN,
     isPlayMode,
     isLocalGame,
     playAs,
@@ -280,30 +244,14 @@ export function ChessBoard({
 
   const onNewGame = useCallback(() => {
     if (soundEnabledRef.current) playSound('game-start');
-    setOptionSquares({});
-    setRightClickedSquares({});
-    setMoveFrom(null);
+    clearState();
     setPremoves([]);
-  }, []);
+  }, [clearState]);
 
   useEffect(() => {
     setOnNewGame(onNewGame);
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
-
-  const getMoveOptions = useCallback(
-    (square: Square): boolean => {
-      const moves = game.moves({ square, verbose: true });
-      if (moves.length === 0) {
-        setOptionSquares({});
-        return false;
-      }
-      const newSquares = getMoveOptionStyles(moves, square);
-      setOptionSquares(newSquares);
-      return true;
-    },
-    [game]
-  );
 
   const onDrop = useCallback(
     ({
@@ -321,16 +269,13 @@ export function ChessBoard({
 
   const handleSquareClick = useCallback(
     ({ square }: { square: string }) => {
-      if (gameOver) {
-        return;
-      }
+      if (gameOver) return;
 
       if (isViewingHistory) {
         goToEnd();
         return;
       }
 
-      setRightClickedSquares({});
       const sq = square as Square;
 
       if (!moveFrom) {
@@ -375,8 +320,10 @@ export function ChessBoard({
       game,
       isPlayerTurn,
       isPlayMode,
+      stockfishEnabled,
       handleUserMove,
-      stockfishEnabled
+      setMoveFrom,
+      setOptionSquares
     ]
   );
 
@@ -386,29 +333,22 @@ export function ChessBoard({
         setPremoves([]);
         return;
       }
-      const sq = square as Square;
-      setRightClickedSquares((p) => ({
-        ...p,
-        [sq]: p[sq]?.backgroundColor ? undefined : BOARD_STYLES.rightClickSquare
-      }));
+      baseHandleSquareRightClick({ square });
     },
-    [premoves]
+    [premoves, baseHandleSquareRightClick]
   );
 
-  const squareStyles = useMemo<SquareStyles>(() => {
-    const s = { ...optionSquares, ...rightClickedSquares };
-    premoves.forEach((p) => {
-      s[p.from] = BOARD_STYLES.premoveSquare;
-      s[p.to] = BOARD_STYLES.premoveSquare;
-    });
-    return s;
-  }, [optionSquares, rightClickedSquares, premoves]);
-
-  const position = isMounted
-    ? isViewingHistory
-      ? currentFEN
-      : game.fen()
-    : STARTING_FEN;
+  const squareStyles: SquareStyles = {
+    ...baseSquareStyles,
+    ...premoves.reduce(
+      (acc, p) => ({
+        ...acc,
+        [p.from]: BOARD_STYLES.premoveSquare,
+        [p.to]: BOARD_STYLES.premoveSquare
+      }),
+      {}
+    )
+  };
 
   return (
     <Board

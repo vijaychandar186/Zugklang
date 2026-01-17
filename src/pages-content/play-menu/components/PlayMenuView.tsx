@@ -43,7 +43,7 @@ export function PlayMenuView() {
       <div className='mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-6'>
         <PlayMenuHeader />
 
-        <div className='grid grid-cols-2 gap-4 lg:grid-cols-4'>
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4'>
           {gameModes.map((mode) => (
             <GameModeCard key={mode.href} {...mode} />
           ))}

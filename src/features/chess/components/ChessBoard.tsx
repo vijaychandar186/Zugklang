@@ -22,9 +22,11 @@ import { useStockfish } from '@/features/engine/hooks/useStockfish';
 import { playSound } from '@/features/game/utils/sounds';
 
 export function ChessBoard({
-  serverOrientation
+  serverOrientation,
+  initialBoard3dEnabled
 }: {
   serverOrientation?: 'white' | 'black';
+  initialBoard3dEnabled?: boolean;
 }) {
   const {
     mode,
@@ -207,9 +209,14 @@ export function ChessBoard({
     arrows: analysisArrows
   };
 
+  // Use initialBoard3dEnabled for SSR consistency, then fall back to store state
+  const shouldShow3d = isMounted
+    ? board3dEnabled
+    : (initialBoard3dEnabled ?? false);
+
   return (
     <div className='relative'>
-      {isMounted && board3dEnabled ? (
+      {shouldShow3d ? (
         <Board3D {...boardProps} />
       ) : (
         <Board

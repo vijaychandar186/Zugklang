@@ -25,12 +25,14 @@ interface GameViewProps {
   serverOrientation?: 'white' | 'black';
   mode?: ChessMode;
   gameType?: GameType;
+  initialBoard3dEnabled?: boolean;
 }
 
 export function GameView({
   serverOrientation,
   mode = 'play',
-  gameType: initialGameType = 'computer'
+  gameType: initialGameType = 'computer',
+  initialBoard3dEnabled
 }: GameViewProps) {
   const {
     gameId,
@@ -118,7 +120,11 @@ export function GameView({
           />
         </div>
         <BoardContainer>
-          <ChessBoard key={gameId} serverOrientation={serverOrientation} />
+          <ChessBoard
+            key={gameId}
+            serverOrientation={serverOrientation}
+            initialBoard3dEnabled={initialBoard3dEnabled}
+          />
         </BoardContainer>
         <div className='flex w-full items-center justify-between py-2'>
           {isPlayMode && (

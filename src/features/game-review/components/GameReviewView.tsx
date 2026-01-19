@@ -67,7 +67,13 @@ import Image from 'next/image';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-export function GameReviewView() {
+interface GameReviewViewProps {
+  initialBoard3dEnabled?: boolean;
+}
+
+export function GameReviewView({
+  initialBoard3dEnabled
+}: GameReviewViewProps = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [pgnFenInput, setPgnFenInput] = useState('');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -446,7 +452,7 @@ export function GameReviewView() {
           <div
             className={`relative shrink-0 ${isAnalysisOn ? '[&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[560px]' : ''}`}
           >
-            {isMounted && board3dEnabled ? (
+            {(isMounted ? board3dEnabled : (initialBoard3dEnabled ?? false)) ? (
               <Board3D
                 position={currentFen || STARTING_FEN}
                 boardOrientation={boardFlipped ? 'black' : 'white'}

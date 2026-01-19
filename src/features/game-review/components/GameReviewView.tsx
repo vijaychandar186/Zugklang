@@ -449,9 +449,7 @@ export function GameReviewView({
             {(report || isAnalysisOn) && <ReviewEvaluationBar />}
           </div>
 
-          <div
-            className={`relative shrink-0 ${isAnalysisOn ? '[&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[560px]' : ''}`}
-          >
+          <div className='relative shrink-0 [&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[560px]'>
             {(isMounted ? board3dEnabled : (initialBoard3dEnabled ?? false)) ? (
               <Board3D
                 position={currentFen || STARTING_FEN}
@@ -598,7 +596,9 @@ export function GameReviewView({
                         variant='secondary'
                         size='sm'
                         onClick={() =>
-                          setPgnFenInput('e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Nxd5 Nxf7 Kxf7 Qf3+ Kg8 Bxd5+ Be6 Bxe6#')
+                          setPgnFenInput(
+                            'e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Nxd5 Nxf7 Kxf7 Qf3+ Kg8 Bxd5+ Be6 Bxe6#'
+                          )
                         }
                       >
                         Sample Moves

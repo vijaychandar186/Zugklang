@@ -69,10 +69,7 @@ function parseMoveList(input: string, board: Chess): Position[] {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { input } = body;
-
-    // Support both 'input' and legacy 'pgn' field names
-    const gameInput = input || body.pgn;
+    const { input: gameInput } = body;
 
     if (!gameInput || typeof gameInput !== 'string' || !gameInput.trim()) {
       return NextResponse.json(

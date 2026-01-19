@@ -82,7 +82,6 @@ export function Board3D({
             width: '100%',
             height: '100%',
             position: 'relative',
-            pointerEvents: 'none',
             overflow: 'visible',
             zIndex: 10
           }}
@@ -93,6 +92,7 @@ export function Board3D({
             width={100}
             height={100}
             unoptimized
+            draggable={false}
             style={{
               position: 'absolute',
               bottom: 0,
@@ -102,7 +102,6 @@ export function Board3D({
               objectFit: isKing ? 'contain' : 'cover',
               width: '100%',
               height: 'auto',
-              pointerEvents: 'none'
             }}
           />
         </div>

@@ -1,15 +1,30 @@
 'use client';
 
-import { useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Chessboard } from 'react-chessboard';
 import type { CSSProperties } from 'react';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
-import Image from 'next/image';
 
 // Position can be FEN string or position object
 type PositionObject = Record<string, { pieceType: string }>;
+
+// Piece heights for 3D effect (relative to square width)
+const PIECE_HEIGHTS: Record<string, number> = {
+  wP: 1,
+  wN: 1.2,
+  wB: 1.2,
+  wR: 1.2,
+  wQ: 1.5,
+  wK: 1.6,
+  bP: 1,
+  bN: 1.2,
+  bB: 1.2,
+  bR: 1.2,
+  bQ: 1.5,
+  bK: 1.6
+};
 
 // Map piece codes to 3D piece image filenames
 const PIECE_FILE_MAP: Record<string, string> = {
@@ -54,55 +69,60 @@ export function Board3D({
   animationDuration = ANIMATION_CONFIG.durationMs
 }: Board3DProps) {
   const theme = useBoardTheme();
-  const hasMountedRef = useRef(false);
+  const [squareWidth, setSquareWidth] = useState(0);
 
+  // Get square width from DOM after mount (following official 3D example pattern)
   useEffect(() => {
-    // Mark as mounted after first render to enable animations
-    const timer = setTimeout(() => {
-      hasMountedRef.current = true;
-    }, 100);
+    const updateSquareWidth = () => {
+      const square = document.querySelector(
+        '[data-square="a1"]'
+      ) as HTMLElement | null;
+      if (square) {
+        const width = square.getBoundingClientRect().width;
+        setSquareWidth(width);
+      }
+    };
+
+    // Initial measurement after a short delay to ensure board is rendered
+    const timer = setTimeout(updateSquareWidth, 100);
+
+    // Update on resize
+    window.addEventListener('resize', updateSquareWidth);
 
     return () => {
       clearTimeout(timer);
+      window.removeEventListener('resize', updateSquareWidth);
     };
   }, []);
 
-  // Create custom 3D piece components - use percentage-based sizing
+  // Create custom 3D piece components - following official react-chessboard 3D example exactly
   const threeDPieces = useMemo(() => {
-    const pieces = Object.keys(PIECE_FILE_MAP);
     const pieceComponents: Record<string, () => React.JSX.Element> = {};
 
-    pieces.forEach((piece) => {
+    Object.keys(PIECE_FILE_MAP).forEach((piece) => {
       const fileName = PIECE_FILE_MAP[piece];
+      const pieceHeight = PIECE_HEIGHTS[piece];
       const isKing = piece[1] === 'K';
 
       pieceComponents[piece] = () => (
         <div
           style={{
-            width: '100%',
-            height: '100%',
+            width: squareWidth,
+            height: squareWidth,
             position: 'relative',
-            pointerEvents: 'none',
-            overflow: 'visible',
-            zIndex: 10
+            pointerEvents: 'none'
           }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={`/3d-assets/3d-pieces/${fileName}.svg`}
             alt={piece}
-            width={100}
-            height={100}
-            unoptimized
+            width={squareWidth}
+            height={pieceHeight * squareWidth}
             style={{
               position: 'absolute',
-              bottom: 0,
-              left: '50%',
-              transform: 'translateX(-50%) translateY(90%) scale(1.8)',
-              transformOrigin: 'bottom center',
-              objectFit: isKing ? 'contain' : 'cover',
-              width: '100%',
-              height: 'auto',
-              pointerEvents: 'none'
+              bottom: `${0.2 * squareWidth}px`,
+              objectFit: isKing ? 'contain' : 'cover'
             }}
           />
         </div>
@@ -110,32 +130,25 @@ export function Board3D({
     });
 
     return pieceComponents;
-  }, []);
+  }, [squareWidth]);
 
   const options = useMemo(() => {
     // 3D board styles using CSS variables from theme
     const boardStyle: CSSProperties = {
-      boxSizing: 'border-box',
       transform: 'rotateX(27.5deg)',
       transformOrigin: 'center',
-      borderTopWidth: '0px',
-      borderRightWidth: '2px',
-      borderBottomWidth: '18px',
-      borderLeftWidth: '2px',
-      borderTopStyle: 'outset',
-      borderRightStyle: 'outset',
-      borderBottomStyle: 'outset',
-      borderLeftStyle: 'outset',
-      borderTopColor: 'var(--board-3d-frame)',
+      border: '16px solid var(--board-3d-frame)',
+      borderStyle: 'outset',
       borderRightColor: 'var(--board-3d-frame-right)',
-      borderBottomColor: 'var(--board-3d-frame)',
-      borderLeftColor: 'var(--board-3d-frame)',
+      borderRadius: '4px',
+      boxShadow: 'var(--board-3d-shadow) 2px 24px 24px 8px',
+      borderRightWidth: '2px',
+      borderLeftWidth: '2px',
+      borderTopWidth: '0px',
+      borderBottomWidth: '18px',
       borderTopLeftRadius: '8px',
       borderTopRightRadius: '8px',
-      borderBottomLeftRadius: '4px',
-      borderBottomRightRadius: '4px',
-      boxShadow: 'var(--board-3d-shadow) 2px 24px 24px 8px',
-      padding: '8px',
+      padding: '8px 8px 12px',
       background: 'var(--board-3d-background)',
       backgroundImage: 'url("/3d-assets/wood-texture.svg")',
       backgroundSize: 'cover',
@@ -162,7 +175,7 @@ export function Board3D({
       position,
       boardOrientation,
       allowDragging: canDrag,
-      animationDurationInMs: hasMountedRef.current ? animationDuration : 0,
+      animationDurationInMs: animationDuration,
       boardStyle,
       squareStyles,
       pieces: threeDPieces,
@@ -195,14 +208,13 @@ export function Board3D({
     onPieceDrop
   ]);
 
-  // The rotateX(27.5deg) transform reduces visual height by factor of cos(27.5°) ≈ 0.887
-  // We compensate with negative margins: (1 - 0.887) / 2 ≈ 5.65% on each side
   return (
     <div
       className='w-full'
       style={{
-        marginTop: '-5.5%',
-        marginBottom: '-5.5%'
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center'
       }}
     >
       <Chessboard options={options} />

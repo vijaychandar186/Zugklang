@@ -1,7 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useMemo, useEffect, useState, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 import type { CSSProperties } from 'react';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
@@ -69,22 +68,34 @@ export function Board3D({
   arrows = [],
   animationDuration = ANIMATION_CONFIG.durationMs
 }: Board3DProps) {
+  const theme = useBoardTheme();
+  const hasMountedRef = useRef(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Track window width for responsive styling
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 1024
   );
-  const theme = useBoardTheme();
 
-  // Track window width for responsive styling
   useEffect(() => {
+    // Mark as mounted after first render to enable animations
+    const timer = setTimeout(() => {
+      hasMountedRef.current = true;
+      setIsMounted(true);
+    }, 100);
+
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
-  // Calculate square width based on board container width
-  // Container: w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]
+  // Calculate board width based on viewport
+  // These match the container sizes in BoardContainer
   const boardWidth =
-    windowWidth >= 1024 ? 560 : windowWidth >= 640 ? 400 : windowWidth - 8;
+    windowWidth >= 1024 ? 560 : windowWidth >= 640 ? 400 : windowWidth - 56;
   const squareWidth = boardWidth / 8;
 
   // Create custom 3D piece components
@@ -93,7 +104,6 @@ export function Board3D({
     const pieceComponents: Record<string, () => React.JSX.Element> = {};
 
     pieces.forEach((piece) => {
-      const pieceHeight = PIECE_HEIGHTS[piece] || 1;
       const fileName = PIECE_FILE_MAP[piece];
       const isKing = piece[1] === 'K';
 
@@ -187,7 +197,8 @@ export function Board3D({
       position,
       boardOrientation,
       allowDragging: canDrag,
-      animationDurationInMs: animationDuration,
+      // Disable animation on initial mount to prevent zoom effect
+      animationDurationInMs: hasMountedRef.current ? animationDuration : 0,
       boardStyle,
       squareStyles,
       pieces: threeDPieces,
@@ -218,12 +229,13 @@ export function Board3D({
     arrows,
     onSquareClick,
     onSquareRightClick,
-    onPieceDrop
+    onPieceDrop,
+    isMounted
   ]);
 
   return (
     <div
-      className='w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]'
+      className='w-full px-2'
       style={{
         display: 'flex',
         flexDirection: 'column',
@@ -236,3 +248,4 @@ export function Board3D({
     </div>
   );
 }
+

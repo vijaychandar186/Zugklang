@@ -64,9 +64,9 @@ export function EvaluationBar({
   size = 'lg'
 }: EvaluationBarProps) {
   const sizeClasses = {
-    sm: 'h-[200px] w-5',
-    md: 'h-[400px] w-6',
-    lg: 'h-[calc(100vw-2rem)] w-5 sm:h-[400px] sm:w-7 lg:h-[560px]'
+    sm: 'h-full w-5',
+    md: 'h-full w-6',
+    lg: 'h-full w-5 sm:w-7'
   };
 
   if (!isActive) {

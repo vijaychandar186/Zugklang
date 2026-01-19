@@ -78,7 +78,7 @@ export function UnifiedChessBoard({
   );
 
   return (
-    <div className='w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]'>
+    <div className='w-full'>
       <Chessboard options={options} />
     </div>
   );

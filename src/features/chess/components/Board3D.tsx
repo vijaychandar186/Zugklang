@@ -103,22 +103,25 @@ export function Board3D({
             width: squareWidth || '100%',
             height: squareWidth || '100%',
             position: 'relative',
-            pointerEvents: 'none'
+            pointerEvents: 'none',
+            overflow: 'visible',
+            zIndex: 10
           }}
         >
-          <Image
+          <img
             src={`/3d-assets/3d-pieces/${fileName}.svg`}
             alt={piece}
-            width={squareWidth || 60}
-            height={pieceHeight * (squareWidth || 60)}
             style={{
               position: 'absolute',
-              bottom: `${0.2 * (squareWidth || 60)}px`,
+              bottom: `${0.1 * (squareWidth || 60)}px`,
+              left: '50%',
+              transform: 'translateX(-50%) scale(1.8)',
+              transformOrigin: 'bottom center',
               objectFit: isKing ? 'contain' : 'cover',
               width: '100%',
-              height: 'auto'
+              height: 'auto',
+              pointerEvents: 'none'
             }}
-            priority
           />
         </div>
       );

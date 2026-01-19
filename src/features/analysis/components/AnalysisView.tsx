@@ -30,6 +30,7 @@ import {
 import { toast } from 'sonner';
 
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
+import { Board3D } from '@/features/chess/components/Board3D';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { MoveHistory } from '@/features/chess/components/sidebar/MoveHistory';
@@ -59,6 +60,7 @@ import {
   useBoardEditorState,
   useBoardEditorActions
 } from '../stores/useBoardEditorStore';
+import { useChessStore } from '@/features/chess/stores/useChessStore';
 
 export function AnalysisView() {
   const [pgnFenInput, setPgnFenInput] = useState('');
@@ -66,6 +68,7 @@ export function AnalysisView() {
   const [continueDialogOpen, setContinueDialogOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(10);
+  const [isMounted, setIsMounted] = useState(false);
 
   const {
     currentFEN,
@@ -108,6 +111,7 @@ export function AnalysisView() {
   } = useBoardEditorActions();
 
   const theme = useBoardTheme();
+  const board3dEnabled = useChessStore((s) => s.board3dEnabled);
 
   const displayedFEN = isEditorMode ? editorPosition : currentFEN;
   const gameTurn = (displayedFEN?.split(' ')[1] || 'w') as 'w' | 'b';
@@ -131,6 +135,10 @@ export function AnalysisView() {
     onNext: goToNext,
     enabled: !isEditorMode
   });
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     initializeEngine();
@@ -369,6 +377,14 @@ export function AnalysisView() {
           <BoardContainer showEvaluation={true}>
             {playingAgainstStockfish ? (
               <AnalysisChessBoard />
+            ) : isMounted && board3dEnabled ? (
+              <Board3D
+                position={currentFEN}
+                boardOrientation={boardOrientation}
+                canDrag={true}
+                onPieceDrop={handlePieceDrop}
+                arrows={analysisArrows}
+              />
             ) : (
               <Board
                 position={currentFEN}

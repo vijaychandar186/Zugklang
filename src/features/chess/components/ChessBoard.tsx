@@ -2,6 +2,7 @@
 
 import { useEffect, useCallback } from 'react';
 import { UnifiedChessBoard as Board } from './Board';
+import { Board3D } from './Board3D';
 import { PromotionDialog } from './PromotionDialog';
 import {
   useChessState,
@@ -40,6 +41,7 @@ export function ChessBoard({
     playingAgainstStockfish,
     playerColor,
     soundEnabled,
+    board3dEnabled,
     boardFlipped,
     autoFlipBoard
   } = useChessState();
@@ -193,20 +195,29 @@ export function ChessBoard({
     ? effectiveBoardOrientation
     : serverOrientation || 'white';
 
+  // Common board props
+  const boardProps = {
+    position,
+    boardOrientation: resolvedOrientation,
+    canDrag: isMounted && !isViewingHistory && !pendingPromotion,
+    squareStyles: isMounted ? squareStyles : {},
+    onPieceDrop: onDrop,
+    onSquareClick: handleSquareClick,
+    onSquareRightClick: handleSquareRightClick,
+    arrows: analysisArrows
+  };
+
   return (
     <div className='relative'>
-      <Board
-        position={position}
-        boardOrientation={resolvedOrientation}
-        canDrag={isMounted && !isViewingHistory && !pendingPromotion}
-        squareStyles={isMounted ? squareStyles : {}}
-        darkSquareStyle={theme.darkSquareStyle}
-        lightSquareStyle={theme.lightSquareStyle}
-        onPieceDrop={onDrop}
-        onSquareClick={handleSquareClick}
-        onSquareRightClick={handleSquareRightClick}
-        arrows={analysisArrows}
-      />
+      {isMounted && board3dEnabled ? (
+        <Board3D {...boardProps} />
+      ) : (
+        <Board
+          {...boardProps}
+          darkSquareStyle={theme.darkSquareStyle}
+          lightSquareStyle={theme.lightSquareStyle}
+        />
+      )}
       <PromotionDialog
         isOpen={!!pendingPromotion}
         color={pendingPromotion?.color || 'white'}
@@ -218,3 +229,4 @@ export function ChessBoard({
     </div>
   );
 }
+

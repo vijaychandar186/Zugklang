@@ -15,6 +15,7 @@ import {
 
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
+const BOARD_3D_ENABLED_COOKIE = 'board3dEnabled';
 const PLAY_AS_COOKIE = 'playAs';
 
 // Play modes handled by this store (add new modes here)
@@ -60,6 +61,12 @@ function getInitialSoundEnabled(): boolean {
   return value !== 'false';
 }
 
+function getInitialBoard3dEnabled(): boolean {
+  if (typeof document === 'undefined') return false;
+  const value = getCookie(BOARD_3D_ENABLED_COOKIE);
+  return value === 'true';
+}
+
 type ChessStore = {
   mode: ChessMode;
   gameType: GameType;
@@ -90,6 +97,7 @@ type ChessStore = {
 
   boardThemeName: BoardThemeName;
   soundEnabled: boolean;
+  board3dEnabled: boolean;
   boardFlipped: boolean;
   autoFlipBoard: boolean;
   fullscreenEnabled: boolean;
@@ -100,6 +108,7 @@ type ChessStore = {
 
   setBoardTheme: (name: BoardThemeName) => void;
   setSoundEnabled: (enabled: boolean) => void;
+  setBoard3dEnabled: (enabled: boolean) => void;
   setFullscreenEnabled: (enabled: boolean) => void;
   flipBoard: () => void;
   toggleBoardOrientation: () => void;
@@ -177,6 +186,7 @@ export const useChessStore = create<ChessStore>()(
 
       boardThemeName: DEFAULT_BOARD_THEME,
       soundEnabled: getInitialSoundEnabled(),
+      board3dEnabled: getInitialBoard3dEnabled(),
       boardFlipped: false,
       autoFlipBoard: false,
       fullscreenEnabled: false,
@@ -208,6 +218,11 @@ export const useChessStore = create<ChessStore>()(
       setSoundEnabled: (enabled) => {
         setCookie(SOUND_ENABLED_COOKIE, String(enabled));
         set({ soundEnabled: enabled });
+      },
+
+      setBoard3dEnabled: (enabled) => {
+        setCookie(BOARD_3D_ENABLED_COOKIE, String(enabled));
+        set({ board3dEnabled: enabled });
       },
 
       setFullscreenEnabled: (enabled) => {
@@ -753,6 +768,7 @@ export const useChessState = () =>
       playingAgainstStockfish: s.playingAgainstStockfish,
       playerColor: s.playerColor,
       soundEnabled: s.soundEnabled,
+      board3dEnabled: s.board3dEnabled,
       boardFlipped: s.boardFlipped,
       autoFlipBoard: s.autoFlipBoard
     }))

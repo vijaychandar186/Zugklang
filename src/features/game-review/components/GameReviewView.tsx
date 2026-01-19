@@ -29,6 +29,7 @@ import {
 import { toast } from 'sonner';
 
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
+import { Board3D } from '@/features/chess/components/Board3D';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { ReviewMoveHistory } from './ReviewMoveHistory';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
@@ -61,6 +62,7 @@ import {
   CLASSIFICATION_COLORS,
   CLASSIFICATION_ICONS
 } from '@/features/game-review/types';
+import { useChessStore } from '@/features/chess/stores/useChessStore';
 import Image from 'next/image';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -71,6 +73,7 @@ export function GameReviewView() {
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shouldAutoReview, setShouldAutoReview] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const {
     pgn,
@@ -108,6 +111,7 @@ export function GameReviewView() {
   const { turn: analysisTurn } = useAnalysisPosition();
 
   const theme = useBoardTheme();
+  const board3dEnabled = useChessStore((s) => s.board3dEnabled);
 
   const gameTurn = (currentFen?.split(' ')[1] || 'w') as 'w' | 'b';
 
@@ -239,6 +243,10 @@ export function GameReviewView() {
       icon: CLASSIFICATION_ICONS[classification]
     };
   }, [position, currentMoveIndex, classification, boardFlipped]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     initializeEngine();
@@ -438,16 +446,27 @@ export function GameReviewView() {
           <div
             className={`relative shrink-0 ${isAnalysisOn ? '[&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[560px]' : ''}`}
           >
-            <Board
-              position={currentFen || STARTING_FEN}
-              boardOrientation={boardFlipped ? 'black' : 'white'}
-              canDrag={false}
-              darkSquareStyle={theme.darkSquareStyle}
-              lightSquareStyle={theme.lightSquareStyle}
-              squareStyles={squareStyles}
-              arrows={combinedArrows}
-              animationDuration={ANIMATION_CONFIG.durationMs}
-            />
+            {isMounted && board3dEnabled ? (
+              <Board3D
+                position={currentFen || STARTING_FEN}
+                boardOrientation={boardFlipped ? 'black' : 'white'}
+                canDrag={false}
+                squareStyles={squareStyles}
+                arrows={combinedArrows}
+                animationDuration={ANIMATION_CONFIG.durationMs}
+              />
+            ) : (
+              <Board
+                position={currentFen || STARTING_FEN}
+                boardOrientation={boardFlipped ? 'black' : 'white'}
+                canDrag={false}
+                darkSquareStyle={theme.darkSquareStyle}
+                lightSquareStyle={theme.lightSquareStyle}
+                squareStyles={squareStyles}
+                arrows={combinedArrows}
+                animationDuration={ANIMATION_CONFIG.durationMs}
+              />
+            )}
             {classificationIcon.icon && (
               <Image
                 key={currentMoveIndex}

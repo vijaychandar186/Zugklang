@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useEffect, useState, useRef } from 'react';
+import { useMemo, useEffect, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 import type { CSSProperties } from 'react';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
@@ -56,36 +56,18 @@ export function Board3D({
   const theme = useBoardTheme();
   const hasMountedRef = useRef(false);
 
-  // Track window width for responsive styling - initialize with SSR-safe default
-  const [windowWidth, setWindowWidth] = useState(1024);
-
   useEffect(() => {
-    // Set actual window width on mount
-    setWindowWidth(document.documentElement.clientWidth);
-
     // Mark as mounted after first render to enable animations
     const timer = setTimeout(() => {
       hasMountedRef.current = true;
     }, 100);
 
-    const handleResize = () =>
-      setWindowWidth(document.documentElement.clientWidth);
-    const resizeObserver = new ResizeObserver(handleResize);
-    resizeObserver.observe(document.documentElement);
-
     return () => {
       clearTimeout(timer);
-      resizeObserver.disconnect();
     };
   }, []);
 
-  // Calculate board width based on viewport
-  // These match the container sizes in BoardContainer
-  const boardWidth =
-    windowWidth >= 1024 ? 560 : windowWidth >= 640 ? 400 : windowWidth - 56;
-  const squareWidth = boardWidth / 8;
-
-  // Create custom 3D piece components
+  // Create custom 3D piece components - use percentage-based sizing
   const threeDPieces = useMemo(() => {
     const pieces = Object.keys(PIECE_FILE_MAP);
     const pieceComponents: Record<string, () => React.JSX.Element> = {};
@@ -97,8 +79,8 @@ export function Board3D({
       pieceComponents[piece] = () => (
         <div
           style={{
-            width: squareWidth || '100%',
-            height: squareWidth || '100%',
+            width: '100%',
+            height: '100%',
             position: 'relative',
             pointerEvents: 'none',
             overflow: 'visible',
@@ -113,9 +95,9 @@ export function Board3D({
             unoptimized
             style={{
               position: 'absolute',
-              bottom: `${0.1 * (squareWidth || 60)}px`,
+              bottom: 0,
               left: '50%',
-              transform: 'translateX(-50%) scale(1.8)',
+              transform: 'translateX(-50%) translateY(90%) scale(1.8)',
               transformOrigin: 'bottom center',
               objectFit: isKing ? 'contain' : 'cover',
               width: '100%',
@@ -128,24 +110,17 @@ export function Board3D({
     });
 
     return pieceComponents;
-  }, [squareWidth]);
-
-  // Scale 3D styling based on board size (mobile-friendly)
-  const isMobile = squareWidth > 0 && squareWidth < 50;
+  }, []);
 
   const options = useMemo(() => {
-    const bottomBorder = isMobile ? 10 : 18;
-    const padding = isMobile ? 4 : 8;
-    const shadowSize = isMobile ? 12 : 24;
-
     // 3D board styles using CSS variables from theme
     const boardStyle: CSSProperties = {
-      boxSizing: 'content-box',
+      boxSizing: 'border-box',
       transform: 'rotateX(27.5deg)',
       transformOrigin: 'center',
       borderTopWidth: '0px',
       borderRightWidth: '2px',
-      borderBottomWidth: `${bottomBorder}px`,
+      borderBottomWidth: '18px',
       borderLeftWidth: '2px',
       borderTopStyle: 'outset',
       borderRightStyle: 'outset',
@@ -159,8 +134,8 @@ export function Board3D({
       borderTopRightRadius: '8px',
       borderBottomLeftRadius: '4px',
       borderBottomRightRadius: '4px',
-      boxShadow: `var(--board-3d-shadow) 2px ${shadowSize}px ${shadowSize}px ${isMobile ? 4 : 8}px`,
-      padding: `${padding}px`,
+      boxShadow: 'var(--board-3d-shadow) 2px 24px 24px 8px',
+      padding: '8px',
       background: 'var(--board-3d-background)',
       backgroundImage: 'url("/3d-assets/wood-texture.svg")',
       backgroundSize: 'cover',
@@ -187,7 +162,6 @@ export function Board3D({
       position,
       boardOrientation,
       allowDragging: canDrag,
-      // Disable animation on initial mount to prevent zoom effect
       animationDurationInMs: hasMountedRef.current ? animationDuration : 0,
       boardStyle,
       squareStyles,
@@ -207,7 +181,6 @@ export function Board3D({
       onPieceDrop
     };
   }, [
-    isMobile,
     theme.lightSquareStyle,
     theme.darkSquareStyle,
     position,
@@ -222,15 +195,14 @@ export function Board3D({
     onPieceDrop
   ]);
 
+  // The rotateX(27.5deg) transform reduces visual height by factor of cos(27.5°) ≈ 0.887
+  // We compensate with negative margins: (1 - 0.887) / 2 ≈ 5.65% on each side
   return (
     <div
-      className='w-full px-2'
+      className='w-full'
       style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        marginTop: `-${(boardWidth * (1 - Math.cos((27.5 * Math.PI) / 180))) / 2}px`,
-        marginBottom: `-${(boardWidth * (1 - Math.cos((27.5 * Math.PI) / 180))) / 2}px`
+        marginTop: '-5.5%',
+        marginBottom: '-5.5%'
       }}
     >
       <Chessboard options={options} />

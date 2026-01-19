@@ -167,8 +167,8 @@
   --board-mono-light: oklch(0.6 0 0);
 
   /* 3D Board styling - Dark mode */
-  --board-3d-frame: oklch(0.52 0.08 45);
-  --board-3d-frame-right: oklch(0.48 0.08 45);
+  --board-3d-frame: oklch(0.75 0.02 0);
+  --board-3d-frame-right: oklch(0.75 0.02 0);
   --board-3d-shadow: oklch(0 0 0 / 60%);
-  --board-3d-background: oklch(0.65 0.05 80);
+  --board-3d-background: oklch(0.82 0.02 0); 
 }

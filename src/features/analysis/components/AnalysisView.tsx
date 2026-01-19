@@ -62,7 +62,13 @@ import {
 } from '../stores/useBoardEditorStore';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 
-export function AnalysisView() {
+interface AnalysisViewProps {
+  initialBoard3dEnabled?: boolean;
+}
+
+export function AnalysisView({
+  initialBoard3dEnabled
+}: AnalysisViewProps = {}) {
   const [pgnFenInput, setPgnFenInput] = useState('');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [continueDialogOpen, setContinueDialogOpen] = useState(false);
@@ -377,7 +383,7 @@ export function AnalysisView() {
           <BoardContainer showEvaluation={true}>
             {playingAgainstStockfish ? (
               <AnalysisChessBoard />
-            ) : isMounted && board3dEnabled ? (
+            ) : (isMounted ? board3dEnabled : (initialBoard3dEnabled ?? false)) ? (
               <Board3D
                 position={currentFEN}
                 boardOrientation={boardOrientation}

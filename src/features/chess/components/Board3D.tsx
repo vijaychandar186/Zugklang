@@ -225,7 +225,8 @@ export function Board3D({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        marginTop: isMobile ? '-0.75rem' : '-1.5rem'
+        marginTop: `-${(boardWidth * (1 - Math.cos((27.5 * Math.PI) / 180))) / 2}px`,
+        marginBottom: `-${(boardWidth * (1 - Math.cos((27.5 * Math.PI) / 180))) / 2}px`
       }}
     >
       <Chessboard options={options} />

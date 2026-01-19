@@ -8,3 +8,5 @@ export const BOARD_CONFIG = {
 export const COOKIE_CONFIG = {
   maxAge: 31536000
 } as const;
+
+export const BOARD_3D_ENABLED_COOKIE = 'board3dEnabled';

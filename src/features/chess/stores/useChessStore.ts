@@ -5,7 +5,10 @@ import { Chess, Square, Move } from 'chess.js';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
 import { STARTING_FEN } from '@/features/chess/config/constants';
-import { COOKIE_CONFIG } from '@/features/chess/config/board';
+import {
+  COOKIE_CONFIG,
+  BOARD_3D_ENABLED_COOKIE
+} from '@/features/chess/config/board';
 import { TimeControl } from '@/features/game/types/rules';
 import {
   createMultiModeStorage,
@@ -15,7 +18,6 @@ import {
 
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
-const BOARD_3D_ENABLED_COOKIE = 'board3dEnabled';
 const PLAY_AS_COOKIE = 'playAs';
 
 // Play modes handled by this store (add new modes here)

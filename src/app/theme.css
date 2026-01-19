@@ -86,6 +86,12 @@
   /* Default board colors (fallback) */
   --board-square-dark: var(--board-default-dark);
   --board-square-light: var(--board-default-light);
+
+  /* 3D Board styling */
+  --board-3d-frame: oklch(0.62 0.08 45);
+  --board-3d-frame-right: oklch(0.58 0.08 45);
+  --board-3d-shadow: oklch(0 0 0 / 50%);
+  --board-3d-background: oklch(0.82 0.05 80);
 }
 
 [data-board-scheme='blue'] {
@@ -159,4 +165,10 @@
   /* Board theme colors - Mono */
   --board-mono-dark: oklch(0.35 0 0);
   --board-mono-light: oklch(0.6 0 0);
+
+  /* 3D Board styling - Dark mode */
+  --board-3d-frame: oklch(0.52 0.08 45);
+  --board-3d-frame-right: oklch(0.48 0.08 45);
+  --board-3d-shadow: oklch(0 0 0 / 60%);
+  --board-3d-background: oklch(0.65 0.05 80);
 }

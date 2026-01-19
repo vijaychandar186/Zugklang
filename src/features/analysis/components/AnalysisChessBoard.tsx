@@ -1,6 +1,7 @@
 'use client';
 
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
+import { Board3D } from '@/features/chess/components/Board3D';
 import { PromotionDialog } from '@/features/chess/components/PromotionDialog';
 import {
   useAnalysisBoardState,
@@ -17,7 +18,7 @@ import { useChessBoardLogic } from '@/features/chess/hooks/useChessBoardLogic';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useStockfish } from '@/features/engine/hooks/useStockfish';
 import { playSound } from '@/features/game/utils/sounds';
-import { useChessSettings } from '@/features/chess/stores/useChessStore';
+import { useChessStore } from '@/features/chess/stores/useChessStore';
 
 export function AnalysisChessBoard() {
   const {
@@ -32,7 +33,8 @@ export function AnalysisChessBoard() {
   } = useAnalysisBoardState();
 
   const { makeMove, goToEnd } = useAnalysisBoardActions();
-  const { soundEnabled } = useChessSettings();
+  const soundEnabled = useChessStore((s) => s.soundEnabled);
+  const board3dEnabled = useChessStore((s) => s.board3dEnabled);
 
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
@@ -91,20 +93,29 @@ export function AnalysisChessBoard() {
 
   const resolvedOrientation = isMounted ? boardOrientation : 'white';
 
+  // Common board props
+  const boardProps = {
+    position,
+    boardOrientation: resolvedOrientation,
+    canDrag: isMounted && !isViewingHistory && !pendingPromotion,
+    squareStyles: isMounted ? squareStyles : {},
+    onPieceDrop: onDrop,
+    onSquareClick: handleSquareClick,
+    onSquareRightClick: handleSquareRightClick,
+    arrows: analysisArrows
+  };
+
   return (
     <div className='relative'>
-      <Board
-        position={position}
-        boardOrientation={resolvedOrientation}
-        canDrag={isMounted && !isViewingHistory && !pendingPromotion}
-        squareStyles={isMounted ? squareStyles : {}}
-        darkSquareStyle={theme.darkSquareStyle}
-        lightSquareStyle={theme.lightSquareStyle}
-        onPieceDrop={onDrop}
-        onSquareClick={handleSquareClick}
-        onSquareRightClick={handleSquareRightClick}
-        arrows={analysisArrows}
-      />
+      {isMounted && board3dEnabled ? (
+        <Board3D {...boardProps} />
+      ) : (
+        <Board
+          {...boardProps}
+          darkSquareStyle={theme.darkSquareStyle}
+          lightSquareStyle={theme.lightSquareStyle}
+        />
+      )}
       <PromotionDialog
         isOpen={!!pendingPromotion}
         color={pendingPromotion?.color || 'white'}
@@ -116,3 +127,4 @@ export function AnalysisChessBoard() {
     </div>
   );
 }
+

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { Chessboard } from 'react-chessboard';
 import type { CSSProperties } from 'react';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
@@ -68,27 +69,23 @@ export function Board3D({
   arrows = [],
   animationDuration = ANIMATION_CONFIG.durationMs
 }: Board3DProps) {
-  const [squareWidth, setSquareWidth] = useState(0);
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1024
+  );
   const theme = useBoardTheme();
 
-  // Get the square width on mount and when the window resizes
+  // Track window width for responsive styling
   useEffect(() => {
-    const updateSquareWidth = () => {
-      const square = document.querySelector(`[data-column="a"][data-row="1"]`);
-      if (square) {
-        setSquareWidth(square.getBoundingClientRect().width);
-      }
-    };
-
-    // Initial update after a small delay to ensure DOM is ready
-    const timer = setTimeout(updateSquareWidth, 100);
-
-    window.addEventListener('resize', updateSquareWidth);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', updateSquareWidth);
-    };
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Calculate square width based on board container width
+  // Container: w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]
+  const boardWidth =
+    windowWidth >= 1024 ? 560 : windowWidth >= 640 ? 400 : windowWidth - 8;
+  const squareWidth = boardWidth / 8;
 
   // Create custom 3D piece components
   const threeDPieces = useMemo(() => {
@@ -109,7 +106,7 @@ export function Board3D({
             pointerEvents: 'none'
           }}
         >
-          <img
+          <Image
             src={`/3d-assets/3d-pieces/${fileName}.svg`}
             alt={piece}
             width={squareWidth || 60}
@@ -121,6 +118,7 @@ export function Board3D({
               width: '100%',
               height: 'auto'
             }}
+            priority
           />
         </div>
       );
@@ -129,45 +127,59 @@ export function Board3D({
     return pieceComponents;
   }, [squareWidth]);
 
-  // 3D board styles using CSS variables from theme
-  const boardStyle: CSSProperties = {
-    transform: 'rotateX(27.5deg)',
-    transformOrigin: 'center',
-    border: '16px solid var(--board-3d-frame)',
-    borderStyle: 'outset',
-    borderRightColor: 'var(--board-3d-frame-right)',
-    borderRadius: '4px',
-    boxShadow: 'var(--board-3d-shadow) 2px 24px 24px 8px',
-    borderRightWidth: '2px',
-    borderLeftWidth: '2px',
-    borderTopWidth: '0px',
-    borderBottomWidth: '18px',
-    borderTopLeftRadius: '8px',
-    borderTopRightRadius: '8px',
-    padding: '8px 8px 12px',
-    background: 'var(--board-3d-background)',
-    backgroundImage: 'url("/3d-assets/wood-texture.svg")',
-    backgroundSize: 'cover',
-    overflow: 'visible'
-  };
+  // Scale 3D styling based on board size (mobile-friendly)
+  const isMobile = squareWidth > 0 && squareWidth < 50;
 
-  // Use the theme's square styles with wood pattern overlay
-  const lightSquareStyle: CSSProperties = {
-    ...theme.lightSquareStyle,
-    backgroundImage: 'url("/3d-assets/wood-texture.svg")',
-    backgroundSize: 'cover',
-    backgroundBlendMode: 'overlay'
-  };
+  const options = useMemo(() => {
+    const bottomBorder = isMobile ? 10 : 18;
+    const padding = isMobile ? 4 : 8;
+    const shadowSize = isMobile ? 12 : 24;
 
-  const darkSquareStyle: CSSProperties = {
-    ...theme.darkSquareStyle,
-    backgroundImage: 'url("/3d-assets/wood-texture.svg")',
-    backgroundSize: 'cover',
-    backgroundBlendMode: 'overlay'
-  };
+    // 3D board styles using CSS variables from theme
+    const boardStyle: CSSProperties = {
+      boxSizing: 'content-box',
+      transform: 'rotateX(27.5deg)',
+      transformOrigin: 'center',
+      borderTopWidth: '0px',
+      borderRightWidth: '2px',
+      borderBottomWidth: `${bottomBorder}px`,
+      borderLeftWidth: '2px',
+      borderTopStyle: 'outset',
+      borderRightStyle: 'outset',
+      borderBottomStyle: 'outset',
+      borderLeftStyle: 'outset',
+      borderTopColor: 'var(--board-3d-frame)',
+      borderRightColor: 'var(--board-3d-frame-right)',
+      borderBottomColor: 'var(--board-3d-frame)',
+      borderLeftColor: 'var(--board-3d-frame)',
+      borderTopLeftRadius: '8px',
+      borderTopRightRadius: '8px',
+      borderBottomLeftRadius: '4px',
+      borderBottomRightRadius: '4px',
+      boxShadow: `var(--board-3d-shadow) 2px ${shadowSize}px ${shadowSize}px ${isMobile ? 4 : 8}px`,
+      padding: `${padding}px`,
+      background: 'var(--board-3d-background)',
+      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
+      backgroundSize: 'cover',
+      overflow: 'visible'
+    };
 
-  const options = useMemo(
-    () => ({
+    // Use the theme's square styles with wood pattern overlay
+    const lightSquareStyle: CSSProperties = {
+      ...theme.lightSquareStyle,
+      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
+      backgroundSize: 'cover',
+      backgroundBlendMode: 'overlay'
+    };
+
+    const darkSquareStyle: CSSProperties = {
+      ...theme.darkSquareStyle,
+      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
+      backgroundSize: 'cover',
+      backgroundBlendMode: 'overlay'
+    };
+
+    return {
       id: 'board-3d',
       position,
       boardOrientation,
@@ -189,22 +201,22 @@ export function Board3D({
       onSquareClick,
       onSquareRightClick,
       onPieceDrop
-    }),
-    [
-      position,
-      boardOrientation,
-      canDrag,
-      animationDuration,
-      squareStyles,
-      threeDPieces,
-      darkSquareStyle,
-      lightSquareStyle,
-      arrows,
-      onSquareClick,
-      onSquareRightClick,
-      onPieceDrop
-    ]
-  );
+    };
+  }, [
+    isMobile,
+    theme.lightSquareStyle,
+    theme.darkSquareStyle,
+    position,
+    boardOrientation,
+    canDrag,
+    animationDuration,
+    squareStyles,
+    threeDPieces,
+    arrows,
+    onSquareClick,
+    onSquareRightClick,
+    onPieceDrop
+  ]);
 
   return (
     <div
@@ -212,9 +224,8 @@ export function Board3D({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '1rem',
         alignItems: 'center',
-        margin: '3rem 0'
+        marginTop: isMobile ? '-0.75rem' : '-1.5rem'
       }}
     >
       <Chessboard options={options} />

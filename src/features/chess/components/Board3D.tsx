@@ -149,25 +149,21 @@ export function Board3D({
       borderTopLeftRadius: '8px',
       borderTopRightRadius: '8px',
       padding: '8px 8px 12px',
-      background: 'var(--board-3d-background)',
-      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
-      backgroundSize: 'cover',
+      backgroundColor: 'var(--board-3d-background)',
+      background:
+        'var(--board-3d-background) url("/3d-assets/wood-texture.svg") center/cover',
       overflow: 'visible'
     };
 
     // Use the theme's square styles with wood pattern overlay
     const lightSquareStyle: CSSProperties = {
-      ...theme.lightSquareStyle,
-      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
-      backgroundSize: 'cover',
-      backgroundBlendMode: 'overlay'
+      backgroundColor:
+        (theme.lightSquareStyle?.backgroundColor as string) || '#f0d9b5'
     };
 
     const darkSquareStyle: CSSProperties = {
-      ...theme.darkSquareStyle,
-      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
-      backgroundSize: 'cover',
-      backgroundBlendMode: 'overlay'
+      backgroundColor:
+        (theme.darkSquareStyle?.backgroundColor as string) || '#b58863'
     };
 
     return {

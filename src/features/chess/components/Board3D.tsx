@@ -6,6 +6,7 @@ import type { CSSProperties } from 'react';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
+import Image from 'next/image';
 
 // Position can be FEN string or position object
 type PositionObject = Record<string, { pieceType: string }>;
@@ -24,22 +25,6 @@ const PIECE_FILE_MAP: Record<string, string> = {
   bR: 'black-rook',
   bQ: 'black-queen',
   bK: 'black-king'
-};
-
-// Piece heights relative to square width
-const PIECE_HEIGHTS: Record<string, number> = {
-  wP: 1,
-  wN: 1.2,
-  wB: 1.2,
-  wR: 1.2,
-  wQ: 1.5,
-  wK: 1.6,
-  bP: 1,
-  bN: 1.2,
-  bB: 1.2,
-  bR: 1.2,
-  bQ: 1.5,
-  bK: 1.6
 };
 
 export type Board3DProps = {
@@ -70,25 +55,27 @@ export function Board3D({
 }: Board3DProps) {
   const theme = useBoardTheme();
   const hasMountedRef = useRef(false);
-  const [isMounted, setIsMounted] = useState(false);
 
-  // Track window width for responsive styling
-  const [windowWidth, setWindowWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth : 1024
-  );
+  // Track window width for responsive styling - initialize with SSR-safe default
+  const [windowWidth, setWindowWidth] = useState(1024);
 
   useEffect(() => {
+    // Set actual window width on mount
+    setWindowWidth(document.documentElement.clientWidth);
+
     // Mark as mounted after first render to enable animations
     const timer = setTimeout(() => {
       hasMountedRef.current = true;
-      setIsMounted(true);
     }, 100);
 
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
+    const handleResize = () =>
+      setWindowWidth(document.documentElement.clientWidth);
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(document.documentElement);
+
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
     };
   }, []);
 
@@ -118,9 +105,12 @@ export function Board3D({
             zIndex: 10
           }}
         >
-          <img
+          <Image
             src={`/3d-assets/3d-pieces/${fileName}.svg`}
             alt={piece}
+            width={100}
+            height={100}
+            unoptimized
             style={{
               position: 'absolute',
               bottom: `${0.1 * (squareWidth || 60)}px`,
@@ -229,8 +219,7 @@ export function Board3D({
     arrows,
     onSquareClick,
     onSquareRightClick,
-    onPieceDrop,
-    isMounted
+    onPieceDrop
   ]);
 
   return (
@@ -248,4 +237,3 @@ export function Board3D({
     </div>
   );
 }
-

@@ -101,7 +101,7 @@ export function Board3D({
               transformOrigin: 'bottom center',
               objectFit: isKing ? 'contain' : 'cover',
               width: '100%',
-              height: 'auto',
+              height: 'auto'
             }}
           />
         </div>
@@ -113,7 +113,7 @@ export function Board3D({
 
   const options = useMemo(() => {
     // 3D board styles using CSS variables from theme
-    const boardStyle: CSSProperties = {
+    const boardStyle = {
       boxSizing: 'border-box',
       transform: 'rotateX(27.5deg)',
       transformOrigin: 'center',
@@ -139,22 +139,22 @@ export function Board3D({
       backgroundImage: 'url("/3d-assets/wood-texture.svg")',
       backgroundSize: 'cover',
       overflow: 'visible'
-    };
+    } as CSSProperties;
 
     // Use the theme's square styles with wood pattern overlay
-    const lightSquareStyle: CSSProperties = {
+    const lightSquareStyle = {
       ...theme.lightSquareStyle,
       backgroundImage: 'url("/3d-assets/wood-texture.svg")',
       backgroundSize: 'cover',
       backgroundBlendMode: 'overlay'
-    };
+    } as CSSProperties;
 
-    const darkSquareStyle: CSSProperties = {
+    const darkSquareStyle = {
       ...theme.darkSquareStyle,
       backgroundImage: 'url("/3d-assets/wood-texture.svg")',
       backgroundSize: 'cover',
       backgroundBlendMode: 'overlay'
-    };
+    } as CSSProperties;
 
     return {
       id: 'board-3d',

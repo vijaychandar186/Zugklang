@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PuzzleView } from '@/features/puzzles/components/PuzzleView';
+import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
 
 export const metadata: Metadata = {
   title: 'Puzzles | Zugklang',
@@ -7,15 +10,14 @@ export const metadata: Metadata = {
     'Solve tactical puzzles to sharpen your pattern recognition and calculation skills.'
 };
 
-export default function PuzzlesPage() {
+export default async function PuzzlesPage() {
+  const cookieStore = await cookies();
+  const board3dEnabled =
+    cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
+
   return (
     <PageContainer scrollable={true}>
-      <div className='flex h-full items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold'>Tactical Puzzles</h1>
-          <p className='text-muted-foreground mt-2'>Coming soon...</p>
-        </div>
-      </div>
+      <PuzzleView initialBoard3dEnabled={board3dEnabled} />
     </PageContainer>
   );
 }

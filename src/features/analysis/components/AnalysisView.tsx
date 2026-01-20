@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Chess } from 'chess.js';
+import { useEffect, useState, useCallback } from 'react';
+import { Chess, type PieceSymbol } from 'chess.js';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -40,6 +40,7 @@ import { EditorProvider, EditorChessboard } from './SpareEditorBoard';
 import { SparePiecePalette } from './SparePiecePalette';
 import { AnalysisChessBoard } from './AnalysisChessBoard';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
+import { PromotionDialog } from '@/features/chess/components/PromotionDialog';
 
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
@@ -66,6 +67,12 @@ interface AnalysisViewProps {
   initialBoard3dEnabled?: boolean;
 }
 
+type PendingPromotion = {
+  from: string;
+  to: string;
+  color: 'white' | 'black';
+};
+
 export function AnalysisView({
   initialBoard3dEnabled
 }: AnalysisViewProps = {}) {
@@ -75,6 +82,8 @@ export function AnalysisView({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(10);
   const [isMounted, setIsMounted] = useState(false);
+  const [pendingPromotion, setPendingPromotion] =
+    useState<PendingPromotion | null>(null);
 
   const {
     currentFEN,
@@ -353,6 +362,37 @@ export function AnalysisView({
     toast.success('Moves copied');
   };
 
+  // Check if a move is a pawn promotion
+  const isPromotionMove = useCallback(
+    (from: string, to: string, fen: string): boolean => {
+      try {
+        const game = new Chess(fen);
+        const piece = game.get(from as 'a1');
+        if (!piece || piece.type !== 'p') return false;
+        const targetRank = to[1];
+        return targetRank === '8' || targetRank === '1';
+      } catch {
+        return false;
+      }
+    },
+    []
+  );
+
+  // Complete promotion with selected piece
+  const completePromotion = useCallback(
+    (piece: PieceSymbol) => {
+      if (!pendingPromotion) return;
+      makeMove(pendingPromotion.from, pendingPromotion.to, piece);
+      setPendingPromotion(null);
+    },
+    [pendingPromotion, makeMove]
+  );
+
+  // Cancel promotion
+  const cancelPromotion = useCallback(() => {
+    setPendingPromotion(null);
+  }, []);
+
   const handlePieceDrop = ({
     sourceSquare,
     targetSquare
@@ -361,6 +401,31 @@ export function AnalysisView({
     targetSquare: string | null;
   }) => {
     if (!targetSquare) return false;
+
+    // Check if this is a promotion move
+    if (isPromotionMove(sourceSquare, targetSquare, currentFEN)) {
+      // Validate move is legal before showing dialog
+      try {
+        const game = new Chess(currentFEN);
+        const moves = game.moves({
+          square: sourceSquare as 'a1',
+          verbose: true
+        });
+        const isLegal = moves.some((m) => m.to === targetSquare);
+        if (isLegal) {
+          const piece = game.get(sourceSquare as 'a1');
+          setPendingPromotion({
+            from: sourceSquare,
+            to: targetSquare,
+            color: piece?.color === 'w' ? 'white' : 'black'
+          });
+          return true; // Return true to prevent piece snapping back
+        }
+      } catch {
+        return false;
+      }
+    }
+
     const move = makeMove(sourceSquare, targetSquare);
     return !!move;
   };
@@ -383,24 +448,38 @@ export function AnalysisView({
           <BoardContainer showEvaluation={true}>
             {playingAgainstStockfish ? (
               <AnalysisChessBoard />
-            ) : (isMounted ? board3dEnabled : (initialBoard3dEnabled ?? false)) ? (
-              <Board3D
-                position={currentFEN}
-                boardOrientation={boardOrientation}
-                canDrag={true}
-                onPieceDrop={handlePieceDrop}
-                arrows={analysisArrows}
-              />
             ) : (
-              <Board
-                position={currentFEN}
-                boardOrientation={boardOrientation}
-                canDrag={true}
-                onPieceDrop={handlePieceDrop}
-                darkSquareStyle={theme.darkSquareStyle}
-                lightSquareStyle={theme.lightSquareStyle}
-                arrows={analysisArrows}
-              />
+              <div className='relative'>
+                {(
+                  isMounted ? board3dEnabled : (initialBoard3dEnabled ?? false)
+                ) ? (
+                  <Board3D
+                    position={currentFEN}
+                    boardOrientation={boardOrientation}
+                    canDrag={!pendingPromotion}
+                    onPieceDrop={handlePieceDrop}
+                    arrows={analysisArrows}
+                  />
+                ) : (
+                  <Board
+                    position={currentFEN}
+                    boardOrientation={boardOrientation}
+                    canDrag={!pendingPromotion}
+                    onPieceDrop={handlePieceDrop}
+                    darkSquareStyle={theme.darkSquareStyle}
+                    lightSquareStyle={theme.lightSquareStyle}
+                    arrows={analysisArrows}
+                  />
+                )}
+                <PromotionDialog
+                  isOpen={!!pendingPromotion}
+                  color={pendingPromotion?.color || 'white'}
+                  targetSquare={pendingPromotion?.to || 'a8'}
+                  boardOrientation={boardOrientation}
+                  onSelect={completePromotion}
+                  onCancel={cancelPromotion}
+                />
+              </div>
             )}
           </BoardContainer>
         )}

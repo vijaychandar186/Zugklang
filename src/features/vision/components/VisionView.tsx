@@ -464,7 +464,7 @@ export function VisionView() {
       boardStyle: { ...BOARD_STYLES.boardStyle, cursor: 'pointer' },
       darkSquareStyle: theme.darkSquareStyle,
       lightSquareStyle: theme.lightSquareStyle,
-      showBoardNotation: showCoordinates,
+      showNotation: showCoordinates,
       customSquareStyles: squareStyles,
       onSquareClick:
         trainingMode === 'coordinates'

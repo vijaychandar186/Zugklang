@@ -4,7 +4,7 @@ import type { MenuCardItem } from './play-modes';
 export const practiceModes: MenuCardItem[] = [
   {
     href: '/practice/learn',
-    icon: Icons.chessKing,
+    icon: Icons.book,
     title: 'Learn',
     description:
       'Study chess concepts, openings, endgames, and more. Build foundational knowledge.',

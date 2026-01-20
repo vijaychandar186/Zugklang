@@ -512,9 +512,14 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
           <div className='mt-3'>
             {status === 'playing' &&
               (playerTurn ? (
-                <p className='text-primary text-sm font-medium'>
-                  Your turn - Find the best move!
-                </p>
+                <div className='flex items-center gap-2'>
+                  <Badge variant='secondary' className='text-xs'>
+                    {boardOrientation === 'white' ? 'White' : 'Black'} to move
+                  </Badge>
+                  <span className='text-primary text-sm font-medium'>
+                    Find the best move!
+                  </span>
+                </div>
               ) : (
                 <Skeleton className='h-5 w-32' />
               ))}
@@ -541,7 +546,7 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
               {currentPuzzle.Themes.split(' ')
                 .slice(0, 4)
                 .map((theme) => (
-                  <Badge key={theme} variant='outline' className='text-xs'>
+                  <Badge key={theme} variant='secondary' className='text-xs'>
                     {theme}
                   </Badge>
                 ))}

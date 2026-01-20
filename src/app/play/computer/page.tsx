@@ -1,30 +1,32 @@
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { GameView } from '@/features/game/components/GameView';
-
-import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
+import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
+import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
+import { Icons } from '@/components/Icons';
+import { computerModes } from '@/constants/computer-modes';
 
 export const metadata: Metadata = {
   title: 'Play vs Computer | Zugklang',
   description:
-    'Challenge Stockfish 16 at various difficulty levels. Test your chess skills against one of the strongest engines.'
+    'Challenge Stockfish at various difficulty levels. Play standard chess or try variants like Fischer Random.'
 };
 
-export default async function ComputerPage() {
-  const cookieStore = await cookies();
-  const playAs = cookieStore.get('playAs')?.value as
-    | 'white'
-    | 'black'
-    | undefined;
-  const board3dEnabled = cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
-
+export default function ComputerPlayMenuPage() {
   return (
     <PageContainer scrollable={true}>
-      <GameView
-        serverOrientation={playAs}
-        initialBoard3dEnabled={board3dEnabled}
-      />
+      <MenuPageLayout
+        icon={Icons.cpu}
+        title='Vs Computer'
+        description='Challenge Stockfish 16 at various difficulty levels. From beginner to grandmaster strength.'
+        backHref='/play'
+        backLabel='Back to Play'
+      >
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          {computerModes.map((mode) => (
+            <GameModeCard key={mode.href} {...mode} />
+          ))}
+        </div>
+      </MenuPageLayout>
     </PageContainer>
   );
 }

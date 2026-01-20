@@ -15,6 +15,10 @@ import {
   saveToModeStorage,
   loadFromModeStorage
 } from './gameStorage';
+import {
+  ChessVariant,
+  generateRandomChess960FEN
+} from '@/features/chess/utils/chess960';
 
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
@@ -103,6 +107,7 @@ type ChessStore = {
   boardFlipped: boolean;
   autoFlipBoard: boolean;
   fullscreenEnabled: boolean;
+  variant: ChessVariant;
 
   onNewGame: () => void;
 
@@ -142,6 +147,7 @@ type ChessStore = {
   resetGame: () => void;
   setGameType: (gameType: GameType) => void;
   setAutoFlipBoard: (enabled: boolean) => void;
+  setVariant: (variant: ChessVariant) => void;
 
   setTimeControl: (timeControl: TimeControl) => void;
   tickTimer: (color: 'white' | 'black') => void;
@@ -192,6 +198,7 @@ export const useChessStore = create<ChessStore>()(
       boardFlipped: false,
       autoFlipBoard: false,
       fullscreenEnabled: false,
+      variant: 'standard' as ChessVariant,
 
       onNewGame: () => {},
 
@@ -357,7 +364,14 @@ export const useChessStore = create<ChessStore>()(
         }
 
         const hasTimer = timeControl.mode !== 'unlimited';
-        const newGame = new Chess();
+        const state = get();
+        
+        // Generate starting FEN based on variant
+        const startingFEN = state.variant === 'fischerRandom' 
+          ? generateRandomChess960FEN() 
+          : STARTING_FEN;
+        
+        const newGame = new Chess(startingFEN);
 
         set({
           mode: 'play',
@@ -370,11 +384,11 @@ export const useChessStore = create<ChessStore>()(
           gameStarted: true,
           gameOver: false,
           moves: [],
-          positionHistory: [STARTING_FEN],
+          positionHistory: [startingFEN],
           viewingIndex: 0,
           gameResult: null,
-          currentFEN: STARTING_FEN,
-          gameId: get().gameId + 1,
+          currentFEN: startingFEN,
+          gameId: state.gameId + 1,
           timeControl,
           whiteTime: whiteInitialTime,
           blackTime: blackInitialTime,
@@ -399,8 +413,14 @@ export const useChessStore = create<ChessStore>()(
         }
 
         const hasTimer = timeControl.mode !== 'unlimited';
-        const newGame = new Chess();
         const state = get();
+        
+        // Generate starting FEN based on variant
+        const startingFEN = state.variant === 'fischerRandom' 
+          ? generateRandomChess960FEN() 
+          : STARTING_FEN;
+        
+        const newGame = new Chess(startingFEN);
 
         set({
           mode: 'play',
@@ -412,10 +432,10 @@ export const useChessStore = create<ChessStore>()(
           gameStarted: true,
           gameOver: false,
           moves: [],
-          positionHistory: [STARTING_FEN],
+          positionHistory: [startingFEN],
           viewingIndex: 0,
           gameResult: null,
-          currentFEN: STARTING_FEN,
+          currentFEN: startingFEN,
           gameId: state.gameId + 1,
           timeControl,
           whiteTime: whiteInitialTime,
@@ -518,6 +538,8 @@ export const useChessStore = create<ChessStore>()(
         }
       },
       setAutoFlipBoard: (enabled) => set({ autoFlipBoard: enabled }),
+      
+      setVariant: (variant) => set({ variant }),
 
       resetGame: () => {
         const state = get();

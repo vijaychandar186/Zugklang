@@ -20,19 +20,22 @@ import {
 } from '@/features/chess/stores/useAnalysisStore';
 
 import { GameType } from '@/features/chess/stores/useChessStore';
+import { ChessVariant } from '@/features/chess/utils/chess960';
 
 interface GameViewProps {
   serverOrientation?: 'white' | 'black';
   mode?: ChessMode;
   gameType?: GameType;
   initialBoard3dEnabled?: boolean;
+  variant?: ChessVariant;
 }
 
 export function GameView({
   serverOrientation,
   mode = 'play',
   gameType: initialGameType = 'computer',
-  initialBoard3dEnabled
+  initialBoard3dEnabled,
+  variant = 'standard'
 }: GameViewProps) {
   const {
     gameId,
@@ -68,15 +71,17 @@ export function GameView({
   const isPlayMode = mode === 'play';
 
   const setGameType = useChessStore((s) => s.setGameType);
+  const setVariant = useChessStore((s) => s.setVariant);
 
   useEffect(() => {
     setMode(mode);
   }, [mode, setMode]);
 
-  // Set the game type when mounting - this ensures the correct dialog shows
+  // Set the game type and variant when mounting - this ensures the correct dialog shows
   useEffect(() => {
     setGameType(initialGameType);
-  }, [initialGameType, setGameType]);
+    setVariant(variant);
+  }, [initialGameType, setGameType, variant, setVariant]);
 
   useGameTimer();
 

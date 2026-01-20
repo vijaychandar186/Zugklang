@@ -62,6 +62,7 @@ import {
   Heart,
   Clock,
   BookOpen,
+  Target,
   type LucideIcon
 } from 'lucide-react';
 
@@ -137,7 +138,8 @@ export const Icons = {
   puzzle: Puzzle,
   heart: Heart,
   clock: Clock,
-  book: BookOpen
+  book: BookOpen,
+  target: Target
 } as const;
 
 export type { LucideIcon };

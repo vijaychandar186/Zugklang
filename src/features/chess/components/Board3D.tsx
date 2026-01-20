@@ -97,7 +97,7 @@ export function Board3D({
               position: 'absolute',
               bottom: 0,
               left: '50%',
-              transform: 'translateX(-50%) translateY(90%) scale(1.8)',
+              transform: 'translateX(-50%) translateY(120%) scale(1.8)',
               transformOrigin: 'bottom center',
               objectFit: isKing ? 'contain' : 'cover',
               width: '100%',

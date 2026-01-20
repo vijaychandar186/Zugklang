@@ -18,9 +18,14 @@ import { BoardThemeName } from '@/features/chess/types/theme';
 type SettingsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  show3dToggle?: boolean;
 };
 
-export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
+export function SettingsDialog({
+  open,
+  onOpenChange,
+  show3dToggle = true
+}: SettingsDialogProps) {
   const setBoardTheme = useChessStore((s) => s.setBoardTheme);
   const currentBoardTheme = useChessStore((s) => s.boardThemeName);
   const soundEnabled = useChessStore((s) => s.soundEnabled);
@@ -47,10 +52,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
             onThemeChange={handleBoardThemeChange}
           />
           <SoundToggle enabled={soundEnabled} onToggle={setSoundEnabled} />
-          <Board3dToggle
-            enabled={board3dEnabled}
-            onToggle={setBoard3dEnabled}
-          />
+          {show3dToggle && (
+            <Board3dToggle
+              enabled={board3dEnabled}
+              onToggle={setBoard3dEnabled}
+            />
+          )}
           <div className='hidden sm:block'>
             <FullscreenToggle
               enabled={fullscreenEnabled}

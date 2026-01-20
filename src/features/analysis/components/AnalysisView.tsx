@@ -827,7 +827,11 @@ export function AnalysisView({
         </DialogContent>
       </Dialog>
 
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        show3dToggle={!isEditorMode}
+      />
     </>
   );
 

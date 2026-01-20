@@ -18,5 +18,13 @@ export const practiceModes: MenuCardItem[] = [
     description:
       'Solve tactical puzzles to sharpen your pattern recognition and calculation.',
     actionText: 'Solve Puzzles'
+  },
+  {
+    href: '/practice/memory',
+    icon: Icons.engine,
+    title: 'Memory',
+    description:
+      'Train your board vision by memorizing and recreating chess positions.',
+    actionText: 'Start Training'
   }
 ];

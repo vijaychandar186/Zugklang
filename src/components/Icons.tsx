@@ -58,6 +58,7 @@ import {
   Rabbit,
   Turtle,
   FlipVertical,
+  Puzzle,
   type LucideIcon
 } from 'lucide-react';
 
@@ -129,7 +130,8 @@ export const Icons = {
   zap: Zap,
   rabbit: Rabbit,
   turtle: Turtle,
-  flipVertical: FlipVertical
+  flipVertical: FlipVertical,
+  puzzle: Puzzle
 } as const;
 
 export type { LucideIcon };

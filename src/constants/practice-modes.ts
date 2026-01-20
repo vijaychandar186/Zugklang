@@ -13,11 +13,10 @@ export const practiceModes: MenuCardItem[] = [
   },
   {
     href: '/practice/puzzles',
-    icon: Icons.zap,
+    icon: Icons.puzzle,
     title: 'Puzzles',
     description:
       'Solve tactical puzzles to sharpen your pattern recognition and calculation.',
-    actionText: 'Solve Puzzles',
-    comingSoon: true
+    actionText: 'Solve Puzzles'
   }
 ];

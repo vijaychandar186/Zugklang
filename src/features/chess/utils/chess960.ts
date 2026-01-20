@@ -22,7 +22,7 @@ export function chess960PositionToFEN(positionNumber: number): string {
   const darkSquares = [1, 3, 5, 7];
   const lightSquares = [0, 2, 4, 6];
   
-  let n = positionNumber;
+  const n = positionNumber;
   
   // Calculation based on Chess960 numbering scheme
   const n2 = Math.floor(n / 4);

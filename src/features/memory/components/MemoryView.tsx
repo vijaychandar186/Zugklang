@@ -23,18 +23,12 @@ import {
 import { toast } from 'sonner';
 
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
-import { Board3D } from '@/features/chess/components/Board3D';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 import { MemoryPiecePalette } from './MemoryPiecePalette';
 
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
-import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
-
-interface MemoryViewProps {
-  initialBoard3dEnabled?: boolean;
-}
 
 type TrainingMode = 'standard' | 'progressive';
 type GameStatus = 'setup' | 'memorizing' | 'placing' | 'results';
@@ -111,9 +105,9 @@ const SQUARES: Square[] = [
   'h1'
 ];
 
-export function MemoryView({ initialBoard3dEnabled }: MemoryViewProps = {}) {
+// Note: 3D board is not supported in Memory mode due to spare pieces palette requiring 2D board
+export function MemoryView() {
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
   // Setup state
   const [gameStatus, setGameStatus] = useState<GameStatus>('setup');
@@ -140,11 +134,6 @@ export function MemoryView({ initialBoard3dEnabled }: MemoryViewProps = {}) {
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const theme = useBoardTheme();
-  const board3dEnabled = useChessStore((s) => s.board3dEnabled);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   // Timer logic for memorization phase
   useEffect(() => {
@@ -577,22 +566,14 @@ export function MemoryView({ initialBoard3dEnabled }: MemoryViewProps = {}) {
         {/* Board showing results */}
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
-            {(isMounted ? board3dEnabled : (initialBoard3dEnabled ?? false)) ? (
-              <Board3D
-                position={positionToFen(targetPosition)}
-                boardOrientation={boardOrientation}
-                canDrag={false}
-              />
-            ) : (
-              <Board
-                position={positionToFen(targetPosition)}
-                boardOrientation={boardOrientation}
-                canDrag={false}
-                darkSquareStyle={theme.darkSquareStyle}
-                lightSquareStyle={theme.lightSquareStyle}
-                squareStyles={customSquareStyles}
-              />
-            )}
+            <Board
+              position={positionToFen(targetPosition)}
+              boardOrientation={boardOrientation}
+              canDrag={false}
+              darkSquareStyle={theme.darkSquareStyle}
+              lightSquareStyle={theme.lightSquareStyle}
+              squareStyles={customSquareStyles}
+            />
           </BoardContainer>
         </div>
 
@@ -650,23 +631,13 @@ export function MemoryView({ initialBoard3dEnabled }: MemoryViewProps = {}) {
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
             <div className='relative'>
-              {(
-                isMounted ? board3dEnabled : (initialBoard3dEnabled ?? false)
-              ) ? (
-                <Board3D
-                  position={currentFen}
-                  boardOrientation={boardOrientation}
-                  canDrag={false}
-                />
-              ) : (
-                <Board
-                  position={currentFen}
-                  boardOrientation={boardOrientation}
-                  canDrag={false}
-                  darkSquareStyle={theme.darkSquareStyle}
-                  lightSquareStyle={theme.lightSquareStyle}
-                />
-              )}
+              <Board
+                position={currentFen}
+                boardOrientation={boardOrientation}
+                canDrag={false}
+                darkSquareStyle={theme.darkSquareStyle}
+                lightSquareStyle={theme.lightSquareStyle}
+              />
               <div className='pointer-events-none absolute inset-0 flex items-center justify-center'>
                 <div className='bg-background/80 rounded-full p-4'>
                   <span className='text-4xl font-bold tabular-nums'>
@@ -752,7 +723,11 @@ export function MemoryView({ initialBoard3dEnabled }: MemoryViewProps = {}) {
           </div>
         </div>
 
-        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+        <SettingsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          show3dToggle={false}
+        />
       </div>
     );
   }
@@ -857,7 +832,11 @@ export function MemoryView({ initialBoard3dEnabled }: MemoryViewProps = {}) {
           </div>
         </div>
 
-        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+        <SettingsDialog
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+          show3dToggle={false}
+        />
       </div>
     </ChessboardProvider>
   );

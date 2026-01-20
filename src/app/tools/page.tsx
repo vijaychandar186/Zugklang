@@ -3,25 +3,25 @@ import { PageContainer } from '@/components/layout/PageContainer';
 import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
-import { playModes } from '@/constants/play-modes';
+import { tools } from '@/constants/tools';
 
 export const metadata: Metadata = {
-  title: 'Play | Zugklang',
+  title: 'Chess Tools | Zugklang',
   description:
-    'Choose your game mode. Play against the computer or challenge a friend locally.'
+    'Powerful chess analysis and review tools. Analyze positions with Stockfish and review your games.'
 };
 
-export default function PlayPage() {
+export default function ToolsPage() {
   return (
     <PageContainer scrollable={true}>
       <MenuPageLayout
-        icon={Icons.play}
-        title='Play Chess'
-        description='Choose how you want to play. Challenge the computer or play with a friend.'
+        icon={Icons.engine}
+        title='Chess Tools'
+        description='Powerful analysis and review tools to improve your game.'
       >
         <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-          {playModes.map((mode) => (
-            <GameModeCard key={mode.href} {...mode} />
+          {tools.map((tool) => (
+            <GameModeCard key={tool.href} {...tool} />
           ))}
         </div>
       </MenuPageLayout>

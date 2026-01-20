@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { Navbar } from '@/pages-content/landing/components/Navbar';
+import { Navbar } from '@/components/layout/Navbar';
 import { Hero } from '@/pages-content/landing/components/Hero';
 import { Features } from '@/pages-content/landing/components/Features';
 import { FAQ } from '@/pages-content/landing/components/FAQ';
@@ -30,3 +30,4 @@ export default function Page() {
     </PageContainer>
   );
 }
+

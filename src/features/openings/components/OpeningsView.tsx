@@ -573,7 +573,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                   : 'hover:bg-muted'
               }`}
             >
-              Favorites ({favorites.length})
+              Favorites {isMounted && `(${favorites.length})`}
             </button>
           </div>
         </div>
@@ -657,6 +657,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                         <TooltipContent>Remove from favorites</TooltipContent>
                       </Tooltip>
                     ) : (
+                      isMounted &&
                       isFavorite(opening) && (
                         <Icons.heart className='mr-3 h-3 w-3 shrink-0 fill-red-500 text-red-500' />
                       )

@@ -22100,11 +22100,6 @@
     "pgn":"1. d4 f5 2. c4 Nf6 3. g3 e6 4. Bg2 Be7 5. Nf3 O-O 6. O-O d6 7. Nc3 Qe8 8. b3"
   },
   {
-    "eco":"eco",
-    "name":"name",
-    "pgn":"pgn"
-  },
-  {
     "eco":"B00",
     "name":"Barnes Defense",
     "pgn":"1. e4 f6"
@@ -25833,11 +25828,6 @@
     "eco":"B99",
     "name":"Sicilian Defense: Najdorf Variation, Main Line",
     "pgn":"1. e4 c5 2. Nf3 d6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 a6 6. Bg5 e6 7. f4 Be7 8. Qf3 Qc7 9. O-O-O Nbd7"
-  },
-  {
-    "eco":"eco",
-    "name":"name",
-    "pgn":"pgn"
   },
   {
     "eco":"C00",
@@ -32010,11 +32000,6 @@
     "pgn":"1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 6. Re1 b5 7. Bb3 d6 8. c3 O-O 9. h3 Na5 10. Bc2 c5 11. d4 Qc7 12. Nbd2 cxd4 13. cxd4"
   },
   {
-    "eco":"eco",
-    "name":"name",
-    "pgn":"pgn"
-  },
-  {
     "eco":"D00",
     "name":"Amazon Attack",
     "pgn":"1. d4 d5 2. Qd3"
@@ -34713,11 +34698,6 @@
     "eco":"D99",
     "name":"Gr\u00fcnfeld Defense: Russian Variation, Yugoslav Variation",
     "pgn":"1. d4 Nf6 2. c4 g6 3. Nc3 d5 4. Nf3 Bg7 5. Qb3 dxc4 6. Qxc4 O-O 7. e4 Bg4 8. Be3 Nfd7 9. Qb3 c5"
-  },
-  {
-    "eco":"eco",
-    "name":"name",
-    "pgn":"pgn"
   },
   {
     "eco":"E00",

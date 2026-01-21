@@ -45,23 +45,6 @@ import openingsData from '@/resources/eco-openings.json';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-// Parse PGN to get FEN
-function pgnToFen(pgn: string): string {
-  try {
-    const chess = new Chess();
-    const moves = pgn
-      .replace(/\d+\.\s*/g, '')
-      .split(/\s+/)
-      .filter((m) => m.length > 0);
-    for (const move of moves) {
-      chess.move(move);
-    }
-    return chess.fen();
-  } catch {
-    return START_FEN;
-  }
-}
-
 // Parse PGN to get move list as MoveData
 function parsePgnMoves(pgn: string): MoveData[] {
   const moves: MoveData[] = [];
@@ -210,10 +193,16 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     ? parsePgnMoves(selectedOpening.pgn)
     : [];
 
-  // Reset viewing index when opening changes and go to the end
+  // Track if we should auto-play on opening change
+  const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
+
+  // Reset viewing index when opening changes and start from beginning
   useEffect(() => {
-    setViewingMoveIndex(currentMoves.length);
-  }, [selectedOpening, currentMoves.length]);
+    if (selectedOpening) {
+      setViewingMoveIndex(0);
+      setShouldAutoPlay(true);
+    }
+  }, [selectedOpening]);
 
   // Get current position based on viewing index
   const currentFen = selectedOpening
@@ -265,12 +254,20 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
   }, []);
 
   // Playback hook for autoplay
-  const { isPlaying, togglePlay } = usePlayback({
+  const { isPlaying, togglePlay, play } = usePlayback({
     currentIndex: viewingMoveIndex,
     totalItems: currentMoves.length + 1,
     onNext: goToMoveNext,
     enabled: currentMoves.length > 0
   });
+
+  // Auto-play when a new opening is selected
+  useEffect(() => {
+    if (shouldAutoPlay && currentMoves.length > 0) {
+      play();
+      setShouldAutoPlay(false);
+    }
+  }, [shouldAutoPlay, currentMoves.length, play]);
 
   // Handle opening selection
   const handleSelectOpening = useCallback(
@@ -382,17 +379,17 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
         </BoardContainer>
       </div>
 
-      {/* Sidebar */}
+      {/* Main Sidebar - Analysis, Moves, Controls */}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
         {/* Analysis Lines - shown when engine is ON */}
         {isAnalysisOn && (
-          <div className='bg-card shrink-0 rounded-lg border'>
+          <div className='bg-card w-full shrink-0 rounded-lg border'>
             <AnalysisLines />
           </div>
         )}
 
         {/* Move History Card */}
-        <div className='bg-card flex min-h-[180px] flex-col rounded-lg border lg:min-h-0 lg:flex-shrink-0'>
+        <div className='bg-card flex min-h-[300px] w-full flex-col overflow-hidden rounded-lg border lg:min-h-0 lg:flex-1'>
           <div className='flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3'>
             <h3 className='min-w-0 flex-1 font-semibold'>
               {selectedOpening ? (
@@ -444,7 +441,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
             )}
           </div>
 
-          <ScrollArea className='h-[100px] lg:h-[120px]'>
+          <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
             <div className='px-4 py-2'>
               <MoveHistoryBase
                 items={currentMoves}
@@ -471,127 +468,9 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
             onGoToPrev={goToMovePrev}
             onGoToNext={goToMoveNext}
           />
-        </div>
 
-        {/* Tabs */}
-        <div className='bg-card shrink-0 rounded-lg border p-1'>
-          <div className='flex gap-1'>
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                activeTab === 'all'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted'
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setActiveTab('favorites')}
-              className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-                activeTab === 'favorites'
-                  ? 'bg-primary text-primary-foreground'
-                  : 'hover:bg-muted'
-              }`}
-            >
-              Favorites ({favorites.length})
-            </button>
-          </div>
-        </div>
-
-        {/* Search and filters */}
-        <div className='bg-card shrink-0 rounded-lg border p-3'>
-          <div className='flex gap-2'>
-            <div className='relative flex-1'>
-              <input
-                type='text'
-                placeholder='Search by name or ECO...'
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className='bg-background border-input placeholder:text-muted-foreground focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none'
-              />
-            </div>
-            <Select
-              value={sortOption}
-              onValueChange={(v) => setSortOption(v as SortOption)}
-            >
-              <SelectTrigger className='w-[100px]'>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='eco'>ECO</SelectItem>
-                <SelectItem value='eco-desc'>ECO (Z-A)</SelectItem>
-                <SelectItem value='name'>Name</SelectItem>
-                <SelectItem value='name-desc'>Name (Z-A)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
-        {/* Openings list */}
-        <div className='bg-card flex flex-1 flex-col overflow-hidden rounded-lg border'>
-          <div className='flex-1 overflow-y-auto'>
-            {filteredOpenings.length === 0 ? (
-              <div className='flex h-full flex-col items-center justify-center gap-2 p-4'>
-                <Icons.book className='text-muted-foreground h-8 w-8' />
-                <p className='text-muted-foreground text-sm'>
-                  {activeTab === 'favorites'
-                    ? 'No favorites yet'
-                    : 'No openings found'}
-                </p>
-              </div>
-            ) : (
-              <div className='divide-y'>
-                {filteredOpenings.map((opening, idx) => (
-                  <div
-                    key={`${opening.eco}-${opening.name}-${idx}`}
-                    className={`group hover:bg-accent flex items-center justify-between gap-2 transition-colors ${
-                      selectedIndex === idx ? 'bg-accent' : ''
-                    }`}
-                  >
-                    <button
-                      onClick={() => handleSelectOpening(opening, idx)}
-                      className='flex min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left'
-                    >
-                      <Badge
-                        variant='outline'
-                        className='shrink-0 font-mono text-xs'
-                      >
-                        {opening.eco}
-                      </Badge>
-                      <span className='truncate text-sm'>{opening.name}</span>
-                    </button>
-                    {activeTab === 'favorites' ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant='ghost'
-                            size='icon'
-                            className='mr-1 h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100'
-                            onClick={() =>
-                              removeFavorite(getFavoriteKey(opening))
-                            }
-                          >
-                            <Icons.trash className='h-3.5 w-3.5 text-red-500' />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Remove from favorites</TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      isFavorite(opening) && (
-                        <Icons.heart className='mr-3 h-3 w-3 shrink-0 fill-red-500 text-red-500' />
-                      )
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Action buttons */}
-        <div className='bg-card shrink-0 rounded-lg border p-2'>
-          <div className='flex items-center justify-between'>
+          {/* Action buttons */}
+          <div className='bg-muted/50 flex items-center justify-between border-t p-2'>
             <div className='flex items-center gap-1'>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -668,6 +547,132 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
               </Tooltip>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Openings Sidebar - Search, List */}
+      <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
+        {/* Tabs */}
+        <div className='bg-card w-full shrink-0 rounded-lg border p-1'>
+          <div className='flex w-full gap-1'>
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                activeTab === 'all'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-muted'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setActiveTab('favorites')}
+              className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                activeTab === 'favorites'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'hover:bg-muted'
+              }`}
+            >
+              Favorites ({favorites.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Search and filters */}
+        <div className='bg-card w-full shrink-0 rounded-lg border p-3'>
+          <div className='flex w-full gap-2'>
+            <div className='relative min-w-0 flex-1'>
+              <input
+                type='text'
+                placeholder='Search by name or ECO...'
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                className='bg-background border-input placeholder:text-muted-foreground focus:ring-ring w-full rounded-md border px-3 py-2 text-sm focus:ring-1 focus:outline-none'
+              />
+            </div>
+            <Select
+              value={sortOption}
+              onValueChange={(v) => setSortOption(v as SortOption)}
+            >
+              <SelectTrigger className='w-[100px]'>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='eco'>ECO</SelectItem>
+                <SelectItem value='eco-desc'>ECO (Z-A)</SelectItem>
+                <SelectItem value='name'>Name</SelectItem>
+                <SelectItem value='name-desc'>Name (Z-A)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Openings list */}
+        <div className='bg-card flex min-h-[300px] w-full flex-col overflow-hidden rounded-lg border lg:min-h-0 lg:flex-1'>
+          {filteredOpenings.length === 0 ? (
+            <div className='flex h-full flex-col items-center justify-center gap-2 p-4'>
+              <Icons.book className='text-muted-foreground h-8 w-8' />
+              <p className='text-muted-foreground text-sm'>
+                {activeTab === 'favorites'
+                  ? 'No favorites yet'
+                  : 'No openings found'}
+              </p>
+            </div>
+          ) : (
+            <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
+              <div className='divide-y'>
+                {filteredOpenings.map((opening, idx) => (
+                  <div
+                    key={`${opening.eco}-${opening.name}-${idx}`}
+                    className={`group hover:bg-accent flex items-center justify-between gap-2 transition-colors ${
+                      selectedIndex === idx ? 'bg-accent' : ''
+                    }`}
+                  >
+                    <button
+                      onClick={() => handleSelectOpening(opening, idx)}
+                      className='flex min-w-0 flex-1 items-center gap-2 px-3 py-2 text-left'
+                    >
+                      <Badge
+                        variant='outline'
+                        className='shrink-0 font-mono text-xs'
+                      >
+                        {opening.eco}
+                      </Badge>
+                      <span className='truncate text-sm'>{opening.name}</span>
+                    </button>
+                    {activeTab === 'favorites' ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant='ghost'
+                            size='icon'
+                            className='mr-1 h-7 w-7 shrink-0 opacity-0 group-hover:opacity-100'
+                            onClick={() =>
+                              removeFavorite(getFavoriteKey(opening))
+                            }
+                          >
+                            <Icons.trash className='h-3.5 w-3.5 text-red-500' />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Remove from favorites</TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      isFavorite(opening) && (
+                        <Icons.heart className='mr-3 h-3 w-3 shrink-0 fill-red-500 text-red-500' />
+                      )
+                    )}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          )}
+        </div>
+
+        {/* Count indicator */}
+        <div className='bg-card w-full shrink-0 rounded-lg border px-3 py-2'>
+          <p className='text-muted-foreground text-center text-xs'>
+            {filteredOpenings.length.toLocaleString()} openings
+          </p>
         </div>
       </div>
 

@@ -1,4 +1,5 @@
 import { VisionView } from '@/features/vision/components/VisionView';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export const metadata = {
   title: 'Vision Training | Zugklang',
@@ -7,5 +8,9 @@ export const metadata = {
 };
 
 export default function VisionPage() {
-  return <VisionView />;
+  return (
+    <PageContainer scrollable={true}>
+      <VisionView />
+    </PageContainer>
+  );
 }

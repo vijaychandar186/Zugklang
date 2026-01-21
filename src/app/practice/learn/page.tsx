@@ -1,21 +1,32 @@
 import type { Metadata } from 'next';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
+import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
+import { Icons } from '@/components/Icons';
+import { learnModes } from '@/constants/learn-modes';
 
 export const metadata: Metadata = {
-  title: 'Learn Openings | Zugklang',
+  title: 'Learn | Zugklang',
   description:
-    'Study chess openings and build your repertoire. Learn theory, key variations, and master the opening phase.'
+    'Study chess concepts, openings, and more. Build foundational knowledge.'
 };
 
 export default function LearnPage() {
   return (
     <PageContainer scrollable={true}>
-      <div className='flex h-full items-center justify-center'>
-        <div className='text-center'>
-          <h1 className='text-2xl font-bold'>Opening Explorer</h1>
-          <p className='text-muted-foreground mt-2'>Coming soon...</p>
+      <MenuPageLayout
+        icon={Icons.book}
+        title='Learn'
+        description='Study chess concepts, openings, endgames, and more. Build foundational knowledge.'
+        backHref='/practice'
+        backLabel='Back to Practice'
+      >
+        <div className='grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+          {learnModes.map((mode) => (
+            <GameModeCard key={mode.href} {...mode} />
+          ))}
         </div>
-      </div>
+      </MenuPageLayout>
     </PageContainer>
   );
 }

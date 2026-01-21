@@ -28,6 +28,9 @@ import {
   MoveHistoryBase,
   type MoveData
 } from '@/features/chess/components/sidebar/MoveHistoryBase';
+import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
+import { AnalysisLines } from '@/features/analysis/components/AnalysisLines';
+import { usePlayback } from '@/features/chess/hooks/usePlayback';
 import { useChessState } from '@/features/chess/stores/useChessStore';
 import {
   useAnalysisState,
@@ -71,6 +74,26 @@ function parsePgnMoves(pgn: string): MoveData[] {
   return moves;
 }
 
+// Get FEN at a specific move index in the PGN
+function getFenAtMoveIndex(pgn: string, moveIndex: number): string {
+  try {
+    const chess = new Chess();
+    if (moveIndex === 0) return chess.fen();
+
+    const moves = pgn
+      .replace(/\d+\.\s*/g, '')
+      .split(/\s+/)
+      .filter((m) => m.length > 0);
+
+    for (let i = 0; i < Math.min(moveIndex, moves.length); i++) {
+      chess.move(moves[i]);
+    }
+    return chess.fen();
+  } catch {
+    return START_FEN;
+  }
+}
+
 interface OpeningsViewProps {
   initialBoard3dEnabled?: boolean;
 }
@@ -79,6 +102,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isMounted, setIsMounted] = useState(false);
+  const [viewingMoveIndex, setViewingMoveIndex] = useState(0);
 
   const {
     selectedOpening,
@@ -181,25 +205,30 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     return sorted;
   }, [searchQuery, sortOption, activeTab, favoriteOpenings]);
 
-  // Get current position
-  const currentFen = selectedOpening
-    ? pgnToFen(selectedOpening.pgn)
-    : START_FEN;
-
   // Get moves for display
   const currentMoves = selectedOpening
     ? parsePgnMoves(selectedOpening.pgn)
     : [];
 
-  // Update analysis position when opening changes
+  // Reset viewing index when opening changes and go to the end
   useEffect(() => {
-    if (isAnalysisOn && currentFen) {
-      setPosition(currentFen);
-    }
-  }, [currentFen, isAnalysisOn, setPosition]);
+    setViewingMoveIndex(currentMoves.length);
+  }, [selectedOpening, currentMoves.length]);
+
+  // Get current position based on viewing index
+  const currentFen = selectedOpening
+    ? getFenAtMoveIndex(selectedOpening.pgn, viewingMoveIndex)
+    : START_FEN;
 
   // Get turn from FEN
   const currentTurn = currentFen.split(' ')[1] === 'w' ? 'w' : 'b';
+
+  // Update analysis position when FEN changes
+  useEffect(() => {
+    if (isAnalysisOn && currentFen) {
+      setPosition(currentFen, currentTurn);
+    }
+  }, [currentFen, currentTurn, isAnalysisOn, setPosition]);
 
   // Analysis arrows
   const analysisArrows = useChessArrows({
@@ -212,6 +241,37 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     analysisTurn: currentTurn
   });
 
+  // Move navigation within current opening
+  const canGoBackMove = viewingMoveIndex > 0;
+  const canGoForwardMove = viewingMoveIndex < currentMoves.length;
+
+  const goToMoveStart = useCallback(() => setViewingMoveIndex(0), []);
+  const goToMoveEnd = useCallback(
+    () => setViewingMoveIndex(currentMoves.length),
+    [currentMoves.length]
+  );
+  const goToMovePrev = useCallback(() => {
+    if (viewingMoveIndex > 0) setViewingMoveIndex(viewingMoveIndex - 1);
+  }, [viewingMoveIndex]);
+  const goToMoveNext = useCallback(() => {
+    if (viewingMoveIndex < currentMoves.length)
+      setViewingMoveIndex(viewingMoveIndex + 1);
+  }, [viewingMoveIndex, currentMoves.length]);
+  const goToMoveIndex = useCallback((moveArrayIndex: number) => {
+    // MoveHistoryBase passes the move's array index (0-based)
+    // viewingMoveIndex represents the position AFTER the move
+    // So clicking move at index 0 means show position after move 0 (viewingMoveIndex = 1)
+    setViewingMoveIndex(moveArrayIndex + 1);
+  }, []);
+
+  // Playback hook for autoplay
+  const { isPlaying, togglePlay } = usePlayback({
+    currentIndex: viewingMoveIndex,
+    totalItems: currentMoves.length + 1,
+    onNext: goToMoveNext,
+    enabled: currentMoves.length > 0
+  });
+
   // Handle opening selection
   const handleSelectOpening = useCallback(
     (opening: Opening, index: number) => {
@@ -221,14 +281,14 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
   );
 
   // Navigate to next/prev opening
-  const goToNext = useCallback(() => {
+  const goToNextOpening = useCallback(() => {
     if (filteredOpenings.length === 0) return;
     const nextIndex =
       selectedIndex < filteredOpenings.length - 1 ? selectedIndex + 1 : 0;
     setSelectedOpening(filteredOpenings[nextIndex], nextIndex);
   }, [filteredOpenings, selectedIndex, setSelectedOpening]);
 
-  const goToPrev = useCallback(() => {
+  const goToPrevOpening = useCallback(() => {
     if (filteredOpenings.length === 0) return;
     const prevIndex =
       selectedIndex > 0 ? selectedIndex - 1 : filteredOpenings.length - 1;
@@ -240,10 +300,17 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     if (isAnalysisOn) {
       endAnalysis();
     } else {
-      setPosition(currentFen);
+      setPosition(currentFen, currentTurn);
       startAnalysis();
     }
-  }, [isAnalysisOn, startAnalysis, endAnalysis, setPosition, currentFen]);
+  }, [
+    isAnalysisOn,
+    startAnalysis,
+    endAnalysis,
+    setPosition,
+    currentFen,
+    currentTurn
+  ]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -251,10 +318,16 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
       if (e.target instanceof HTMLInputElement) return;
       if (e.key === 'ArrowDown' || e.key === 'j') {
         e.preventDefault();
-        goToNext();
+        goToNextOpening();
       } else if (e.key === 'ArrowUp' || e.key === 'k') {
         e.preventDefault();
-        goToPrev();
+        goToPrevOpening();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        goToMovePrev();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        goToMoveNext();
       } else if (e.key === 'f') {
         if (selectedOpening) {
           toggleFavorite(selectedOpening);
@@ -267,8 +340,10 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
-    goToNext,
-    goToPrev,
+    goToNextOpening,
+    goToPrevOpening,
+    goToMoveNext,
+    goToMovePrev,
     selectedOpening,
     toggleFavorite,
     handleToggleAnalysis
@@ -309,42 +384,46 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
 
       {/* Sidebar */}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {/* Header */}
-        <div className='bg-card shrink-0 rounded-lg border p-4'>
-          <div className='flex items-center justify-between'>
-            <div className='flex items-center gap-3'>
-              <div className='bg-primary/10 flex h-12 w-12 items-center justify-center rounded-lg'>
-                <Icons.book className='text-primary h-6 w-6' />
-              </div>
-              <div>
-                <h2 className='font-semibold'>Opening Explorer</h2>
-                <Badge variant='secondary'>
-                  {filteredOpenings.length.toLocaleString()} openings
-                </Badge>
-              </div>
-            </div>
+        {/* Analysis Lines - shown when engine is ON */}
+        {isAnalysisOn && (
+          <div className='bg-card shrink-0 rounded-lg border'>
+            <AnalysisLines />
           </div>
-        </div>
+        )}
 
-        {/* Current opening info */}
-        {selectedOpening && (
-          <div className='bg-card shrink-0 rounded-lg border p-4'>
-            <div className='flex items-start justify-between gap-2'>
-              <div className='min-w-0 flex-1'>
-                <div className='flex items-center gap-2'>
-                  <Badge variant='outline' className='shrink-0'>
-                    {selectedOpening.eco}
-                  </Badge>
-                  <h3 className='truncate font-medium'>
-                    {selectedOpening.name}
-                  </h3>
-                </div>
-              </div>
+        {/* Move History Card */}
+        <div className='bg-card flex min-h-[180px] flex-col rounded-lg border lg:min-h-0 lg:flex-shrink-0'>
+          <div className='flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3'>
+            <h3 className='min-w-0 flex-1 font-semibold'>
+              {selectedOpening ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className='flex cursor-pointer items-center gap-2'>
+                      <Badge variant='outline' className='shrink-0'>
+                        {selectedOpening.eco}
+                      </Badge>
+                      <span className='truncate text-sm'>
+                        {selectedOpening.name}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side='bottom' className='max-w-[280px]'>
+                    <p className='font-medium'>
+                      {selectedOpening.eco}: {selectedOpening.name}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                'Opening Explorer'
+              )}
+            </h3>
+            {selectedOpening && (
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant='ghost'
                     size='icon'
+                    className='h-8 w-8 shrink-0'
                     onClick={() => toggleFavorite(selectedOpening)}
                   >
                     <Icons.heart
@@ -362,18 +441,15 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                     : 'Add to favorites'}
                 </TooltipContent>
               </Tooltip>
-            </div>
+            )}
           </div>
-        )}
 
-        {/* Move History */}
-        <div className='bg-card shrink-0 rounded-lg border'>
-          <ScrollArea className='h-[100px]'>
+          <ScrollArea className='h-[100px] lg:h-[120px]'>
             <div className='px-4 py-2'>
               <MoveHistoryBase
                 items={currentMoves}
-                viewingIndex={currentMoves.length}
-                onMoveClick={() => {}}
+                viewingIndex={viewingMoveIndex}
+                onMoveClick={goToMoveIndex}
                 getWhiteMove={(item) => item}
                 getBlackMove={(items, whiteIndex) =>
                   items[whiteIndex + 1] || null
@@ -382,6 +458,19 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
               />
             </div>
           </ScrollArea>
+
+          <NavigationControls
+            viewingIndex={viewingMoveIndex}
+            totalPositions={currentMoves.length + 1}
+            canGoBack={canGoBackMove}
+            canGoForward={canGoForwardMove}
+            isPlaying={isPlaying}
+            onTogglePlay={togglePlay}
+            onGoToStart={goToMoveStart}
+            onGoToEnd={goToMoveEnd}
+            onGoToPrev={goToMovePrev}
+            onGoToNext={goToMoveNext}
+          />
         </div>
 
         {/* Tabs */}
@@ -555,13 +644,13 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                   <Button
                     variant='ghost'
                     size='icon'
-                    onClick={goToPrev}
+                    onClick={goToPrevOpening}
                     disabled={filteredOpenings.length === 0}
                   >
                     <Icons.chevronLeft className='h-4 w-4' />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Previous (↑/k)</TooltipContent>
+                <TooltipContent>Previous Opening (↑/k)</TooltipContent>
               </Tooltip>
 
               <Tooltip>
@@ -569,13 +658,13 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                   <Button
                     variant='ghost'
                     size='icon'
-                    onClick={goToNext}
+                    onClick={goToNextOpening}
                     disabled={filteredOpenings.length === 0}
                   >
                     <Icons.chevronRight className='h-4 w-4' />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Next (↓/j)</TooltipContent>
+                <TooltipContent>Next Opening (↓/j)</TooltipContent>
               </Tooltip>
             </div>
           </div>

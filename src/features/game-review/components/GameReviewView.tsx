@@ -442,7 +442,7 @@ export function GameReviewView({
           />
         </div>
 
-        <div className='flex items-start justify-center gap-1 sm:gap-2'>
+        <div className='flex items-stretch justify-center gap-1 sm:gap-2'>
           <div
             className={`shrink-0 ${report || isAnalysisOn ? 'w-5 sm:w-7' : 'hidden w-0 sm:block sm:w-7'}`}
           >

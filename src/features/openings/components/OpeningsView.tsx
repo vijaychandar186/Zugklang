@@ -365,17 +365,15 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
       {/* Board */}
       <div className='flex flex-col items-center gap-2'>
         <BoardContainer showEvaluation={isAnalysisOn}>
-          <div className='w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]'>
-            {shouldShow3d ? (
-              <Board3D {...boardProps} />
-            ) : (
-              <Board
-                {...boardProps}
-                darkSquareStyle={theme.darkSquareStyle}
-                lightSquareStyle={theme.lightSquareStyle}
-              />
-            )}
-          </div>
+          {shouldShow3d ? (
+            <Board3D {...boardProps} />
+          ) : (
+            <Board
+              {...boardProps}
+              darkSquareStyle={theme.darkSquareStyle}
+              lightSquareStyle={theme.lightSquareStyle}
+            />
+          )}
         </BoardContainer>
       </div>
 
@@ -620,11 +618,11 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
             </div>
           ) : (
             <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
-              <div className='divide-y'>
+              <div className='w-full divide-y'>
                 {filteredOpenings.map((opening, idx) => (
                   <div
                     key={`${opening.eco}-${opening.name}-${idx}`}
-                    className={`group hover:bg-accent flex items-center justify-between gap-2 transition-colors ${
+                    className={`group hover:bg-accent flex min-w-0 items-center justify-between gap-2 overflow-hidden transition-colors ${
                       selectedIndex === idx ? 'bg-accent' : ''
                     }`}
                   >
@@ -667,13 +665,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
               </div>
             </ScrollArea>
           )}
-        </div>
-
-        {/* Count indicator */}
-        <div className='bg-card w-full shrink-0 rounded-lg border px-3 py-2'>
-          <p className='text-muted-foreground text-center text-xs'>
-            {filteredOpenings.length.toLocaleString()} openings
-          </p>
         </div>
       </div>
 

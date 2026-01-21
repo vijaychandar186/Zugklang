@@ -1,4 +1,5 @@
 import { MemoryView } from '@/features/memory/components/MemoryView';
+import { PageContainer } from '@/components/layout/PageContainer';
 
 export const metadata = {
   title: 'Memory Training | Zugklang',
@@ -7,5 +8,9 @@ export const metadata = {
 };
 
 export default function MemoryPage() {
-  return <MemoryView />;
+  return (
+    <PageContainer scrollable={true}>
+      <MemoryView />
+    </PageContainer>
+  );
 }

@@ -386,9 +386,9 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
 
         {isPlayMode && (
           <div className='bg-muted/50 space-y-2 border-t p-2'>
-            {gameOver && (
+            {(gameOver || !gameStarted) && (
               <GameOverPanel
-                gameResult={gameResult}
+                gameResult={gameResult || 'No active game'}
                 onNewGame={handleNewGame}
               />
             )}

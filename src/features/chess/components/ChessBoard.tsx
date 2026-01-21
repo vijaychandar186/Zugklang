@@ -39,6 +39,7 @@ export function ChessBoard({
     playAs,
     stockfishLevel,
     gameOver,
+    gameStarted,
     gameId,
     playingAgainstStockfish,
     playerColor,
@@ -111,7 +112,7 @@ export function ChessBoard({
     soundEnabled,
     makeMove,
     goToEnd,
-    isGameOver: gameOver,
+    isGameOver: gameOver || (isPlayMode && !gameStarted),
     onMoveExecuted,
     allowOpponentMoves: !stockfishEnabled,
     enablePremoves: stockfishEnabled && isPlayMode,
@@ -201,7 +202,11 @@ export function ChessBoard({
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
-    canDrag: isMounted && !isViewingHistory && !pendingPromotion,
+    canDrag:
+      isMounted &&
+      !isViewingHistory &&
+      !pendingPromotion &&
+      !(isPlayMode && !gameStarted),
     squareStyles: isMounted ? squareStyles : {},
     onPieceDrop: onDrop,
     onSquareClick: handleSquareClick,
@@ -236,4 +241,3 @@ export function ChessBoard({
     </div>
   );
 }
-

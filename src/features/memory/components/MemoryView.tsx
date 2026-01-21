@@ -562,7 +562,7 @@ export function MemoryView() {
   if (gameStatus === 'results') {
     const accuracy = Math.round((score.correct / score.total) * 100);
     return (
-      <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
+      <div className='flex h-[100dvh] flex-col gap-4 overflow-y-auto px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
         {/* Board showing results */}
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
@@ -627,7 +627,7 @@ export function MemoryView() {
   // Memorizing phase - show board without drag
   if (gameStatus === 'memorizing') {
     return (
-      <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
+      <div className='flex h-[100dvh] flex-col gap-4 overflow-y-auto px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
             <div className='relative'>
@@ -732,10 +732,9 @@ export function MemoryView() {
     );
   }
 
-  // Placing phase - use ChessboardProvider for drag and drop
   return (
     <ChessboardProvider options={chessboardOptions}>
-      <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
+      <div className='flex h-[100dvh] flex-col gap-4 overflow-y-auto px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
             <div className='w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]'>
@@ -765,7 +764,7 @@ export function MemoryView() {
           </div>
 
           {/* Piece palette */}
-          <div className='bg-card flex flex-col rounded-lg border lg:flex-1'>
+          <div className='bg-card flex-1 overflow-auto rounded-lg border'>
             <MemoryPiecePalette orientation={boardOrientation} />
           </div>
 

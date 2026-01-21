@@ -5,19 +5,24 @@ import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area';
 
 import { cn } from '@/lib/utils';
 
+let scrollAreaId = 0;
+
 function ScrollArea({
   className,
   children,
   ...props
 }: React.ComponentProps<typeof ScrollAreaPrimitive.Root>) {
+  const id = React.useMemo(() => `scroll-area-${scrollAreaId++}`, []);
+
   return (
     <ScrollAreaPrimitive.Root
       data-slot='scroll-area'
+      data-scroll-id={id}
       className={cn('relative', className)}
       {...props}
     >
       {/* Fix Radix internal div using display:table which breaks flex layouts */}
-      <style>{`[data-slot='scroll-area-viewport'] > div { display: block !important; }`}</style>
+      <style>{`[data-scroll-id='${id}'] [data-slot='scroll-area-viewport'] > div { display: block !important; }`}</style>
       <ScrollAreaPrimitive.Viewport
         data-slot='scroll-area-viewport'
         className='focus-visible:ring-ring/50 size-full rounded-[inherit] transition-[color,box-shadow] outline-none focus-visible:ring-[3px] focus-visible:outline-1'

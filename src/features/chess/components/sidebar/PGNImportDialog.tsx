@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Chess } from 'chess.js';
+import { Chess } from '@/lib/chess';
 import { useAnalysisBoardActions } from '@/features/analysis/stores/useAnalysisBoardStore';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';

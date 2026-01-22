@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
-import { Chess } from 'chess.js';
+import { Chess } from '@/lib/chess';
 import { STARTING_FEN, EMPTY_FEN } from '@/features/chess/config/constants';
 
 type BoardEditorStore = {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { type Square, Chess } from 'chess.js';
+import { type Square, Chess } from '@/lib/chess';
 import { ChessboardProvider, Chessboard } from 'react-chessboard';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';

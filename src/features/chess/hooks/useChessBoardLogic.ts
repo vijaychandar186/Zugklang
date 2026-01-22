@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
-import { Chess, Square, Move, PieceSymbol } from 'chess.js';
+import { Chess, Square, Move, PieceSymbol } from '@/lib/chess';
 import { SquareStyles, RightClickedSquares } from '@/features/chess/types/core';
 import { getMoveOptionStyles } from '@/features/chess/hooks/useSquareInteraction';
 import { playSound, getSoundType } from '@/features/game/utils/sounds';

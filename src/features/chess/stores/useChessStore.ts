@@ -1,7 +1,11 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import { persist } from 'zustand/middleware';
-import { Chess, Square, Move } from 'chess.js';
+import {
+  Chess,
+  ChessJSSquare as Square,
+  ChessJSMove as Move
+} from '@/lib/chess';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
 import { STARTING_FEN } from '@/features/chess/config/constants';
@@ -46,6 +50,7 @@ type PersistedPlayState = {
   lastActiveTimestamp: number | null;
   boardOrientation: 'white' | 'black';
   autoFlipBoard: boolean;
+  variant: ChessVariant;
 };
 
 export type ChessMode = 'play' | 'analysis';
@@ -365,13 +370,17 @@ export const useChessStore = create<ChessStore>()(
 
         const hasTimer = timeControl.mode !== 'unlimited';
         const state = get();
-        
+
         // Generate starting FEN based on variant
-        const startingFEN = state.variant === 'fischerRandom' 
-          ? generateRandomChess960FEN() 
-          : STARTING_FEN;
-        
-        const newGame = new Chess(startingFEN);
+        const startingFEN =
+          state.variant === 'fischerRandom'
+            ? generateRandomChess960FEN()
+            : STARTING_FEN;
+
+        const newGame = new Chess(
+          startingFEN,
+          state.variant === 'fischerRandom' ? 'chess' : 'chess'
+        );
 
         set({
           mode: 'play',
@@ -414,13 +423,17 @@ export const useChessStore = create<ChessStore>()(
 
         const hasTimer = timeControl.mode !== 'unlimited';
         const state = get();
-        
+
         // Generate starting FEN based on variant
-        const startingFEN = state.variant === 'fischerRandom' 
-          ? generateRandomChess960FEN() 
-          : STARTING_FEN;
-        
-        const newGame = new Chess(startingFEN);
+        const startingFEN =
+          state.variant === 'fischerRandom'
+            ? generateRandomChess960FEN()
+            : STARTING_FEN;
+
+        const newGame = new Chess(
+          startingFEN,
+          state.variant === 'fischerRandom' ? 'chess' : 'chess'
+        );
 
         set({
           mode: 'play',
@@ -471,7 +484,8 @@ export const useChessStore = create<ChessStore>()(
             activeTimer: state.activeTimer,
             lastActiveTimestamp: state.lastActiveTimestamp,
             boardOrientation: state.boardOrientation,
-            autoFlipBoard: state.autoFlipBoard
+            autoFlipBoard: state.autoFlipBoard,
+            variant: state.variant
           };
           saveToModeStorage(oldGameType, currentState);
 
@@ -503,7 +517,8 @@ export const useChessStore = create<ChessStore>()(
                 activeTimer: savedState.activeTimer,
                 lastActiveTimestamp: savedState.lastActiveTimestamp,
                 boardOrientation: savedState.boardOrientation || 'white',
-                autoFlipBoard: savedState.autoFlipBoard || false
+                autoFlipBoard: savedState.autoFlipBoard || false,
+                variant: savedState.variant || 'standard'
               });
             } catch {
               // If loading fails, reset to fresh state
@@ -538,7 +553,7 @@ export const useChessStore = create<ChessStore>()(
         }
       },
       setAutoFlipBoard: (enabled) => set({ autoFlipBoard: enabled }),
-      
+
       setVariant: (variant) => set({ variant }),
 
       resetGame: () => {
@@ -555,7 +570,10 @@ export const useChessStore = create<ChessStore>()(
         }
 
         const hasTimer = state.timeControl.mode !== 'unlimited';
-        const newGame = new Chess();
+        const newGame = new Chess(
+          undefined,
+          state.variant === 'fischerRandom' ? 'chess' : 'chess'
+        );
 
         set({
           game: newGame,
@@ -727,13 +745,17 @@ export const useChessStore = create<ChessStore>()(
         activeTimer: state.activeTimer,
         lastActiveTimestamp: state.lastActiveTimestamp,
         boardOrientation: state.boardOrientation,
-        autoFlipBoard: state.autoFlipBoard
+        autoFlipBoard: state.autoFlipBoard,
+        variant: state.variant
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           try {
             const fen = state.currentFEN || STARTING_FEN;
-            state.game = new Chess(fen);
+            state.game = new Chess(
+              fen,
+              state.variant === 'fischerRandom' ? 'chess' : 'chess'
+            );
           } catch (e) {
             console.error('Failed to rehydrate chess game:', e);
             state.game = new Chess();

@@ -1,6 +1,6 @@
 'use client';
 
-import { Chess } from 'chess.js';
+import { Chess } from '@/lib/chess';
 import {
   useEngineAnalysis,
   useAnalysisState,

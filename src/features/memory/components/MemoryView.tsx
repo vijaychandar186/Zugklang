@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { type Square, type PieceSymbol, type Color } from 'chess.js';
+import { type Square, type PieceSymbol, type Color } from '@/lib/chess';
 import { ChessboardProvider, Chessboard } from 'react-chessboard';
 import type { PieceDropHandlerArgs } from 'react-chessboard';
 import { Button } from '@/components/ui/button';

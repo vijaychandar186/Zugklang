@@ -3,7 +3,7 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import { persist } from 'zustand/middleware';
-import { Chess, Move } from 'chess.js';
+import { Chess, ChessJSMove as Move } from '@/lib/chess';
 
 export type PuzzleDifficulty =
   | 'beginner'

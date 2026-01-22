@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
-import { Chess, type PieceSymbol } from 'chess.js';
+import { Chess, type PieceSymbol } from '@/lib/chess';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import { Label } from '@/components/ui/label';

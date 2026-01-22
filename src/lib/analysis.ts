@@ -1,4 +1,4 @@
-import { Chess, Square } from 'chess.js';
+import { Chess, Square } from '@/lib/chess';
 import type { Position } from '@/types/Position';
 import openingsData from '@/resources/openings.json';
 import {
@@ -477,7 +477,8 @@ async function analyse(positions: Position[]): Promise<Report> {
     for (const line of position.topLines || []) {
       // Skip if no valid UCI move or if it's mate in 0 (game already over)
       if (!line.moveUCI || line.moveUCI.length < 4) continue;
-      if (line.evaluation.type === 'mate' && line.evaluation.value === 0) continue;
+      if (line.evaluation.type === 'mate' && line.evaluation.value === 0)
+        continue;
 
       const board = new Chess(position.fen);
 
@@ -492,6 +493,7 @@ async function analyse(positions: Position[]): Promise<Report> {
             | 'n'
             | undefined
         });
+        if (!move) throw new Error('Invalid move');
         line.moveSAN = move.san;
       } catch {
         // Keep moveUCI as fallback if SAN conversion fails

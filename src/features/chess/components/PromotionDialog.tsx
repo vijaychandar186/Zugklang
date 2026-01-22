@@ -1,7 +1,7 @@
 'use client';
 
 import { defaultPieces } from 'react-chessboard';
-import type { PieceSymbol } from 'chess.js';
+import type { PieceSymbol } from '@/lib/chess';
 
 type PieceKey = keyof typeof defaultPieces;
 

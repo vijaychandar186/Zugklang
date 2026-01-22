@@ -7,7 +7,7 @@ import {
   createContext,
   useContext
 } from 'react';
-import { Chess, Square, Color, PieceSymbol } from 'chess.js';
+import { Chess, Square, Color, PieceSymbol } from '@/lib/chess';
 import { ChessboardProvider, Chessboard } from 'react-chessboard';
 import { toast } from 'sonner';
 import type { PieceDropHandlerArgs } from 'react-chessboard';

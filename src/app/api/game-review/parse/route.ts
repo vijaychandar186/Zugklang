@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Chess } from 'chess.js';
+import { Chess } from '@/lib/chess';
 import { Position } from '@/types/Position';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';

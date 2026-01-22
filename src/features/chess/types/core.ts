@@ -1,5 +1,5 @@
 import { CSSProperties } from 'react';
-import { Square } from 'chess.js';
+import { ChessJSSquare as Square } from '@/lib/chess';
 
 export type PlayerColor = 'white' | 'black';
 export type PieceColor = 'w' | 'b';

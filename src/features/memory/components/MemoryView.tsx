@@ -105,21 +105,17 @@ const SQUARES: Square[] = [
   'h1'
 ];
 
-// Note: 3D board is not supported in Memory mode due to spare pieces palette requiring 2D board
 export function MemoryView() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Setup state
   const [gameStatus, setGameStatus] = useState<GameStatus>('setup');
   const [trainingMode, setTrainingMode] = useState<TrainingMode>('standard');
   const [pieceCount, setPieceCount] = useState(6);
   const [memorizeTime, setMemorizeTime] = useState(10);
 
-  // Progressive mode state
   const [progressiveLevel, setProgressiveLevel] = useState(1);
   const [progressiveStreak, setProgressiveStreak] = useState(0);
 
-  // Game state
   const [targetPosition, setTargetPosition] = useState<Map<Square, PieceInfo>>(
     new Map()
   );
@@ -135,7 +131,6 @@ export function MemoryView() {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const theme = useBoardTheme();
 
-  // Timer logic for memorization phase
   useEffect(() => {
     if (gameStatus !== 'memorizing') return;
 
@@ -155,12 +150,10 @@ export function MemoryView() {
     };
   }, [gameStatus]);
 
-  // Generate random position with specified number of pieces
   const generateRandomPosition = useCallback((numPieces: number) => {
     const position = new Map<Square, PieceInfo>();
     const availableSquares = [...SQUARES];
 
-    // Always include both kings
     const whiteKingSquare = availableSquares.splice(
       Math.floor(Math.random() * availableSquares.length),
       1
@@ -173,7 +166,6 @@ export function MemoryView() {
     position.set(whiteKingSquare, { type: 'k', color: 'w' });
     position.set(blackKingSquare, { type: 'k', color: 'b' });
 
-    // Add remaining pieces
     const remainingPieces = numPieces - 2;
     const pieceTypes: PieceSymbol[] = ['q', 'r', 'r', 'b', 'b', 'n', 'n'];
 
@@ -198,7 +190,6 @@ export function MemoryView() {
     return position;
   }, []);
 
-  // Convert position map to FEN string for board display
   const positionToFen = useCallback((position: Map<Square, PieceInfo>) => {
     const board: (string | null)[][] = Array(8)
       .fill(null)
@@ -240,12 +231,10 @@ export function MemoryView() {
     return fenRows.join('/') + ' w - - 0 1';
   }, []);
 
-  // Calculate current piece count for progressive mode
   const getProgressivePieceCount = useCallback((level: number) => {
     return Math.min(3 + Math.floor((level - 1) * 1.5), 32);
   }, []);
 
-  // Start a new round
   const startRound = useCallback(() => {
     const pieces =
       trainingMode === 'progressive'
@@ -266,13 +255,11 @@ export function MemoryView() {
     getProgressivePieceCount
   ]);
 
-  // Handle piece drop for placing phase (drag and drop from spare pieces)
   const handlePieceDrop = useCallback(
     ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs): boolean => {
       const color = piece.pieceType[0] as 'w' | 'b';
       const type = piece.pieceType[1].toLowerCase() as PieceSymbol;
 
-      // If dropped off board, remove piece
       if (!targetSquare) {
         if (!piece.isSparePiece && sourceSquare) {
           setUserPosition((prev) => {
@@ -284,7 +271,6 @@ export function MemoryView() {
         return true;
       }
 
-      // If moving a board piece, remove from source
       if (!piece.isSparePiece && sourceSquare) {
         setUserPosition((prev) => {
           const newPos = new Map(prev);
@@ -293,7 +279,6 @@ export function MemoryView() {
           return newPos;
         });
       } else {
-        // Placing a spare piece
         setUserPosition((prev) => {
           const newPos = new Map(prev);
           newPos.set(targetSquare as Square, { type, color });
@@ -306,7 +291,6 @@ export function MemoryView() {
     []
   );
 
-  // Handle right-click to remove pieces
   const handleSquareRightClick = useCallback(
     ({ square }: { square: string }) => {
       setUserPosition((prev) => {
@@ -320,7 +304,6 @@ export function MemoryView() {
     []
   );
 
-  // Check user's answer
   const checkAnswer = useCallback(() => {
     let correct = 0;
     const total = targetPosition.size;
@@ -363,7 +346,6 @@ export function MemoryView() {
     progressiveLevel
   ]);
 
-  // Clear user's board
   const clearBoard = useCallback(() => {
     setUserPosition(new Map());
   }, []);
@@ -376,7 +358,6 @@ export function MemoryView() {
       : `${secs}s`;
   };
 
-  // Get current FEN based on game status
   const currentFen = useMemo(() => {
     if (gameStatus === 'memorizing') {
       return positionToFen(targetPosition);
@@ -386,7 +367,6 @@ export function MemoryView() {
     return '8/8/8/8/8/8/8/8 w - - 0 1';
   }, [gameStatus, targetPosition, userPosition, positionToFen]);
 
-  // Highlight squares for results
   const customSquareStyles = useMemo(() => {
     if (gameStatus !== 'results') return {};
 
@@ -414,7 +394,6 @@ export function MemoryView() {
     return styles;
   }, [gameStatus, targetPosition, userPosition]);
 
-  // Chessboard options for placing phase
   const chessboardOptions = useMemo(
     () => ({
       position: currentFen,
@@ -441,7 +420,6 @@ export function MemoryView() {
     ]
   );
 
-  // Setup Dialog
   if (gameStatus === 'setup') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -459,7 +437,7 @@ export function MemoryView() {
               </p>
             </DialogHeader>
             <div className='space-y-6 py-4'>
-              {/* Mode Selection */}
+              {}
               <div className='grid grid-cols-2 gap-3'>
                 <button
                   onClick={() => setTrainingMode('standard')}
@@ -489,7 +467,7 @@ export function MemoryView() {
                 </button>
               </div>
 
-              {/* Mode Description */}
+              {}
               <div className='bg-muted/50 rounded-lg p-3'>
                 {trainingMode === 'standard' ? (
                   <p className='text-muted-foreground text-sm'>
@@ -504,7 +482,7 @@ export function MemoryView() {
                 )}
               </div>
 
-              {/* Piece Count Slider (Standard mode only) */}
+              {}
               {trainingMode === 'standard' && (
                 <div className='space-y-3'>
                   <Label className='block text-center'>
@@ -525,7 +503,7 @@ export function MemoryView() {
                 </div>
               )}
 
-              {/* Memorization Time Slider */}
+              {}
               <div className='space-y-3'>
                 <Label className='block text-center'>
                   Set Memorization Time
@@ -558,12 +536,11 @@ export function MemoryView() {
     );
   }
 
-  // Results view
   if (gameStatus === 'results') {
     const accuracy = Math.round((score.correct / score.total) * 100);
     return (
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-        {/* Board showing results */}
+        {}
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
             <Board
@@ -577,7 +554,7 @@ export function MemoryView() {
           </BoardContainer>
         </div>
 
-        {/* Results sidebar */}
+        {}
         <div className='flex w-full flex-col gap-4 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
           <div className='bg-card flex flex-col rounded-lg border p-6 text-center lg:flex-1'>
             <h2 className='mb-4 text-2xl font-bold'>Results</h2>
@@ -624,7 +601,6 @@ export function MemoryView() {
     );
   }
 
-  // Memorizing phase - show board without drag
   if (gameStatus === 'memorizing') {
     return (
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
@@ -675,7 +651,7 @@ export function MemoryView() {
             </div>
           </div>
 
-          {/* Spacer to fill height */}
+          {}
           <div className='bg-card hidden rounded-lg border lg:flex lg:flex-1' />
 
           <div className='bg-card shrink-0 rounded-lg border p-2'>
@@ -732,7 +708,6 @@ export function MemoryView() {
     );
   }
 
-  // Placing phase - use ChessboardProvider for drag and drop
   return (
     <ChessboardProvider options={chessboardOptions}>
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
@@ -764,12 +739,12 @@ export function MemoryView() {
             </div>
           </div>
 
-          {/* Piece palette */}
+          {}
           <div className='bg-card flex flex-col rounded-lg border lg:flex-1'>
             <MemoryPiecePalette orientation={boardOrientation} />
           </div>
 
-          {/* Progress indicator */}
+          {}
           <div className='bg-card shrink-0 rounded-lg border p-4'>
             <div className='flex items-center justify-between'>
               <span className='text-muted-foreground text-sm'>
@@ -781,7 +756,7 @@ export function MemoryView() {
             </div>
           </div>
 
-          {/* Action buttons */}
+          {}
           <div className='bg-card shrink-0 rounded-lg border p-2'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-1'>

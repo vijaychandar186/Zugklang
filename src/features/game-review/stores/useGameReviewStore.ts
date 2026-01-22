@@ -7,10 +7,14 @@ import type {
   LiveEvaluation,
   ReviewStatus
 } from '@/features/game-review/types';
+import {
+  createBoardOrientationSlice,
+  BoardOrientationSlice
+} from '@/features/chess/stores/slices';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-type GameReviewStore = {
+type GameReviewStoreState = {
   pgn: string;
   depth: number;
   status: ReviewStatus;
@@ -20,8 +24,9 @@ type GameReviewStore = {
   livePositions: Position[];
   liveEvaluations: (LiveEvaluation | null)[];
   currentMoveIndex: number;
-  boardFlipped: boolean;
+};
 
+type GameReviewStoreActions = {
   setPgn: (pgn: string) => void;
   setDepth: (depth: number) => void;
   setStatus: (status: ReviewStatus) => void;
@@ -33,12 +38,15 @@ type GameReviewStore = {
   updateLiveEvaluation: (index: number, evaluation: LiveEvaluation) => void;
   navigate: (delta: number) => void;
   goToMove: (index: number) => void;
-  toggleBoardFlip: () => void;
   resetReview: () => void;
   getCurrentPosition: () => Position | undefined;
   getCurrentFen: () => string;
   getTotalMoves: () => number;
 };
+
+type GameReviewStore = GameReviewStoreState &
+  GameReviewStoreActions &
+  BoardOrientationSlice;
 
 export const useGameReviewStore = create<GameReviewStore>()(
   persist(
@@ -52,6 +60,7 @@ export const useGameReviewStore = create<GameReviewStore>()(
       livePositions: [],
       liveEvaluations: [],
       currentMoveIndex: 0,
+      boardOrientation: 'white',
       boardFlipped: false,
 
       setPgn: (pgn) => set({ pgn }),
@@ -110,8 +119,7 @@ export const useGameReviewStore = create<GameReviewStore>()(
           return { currentMoveIndex: clampedIndex };
         }),
 
-      toggleBoardFlip: () =>
-        set((state) => ({ boardFlipped: !state.boardFlipped })),
+      ...createBoardOrientationSlice(set),
 
       resetReview: () =>
         set({
@@ -148,7 +156,8 @@ export const useGameReviewStore = create<GameReviewStore>()(
         depth: state.depth,
         report: state.report,
         currentMoveIndex: state.currentMoveIndex,
-        boardFlipped: state.boardFlipped
+        boardFlipped: state.boardFlipped,
+        boardOrientation: state.boardOrientation
       }),
       onRehydrateStorage: () => (state) => {
         if (state && state.report) {
@@ -171,7 +180,8 @@ export const useGameReviewState = () =>
       livePositions: s.livePositions,
       liveEvaluations: s.liveEvaluations,
       currentMoveIndex: s.currentMoveIndex,
-      boardFlipped: s.boardFlipped
+      boardFlipped: s.boardFlipped,
+      boardOrientation: s.boardOrientation
     }))
   );
 
@@ -189,7 +199,9 @@ export const useGameReviewActions = () =>
       updateLiveEvaluation: s.updateLiveEvaluation,
       navigate: s.navigate,
       goToMove: s.goToMove,
-      toggleBoardFlip: s.toggleBoardFlip,
+      toggleBoardFlip: s.flipBoard,
+      toggleBoardOrientation: s.toggleBoardOrientation,
+      setBoardOrientation: s.setBoardOrientation,
       resetReview: s.resetReview,
       getCurrentPosition: s.getCurrentPosition,
       getCurrentFen: s.getCurrentFen,

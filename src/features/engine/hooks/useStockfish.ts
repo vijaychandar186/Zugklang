@@ -97,7 +97,6 @@ export function useStockfish({
       }
       engine.stop();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fen is used instead of game to trigger effect since game reference doesn't change
   }, [
     fen,
     playAs,

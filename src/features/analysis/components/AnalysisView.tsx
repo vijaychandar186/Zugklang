@@ -236,9 +236,7 @@ export function AnalysisView({
         try {
           const move = board.move(moveSAN);
           if (move) moveCount++;
-        } catch {
-          // Skip invalid moves
-        }
+        } catch {}
       }
 
       if (moveCount === 0) return false;
@@ -362,7 +360,6 @@ export function AnalysisView({
     toast.success('Moves copied');
   };
 
-  // Check if a move is a pawn promotion
   const isPromotionMove = useCallback(
     (from: string, to: string, fen: string): boolean => {
       try {
@@ -378,7 +375,6 @@ export function AnalysisView({
     []
   );
 
-  // Complete promotion with selected piece
   const completePromotion = useCallback(
     (piece: PieceSymbol) => {
       if (!pendingPromotion) return;
@@ -388,7 +384,6 @@ export function AnalysisView({
     [pendingPromotion, makeMove]
   );
 
-  // Cancel promotion
   const cancelPromotion = useCallback(() => {
     setPendingPromotion(null);
   }, []);
@@ -401,10 +396,9 @@ export function AnalysisView({
     targetSquare: string | null;
   }) => {
     if (!targetSquare) return false;
+    if (sourceSquare === targetSquare) return false;
 
-    // Check if this is a promotion move
     if (isPromotionMove(sourceSquare, targetSquare, currentFEN)) {
-      // Validate move is legal before showing dialog
       try {
         const game = new Chess(currentFEN);
         const moves = game.moves({
@@ -419,7 +413,7 @@ export function AnalysisView({
             to: targetSquare,
             color: piece?.color === 'w' ? 'white' : 'black'
           });
-          return true; // Return true to prevent piece snapping back
+          return true;
         }
       } catch {
         return false;
@@ -430,10 +424,9 @@ export function AnalysisView({
     return !!move;
   };
 
-  // Main layout content - reused for both editor and non-editor modes
   const layoutContent = (
     <>
-      {/* Left column - Board */}
+      {}
       <div className='flex flex-col items-center gap-2'>
         <div className='flex w-full items-center py-2'>
           <PlayerInfo
@@ -492,7 +485,7 @@ export function AnalysisView({
         </div>
       </div>
 
-      {/* Right column - Sidebar */}
+      {}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
         {isAnalysisOn && !isEditorMode && (
           <div className='bg-card shrink-0 rounded-lg border'>
@@ -612,7 +605,7 @@ export function AnalysisView({
             </div>
           </div>
 
-          {/* Editor mode: show spare pieces palette in sidebar */}
+          {}
           {isEditorMode ? (
             <div className='flex-1 overflow-auto'>
               <SparePiecePalette orientation={boardOrientation} />
@@ -780,7 +773,7 @@ export function AnalysisView({
         </div>
       </div>
 
-      {/* Dialogs */}
+      {}
       <Dialog open={continueDialogOpen} onOpenChange={setContinueDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -835,7 +828,6 @@ export function AnalysisView({
     </>
   );
 
-  // Wrap with EditorProvider when in editor mode
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
       {isEditorMode ? (

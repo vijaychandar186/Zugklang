@@ -24,14 +24,11 @@ export function useChessArrows({
   return useMemo(() => {
     if (!isAnalysisOn || !uciLines[0]) return [];
 
-    // Only show arrows when analysis data matches the current game position
-    // This prevents showing stale analysis from a previous position
     if (analysisTurn !== gameTurn) return [];
 
     const isPlayerTurn = gameTurn === playerColor;
     const uniqueArrows = new Map<string, ChessArrow>();
 
-    // Best move arrow: Show current side's best move when it's player's turn
     if (showBestMoveArrow && isPlayerTurn) {
       uciLines.forEach((line) => {
         if (line.length > 0) {
@@ -48,13 +45,10 @@ export function useChessArrows({
       });
     }
 
-    // Threat arrow: Show opponent's planned response when it's player's turn
-    // The engine's PV shows: [0] = your best move, [1] = opponent's response
-    // We show line[1] as the "threat" - what opponent will play after your move
     if (showThreatArrow && isPlayerTurn) {
       uciLines.forEach((line) => {
         if (line.length > 1) {
-          const uci = line[1]; // Opponent's response move
+          const uci = line[1];
           const from = uci.slice(0, 2);
           const to = uci.slice(2, 4);
           const key = `${from}-${to}`;

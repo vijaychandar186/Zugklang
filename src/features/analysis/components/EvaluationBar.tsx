@@ -10,13 +10,10 @@ export type EvaluationBarProps = {
   size?: 'sm' | 'md' | 'lg';
 };
 
-// Clamp number between min and max
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-// Lichess win percentage formula
-// Source: https://github.com/lichess-org/lila/blob/master/modules/analyse/src/main/WinPercent.scala
 export function getWinPercentageFromCp(cp: number): number {
   const cpClamped = clamp(cp, -1000, 1000);
   const MULTIPLIER = -0.00368208;
@@ -85,7 +82,7 @@ export function EvaluationBar({
         className
       )}
     >
-      {/* Black section (top) */}
+      {}
       <div
         className='relative transition-all duration-500 ease-out'
         style={{
@@ -103,7 +100,7 @@ export function EvaluationBar({
         )}
       </div>
 
-      {/* White section (bottom) */}
+      {}
       <div
         className='relative transition-all duration-500 ease-out'
         style={{

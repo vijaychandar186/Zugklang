@@ -40,7 +40,7 @@ type GameStatus = 'setup' | 'playing' | 'results';
 interface AttemptResult {
   target: string;
   correct: boolean;
-  responseTime: number; // in milliseconds
+  responseTime: number;
 }
 
 const ALL_SQUARES: Square[] = [
@@ -110,7 +110,6 @@ const ALL_SQUARES: Square[] = [
   'h1'
 ];
 
-// Generate a random piece on a random square for Moves mode
 function generateRandomPiecePosition(): {
   fen: string;
   square: Square;
@@ -120,7 +119,6 @@ function generateRandomPiecePosition(): {
   const pieceType = pieces[Math.floor(Math.random() * pieces.length)];
   const square = ALL_SQUARES[Math.floor(Math.random() * ALL_SQUARES.length)];
 
-  // Create a FEN with just this piece
   const board: string[][] = Array(8)
     .fill(null)
     .map(() => Array(8).fill(''));
@@ -150,7 +148,6 @@ function generateRandomPiecePosition(): {
 
   const fen = fenRows.join('/') + ' w - - 0 1';
 
-  // Calculate valid moves for this piece (skip validation since we don't need kings)
   const chess = new Chess(fen, { skipValidation: true });
   const moves = chess.moves({ square, verbose: true });
   const validMoves = moves.map((m) => m.to as Square);
@@ -161,14 +158,12 @@ function generateRandomPiecePosition(): {
 export function VisionView() {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Setup state
   const [gameStatus, setGameStatus] = useState<GameStatus>('setup');
   const [trainingMode, setTrainingMode] = useState<TrainingMode>('coordinates');
   const [colorMode, setColorMode] = useState<ColorMode>('white');
   const [showCoordinates, setShowCoordinates] = useState(true);
-  const [timeLimit, setTimeLimit] = useState(30); // seconds
+  const [timeLimit, setTimeLimit] = useState(30);
 
-  // Game state
   const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>(
     'white'
   );
@@ -177,7 +172,6 @@ export function VisionView() {
   const [attempts, setAttempts] = useState<AttemptResult[]>([]);
   const [lastClickTime, setLastClickTime] = useState<number>(0);
 
-  // Coordinates mode state
   const [targetSquare, setTargetSquare] = useState<Square | null>(null);
   const [lastClickedSquare, setLastClickedSquare] = useState<{
     square: Square;
@@ -185,7 +179,6 @@ export function VisionView() {
   } | null>(null);
   const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Moves mode state
   const [piecePosition, setPiecePosition] = useState<{
     fen: string;
     square: Square;
@@ -197,7 +190,6 @@ export function VisionView() {
   const theme = useBoardTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Timer effect - countdown
   useEffect(() => {
     if (gameStatus !== 'playing') return;
 
@@ -217,7 +209,6 @@ export function VisionView() {
     };
   }, [gameStatus]);
 
-  // Generate new target square for coordinates mode
   const generateNewTarget = useCallback(() => {
     const newTarget =
       ALL_SQUARES[Math.floor(Math.random() * ALL_SQUARES.length)];
@@ -225,7 +216,6 @@ export function VisionView() {
     setLastClickTime(Date.now());
   }, []);
 
-  // Generate new piece position for moves mode
   const generateNewPiecePosition = useCallback(() => {
     const position = generateRandomPiecePosition();
     setPiecePosition(position);
@@ -234,9 +224,7 @@ export function VisionView() {
     setLastClickTime(Date.now());
   }, []);
 
-  // Start game
   const startGame = useCallback(() => {
-    // Set board orientation based on color mode
     if (colorMode === 'mixed') {
       setBoardOrientation(Math.random() < 0.5 ? 'white' : 'black');
     } else {
@@ -262,7 +250,6 @@ export function VisionView() {
     generateNewPiecePosition
   ]);
 
-  // Handle square click for coordinates mode
   const handleSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (
@@ -285,10 +272,8 @@ export function VisionView() {
         setScore((prev) => prev + 1);
       }
 
-      // Show feedback on the clicked square
       setLastClickedSquare({ square: square as Square, correct: isCorrect });
 
-      // Clear feedback after a short delay
       if (feedbackTimeoutRef.current) {
         clearTimeout(feedbackTimeoutRef.current);
       }
@@ -296,7 +281,6 @@ export function VisionView() {
         setLastClickedSquare(null);
       }, 300);
 
-      // Change orientation on mixed mode
       if (colorMode === 'mixed') {
         setBoardOrientation(Math.random() < 0.5 ? 'white' : 'black');
       }
@@ -313,7 +297,6 @@ export function VisionView() {
     ]
   );
 
-  // Handle square click for moves mode (toggle selection)
   const handleMovesSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (
@@ -324,7 +307,6 @@ export function VisionView() {
       )
         return;
 
-      // Don't allow clicking the piece's own square
       if (square === piecePosition.square) return;
 
       setSelectedMoves((prev) => {
@@ -340,7 +322,6 @@ export function VisionView() {
     [gameStatus, trainingMode, piecePosition, movesSubmitted]
   );
 
-  // Submit moves answer
   const submitMoves = useCallback(() => {
     if (!piecePosition || movesSubmitted) return;
 
@@ -349,11 +330,9 @@ export function VisionView() {
 
     setMovesSubmitted(true);
 
-    // Check if selected moves match valid moves
     const validSet = new Set(piecePosition.validMoves);
     const selectedArray = Array.from(selectedMoves);
 
-    // Perfect match: all valid moves selected, no invalid moves selected
     const allValidSelected = piecePosition.validMoves.every((sq) =>
       selectedMoves.has(sq)
     );
@@ -370,7 +349,6 @@ export function VisionView() {
     }
   }, [piecePosition, selectedMoves, movesSubmitted, lastClickTime]);
 
-  // Next round in moves mode
   const nextMovesRound = useCallback(() => {
     if (colorMode === 'mixed') {
       setBoardOrientation(Math.random() < 0.5 ? 'white' : 'black');
@@ -378,14 +356,6 @@ export function VisionView() {
     generateNewPiecePosition();
   }, [colorMode, generateNewPiecePosition]);
 
-  // Format time display
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Calculate average response time
   const averageResponseTime = useMemo(() => {
     if (attempts.length === 0) return 0;
     const correctAttempts = attempts.filter((a) => a.correct);
@@ -394,29 +364,25 @@ export function VisionView() {
     return Math.round(total / correctAttempts.length);
   }, [attempts]);
 
-  // Calculate accuracy
   const accuracy = useMemo(() => {
     if (attempts.length === 0) return 0;
     return Math.round((score / attempts.length) * 100);
   }, [score, attempts.length]);
 
-  // Square styles for highlighting
   const squareStyles = useMemo(() => {
     if (gameStatus !== 'playing') return {};
 
     const styles: Record<string, React.CSSProperties> = {};
 
-    // Coordinates mode - show feedback on clicked square
     if (trainingMode === 'coordinates' && lastClickedSquare) {
       styles[lastClickedSquare.square] = {
         backgroundColor: lastClickedSquare.correct
-          ? 'rgba(34, 197, 94, 0.6)' // Green for correct
-          : 'rgba(239, 68, 68, 0.6)' // Red for incorrect
+          ? 'rgba(34, 197, 94, 0.6)'
+          : 'rgba(239, 68, 68, 0.6)'
       };
     }
 
     if (trainingMode === 'moves' && piecePosition) {
-      // Highlight selected squares
       selectedMoves.forEach((sq) => {
         styles[sq] = {
           backgroundColor: movesSubmitted
@@ -427,16 +393,14 @@ export function VisionView() {
         };
       });
 
-      // After submission, show missed valid moves
       if (movesSubmitted) {
         piecePosition.validMoves.forEach((sq) => {
           if (!selectedMoves.has(sq)) {
-            styles[sq] = { backgroundColor: 'rgba(234, 179, 8, 0.5)' }; // Yellow for missed
+            styles[sq] = { backgroundColor: 'rgba(234, 179, 8, 0.5)' };
           }
         });
       }
 
-      // Highlight the piece's square
       styles[piecePosition.square] = {
         backgroundColor: 'rgba(147, 51, 234, 0.5)'
       };
@@ -452,7 +416,6 @@ export function VisionView() {
     lastClickedSquare
   ]);
 
-  // Chessboard options
   const chessboardOptions = useMemo(
     () => ({
       position:
@@ -485,7 +448,6 @@ export function VisionView() {
     ]
   );
 
-  // Setup Dialog
   if (gameStatus === 'setup') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -503,7 +465,7 @@ export function VisionView() {
               </p>
             </DialogHeader>
             <div className='space-y-6 py-4'>
-              {/* Training Mode */}
+              {}
               <div className='space-y-2'>
                 <Label>Training Mode</Label>
                 <Select
@@ -525,7 +487,7 @@ export function VisionView() {
                 </p>
               </div>
 
-              {/* Color Mode */}
+              {}
               <div className='space-y-2'>
                 <Label>Color</Label>
                 <Select
@@ -546,7 +508,7 @@ export function VisionView() {
                 </p>
               </div>
 
-              {/* Time Limit Slider */}
+              {}
               <div className='space-y-3'>
                 <Label className='block text-center'>
                   Time Limit: {timeLimit}s
@@ -565,7 +527,7 @@ export function VisionView() {
                 </div>
               </div>
 
-              {/* Show Coordinates Toggle */}
+              {}
               <div className='flex items-center justify-between'>
                 <div className='space-y-0.5'>
                   <Label>Show Coordinates</Label>
@@ -589,7 +551,6 @@ export function VisionView() {
     );
   }
 
-  // Results view
   if (gameStatus === 'results') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -604,7 +565,7 @@ export function VisionView() {
               </DialogTitle>
             </DialogHeader>
             <div className='space-y-6 py-4'>
-              {/* Stats grid */}
+              {}
               <div className='grid grid-cols-2 gap-4'>
                 <div className='bg-muted/50 rounded-lg p-4 text-center'>
                   <p className='text-muted-foreground text-sm'>Score</p>
@@ -629,7 +590,7 @@ export function VisionView() {
                 </div>
               </div>
 
-              {/* Response time - highlighted */}
+              {}
               <div className='bg-primary/10 rounded-lg p-6 text-center'>
                 <p className='text-muted-foreground text-sm'>
                   Average Response Time
@@ -644,7 +605,7 @@ export function VisionView() {
                 </p>
               </div>
 
-              {/* Attempt history */}
+              {}
               <div className='space-y-2'>
                 <p className='text-muted-foreground text-center text-sm'>
                   Recent Attempts
@@ -689,7 +650,6 @@ export function VisionView() {
     );
   }
 
-  // Playing view
   return (
     <ChessboardProvider options={chessboardOptions}>
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
@@ -702,7 +662,7 @@ export function VisionView() {
         </div>
 
         <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-          {/* Header card with timer */}
+          {}
           <div className='bg-card shrink-0 rounded-lg border p-4'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
@@ -728,7 +688,7 @@ export function VisionView() {
             </div>
           </div>
 
-          {/* Target display */}
+          {}
           <div className='bg-card flex shrink-0 flex-col items-center justify-center rounded-lg border p-6'>
             {trainingMode === 'coordinates' && targetSquare && (
               <>
@@ -755,7 +715,7 @@ export function VisionView() {
             )}
           </div>
 
-          {/* Score */}
+          {}
           <div className='bg-card flex shrink-0 items-center justify-between rounded-lg border p-4'>
             <div className='flex items-center gap-2'>
               <Icons.chessPawn className='text-muted-foreground h-5 w-5' />
@@ -766,7 +726,7 @@ export function VisionView() {
             </span>
           </div>
 
-          {/* Attempt history */}
+          {}
           <div className='bg-card flex flex-col overflow-hidden rounded-lg border lg:flex-1'>
             <div className='flex-1 overflow-y-auto p-2'>
               <div className='grid grid-cols-8 gap-1'>
@@ -791,7 +751,7 @@ export function VisionView() {
             </div>
           </div>
 
-          {/* Action buttons */}
+          {}
           <div className='bg-card shrink-0 rounded-lg border p-2'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-1'>

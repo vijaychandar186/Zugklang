@@ -149,7 +149,6 @@ export function ChessBoard({
       : playAs
     : boardOrientation;
 
-  // Handle game over detection
   useEffect(() => {
     if (!isPlayMode) return;
 
@@ -183,7 +182,6 @@ export function ChessBoard({
     soundEnabled
   ]);
 
-  // Setup new game handler
   const onNewGame = useCallback(() => {
     if (soundEnabled) playSound('game-start');
     clearState();
@@ -198,7 +196,6 @@ export function ChessBoard({
     ? effectiveBoardOrientation
     : serverOrientation || 'white';
 
-  // Common board props
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
@@ -214,7 +211,6 @@ export function ChessBoard({
     arrows: analysisArrows
   };
 
-  // Use initialBoard3dEnabled for SSR consistency, then fall back to store state
   const shouldShow3d = isMounted
     ? board3dEnabled
     : (initialBoard3dEnabled ?? false);

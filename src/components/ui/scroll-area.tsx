@@ -16,7 +16,7 @@ function ScrollArea({
       className={cn('relative', className)}
       {...props}
     >
-      {/* Fix Radix internal div using display:table which breaks flex layouts */}
+      {}
       <style>{`[data-slot='scroll-area-viewport'] > div { display: block !important; }`}</style>
       <ScrollAreaPrimitive.Viewport
         data-slot='scroll-area-viewport'

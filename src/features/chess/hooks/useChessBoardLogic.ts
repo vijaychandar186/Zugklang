@@ -9,7 +9,6 @@ import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-// Convert FEN to position object for react-chessboard
 type PositionObject = Record<string, { pieceType: string }>;
 
 function fenToPosition(fen: string): PositionObject {
@@ -71,9 +70,7 @@ export type ChessBoardLogicOptions = {
   isGameOver?: boolean;
   onMoveExecuted?: (move: Move) => void;
   allowOpponentMoves?: boolean;
-  /** Enable premove support (for playing against engine) */
   enablePremoves?: boolean;
-  /** Called when premove sound should play */
   onPremoveAdded?: () => void;
 };
 
@@ -152,7 +149,6 @@ export function useChessBoardLogic({
     [makeMove, playMoveSound, onMoveExecuted]
   );
 
-  // Check if a move is a promotion
   const isPromotionMove = useCallback(
     (from: Square, to: Square): boolean => {
       const piece = game.get(from);
@@ -163,7 +159,6 @@ export function useChessBoardLogic({
     [game]
   );
 
-  // Complete a pending promotion with selected piece
   const completePromotion = useCallback(
     (piece: PieceSymbol) => {
       if (!pendingPromotion) return;
@@ -172,7 +167,6 @@ export function useChessBoardLogic({
     [pendingPromotion, executeMove]
   );
 
-  // Cancel pending promotion
   const cancelPromotion = useCallback(() => {
     setPendingPromotion(null);
     setMoveFrom(null);
@@ -209,7 +203,6 @@ export function useChessBoardLogic({
         if (piece?.color !== playerColorShort) {
           return false;
         }
-        // If premoves enabled and not player's turn, queue as premove
         if (!isPlayerTurn && enablePremoves) {
           setPremoves((prev) => [
             ...prev,
@@ -225,9 +218,7 @@ export function useChessBoardLogic({
         }
       }
 
-      // Check if this is a promotion move and no promotion piece specified
       if (!promotion && isPromotionMove(from, to)) {
-        // Validate the move is legal before showing dialog
         const moves = game.moves({ square: from, verbose: true });
         const isLegal = moves.some((m) => m.to === to);
         if (isLegal) {
@@ -239,7 +230,7 @@ export function useChessBoardLogic({
           });
           setMoveFrom(null);
           setOptionSquares({});
-          return true; // Return true to prevent piece snapping back
+          return true;
         }
       }
 
@@ -273,6 +264,7 @@ export function useChessBoardLogic({
       targetSquare: string | null;
     }): boolean => {
       if (!targetSquare) return false;
+      if (sourceSquare === targetSquare) return false;
       return handleUserMove(sourceSquare as Square, targetSquare as Square);
     },
     [handleUserMove]
@@ -310,7 +302,6 @@ export function useChessBoardLogic({
         return;
       }
 
-      // Let handleUserMove handle promotion detection
       handleUserMove(moveFrom, sq);
       setMoveFrom(null);
       setOptionSquares({});
@@ -328,7 +319,6 @@ export function useChessBoardLogic({
 
   const handleSquareRightClick = useCallback(
     ({ square }: { square: string }) => {
-      // If premoves are queued, right-click clears them
       if (enablePremoves && premoves.length > 0) {
         setPremoves([]);
         return;
@@ -342,7 +332,6 @@ export function useChessBoardLogic({
     [enablePremoves, premoves.length]
   );
 
-  // Execute premoves when it becomes player's turn
   useEffect(() => {
     if (!enablePremoves || premoves.length === 0) return;
     if (!isPlayerTurn || game.isGameOver()) return;
@@ -352,12 +341,10 @@ export function useChessBoardLogic({
     if (success) {
       setPremoves(rest);
     } else {
-      // Invalid premove, clear all
       setPremoves([]);
     }
   }, [enablePremoves, premoves, isPlayerTurn, game, executeMove]);
 
-  // Premove square highlighting
   const premoveStyles = useMemo<SquareStyles>(() => {
     if (!enablePremoves || premoves.length === 0) return {};
     return premoves.reduce(
@@ -382,7 +369,6 @@ export function useChessBoardLogic({
     setPendingPromotion(null);
   }, []);
 
-  // Calculate position - use object format when premoves exist to show pieces
   const position = useMemo(() => {
     const baseFen = isMounted
       ? isViewingHistory
@@ -390,12 +376,10 @@ export function useChessBoardLogic({
         : game.fen()
       : STARTING_FEN;
 
-    // If no premoves, return FEN string directly
     if (!enablePremoves || premoves.length === 0) {
       return baseFen;
     }
 
-    // Convert to position object and apply premoves
     const posObj = fenToPosition(baseFen);
 
     for (const premove of premoves) {

@@ -45,7 +45,6 @@ import openingsData from '@/resources/eco-openings.json';
 
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
-// Parse PGN to get move list as MoveData
 function parsePgnMoves(pgn: string): MoveData[] {
   const moves: MoveData[] = [];
   const parts = pgn.split(/\s+/);
@@ -57,7 +56,6 @@ function parsePgnMoves(pgn: string): MoveData[] {
   return moves;
 }
 
-// Get FEN at a specific move index in the PGN
 function getFenAtMoveIndex(pgn: string, moveIndex: number): string {
   try {
     const chess = new Chess();
@@ -109,29 +107,24 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
   const { board3dEnabled } = useChessState();
   const theme = useBoardTheme();
 
-  // Analysis state
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { initializeEngine, startAnalysis, endAnalysis, setPosition, cleanup } =
     useAnalysisActions();
   const { uciLines } = useEngineAnalysis();
 
-  // Mount tracking
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Initialize engine on mount
   useEffect(() => {
     initializeEngine();
     return () => cleanup();
   }, [initializeEngine, cleanup]);
 
-  // Sync input with store
   useEffect(() => {
     setInputValue(searchQuery);
   }, [searchQuery]);
 
-  // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchQuery(inputValue);
@@ -139,7 +132,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     return () => clearTimeout(timer);
   }, [inputValue, setSearchQuery]);
 
-  // Parse favorites back to openings
   const favoriteOpenings = useMemo(() => {
     const openings = openingsData as Opening[];
     return favorites
@@ -152,7 +144,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
       .filter((o): o is Opening => o !== undefined);
   }, [favorites]);
 
-  // Filter and sort openings
   const filteredOpenings = useMemo(() => {
     const baseOpenings =
       activeTab === 'favorites'
@@ -188,15 +179,12 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     return sorted;
   }, [searchQuery, sortOption, activeTab, favoriteOpenings]);
 
-  // Get moves for display
   const currentMoves = selectedOpening
     ? parsePgnMoves(selectedOpening.pgn)
     : [];
 
-  // Track if we should auto-play on opening change
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
 
-  // Reset viewing index when opening changes and start from beginning
   useEffect(() => {
     if (selectedOpening) {
       setViewingMoveIndex(0);
@@ -204,22 +192,18 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     }
   }, [selectedOpening]);
 
-  // Get current position based on viewing index
   const currentFen = selectedOpening
     ? getFenAtMoveIndex(selectedOpening.pgn, viewingMoveIndex)
     : START_FEN;
 
-  // Get turn from FEN
   const currentTurn = currentFen.split(' ')[1] === 'w' ? 'w' : 'b';
 
-  // Update analysis position when FEN changes
   useEffect(() => {
     if (isAnalysisOn && currentFen) {
       setPosition(currentFen, currentTurn);
     }
   }, [currentFen, currentTurn, isAnalysisOn, setPosition]);
 
-  // Analysis arrows
   const analysisArrows = useChessArrows({
     isAnalysisOn,
     uciLines,
@@ -230,7 +214,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     analysisTurn: currentTurn
   });
 
-  // Move navigation within current opening
   const canGoBackMove = viewingMoveIndex > 0;
   const canGoForwardMove = viewingMoveIndex < currentMoves.length;
 
@@ -247,13 +230,9 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
       setViewingMoveIndex(viewingMoveIndex + 1);
   }, [viewingMoveIndex, currentMoves.length]);
   const goToMoveIndex = useCallback((moveArrayIndex: number) => {
-    // MoveHistoryBase passes the move's array index (0-based)
-    // viewingMoveIndex represents the position AFTER the move
-    // So clicking move at index 0 means show position after move 0 (viewingMoveIndex = 1)
     setViewingMoveIndex(moveArrayIndex + 1);
   }, []);
 
-  // Playback hook for autoplay
   const { isPlaying, togglePlay, play } = usePlayback({
     currentIndex: viewingMoveIndex,
     totalItems: currentMoves.length + 1,
@@ -261,7 +240,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     enabled: currentMoves.length > 0
   });
 
-  // Auto-play when a new opening is selected
   useEffect(() => {
     if (shouldAutoPlay && currentMoves.length > 0) {
       play();
@@ -269,7 +247,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     }
   }, [shouldAutoPlay, currentMoves.length, play]);
 
-  // Handle opening selection
   const handleSelectOpening = useCallback(
     (opening: Opening, index: number) => {
       setSelectedOpening(opening, index);
@@ -277,7 +254,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     [setSelectedOpening]
   );
 
-  // Navigate to next/prev opening
   const goToNextOpening = useCallback(() => {
     if (filteredOpenings.length === 0) return;
     const nextIndex =
@@ -292,7 +268,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     setSelectedOpening(filteredOpenings[prevIndex], prevIndex);
   }, [filteredOpenings, selectedIndex, setSelectedOpening]);
 
-  // Toggle analysis
   const handleToggleAnalysis = useCallback(() => {
     if (isAnalysisOn) {
       endAnalysis();
@@ -309,7 +284,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     currentTurn
   ]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
@@ -346,7 +320,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     handleToggleAnalysis
   ]);
 
-  // Board props
   const boardProps = {
     position: currentFen,
     boardOrientation,
@@ -355,14 +328,13 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     arrows: analysisArrows
   };
 
-  // Use initialBoard3dEnabled for SSR, then fall back to store
   const shouldShow3d = isMounted
     ? board3dEnabled
     : (initialBoard3dEnabled ?? false);
 
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-      {/* Board */}
+      {}
       <div className='flex flex-col items-center gap-2'>
         <BoardContainer showEvaluation={isAnalysisOn}>
           {shouldShow3d ? (
@@ -377,16 +349,16 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
         </BoardContainer>
       </div>
 
-      {/* Main Sidebar - Analysis, Moves, Controls */}
+      {}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {/* Analysis Lines - shown when engine is ON */}
+        {}
         {isAnalysisOn && (
           <div className='bg-card w-full shrink-0 rounded-lg border'>
             <AnalysisLines />
           </div>
         )}
 
-        {/* Move History Card */}
+        {}
         <div className='bg-card flex min-h-[300px] w-full flex-col overflow-hidden rounded-lg border lg:min-h-0 lg:flex-1'>
           <div className='flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3'>
             <h3 className='min-w-0 flex-1 font-semibold'>
@@ -467,7 +439,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
             onGoToNext={goToMoveNext}
           />
 
-          {/* Action buttons */}
+          {}
           <div className='bg-muted/50 flex items-center justify-between border-t p-2'>
             <div className='flex items-center gap-1'>
               <Tooltip>
@@ -548,9 +520,9 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
         </div>
       </div>
 
-      {/* Openings Sidebar - Search, List */}
+      {}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {/* Tabs */}
+        {}
         <div className='bg-card w-full shrink-0 rounded-lg border p-1'>
           <div className='flex w-full gap-1'>
             <button
@@ -576,7 +548,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
           </div>
         </div>
 
-        {/* Search and filters */}
+        {}
         <div className='bg-card w-full shrink-0 rounded-lg border p-3'>
           <div className='flex w-full gap-2'>
             <div className='relative min-w-0 flex-1'>
@@ -605,7 +577,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
           </div>
         </div>
 
-        {/* Openings list */}
+        {}
         <div className='bg-card flex min-h-[300px] w-full flex-col overflow-hidden rounded-lg border lg:min-h-0 lg:flex-1'>
           {filteredOpenings.length === 0 ? (
             <div className='flex h-full flex-col items-center justify-center gap-2 p-4'>

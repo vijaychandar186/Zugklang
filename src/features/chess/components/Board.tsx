@@ -7,14 +7,13 @@ import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
 
-// Position can be FEN string or position object
 type PositionObject = Record<string, { pieceType: string }>;
 
 export type UnifiedChessBoardProps = {
   position: string | PositionObject;
   boardOrientation?: 'white' | 'black';
   canDrag?: boolean;
-  squareStyles?: Record<string, CSSProperties>;
+  squareStyles?: Record<string, CSSProperties | undefined>;
   darkSquareStyle?: CSSProperties;
   lightSquareStyle?: CSSProperties;
   onPieceDrop?: (args: {
@@ -47,7 +46,9 @@ export function UnifiedChessBoard({
       allowDragging: canDrag,
       animationDurationInMs: animationDuration,
       boardStyle: BOARD_STYLES.boardStyle,
-      squareStyles,
+      squareStyles: Object.fromEntries(
+        Object.entries(squareStyles).filter(([, v]) => v !== undefined)
+      ) as Record<string, CSSProperties>,
       darkSquareStyle,
       lightSquareStyle,
       dropSquareStyle: {

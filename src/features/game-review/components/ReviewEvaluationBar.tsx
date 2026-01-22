@@ -28,14 +28,12 @@ export function ReviewEvaluationBar(props: ReviewEvaluationBarProps) {
   const { isAnalysisOn } = useAnalysisState();
   const engineAnalysis = useEngineAnalysis();
 
-  // Use refs to track previous values for smooth transitions
   const prevValueRef = useRef<EvalState>({ cp: null, mate: null });
   const [displayValues, setDisplayValues] = useState<EvalState>({
     cp: 0,
     mate: null
   });
 
-  // Get live engine evaluation when analysis is on
   const liveEvaluation = useMemo(() => {
     if (!isAnalysisOn) return null;
     const { cp, mate } = engineAnalysis;
@@ -46,13 +44,10 @@ export function ReviewEvaluationBar(props: ReviewEvaluationBarProps) {
     } as { type: 'cp' | 'mate'; value: number };
   }, [isAnalysisOn, engineAnalysis]);
 
-  // Use live evaluation when analysis is on, otherwise use stored review evaluation
   const evaluation = liveEvaluation || reviewEvaluation;
 
-  // Update display values when evaluation changes
   useEffect(() => {
     if (!evaluation) {
-      // Keep the last known value when evaluation is null
       if (
         prevValueRef.current.cp === null &&
         prevValueRef.current.mate === null
@@ -65,7 +60,6 @@ export function ReviewEvaluationBar(props: ReviewEvaluationBarProps) {
     const newCp = evaluation.type === 'cp' ? evaluation.value : null;
     const newMate = evaluation.type === 'mate' ? evaluation.value : null;
 
-    // Only update if there's an actual change
     if (
       prevValueRef.current.cp !== newCp ||
       prevValueRef.current.mate !== newMate

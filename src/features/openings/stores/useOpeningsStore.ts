@@ -3,32 +3,32 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Opening, SortOption, TabOption } from '../types';
+import {
+  createBoardOrientationSlice,
+  BoardOrientationSlice
+} from '@/features/chess/stores/slices';
 
-interface OpeningsStore {
-  // Current selection
+interface OpeningsState extends BoardOrientationSlice {
   selectedOpening: Opening | null;
   selectedIndex: number;
-
-  // UI state
   searchQuery: string;
   sortOption: SortOption;
   activeTab: TabOption;
-  boardOrientation: 'white' | 'black';
-
-  // Favorites (stored as eco+name key for uniqueness)
   favorites: string[];
+}
 
-  // Actions
+interface OpeningsActions {
   setSelectedOpening: (opening: Opening | null, index: number) => void;
   setSearchQuery: (query: string) => void;
   setSortOption: (option: SortOption) => void;
   setActiveTab: (tab: TabOption) => void;
-  toggleBoardOrientation: () => void;
   toggleFavorite: (opening: Opening) => void;
   removeFavorite: (key: string) => void;
   isFavorite: (opening: Opening) => boolean;
   getFavoriteKey: (opening: Opening) => string;
 }
+
+type OpeningsStore = OpeningsState & OpeningsActions;
 
 const getFavoriteKey = (opening: Opening): string => {
   return `${opening.eco}::${opening.name}::${opening.pgn}`;
@@ -44,8 +44,11 @@ export const useOpeningsStore = create<OpeningsStore>()(
       sortOption: 'eco',
       activeTab: 'all',
       boardOrientation: 'white',
+      boardFlipped: false,
 
       favorites: [],
+
+      ...createBoardOrientationSlice(set),
 
       setSelectedOpening: (opening, index) => {
         set({ selectedOpening: opening, selectedIndex: index });
@@ -61,13 +64,6 @@ export const useOpeningsStore = create<OpeningsStore>()(
 
       setActiveTab: (tab) => {
         set({ activeTab: tab, selectedIndex: -1, selectedOpening: null });
-      },
-
-      toggleBoardOrientation: () => {
-        set((state) => ({
-          boardOrientation:
-            state.boardOrientation === 'white' ? 'black' : 'white'
-        }));
       },
 
       toggleFavorite: (opening) => {

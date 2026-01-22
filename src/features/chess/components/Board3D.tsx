@@ -8,10 +8,8 @@ import { ChessArrow } from '@/features/chess/types/visualization';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import Image from 'next/image';
 
-// Position can be FEN string or position object
 type PositionObject = Record<string, { pieceType: string }>;
 
-// Map piece codes to 3D piece image filenames
 const PIECE_FILE_MAP: Record<string, string> = {
   wP: 'white-pawn',
   wN: 'white-knight',
@@ -31,7 +29,7 @@ export type Board3DProps = {
   position: string | PositionObject;
   boardOrientation?: 'white' | 'black';
   canDrag?: boolean;
-  squareStyles?: Record<string, CSSProperties>;
+  squareStyles?: Record<string, CSSProperties | undefined>;
   onPieceDrop?: (args: {
     sourceSquare: string;
     targetSquare: string | null;
@@ -57,7 +55,6 @@ export function Board3D({
   const hasMountedRef = useRef(false);
 
   useEffect(() => {
-    // Mark as mounted after first render to enable animations
     const timer = setTimeout(() => {
       hasMountedRef.current = true;
     }, 100);
@@ -67,7 +64,6 @@ export function Board3D({
     };
   }, []);
 
-  // Create custom 3D piece components - use percentage-based sizing
   const threeDPieces = useMemo(() => {
     const pieces = Object.keys(PIECE_FILE_MAP);
     const pieceComponents: Record<string, () => React.JSX.Element> = {};
@@ -112,7 +108,6 @@ export function Board3D({
   }, []);
 
   const options = useMemo(() => {
-    // 3D board styles using CSS variables from theme
     const boardStyle = {
       boxSizing: 'border-box',
       transform: 'rotateX(27.5deg)',
@@ -141,7 +136,6 @@ export function Board3D({
       overflow: 'visible'
     } as CSSProperties;
 
-    // Use the theme's square styles with wood pattern overlay
     const lightSquareStyle = {
       ...theme.lightSquareStyle,
       backgroundImage: 'url("/3d-assets/wood-texture.svg")',
@@ -163,7 +157,9 @@ export function Board3D({
       allowDragging: canDrag,
       animationDurationInMs: hasMountedRef.current ? animationDuration : 0,
       boardStyle,
-      squareStyles,
+      squareStyles: Object.fromEntries(
+        Object.entries(squareStyles).filter(([, v]) => v !== undefined)
+      ) as Record<string, CSSProperties>,
       pieces: threeDPieces,
       darkSquareStyle,
       lightSquareStyle,
@@ -194,8 +190,6 @@ export function Board3D({
     onPieceDrop
   ]);
 
-  // The rotateX(27.5deg) transform reduces visual height by factor of cos(27.5°) ≈ 0.887
-  // We compensate with negative margins: (1 - 0.887) / 2 ≈ 5.65% on each side
   return (
     <div
       className='w-full'

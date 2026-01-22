@@ -22,13 +22,11 @@ export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
   const { loadPGN, loadFEN } = useAnalysisBoardActions();
 
   const detectInputType = (input: string): 'pgn' | 'fen' | 'moves' => {
-    // Check if it looks like a FEN
     const fenPattern =
       /^[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+/;
     if (fenPattern.test(input)) {
       return 'fen';
     }
-    // Check if it has PGN headers
     if (
       input.includes('[Event ') ||
       input.includes('[White ') ||
@@ -36,18 +34,15 @@ export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
     ) {
       return 'pgn';
     }
-    // Check if it has move numbers like "1. e4"
     if (/\d+\./.test(input)) {
       return 'pgn';
     }
-    // Otherwise treat as simple move list
     return 'moves';
   };
 
   const loadMoveList = (input: string): boolean => {
     try {
       const board = new Chess();
-      // Clean up: remove move numbers, extra whitespace, result indicators
       const cleaned = input
         .replace(/\d+\.\s*/g, '')
         .replace(/\s+/g, ' ')
@@ -61,14 +56,11 @@ export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
         try {
           const move = board.move(moveSAN);
           if (move) moveCount++;
-        } catch {
-          // Skip invalid moves
-        }
+        } catch {}
       }
 
       if (moveCount === 0) return false;
 
-      // Now load via PGN format
       return loadPGN(board.pgn());
     } catch {
       return false;
@@ -103,7 +95,6 @@ export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
         toast.error('Invalid PGN format');
       }
     } else {
-      // moves list
       const success = loadMoveList(trimmed);
       if (success) {
         toast.success('Moves loaded successfully!');

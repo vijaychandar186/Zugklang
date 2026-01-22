@@ -39,7 +39,7 @@ import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 
-import { type Puzzle, type PuzzleDifficulty } from '../stores/usePuzzleStore';
+import { type Puzzle, type PuzzleDifficulty } from '../types';
 
 import puzzlesData from '@/resources/puzzles.json';
 
@@ -80,21 +80,18 @@ export function PuzzleRushView({
   const [pendingPromotion, setPendingPromotion] =
     useState<PendingPromotion | null>(null);
 
-  // Rush mode state
   const [rushStatus, setRushStatus] = useState<RushStatus>('setup');
   const [rushMode, setRushMode] = useState<RushMode>('timed');
-  const [timeLimit, setTimeLimit] = useState(3); // minutes
+  const [timeLimit, setTimeLimit] = useState(3);
   const [maxMistakes, setMaxMistakes] = useState(3);
   const [difficulty, setDifficulty] = useState<PuzzleDifficulty>('beginner');
 
-  // Game state
-  const [timeRemaining, setTimeRemaining] = useState(0); // seconds
+  const [timeRemaining, setTimeRemaining] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [score, setScore] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState<Puzzle | null>(null);
   const [puzzleQueue, setPuzzleQueue] = useState<Puzzle[]>([]);
 
-  // Puzzle solving state
   const [game, setGame] = useState<Chess | null>(null);
   const [currentFEN, setCurrentFEN] = useState('');
   const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>(
@@ -110,7 +107,6 @@ export function PuzzleRushView({
   const theme = useBoardTheme();
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
 
-  // Get puzzles for current difficulty
   const allPuzzles = useMemo(() => {
     return (
       (puzzlesData as Record<PuzzleDifficulty, Puzzle[]>)[difficulty] || []
@@ -121,7 +117,6 @@ export function PuzzleRushView({
     setIsMounted(true);
   }, []);
 
-  // Timer logic
   useEffect(() => {
     if (rushStatus !== 'playing' || rushMode !== 'timed') return;
 
@@ -141,7 +136,6 @@ export function PuzzleRushView({
     };
   }, [rushStatus, rushMode]);
 
-  // Check for game over in survival mode
   useEffect(() => {
     if (
       rushStatus === 'playing' &&
@@ -168,11 +162,9 @@ export function PuzzleRushView({
     setPuzzleQueue(rest);
     setCurrentPuzzle(nextPuzzle);
 
-    // Parse the puzzle
     const puzzleMoves = nextPuzzle.Moves.split(' ');
     const newGame = new Chess(nextPuzzle.FEN);
 
-    // Make the first move (opponent's move)
     const firstMoveUci = puzzleMoves[0];
     const firstMoveResult = newGame.move({
       from: firstMoveUci.slice(0, 2),
@@ -188,23 +180,19 @@ export function PuzzleRushView({
     setShowHint(false);
     setMoves(firstMoveResult ? [firstMoveResult.san] : []);
 
-    // Set board orientation based on who plays next
     const turn = newGame.turn();
     setBoardOrientation(turn === 'w' ? 'white' : 'black');
   }, [puzzleQueue]);
 
   const startRush = () => {
-    // Shuffle and prepare puzzle queue
     const shuffled = shuffleArray(allPuzzles);
     setPuzzleQueue(shuffled.slice(1));
 
-    // Reset state
     setScore(0);
     setMistakes(0);
     setTimeRemaining(timeLimit * 60);
     setRushStatus('playing');
 
-    // Load first puzzle
     const firstPuzzle = shuffled[0];
     setCurrentPuzzle(firstPuzzle);
 
@@ -234,7 +222,6 @@ export function PuzzleRushView({
     setMistakes((prev) => prev + 1);
     toast.error('Incorrect!', { duration: 1000 });
 
-    // Move to next puzzle
     setTimeout(() => {
       loadNextPuzzle();
     }, 500);
@@ -243,29 +230,28 @@ export function PuzzleRushView({
   const makeMove = useCallback(
     (from: string, to: string, promotion?: string): boolean => {
       if (!game || !playerTurn) return false;
+      if (from === to) return false;
 
       const expectedMove = solutionMoves[currentMoveIndex];
       const playerMove = `${from}${to}${promotion || ''}`;
 
-      // Check if move matches expected
       const isCorrect =
         expectedMove === playerMove ||
         expectedMove === `${from}${to}` ||
         (expectedMove.startsWith(`${from}${to}`) && promotion);
 
       if (!isCorrect) {
-        // Check if it's a valid chess move at all
         const testGame = new Chess(game.fen());
         try {
-          testGame.move({ from, to, promotion });
+          const moveResult = testGame.move({ from, to, promotion });
+          if (!moveResult) return false;
         } catch {
-          return false; // Invalid move
+          return false;
         }
         handleIncorrectMove();
         return true;
       }
 
-      // Make the correct move
       const gameAfterPlayerMove = new Chess(game.fen());
       const playerMoveResult = gameAfterPlayerMove.move({
         from,
@@ -275,7 +261,6 @@ export function PuzzleRushView({
 
       const nextMoveIndex = currentMoveIndex + 1;
 
-      // Check if puzzle is complete
       if (nextMoveIndex >= solutionMoves.length) {
         setGame(gameAfterPlayerMove);
         setCurrentFEN(gameAfterPlayerMove.fen());
@@ -286,14 +271,12 @@ export function PuzzleRushView({
         setScore((prev) => prev + 1);
         toast.success('Correct!', { duration: 1000 });
 
-        // Load next puzzle after short delay
         setTimeout(() => {
           loadNextPuzzle();
         }, 500);
         return true;
       }
 
-      // Make opponent's response
       const opponentMoveUci = solutionMoves[nextMoveIndex];
       const gameAfterOpponentMove = new Chess(gameAfterPlayerMove.fen());
       const opponentMoveResult = gameAfterOpponentMove.move({
@@ -302,7 +285,6 @@ export function PuzzleRushView({
         promotion: opponentMoveUci.length > 4 ? opponentMoveUci[4] : undefined
       });
 
-      // Update state - show player's move first, then opponent's after delay
       setGame(gameAfterPlayerMove);
       setCurrentFEN(gameAfterPlayerMove.fen());
       setPlayerTurn(false);
@@ -332,7 +314,6 @@ export function PuzzleRushView({
     ]
   );
 
-  // Check if a move is a pawn promotion
   const isPromotionMove = useCallback(
     (from: string, to: string): boolean => {
       if (!game) return false;
@@ -369,6 +350,7 @@ export function PuzzleRushView({
     targetSquare: string | null;
   }) => {
     if (!targetSquare) return false;
+    if (sourceSquare === targetSquare) return false;
     if (rushStatus !== 'playing') return false;
     if (!playerTurn) return false;
 
@@ -390,7 +372,6 @@ export function PuzzleRushView({
     return makeMove(sourceSquare, targetSquare);
   };
 
-  // Calculate hint arrow
   const hintArrow = useMemo(() => {
     if (!showHint || rushStatus !== 'playing' || !playerTurn) return [];
 
@@ -418,7 +399,6 @@ export function PuzzleRushView({
   const playerColor = boardOrientation;
   const opponentColor = playerColor === 'white' ? 'black' : 'white';
 
-  // Setup Dialog
   if (rushStatus === 'setup') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -433,7 +413,7 @@ export function PuzzleRushView({
               </DialogTitle>
             </DialogHeader>
             <div className='space-y-6 py-4'>
-              {/* Mode Selection */}
+              {}
               <div className='space-y-3'>
                 <Label className='block text-center'>Mode</Label>
                 <Select
@@ -455,7 +435,7 @@ export function PuzzleRushView({
                 </p>
               </div>
 
-              {/* Difficulty Selection */}
+              {}
               <div className='space-y-3'>
                 <Label className='block text-center'>Difficulty</Label>
                 <Select
@@ -475,7 +455,7 @@ export function PuzzleRushView({
                 </Select>
               </div>
 
-              {/* Time Slider (for timed mode) */}
+              {}
               {rushMode === 'timed' && (
                 <div className='space-y-3'>
                   <Label className='block text-center'>
@@ -496,7 +476,7 @@ export function PuzzleRushView({
                 </div>
               )}
 
-              {/* Mistakes Slider (for survival mode) */}
+              {}
               {rushMode === 'survival' && (
                 <div className='space-y-3'>
                   <Label className='block text-center'>
@@ -527,7 +507,6 @@ export function PuzzleRushView({
     );
   }
 
-  // Finished state
   if (rushStatus === 'finished') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -573,10 +552,9 @@ export function PuzzleRushView({
     );
   }
 
-  // Playing state
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-      {/* Left column - Board */}
+      {}
       <div className='flex flex-col items-center gap-2'>
         <div className='flex w-full items-center py-2'>
           <PlayerInfo
@@ -631,9 +609,9 @@ export function PuzzleRushView({
         </div>
       </div>
 
-      {/* Right column - Sidebar */}
+      {}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {/* Timer / Lives */}
+        {}
         <div className='bg-card shrink-0 rounded-lg border p-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
@@ -664,7 +642,7 @@ export function PuzzleRushView({
           </div>
         </div>
 
-        {/* Moves */}
+        {}
         <div className='bg-card flex min-h-[200px] flex-col rounded-lg border lg:min-h-0 lg:flex-1'>
           <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
             <h3 className='font-semibold'>Moves</h3>
@@ -702,7 +680,7 @@ export function PuzzleRushView({
                 Find the best move!
               </span>
             </div>
-            {/* Themes */}
+            {}
             {currentPuzzle?.Themes && (
               <div className='mt-2 flex flex-wrap gap-1'>
                 {currentPuzzle.Themes.split(' ')
@@ -717,7 +695,7 @@ export function PuzzleRushView({
           </div>
         </div>
 
-        {/* Action bar */}
+        {}
         <div className='bg-card shrink-0 rounded-lg border p-2'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-1'>
@@ -783,7 +761,7 @@ export function PuzzleRushView({
         </div>
       </div>
 
-      {/* Dialogs */}
+      {}
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );

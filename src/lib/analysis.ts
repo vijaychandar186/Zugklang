@@ -47,8 +47,6 @@ const pieceValues: Record<string, number> = {
 
 const promotions = [undefined, 'b', 'n', 'r', 'q'] as const;
 
-// Win percentage based move classification
-// Based on Lichess/Chesskit approach
 function classifyByWinPercentage(
   prevEval: Evaluation,
   currEval: Evaluation,
@@ -57,7 +55,6 @@ function classifyByWinPercentage(
   const prevWinPct = getWinPercentageFromEval(prevEval);
   const currWinPct = getWinPercentageFromEval(currEval);
 
-  // Win percentage diff from the moving player's perspective
   const winPctDiff = (currWinPct - prevWinPct) * (isWhiteMove ? 1 : -1);
 
   if (winPctDiff < -20) return Classification.BLUNDER;
@@ -231,7 +228,6 @@ async function analyse(positions: Position[]): Promise<Report> {
     if (topMove.moveUCI === position.move?.uci) {
       position.classification = Classification.BEST;
     } else {
-      // Use win percentage based classification
       const isWhiteMove = moveColour === 'white';
       position.classification = classifyByWinPercentage(
         previousEvaluation,
@@ -239,19 +235,14 @@ async function analyse(positions: Position[]): Promise<Report> {
         isWhiteMove
       );
 
-      // Special handling for mate transitions
       if (previousEvaluation.type === 'cp' && evaluation.type === 'mate') {
         if (absoluteEvaluation > 0) {
-          // Finding mate for yourself
           position.classification = Classification.BEST;
         } else if (absoluteEvaluation >= -3) {
-          // Allowing mate in 1-3 is a blunder
           position.classification = Classification.BLUNDER;
         } else if (absoluteEvaluation >= -8) {
-          // Allowing mate in 4-8 is a mistake
           position.classification = Classification.MISTAKE;
         } else {
-          // Allowing mate in 9+ is still an inaccuracy (it's far off)
           position.classification = Classification.INACCURACY;
         }
       } else if (
@@ -259,22 +250,16 @@ async function analyse(positions: Position[]): Promise<Report> {
         evaluation.type === 'cp'
       ) {
         if (previousAbsoluteEvaluation < 0 && absoluteEvaluation < 0) {
-          // You were getting mated and still losing - escaping mate is good
           position.classification = Classification.BEST;
         } else if (previousAbsoluteEvaluation < 0) {
-          // You escaped getting mated and are now better
           position.classification = Classification.BEST;
         } else if (absoluteEvaluation >= 600) {
-          // Had mate, still completely winning - inaccuracy at worst
           position.classification = Classification.INACCURACY;
         } else if (absoluteEvaluation >= 300) {
-          // Had mate, gave up significant advantage - mistake
           position.classification = Classification.MISTAKE;
         } else if (absoluteEvaluation >= 0) {
-          // Had mate, now only slightly better or equal - blunder
           position.classification = Classification.BLUNDER;
         } else {
-          // Had mate, now losing - major blunder
           position.classification = Classification.BLUNDER;
         }
       } else if (
@@ -282,42 +267,31 @@ async function analyse(positions: Position[]): Promise<Report> {
         evaluation.type === 'mate'
       ) {
         if (previousAbsoluteEvaluation > 0) {
-          // You had mate, what happened?
           if (absoluteEvaluation < 0) {
-            // Went from giving mate to getting mated - always blunder
             position.classification = Classification.BLUNDER;
           } else if (absoluteEvaluation < previousAbsoluteEvaluation) {
-            // Shortened the mate - best
             position.classification = Classification.BEST;
           } else if (absoluteEvaluation === previousAbsoluteEvaluation) {
-            // Same mate distance - excellent
             position.classification = Classification.EXCELLENT;
           } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 2) {
-            // Extended mate by 1-2 moves - good
             position.classification = Classification.GOOD;
           } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 5) {
-            // Extended mate by 3-5 moves - inaccuracy
             position.classification = Classification.INACCURACY;
           } else {
-            // Extended mate significantly - mistake
             position.classification = Classification.MISTAKE;
           }
         } else {
-          // You were getting mated
           if (absoluteEvaluation === previousAbsoluteEvaluation) {
             position.classification = Classification.BEST;
           } else if (absoluteEvaluation > previousAbsoluteEvaluation) {
-            // Delayed getting mated - good
             position.classification = Classification.GOOD;
           } else {
-            // Let them mate faster - mistake
             position.classification = Classification.MISTAKE;
           }
         }
       }
     }
 
-    // Check for brilliant/great moves
     if (position.classification === Classification.BEST) {
       const winningAnyways =
         (absoluteSecondEvaluation >= 700 && topMove.evaluation.type === 'cp') ||
@@ -402,9 +376,7 @@ async function analyse(positions: Position[]): Promise<Report> {
                   }
 
                   captureTestBoard.undo();
-                } catch {
-                  // Move not legal
-                }
+                } catch {}
               }
               if (anyPieceViablyCapturable) break;
             }
@@ -435,8 +407,6 @@ async function analyse(positions: Position[]): Promise<Report> {
       }
     }
 
-    // Only downgrade blunder to mistake if position is completely won/lost
-    // (>= 1000cp or <= -1000cp) to maintain accuracy
     if (
       position.classification === Classification.BLUNDER &&
       absoluteEvaluation >= 1000
@@ -454,7 +424,6 @@ async function analyse(positions: Position[]): Promise<Report> {
     position.classification = position.classification ?? Classification.BOOK;
   }
 
-  // Generate opening names for named positions
   for (const position of positions) {
     const opening = openingsData.find((o: { name: string; fen: string }) =>
       position.fen.includes(o.fen)
@@ -462,8 +431,6 @@ async function analyse(positions: Position[]): Promise<Report> {
     position.opening = opening?.name;
   }
 
-  // Apply book moves for named opening positions only
-  // Original also checked for cloud-evaluated positions, but we only use local evaluation
   for (const position of positions.slice(1)) {
     if (position.opening) {
       position.classification = Classification.BOOK;
@@ -472,10 +439,8 @@ async function analyse(positions: Position[]): Promise<Report> {
     }
   }
 
-  // Generate SAN moves from engine lines
   for (const position of positions) {
     for (const line of position.topLines || []) {
-      // Skip if no valid UCI move or if it's mate in 0 (game already over)
       if (!line.moveUCI || line.moveUCI.length < 4) continue;
       if (line.evaluation.type === 'mate' && line.evaluation.value === 0)
         continue;
@@ -496,13 +461,11 @@ async function analyse(positions: Position[]): Promise<Report> {
         if (!move) throw new Error('Invalid move');
         line.moveSAN = move.san;
       } catch {
-        // Keep moveUCI as fallback if SAN conversion fails
         line.moveSAN = '';
       }
     }
   }
 
-  // Calculate accuracies
   const accuracies = {
     white: { current: 0, maximum: 0 },
     black: { current: 0, maximum: 0 }
@@ -515,7 +478,6 @@ async function analyse(positions: Position[]): Promise<Report> {
     accuracies[moveColour].maximum++;
   }
 
-  // Calculate estimated Elo from actual centipawn loss
   const estimatedElo = computeEstimatedEloFromPositions(positions);
 
   return {

@@ -5,11 +5,9 @@ import {
   Role,
   Color as ChessOpsColor,
   isDrop,
-  FILE_NAMES,
-  RANK_NAMES,
   Rules
 } from 'chessops/types';
-import { parseSquare, makeSquare, squareRank, opposite } from 'chessops/util';
+import { parseSquare, makeSquare, squareRank } from 'chessops/util';
 import { parseFen, makeFen } from 'chessops/fen';
 import { parseSan, makeSan } from 'chessops/san';
 import {
@@ -22,7 +20,6 @@ import {
 } from 'chessops/pgn';
 import { setupPosition, defaultPosition } from 'chessops/variant';
 
-// Types compatible with chess.js
 export type ChessJSColor = 'w' | 'b';
 export type ChessJSPieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
 export type ChessJSSquare = string;
@@ -50,7 +47,6 @@ export type MoveOptions = {
   maxWidth?: number;
 };
 
-// Aliases for transition
 export type PieceSymbol = ChessJSPieceType;
 export type Color = ChessJSColor;
 export type Square = ChessJSSquare;
@@ -158,12 +154,8 @@ export class Chess {
   load(fen: string, options?: { skipValidation?: boolean }): boolean {
     try {
       const setup = parseFen(fen).unwrap();
-      const variant = 'chess'; // If we want to support variant changes in load, we need more args. defaulting to chess or existing pos rules?
-      // Let's stick to 'chess' or current rules?
-      // If we are replacing the position, we should maybe detect rules?
 
       if (options?.skipValidation) {
-        // Manual setup
         this._pos.board = setup.board.clone();
         this._pos.turn = setup.turn;
         this._pos.castles = Castles.fromSetup(setup);
@@ -179,7 +171,7 @@ export class Chess {
       this._currentNode = this._game.moves;
       this._historyStack = [];
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -189,7 +181,6 @@ export class Chess {
   ): ChessJSMove | null {
     try {
       let m: ChessOpsMove;
-      let san: string;
 
       if (typeof move === 'string') {
         const parsed = parseSan(this._pos, move);
@@ -200,7 +191,6 @@ export class Chess {
         const toSq = parseSquare(move.to);
         if (fromSq === undefined || toSq === undefined) return null;
 
-        // Only include promotion if it's actually a promotion move (pawn reaching last rank)
         const piece = this._pos.board.get(fromSq);
         const isPromotion =
           piece?.role === 'pawn' &&
@@ -218,10 +208,9 @@ export class Chess {
         if (!this._pos.isLegal(m)) return null;
       }
 
-      san = makeSan(this._pos, m);
+      const san = makeSan(this._pos, m);
       const moveObj = this._makeMoveObjectInternal(m, san, this._pos);
 
-      // Save position state for undo - clone current position before playing
       const positionClone = this._pos.clone();
       this._historyStack.push({ position: positionClone, move: moveObj });
 
@@ -285,21 +274,18 @@ export class Chess {
     const verbose = options?.verbose;
 
     if (!verbose) {
-      // Simple SAN list
       let node = this._game.moves;
       while (node.children.length > 0) {
         const child = node.children[0];
         moves.push(child.data.san);
         node = child;
-        if (node === this._currentNode) break; // Stop at current node
+        if (node === this._currentNode) break;
       }
     } else {
-      // Replay to generate objects
-      // This is expensive but necessary for verbose history
       const tempPos = setupPosition(
         'chess',
         parseFen(this._startFen).unwrap()
-      ).unwrap(); // Assuming startFen is valid for current variant
+      ).unwrap();
       let node = this._game.moves;
 
       while (node.children.length > 0) {
@@ -336,7 +322,6 @@ export class Chess {
       const dests = this._pos.dests(sq, ctx);
       for (const to of dests) {
         const m: ChessOpsMove = { from: sq, to };
-        // Check for promotions
         const piece = this._pos.board.get(sq);
         if (piece && piece.role === 'pawn') {
           const r = squareRank(to);
@@ -380,25 +365,9 @@ export class Chess {
     if (this._historyStack.length === 0) return null;
 
     const last = this._historyStack.pop()!;
-    const currentPos = this._pos;
     const prevPos = last.position;
 
-    // The move that led to currentPos is what we are undoing.
-    // We stored it?
-    // Actually chess.js undo returns the move that was undone.
-    // I need to store the move object in history?
-
     this._pos = prevPos;
-    // We also need to revert _currentNode if we are tracking game tree
-    // But we don't have parent pointer.
-    // If we are linear, we can just pop from move list?
-    // Since wrapper is replacing chess.js which is linear history mostly...
-    // But if I use Game tree, undoing in tree means moving pointer up.
-    // I can't do that easily without parent pointers.
-
-    // For now, I revert Position.
-    // And I should return the move.
-    // I'll update store to include move info.
     return last.move;
   }
 
@@ -444,7 +413,7 @@ export class Chess {
         square: ChessJSSquare;
       } | null)[] = [];
       for (let f = 0; f < 8; f++) {
-        const sq = r * 8 + f; // chessops square index
+        const sq = r * 8 + f;
         const piece = board.get(sq);
         if (piece) {
           row.push({
@@ -480,7 +449,6 @@ export class Chess {
           this._pos = defaultPosition('chess');
         }
 
-        // Replay to set _currentNode
         let node = this._game.moves;
         while (node.children.length > 0) {
           const child = node.children[0];
@@ -492,7 +460,7 @@ export class Chess {
         return true;
       }
       return false;
-    } catch (e) {
+    } catch {
       return false;
     }
   }
@@ -516,17 +484,11 @@ export class Chess {
       ? pos.board.get(move.from)
       : { role: move.role, color: pos.turn };
 
-    // Basic capture check (simple replacement)
-    // This implies we check the 'to' square on the board BEFORE the move make.
-    // Yes, 'pos' passed here is BEFORE the move.
     const capturedPiece = !isDrop(move) ? pos.board.get(move.to) : undefined;
 
-    // Handle en passant capture detection?
     let isEnPassant = false;
     if (!isDrop(move) && pieceObj?.role === 'pawn' && !capturedPiece) {
       if (Math.abs(move.from - move.to) % 8 !== 0) {
-        // diagonal
-        // Diagonal move without capture on target square = en passant
         isEnPassant = true;
       }
     }
@@ -538,7 +500,7 @@ export class Chess {
       color: colorToChar[pos.turn],
       from,
       to,
-      flags: 'n', // TODO: implement full flags if needed
+      flags: 'n',
       piece: pieceObj ? roleToType[pieceObj.role] : 'p',
       promotion:
         !isDrop(move) && move.promotion

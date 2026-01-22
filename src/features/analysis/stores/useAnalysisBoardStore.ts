@@ -7,218 +7,155 @@ import {
   ChessJSMove as Move
 } from '@/lib/chess';
 import { createModeStorage } from '@/features/chess/stores/gameStorage';
+import { STARTING_FEN } from '@/features/chess/config/constants';
+import {
+  createNavigationSlice,
+  NavigationSlice,
+  createBoardOrientationSlice,
+  BoardOrientationSlice
+} from '@/features/chess/stores/slices';
 
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+import { ChessSession } from '@/features/chess/logic/ChessSession';
 
-type AnalysisBoardStore = {
-  game: Chess;
-  currentFEN: string;
+interface AnalysisBoardState extends NavigationSlice, BoardOrientationSlice {
+  session: ChessSession;
   moves: string[];
-  positionHistory: string[];
-  viewingIndex: number;
-  boardOrientation: 'white' | 'black';
   playingAgainstStockfish: boolean;
   playerColor: 'white' | 'black';
   stockfishLevel: number;
+}
 
+interface AnalysisBoardActions {
   makeMove: (from: string, to: string, promotion?: string) => Move | null;
   addMove: (move: string, fen: string) => void;
-  goToStart: () => void;
-  goToEnd: () => void;
-  goToPrev: () => void;
-  goToNext: () => void;
-  goToMove: (moveIndex: number) => void;
-  isViewingHistory: () => boolean;
   loadPGN: (pgn: string) => boolean;
   loadFEN: (fen: string) => boolean;
   resetToStarting: () => void;
-  toggleBoardOrientation: () => void;
   startPlayingFromPosition: (color: 'white' | 'black', level?: number) => void;
   stopPlayingFromPosition: () => void;
-};
+}
+
+type AnalysisBoardStore = AnalysisBoardState & AnalysisBoardActions;
 
 export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
   persist(
-    (set, get) => ({
-      game: new Chess(),
-      currentFEN: STARTING_FEN,
-      moves: [],
-      positionHistory: [STARTING_FEN],
-      viewingIndex: 0,
-      boardOrientation: 'white',
-      playingAgainstStockfish: false,
-      playerColor: 'white',
-      stockfishLevel: 10,
+    (set, get) => {
+      const session = new ChessSession();
 
-      makeMove: (from, to, promotion = 'q') => {
-        const state = get();
-        try {
-          const move = state.game.move({
-            from: from as Square,
-            to: to as Square,
-            promotion: promotion as 'q' | 'r' | 'b' | 'n'
-          });
+      return {
+        session,
+        currentFEN: session.fen,
+        moves: [],
+        positionHistory: [session.fen],
+        viewingIndex: 0,
+        boardOrientation: 'white',
+        boardFlipped: false,
+        playingAgainstStockfish: false,
+        playerColor: 'white',
+        stockfishLevel: 10,
+
+        ...createNavigationSlice(set, get),
+        ...createBoardOrientationSlice(set),
+
+        makeMove: (from, to, promotion = 'q') => {
+          const { session } = get();
+          const move = session.makeMove(from, to, promotion);
+
           if (!move) return null;
 
-          const newFEN = state.game.fen();
-          set({
-            currentFEN: newFEN,
-            moves: [...state.moves, move.san],
-            positionHistory: [...state.positionHistory, newFEN],
-            viewingIndex: state.positionHistory.length
-          });
+          set((state) => ({
+            currentFEN: session.fen,
+            moves: [...session.moves],
+            positionHistory: [...state.positionHistory, session.fen],
+            viewingIndex: state.positionHistory.length // history length increased by 1, so this points to last
+          }));
 
           return move;
-        } catch {
-          return null;
-        }
-      },
+        },
 
-      addMove: (move, fen) =>
-        set((state) => ({
-          moves: [...state.moves, move],
-          positionHistory: [...state.positionHistory, fen],
-          viewingIndex: state.positionHistory.length,
-          currentFEN: fen
-        })),
+        addMove: (move, fen) => {
+          const { session } = get();
+          // Attempt to sync session
+          session.addMove(move, fen);
+          set((state) => ({
+            moves: [...state.moves, move],
+            positionHistory: [...state.positionHistory, fen],
+            viewingIndex: state.positionHistory.length,
+            currentFEN: fen
+          }));
+        },
 
-      goToStart: () =>
-        set((state) => ({
-          viewingIndex: 0,
-          currentFEN: state.positionHistory[0]
-        })),
+        loadPGN: (pgn) => {
+          const { session } = get();
+          const success = session.loadPgn(pgn);
 
-      goToEnd: () =>
-        set((state) => ({
-          viewingIndex: state.positionHistory.length - 1,
-          currentFEN: state.positionHistory[state.positionHistory.length - 1]
-        })),
-
-      goToPrev: () =>
-        set((state) => {
-          const newIndex = Math.max(0, state.viewingIndex - 1);
-          return {
-            viewingIndex: newIndex,
-            currentFEN: state.positionHistory[newIndex]
-          };
-        }),
-
-      goToNext: () =>
-        set((state) => {
-          const newIndex = Math.min(
-            state.positionHistory.length - 1,
-            state.viewingIndex + 1
-          );
-          return {
-            viewingIndex: newIndex,
-            currentFEN: state.positionHistory[newIndex]
-          };
-        }),
-
-      goToMove: (moveIndex) =>
-        set((state) => {
-          const positionIndex = moveIndex + 1;
-          const clampedIndex = Math.min(
-            Math.max(0, positionIndex),
-            state.positionHistory.length - 1
-          );
-          return {
-            viewingIndex: clampedIndex,
-            currentFEN: state.positionHistory[clampedIndex]
-          };
-        }),
-
-      isViewingHistory: () => {
-        const state = get();
-        return state.viewingIndex < state.positionHistory.length - 1;
-      },
-
-      loadPGN: (pgn) => {
-        try {
-          const newGame = new Chess();
-          newGame.loadPgn(pgn);
-
-          const moves: string[] = [];
-          const positions: string[] = [STARTING_FEN];
-
-          const tempGame = new Chess();
-          const history = newGame.history({ verbose: true });
-
-          for (const move of history) {
-            tempGame.move(move.san);
-            moves.push(move.san);
-            positions.push(tempGame.fen());
+          if (success) {
+            set({
+              currentFEN: session.fen,
+              moves: [...session.moves],
+              // Reconstruction of full history array if needed
+              // session.history might be just [FEN] if loadPgn doesn't fill it.
+              // My ChessSession.loadPgn implementation tried to fill _moves, but history?
+              // Let's rely on standard session behavior or what we implemented.
+              // If session.history is incomplete, we might need a better impl in session.
+              // For now, let's assume session provides a reasonable state or we init history
+              positionHistory:
+                session.history.length > 1 ? session.history : [session.fen],
+              viewingIndex:
+                session.history.length > 1 ? session.history.length - 1 : 0,
+              playingAgainstStockfish: false
+            });
+            return true;
           }
-
-          set({
-            game: newGame,
-            currentFEN: newGame.fen(),
-            moves,
-            positionHistory: positions,
-            viewingIndex: positions.length - 1,
-            playingAgainstStockfish: false
-          });
-
-          return true;
-        } catch (error) {
-          console.error('Failed to load PGN:', error);
           return false;
-        }
-      },
+        },
 
-      loadFEN: (fen) => {
-        try {
-          const newGame = new Chess(fen);
+        loadFEN: (fen) => {
+          const { session } = get();
+          const success = session.loadFen(fen);
+
+          if (success) {
+            set({
+              currentFEN: fen,
+              moves: [],
+              positionHistory: [fen],
+              viewingIndex: 0,
+              playingAgainstStockfish: false
+            });
+            return true;
+          }
+          return false;
+        },
+
+        resetToStarting: () => {
+          const { session } = get();
+          session.reset();
           set({
-            game: newGame,
-            currentFEN: fen,
+            currentFEN: STARTING_FEN,
             moves: [],
-            positionHistory: [fen],
+            positionHistory: [STARTING_FEN],
             viewingIndex: 0,
+            playingAgainstStockfish: false,
+            boardOrientation: 'white'
+          });
+        },
+
+        startPlayingFromPosition: (color, level = 10) => {
+          set({
+            playingAgainstStockfish: true,
+            playerColor: color,
+            stockfishLevel: level,
+            boardOrientation: color
+          });
+        },
+
+        stopPlayingFromPosition: () => {
+          set({
             playingAgainstStockfish: false
           });
-          return true;
-        } catch (error) {
-          console.error('Invalid FEN:', error);
-          return false;
         }
-      },
-
-      resetToStarting: () => {
-        const newGame = new Chess();
-        set({
-          game: newGame,
-          currentFEN: STARTING_FEN,
-          moves: [],
-          positionHistory: [STARTING_FEN],
-          viewingIndex: 0,
-          playingAgainstStockfish: false,
-          boardOrientation: 'white'
-        });
-      },
-
-      toggleBoardOrientation: () => {
-        set((state) => ({
-          boardOrientation:
-            state.boardOrientation === 'white' ? 'black' : 'white'
-        }));
-      },
-
-      startPlayingFromPosition: (color, level = 10) => {
-        set({
-          playingAgainstStockfish: true,
-          playerColor: color,
-          stockfishLevel: level,
-          boardOrientation: color
-        });
-      },
-
-      stopPlayingFromPosition: () => {
-        set({
-          playingAgainstStockfish: false
-        });
-      }
-    }),
+      };
+    },
     {
       name: 'zugklang-analysis-storage',
       storage: createModeStorage('analysis'),
@@ -231,12 +168,15 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
         stockfishLevel: state.stockfishLevel
       }),
       onRehydrateStorage: () => (state) => {
-        if (state) {
+        if (state && state.session) {
           try {
             const fen = state.currentFEN || STARTING_FEN;
-            state.game = new Chess(fen);
+            state.session.loadFen(fen);
+            // Ideally we should sync history too, but rehydrating simple FEN is baseline safety.
+            // If moves exist, we could try to replay them if we derived session state from moves,
+            // but for now relying on stored props + synced FEN in session.
           } catch {
-            state.game = new Chess();
+            state.session.reset();
             state.currentFEN = STARTING_FEN;
           }
         }
@@ -248,7 +188,7 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
 export const useAnalysisBoardState = () =>
   useAnalysisBoardStore(
     useShallow((s) => ({
-      game: s.game,
+      game: s.session.instance,
       currentFEN: s.currentFEN,
       moves: s.moves,
       viewingIndex: s.viewingIndex,

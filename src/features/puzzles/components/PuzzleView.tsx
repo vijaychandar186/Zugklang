@@ -37,10 +37,9 @@ import { useChessStore } from '@/features/chess/stores/useChessStore';
 import {
   usePuzzleState,
   usePuzzleStats,
-  usePuzzleActions,
-  type Puzzle,
-  type PuzzleDifficulty
+  usePuzzleActions
 } from '../stores/usePuzzleStore';
+import { type Puzzle, type PuzzleDifficulty } from '../types';
 
 import puzzlesData from '@/resources/puzzles.json';
 
@@ -112,7 +111,6 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
   const theme = useBoardTheme();
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
 
-  // Get puzzles for current difficulty
   const puzzles = useMemo(() => {
     return (
       (puzzlesData as Record<PuzzleDifficulty, Puzzle[]>)[difficulty] || []
@@ -129,12 +127,10 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     enabled: status !== 'playing'
   });
 
-  // Get the displayed position (for history navigation)
   const displayedFEN = useMemo(() => {
     return positionHistory[viewingIndex] || currentFEN;
   }, [positionHistory, viewingIndex, currentFEN]);
 
-  // Calculate hint arrow
   const hintArrow = useMemo(() => {
     if (!showHint || status !== 'playing' || !playerTurn) return [];
 
@@ -157,14 +153,12 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     setIsMounted(true);
   }, []);
 
-  // Load first puzzle on mount if none loaded
   useEffect(() => {
     if (!currentPuzzle && puzzles.length > 0) {
       loadPuzzle(puzzles[0], 0);
     }
   }, [currentPuzzle, puzzles, loadPuzzle]);
 
-  // Check if a move is a pawn promotion
   const isPromotionMove = useCallback(
     (from: string, to: string): boolean => {
       try {
@@ -180,7 +174,6 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     [displayedFEN]
   );
 
-  // Complete promotion with selected piece
   const completePromotion = useCallback(
     (piece: PieceSymbol) => {
       if (!pendingPromotion) return;
@@ -190,7 +183,6 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     [pendingPromotion, makeMove]
   );
 
-  // Cancel promotion
   const cancelPromotion = useCallback(() => {
     setPendingPromotion(null);
   }, []);
@@ -203,13 +195,12 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     targetSquare: string | null;
   }) => {
     if (!targetSquare) return false;
+    if (sourceSquare === targetSquare) return false;
     if (status !== 'playing') return false;
     if (!playerTurn) return false;
     if (viewingIndex < positionHistory.length - 1) return false;
 
-    // Check if this is a promotion move
     if (isPromotionMove(sourceSquare, targetSquare)) {
-      // Validate move is legal before showing dialog
       try {
         const game = new Chess(displayedFEN);
         const moves = game.moves({
@@ -224,7 +215,7 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
             to: targetSquare,
             color: piece?.color === 'w' ? 'white' : 'black'
           });
-          return true; // Return true to prevent piece snapping back
+          return true;
         }
       } catch {
         return false;
@@ -257,13 +248,12 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     toast.success('Random puzzle loaded');
   };
 
-  // Determine who is playing
   const playerColor = boardOrientation;
   const opponentColor = playerColor === 'white' ? 'black' : 'white';
 
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-      {/* Left column - Board */}
+      {}
       <div className='flex flex-col items-center gap-2'>
         <div className='flex w-full items-center py-2'>
           <PlayerInfo
@@ -324,9 +314,9 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
         </div>
       </div>
 
-      {/* Right column - Sidebar */}
+      {}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {/* Stats Card */}
+        {}
         <div className='bg-card shrink-0 rounded-lg border p-4'>
           <h4 className='mb-2 text-sm font-medium'>Stats</h4>
           <div className='grid grid-cols-4 gap-2 text-center'>
@@ -355,7 +345,7 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
           </div>
         </div>
 
-        {/* Main content area */}
+        {}
         <div className='bg-card flex min-h-[200px] flex-col rounded-lg border lg:min-h-0 lg:flex-1'>
           <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
             <h3 className='font-semibold'>Moves</h3>
@@ -401,7 +391,7 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
             onGoToNext={goToNext}
           />
 
-          {/* Action bar */}
+          {}
           <div className='bg-muted/50 flex items-center justify-between border-t p-2'>
             <div className='flex items-center gap-1'>
               <Tooltip>
@@ -489,7 +479,7 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
           </div>
         </div>
 
-        {/* Puzzle Info Card */}
+        {}
         <div className='bg-card shrink-0 rounded-lg border p-4'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-2'>
@@ -508,7 +498,7 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
             )}
           </div>
 
-          {/* Status message */}
+          {}
           <div className='mt-3'>
             {status === 'playing' &&
               (playerTurn ? (
@@ -540,7 +530,7 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
             )}
           </div>
 
-          {/* Themes */}
+          {}
           {currentPuzzle?.Themes && (
             <div className='mt-3 flex flex-wrap gap-1'>
               {currentPuzzle.Themes.split(' ')
@@ -555,7 +545,7 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
         </div>
       </div>
 
-      {/* Dialogs */}
+      {}
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );

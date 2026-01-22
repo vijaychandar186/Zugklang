@@ -23,12 +23,17 @@ import {
   ChessVariant,
   generateRandomChess960FEN
 } from '@/features/chess/utils/chess960';
+import {
+  createNavigationSlice,
+  NavigationSlice,
+  createBoardOrientationSlice,
+  BoardOrientationSlice
+} from './slices';
 
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
 const PLAY_AS_COOKIE = 'playAs';
 
-// Play modes handled by this store (add new modes here)
 type PlayMode = 'computer' | 'local';
 
 type PersistedPlayState = {
@@ -78,17 +83,13 @@ function getInitialBoard3dEnabled(): boolean {
   return value === 'true';
 }
 
-type ChessStore = {
+interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   mode: ChessMode;
   gameType: GameType;
   hasHydrated: boolean;
 
   game: Chess;
-  currentFEN: string;
   moves: string[];
-  positionHistory: string[];
-  viewingIndex: number;
-  boardOrientation: 'white' | 'black';
 
   playAs: 'white' | 'black';
   stockfishLevel: number;
@@ -109,7 +110,6 @@ type ChessStore = {
   boardThemeName: BoardThemeName;
   soundEnabled: boolean;
   board3dEnabled: boolean;
-  boardFlipped: boolean;
   autoFlipBoard: boolean;
   fullscreenEnabled: boolean;
   variant: ChessVariant;
@@ -122,21 +122,12 @@ type ChessStore = {
   setSoundEnabled: (enabled: boolean) => void;
   setBoard3dEnabled: (enabled: boolean) => void;
   setFullscreenEnabled: (enabled: boolean) => void;
-  flipBoard: () => void;
-  toggleBoardOrientation: () => void;
 
   addMove: (move: string, fen: string) => void;
   makeMove: (from: string, to: string, promotion?: string) => Move | null;
   setMoves: (moves: string[]) => void;
   setCurrentFEN: (fen: string) => void;
   setOnNewGame: (onNewGame: () => void) => void;
-
-  goToStart: () => void;
-  goToEnd: () => void;
-  goToPrev: () => void;
-  goToNext: () => void;
-  goToMove: (moveIndex: number) => void;
-  isViewingHistory: () => boolean;
 
   setGameResult: (result: string | null) => void;
   setGameOver: (gameOver: boolean) => void;
@@ -165,7 +156,7 @@ type ChessStore = {
   resetToStarting: () => void;
   startPlayingFromPosition: (color: 'white' | 'black', level?: number) => void;
   stopPlayingFromPosition: () => void;
-};
+}
 
 export const useChessStore = create<ChessStore>()(
   persist(
@@ -180,6 +171,7 @@ export const useChessStore = create<ChessStore>()(
       positionHistory: [STARTING_FEN],
       viewingIndex: 0,
       boardOrientation: 'white',
+      boardFlipped: false,
 
       playAs: 'white',
       stockfishLevel: 10,
@@ -200,7 +192,6 @@ export const useChessStore = create<ChessStore>()(
       boardThemeName: DEFAULT_BOARD_THEME,
       soundEnabled: getInitialSoundEnabled(),
       board3dEnabled: getInitialBoard3dEnabled(),
-      boardFlipped: false,
       autoFlipBoard: false,
       fullscreenEnabled: false,
       variant: 'standard' as ChessVariant,
@@ -243,14 +234,7 @@ export const useChessStore = create<ChessStore>()(
         set({ fullscreenEnabled: enabled });
       },
 
-      flipBoard: () => set((state) => ({ boardFlipped: !state.boardFlipped })),
-
-      toggleBoardOrientation: () => {
-        set((state) => ({
-          boardOrientation:
-            state.boardOrientation === 'white' ? 'black' : 'white'
-        }));
-      },
+      ...createBoardOrientationSlice(set),
 
       addMove: (move, fen) =>
         set((state) => ({
@@ -288,56 +272,7 @@ export const useChessStore = create<ChessStore>()(
       setCurrentFEN: (fen) => set({ currentFEN: fen }),
       setOnNewGame: (onNewGame) => set({ onNewGame }),
 
-      goToStart: () =>
-        set((state) => ({
-          viewingIndex: 0,
-          currentFEN: state.positionHistory[0]
-        })),
-
-      goToEnd: () =>
-        set((state) => ({
-          viewingIndex: state.positionHistory.length - 1,
-          currentFEN: state.positionHistory[state.positionHistory.length - 1]
-        })),
-
-      goToPrev: () =>
-        set((state) => {
-          const newIndex = Math.max(0, state.viewingIndex - 1);
-          return {
-            viewingIndex: newIndex,
-            currentFEN: state.positionHistory[newIndex]
-          };
-        }),
-
-      goToNext: () =>
-        set((state) => {
-          const newIndex = Math.min(
-            state.positionHistory.length - 1,
-            state.viewingIndex + 1
-          );
-          return {
-            viewingIndex: newIndex,
-            currentFEN: state.positionHistory[newIndex]
-          };
-        }),
-
-      goToMove: (moveIndex) =>
-        set((state) => {
-          const positionIndex = moveIndex + 1;
-          const clampedIndex = Math.min(
-            Math.max(0, positionIndex),
-            state.positionHistory.length - 1
-          );
-          return {
-            viewingIndex: clampedIndex,
-            currentFEN: state.positionHistory[clampedIndex]
-          };
-        }),
-
-      isViewingHistory: () => {
-        const state = get();
-        return state.viewingIndex < state.positionHistory.length - 1;
-      },
+      ...createNavigationSlice(set, get),
 
       setGameResult: (result) => set({ gameResult: result }),
       setGameOver: (gameOver) =>
@@ -371,7 +306,6 @@ export const useChessStore = create<ChessStore>()(
         const hasTimer = timeControl.mode !== 'unlimited';
         const state = get();
 
-        // Generate starting FEN based on variant
         const startingFEN =
           state.variant === 'fischerRandom'
             ? generateRandomChess960FEN()
@@ -424,7 +358,6 @@ export const useChessStore = create<ChessStore>()(
         const hasTimer = timeControl.mode !== 'unlimited';
         const state = get();
 
-        // Generate starting FEN based on variant
         const startingFEN =
           state.variant === 'fischerRandom'
             ? generateRandomChess960FEN()
@@ -463,9 +396,7 @@ export const useChessStore = create<ChessStore>()(
         const state = get();
         const oldGameType = state.gameType;
 
-        // If switching game types, save current state to old storage and load from new storage
         if (oldGameType !== newGameType) {
-          // Save current state to old game type's storage
           const currentState: PersistedPlayState = {
             mode: state.mode,
             gameType: oldGameType,
@@ -489,7 +420,6 @@ export const useChessStore = create<ChessStore>()(
           };
           saveToModeStorage(oldGameType, currentState);
 
-          // Load state from new game type's storage
           const savedState =
             loadFromModeStorage<PersistedPlayState>(newGameType);
           if (savedState) {
@@ -521,7 +451,6 @@ export const useChessStore = create<ChessStore>()(
                 variant: savedState.variant || 'standard'
               });
             } catch {
-              // If loading fails, reset to fresh state
               set({
                 gameType: newGameType,
                 game: new Chess(),
@@ -535,7 +464,6 @@ export const useChessStore = create<ChessStore>()(
               });
             }
           } else {
-            // No saved state for this game type, reset to fresh state
             set({
               gameType: newGameType,
               game: new Chess(),
@@ -725,7 +653,7 @@ export const useChessStore = create<ChessStore>()(
       name: 'zugklang-play-storage',
       storage: createMultiModeStorage(
         (state) => (state as { gameType?: PlayMode })?.gameType,
-        'computer' // default mode
+        'computer'
       ),
       partialize: (state) => ({
         mode: state.mode,
@@ -762,7 +690,6 @@ export const useChessStore = create<ChessStore>()(
             state.currentFEN = STARTING_FEN;
           }
 
-          // Calculate elapsed time since last tick and subtract from active timer
           if (
             state.activeTimer &&
             state.lastActiveTimestamp &&

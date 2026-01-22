@@ -64,6 +64,7 @@ import {
 } from '@/features/game-review/types';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import Image from 'next/image';
+import { parseGameInput, generateGameReport } from '@/app/actions/game-review';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
@@ -296,14 +297,9 @@ export function GameReviewView({
     setProgress(0);
 
     try {
-      const parseRes = await fetch('/api/game-review/parse', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ input: pgn })
-      });
+      const parseData = await parseGameInput(pgn);
 
-      const parseData = await parseRes.json();
-      if (!parseRes.ok) {
+      if (!parseData.success || !parseData.positions) {
         setErrorMsg(parseData.message || 'Failed to parse');
         setStatus('error');
         return;
@@ -324,15 +320,14 @@ export function GameReviewView({
         return;
       }
 
-      // Set live positions for incremental board updates during evaluation
-      setLivePositions(positions);
+      setLivePositions(positions as any);
       setProgress(10);
 
       setStatus('evaluating');
 
       const { evaluatePositions } = await import('@/lib/evaluation');
-      positions = await evaluatePositions(
-        positions,
+      positions = (await evaluatePositions(
+        positions as any,
         depth,
         (current, _total, percent, currentPositions) => {
           const evalProgress = 10 + Math.round(percent * 0.8);
@@ -352,19 +347,14 @@ export function GameReviewView({
 
           goToMove(current);
         }
-      );
+      )) as any;
 
       setStatus('reporting');
       setProgress(95);
 
-      const reportRes = await fetch('/api/game-review/report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ positions })
-      });
+      const reportData = await generateGameReport(positions);
 
-      const reportData = await reportRes.json();
-      if (!reportRes.ok) {
+      if (!reportData.success || !reportData.results) {
         setErrorMsg(reportData.message || 'Failed to generate report');
         setStatus('error');
         return;

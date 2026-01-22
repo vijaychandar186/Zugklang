@@ -320,14 +320,14 @@ export function GameReviewView({
         return;
       }
 
-      setLivePositions(positions as any);
+      setLivePositions(positions);
       setProgress(10);
 
       setStatus('evaluating');
 
       const { evaluatePositions } = await import('@/lib/evaluation');
-      positions = (await evaluatePositions(
-        positions as any,
+      positions = await evaluatePositions(
+        positions,
         depth,
         (current, _total, percent, currentPositions) => {
           const evalProgress = 10 + Math.round(percent * 0.8);
@@ -347,7 +347,7 @@ export function GameReviewView({
 
           goToMove(current);
         }
-      )) as any;
+      );
 
       setStatus('reporting');
       setProgress(95);
@@ -625,7 +625,7 @@ export function GameReviewView({
                 <ReviewMoveHistory
                   positions={report.positions}
                   viewingIndex={currentMoveIndex}
-                  onMoveClick={(idx) => goToMove(idx + 1)}
+                  onMoveClick={goToMove}
                 />
               </div>
             </ScrollArea>

@@ -1,7 +1,7 @@
 'use server';
 
 import { Chess } from '@/lib/chess';
-import { Position } from '@/features/game-review/types';
+import type { Position, GameReport } from '@/features/game-review/types';
 import analyse from '@/lib/analysis';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -133,7 +133,7 @@ export async function parseGameInput(
 
 export async function generateGameReport(
   positions: Position[]
-): Promise<{ success: boolean; results?: any; message?: string }> {
+): Promise<{ success: boolean; results?: GameReport; message?: string }> {
   if (!positions) {
     return { success: false, message: 'Missing parameters.' };
   }

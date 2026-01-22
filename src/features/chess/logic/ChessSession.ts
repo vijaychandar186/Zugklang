@@ -8,7 +8,7 @@ import {
 export interface ChessSessionState {
   fen: string;
   moves: string[];
-  history: string[]; // FEN history
+  history: string[];
   isGameOver: boolean;
   gameResult: string | null;
   turn: 'w' | 'b';
@@ -22,7 +22,7 @@ export interface ChessSessionState {
 export class ChessSession {
   protected game: Chess;
   protected _moves: string[] = [];
-  protected _history: string[] = []; // History of FENs
+  protected _history: string[] = [];
   protected _variant: ChessVariant = 'standard';
 
   constructor(fen: string = STARTING_FEN, variant: ChessVariant = 'standard') {
@@ -79,13 +79,9 @@ export class ChessSession {
   }
 
   addMove(moveSan: string, fen: string): void {
-    // Used when synchronizing with externals or replaying
-    // Note: blindly adding might desync game state if not careful,
-    // but useful for forced updates.
     this._moves.push(moveSan);
     this._history.push(fen);
     try {
-      // We try to sync the internal game instance if possible
       this.game.load(fen);
     } catch {}
   }
@@ -113,38 +109,7 @@ export class ChessSession {
   loadPgn(pgn: string): boolean {
     const success = this.game.loadPgn(pgn);
     if (success) {
-      // Reconstruct history
-      // This is expensive but necessary if we want full history array
-      const tempGame = new Chess();
-      tempGame.loadPgn(pgn);
-      const history = tempGame.history({ verbose: true });
-
-      this._moves = [];
-      this._history = [STARTING_FEN]; // Assuming standard start for PGN usually?
-      // Actually PGN might have FEN tag.
-      // Let's use what the game loaded.
-      // But Game.loadPgn() sets state to end.
-
-      // We need to replay to get history FENs.
-      // Fortunately our custom Chess class wraps chessops which parses PGN.
-      // But to get the array of FENs we might need to replay.
-
-      // Let's rely on the fact that if we just loaded PGN,
-      // we might just want to set the current state.
-      // But useChessStore implementation replayed it.
-
-      this._moves = this.game.history(); // San strings
-      // We'll leave history reconstruction for now or implement if needed.
-      // For now, let's just sync moves.
-
-      // Re-implementing the replay logic from useChessStore:
-      const replayGame = new Chess(); // Standard start?
-      // TODO: Check if PGN has different start FEN.
-      // For now, simple implementation:
       this._moves = this.game.history();
-
-      // Correct reconstruction needs to respect Start FEN.
-      // The wrapper Chess class (lib/chess) manages this internally but doesn't expose FEN history easily.
     }
     return success;
   }

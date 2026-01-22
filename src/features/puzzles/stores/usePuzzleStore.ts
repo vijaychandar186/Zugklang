@@ -3,8 +3,7 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import { persist } from 'zustand/middleware';
-import { Chess, ChessJSMove as Move } from '@/lib/chess';
-import { STARTING_FEN } from '@/features/chess/config/constants';
+import { ChessJSMove as Move } from '@/lib/chess';
 import {
   createNavigationSlice,
   NavigationSlice,
@@ -20,12 +19,9 @@ interface PuzzleState extends NavigationSlice, BoardOrientationSlice {
   currentPuzzle: Puzzle | null;
   puzzleIndex: number;
   difficulty: PuzzleDifficulty;
-
-  // Reactive state mirrored from session
   status: PuzzleStatus;
   moves: string[];
   playerTurn: boolean;
-
   showHint: boolean;
   puzzlesSolved: number;
   puzzlesFailed: number;
@@ -53,19 +49,15 @@ export const usePuzzleStore = create<PuzzleStore>()(
         currentPuzzle: null,
         puzzleIndex: 0,
         difficulty: 'beginner',
-
         status: 'idle',
         moves: [],
         playerTurn: true,
-
-        currentFEN: session.fen, // handled by navigation slice usually, but we init here
+        currentFEN: session.fen,
         positionHistory: [session.fen],
         viewingIndex: 0,
         boardOrientation: 'white',
         boardFlipped: false,
-
         showHint: false,
-
         puzzlesSolved: 0,
         puzzlesFailed: 0,
         currentStreak: 0,
@@ -84,15 +76,12 @@ export const usePuzzleStore = create<PuzzleStore>()(
           set({
             currentPuzzle: puzzle,
             puzzleIndex: index,
-
-            // Sync from session
             currentFEN: session.fen,
             moves: [],
             positionHistory: [session.fen],
             viewingIndex: 0,
             status: session.status,
             playerTurn: session.playerTurn,
-
             boardOrientation: playerColor,
             showHint: false
           });
@@ -100,7 +89,6 @@ export const usePuzzleStore = create<PuzzleStore>()(
           setTimeout(() => {
             const { session, status, playerTurn } = get();
 
-            // Check if we need to make an opponent move (initial move)
             if (status === 'playing' && !playerTurn) {
               const move = session.makeOpponentMove();
               if (move) {
@@ -108,7 +96,7 @@ export const usePuzzleStore = create<PuzzleStore>()(
                   currentFEN: session.fen,
                   moves: [...state.moves, move.san],
                   positionHistory: [...state.positionHistory, session.fen],
-                  viewingIndex: state.positionHistory.length, // should be new length -1? session.history has it.
+                  viewingIndex: state.positionHistory.length,
                   playerTurn: session.playerTurn,
                   status: session.status
                 }));
@@ -130,7 +118,6 @@ export const usePuzzleStore = create<PuzzleStore>()(
 
           if (!move) return null;
 
-          // Update state with player move
           set((state) => {
             const newMoves = [...state.moves, move.san];
             const newHistory = [...state.positionHistory, session.fen];
@@ -167,7 +154,7 @@ export const usePuzzleStore = create<PuzzleStore>()(
                     currentFEN: currentSession.fen,
                     moves: [...s.moves, opMove.san],
                     positionHistory: [...s.positionHistory, currentSession.fen],
-                    viewingIndex: s.positionHistory.length, // which is prev length + 1
+                    viewingIndex: s.positionHistory.length,
                     playerTurn: currentSession.playerTurn,
                     status: currentSession.status
                   }));

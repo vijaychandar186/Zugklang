@@ -1,10 +1,11 @@
 'use client';
 
 import { memo, useCallback, ReactNode } from 'react';
+import type { Classification } from '@/types/classification';
 
 export type MoveData = {
   san: string;
-  classification?: string;
+  classification?: Classification;
 };
 
 export type MoveHistoryBaseProps<T> = {
@@ -111,7 +112,9 @@ function MoveHistoryBaseComponent<T>({
   emptyMessage = 'No moves yet',
   skipFirst = false
 }: MoveHistoryBaseProps<T>) {
+  const offset = skipFirst ? 1 : 0;
   const processedItems = skipFirst ? items.slice(1) : items;
+  const adjustedViewingIndex = viewingIndex - offset;
 
   if (processedItems.length === 0) {
     return (
@@ -125,6 +128,10 @@ function MoveHistoryBaseComponent<T>({
   for (let i = 0; i < processedItems.length; i += 2) {
     movePairs.push({ moveNumber: i / 2 + 1, whiteMoveIndex: i });
   }
+
+  const handleMoveClick = (idx: number) => {
+    onMoveClick(idx + offset);
+  };
 
   return (
     <ol className='space-y-1'>
@@ -142,8 +149,8 @@ function MoveHistoryBaseComponent<T>({
             whiteMove={whiteMove}
             blackMove={blackMove}
             whiteMoveIndex={whiteMoveIndex}
-            viewingIndex={viewingIndex}
-            onMoveClick={onMoveClick}
+            viewingIndex={adjustedViewingIndex}
+            onMoveClick={handleMoveClick}
             renderContent={renderMoveContent}
           />
         );

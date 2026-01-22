@@ -2,7 +2,11 @@
 
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { GameReport, Position } from '@/features/game-review/types';
+import type {
+  GameReport,
+  Position,
+  Classification
+} from '@/features/game-review/types';
 import {
   CLASSIFICATION_COLORS,
   CLASSIFICATION_ICONS
@@ -14,7 +18,7 @@ type ReviewReportProps = {
   currentMoveIndex: number;
 };
 
-const CLASSIFICATION_LABELS = [
+const CLASSIFICATION_LABELS: { key: Classification; label: string }[] = [
   { key: 'brilliant', label: 'Brilliant' },
   { key: 'great', label: 'Great' },
   { key: 'best', label: 'Best' },
@@ -147,7 +151,11 @@ export function ReviewReport({
               )}
               <span
                 className='font-bold uppercase'
-                style={{ color: CLASSIFICATION_COLORS[classification || ''] }}
+                style={{
+                  color: classification
+                    ? CLASSIFICATION_COLORS[classification]
+                    : undefined
+                }}
               >
                 {classification || 'Base Position'}
               </span>

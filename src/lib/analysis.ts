@@ -1,39 +1,14 @@
 import { Chess, Square } from '@/lib/chess';
 import type { Position } from '@/types/Position';
+import type { Classification } from '@/types/classification';
+import { CLASSIFICATION_VALUES } from '@/types/classification';
+import type { GameReport } from '@/features/game-review/types';
 import openingsData from '@/resources/openings.json';
 import {
   getWinPercentageFromEval,
   computeEstimatedEloFromPositions,
   type Evaluation
 } from './winPercentage';
-
-export enum Classification {
-  BRILLIANT = 'brilliant',
-  GREAT = 'great',
-  BEST = 'best',
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  INACCURACY = 'inaccuracy',
-  MISTAKE = 'mistake',
-  MISS = 'miss',
-  BLUNDER = 'blunder',
-  BOOK = 'book',
-  FORCED = 'forced'
-}
-
-const classificationValues: Record<string, number> = {
-  blunder: 0,
-  mistake: 0.15,
-  miss: 0.25,
-  inaccuracy: 0.35,
-  good: 0.55,
-  excellent: 0.85,
-  best: 1,
-  great: 1,
-  brilliant: 1,
-  book: 0.9,
-  forced: 1
-};
 
 const pieceValues: Record<string, number> = {
   p: 1,
@@ -54,15 +29,14 @@ function classifyByWinPercentage(
 ): Classification {
   const prevWinPct = getWinPercentageFromEval(prevEval);
   const currWinPct = getWinPercentageFromEval(currEval);
-
   const winPctDiff = (currWinPct - prevWinPct) * (isWhiteMove ? 1 : -1);
 
-  if (winPctDiff < -20) return Classification.BLUNDER;
-  if (winPctDiff < -10) return Classification.MISTAKE;
-  if (winPctDiff < -7) return Classification.MISS;
-  if (winPctDiff < -5) return Classification.INACCURACY;
-  if (winPctDiff < -2) return Classification.GOOD;
-  return Classification.EXCELLENT;
+  if (winPctDiff < -20) return 'blunder';
+  if (winPctDiff < -10) return 'mistake';
+  if (winPctDiff < -7) return 'miss';
+  if (winPctDiff < -5) return 'inaccuracy';
+  if (winPctDiff < -2) return 'good';
+  return 'excellent';
 }
 
 interface InfluencingPiece {
@@ -134,19 +108,7 @@ function isPieceHanging(lastFen: string, fen: string, square: Square): boolean {
   return false;
 }
 
-interface Report {
-  accuracies: {
-    white: number;
-    black: number;
-  };
-  estimatedElo?: {
-    white: number;
-    black: number;
-  };
-  positions: Position[];
-}
-
-async function analyse(positions: Position[]): Promise<Report> {
+async function analyse(positions: Position[]): Promise<GameReport> {
   let positionIndex = 0;
   for (const position of positions.slice(1)) {
     positionIndex++;
@@ -219,14 +181,14 @@ async function analyse(positions: Position[]): Promise<Report> {
     evalLoss = Math.min(evalLoss, cutoffEvalLoss, lastLineEvalLoss);
 
     if (!secondTopMove) {
-      position.classification = Classification.FORCED;
+      position.classification = 'forced';
       continue;
     }
 
     const noMate = previousEvaluation.type === 'cp' && evaluation.type === 'cp';
 
     if (topMove.moveUCI === position.move?.uci) {
-      position.classification = Classification.BEST;
+      position.classification = 'best';
     } else {
       const isWhiteMove = moveColour === 'white';
       position.classification = classifyByWinPercentage(
@@ -237,30 +199,30 @@ async function analyse(positions: Position[]): Promise<Report> {
 
       if (previousEvaluation.type === 'cp' && evaluation.type === 'mate') {
         if (absoluteEvaluation > 0) {
-          position.classification = Classification.BEST;
+          position.classification = 'best';
         } else if (absoluteEvaluation >= -3) {
-          position.classification = Classification.BLUNDER;
+          position.classification = 'blunder';
         } else if (absoluteEvaluation >= -8) {
-          position.classification = Classification.MISTAKE;
+          position.classification = 'mistake';
         } else {
-          position.classification = Classification.INACCURACY;
+          position.classification = 'inaccuracy';
         }
       } else if (
         previousEvaluation.type === 'mate' &&
         evaluation.type === 'cp'
       ) {
         if (previousAbsoluteEvaluation < 0 && absoluteEvaluation < 0) {
-          position.classification = Classification.BEST;
+          position.classification = 'best';
         } else if (previousAbsoluteEvaluation < 0) {
-          position.classification = Classification.BEST;
+          position.classification = 'best';
         } else if (absoluteEvaluation >= 600) {
-          position.classification = Classification.INACCURACY;
+          position.classification = 'inaccuracy';
         } else if (absoluteEvaluation >= 300) {
-          position.classification = Classification.MISTAKE;
+          position.classification = 'mistake';
         } else if (absoluteEvaluation >= 0) {
-          position.classification = Classification.BLUNDER;
+          position.classification = 'blunder';
         } else {
-          position.classification = Classification.BLUNDER;
+          position.classification = 'blunder';
         }
       } else if (
         previousEvaluation.type === 'mate' &&
@@ -268,31 +230,31 @@ async function analyse(positions: Position[]): Promise<Report> {
       ) {
         if (previousAbsoluteEvaluation > 0) {
           if (absoluteEvaluation < 0) {
-            position.classification = Classification.BLUNDER;
+            position.classification = 'blunder';
           } else if (absoluteEvaluation < previousAbsoluteEvaluation) {
-            position.classification = Classification.BEST;
+            position.classification = 'best';
           } else if (absoluteEvaluation === previousAbsoluteEvaluation) {
-            position.classification = Classification.EXCELLENT;
+            position.classification = 'excellent';
           } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 2) {
-            position.classification = Classification.GOOD;
+            position.classification = 'good';
           } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 5) {
-            position.classification = Classification.INACCURACY;
+            position.classification = 'inaccuracy';
           } else {
-            position.classification = Classification.MISTAKE;
+            position.classification = 'mistake';
           }
         } else {
           if (absoluteEvaluation === previousAbsoluteEvaluation) {
-            position.classification = Classification.BEST;
+            position.classification = 'best';
           } else if (absoluteEvaluation > previousAbsoluteEvaluation) {
-            position.classification = Classification.GOOD;
+            position.classification = 'good';
           } else {
-            position.classification = Classification.MISTAKE;
+            position.classification = 'mistake';
           }
         }
       }
     }
 
-    if (position.classification === Classification.BEST) {
+    if (position.classification === 'best') {
       const winningAnyways =
         (absoluteSecondEvaluation >= 700 && topMove.evaluation.type === 'cp') ||
         (topMove.evaluation.type === 'mate' &&
@@ -318,7 +280,7 @@ async function analyse(positions: Position[]): Promise<Report> {
               if (
                 isPieceHanging(lastPosition.fen, position.fen, piece.square)
               ) {
-                position.classification = Classification.BRILLIANT;
+                position.classification = 'brilliant';
                 sacrificedPieces.push(piece);
               }
             }
@@ -376,7 +338,9 @@ async function analyse(positions: Position[]): Promise<Report> {
                   }
 
                   captureTestBoard.undo();
-                } catch {}
+                } catch {
+                  continue;
+                }
               }
               if (anyPieceViablyCapturable) break;
             }
@@ -384,15 +348,15 @@ async function analyse(positions: Position[]): Promise<Report> {
           }
 
           if (!anyPieceViablyCapturable) {
-            position.classification = Classification.BEST;
+            position.classification = 'best';
           }
         }
       }
 
       if (
         noMate &&
-        position.classification !== Classification.BRILLIANT &&
-        lastPosition.classification === Classification.BLUNDER &&
+        position.classification !== 'brilliant' &&
+        lastPosition.classification === 'blunder' &&
         secondTopMove &&
         Math.abs(topMove.evaluation.value - secondTopMove.evaluation.value) >=
           150 &&
@@ -403,29 +367,31 @@ async function analyse(positions: Position[]): Promise<Report> {
           position.move.uci.slice(2, 4) as Square
         )
       ) {
-        position.classification = Classification.GREAT;
+        position.classification = 'great';
       }
     }
 
-    if (
-      position.classification === Classification.BLUNDER &&
-      absoluteEvaluation >= 1000
-    ) {
-      position.classification = Classification.MISTAKE;
+    if (position.classification === 'blunder' && absoluteEvaluation >= 1000) {
+      position.classification = 'mistake';
     }
 
     if (
-      position.classification === Classification.BLUNDER &&
+      position.classification === 'blunder' &&
       previousAbsoluteEvaluation <= -1000
     ) {
-      position.classification = Classification.MISTAKE;
+      position.classification = 'mistake';
     }
 
-    position.classification = position.classification ?? Classification.BOOK;
+    position.classification = position.classification ?? 'book';
+  }
+
+  interface OpeningData {
+    name: string;
+    fen: string;
   }
 
   for (const position of positions) {
-    const opening = openingsData.find((o: { name: string; fen: string }) =>
+    const opening = (openingsData as OpeningData[]).find((o) =>
       position.fen.includes(o.fen)
     );
     position.opening = opening?.name;
@@ -433,7 +399,7 @@ async function analyse(positions: Position[]): Promise<Report> {
 
   for (const position of positions.slice(1)) {
     if (position.opening) {
-      position.classification = Classification.BOOK;
+      position.classification = 'book';
     } else {
       break;
     }
@@ -473,8 +439,9 @@ async function analyse(positions: Position[]): Promise<Report> {
 
   for (const position of positions.slice(1)) {
     const moveColour = position.fen.includes(' b ') ? 'white' : 'black';
+    const classification = position.classification as Classification;
     accuracies[moveColour].current +=
-      classificationValues[position.classification!];
+      CLASSIFICATION_VALUES[classification] ?? 0;
     accuracies[moveColour].maximum++;
   }
 

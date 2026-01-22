@@ -1,3 +1,5 @@
+import type { Classification } from '@/types/classification';
+
 export interface Move {
   san: string;
   uci: string;
@@ -21,13 +23,13 @@ export interface Position {
   move?: Move;
   topLines?: EngineLine[];
   cutoffEvaluation?: Evaluation;
-  classification?: string;
+  classification?: Classification;
   opening?: string;
-  worker?: 'local' | 'cloud' | string;
+  worker?: 'local' | 'cloud';
 }
 
 export interface EvaluatedPosition extends Position {
   move: Move;
   topLines: EngineLine[];
-  worker: string;
+  worker: 'local' | 'cloud';
 }

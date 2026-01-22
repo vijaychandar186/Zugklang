@@ -42,7 +42,6 @@ export class PuzzleSession extends ChessSession {
     };
   }
 
-  // Returns the move object if successful
   makeOpponentMove(): Move | null {
     if (this.currentMoveIndex >= this.solutionMoves.length) return null;
 
@@ -72,10 +71,8 @@ export class PuzzleSession extends ChessSession {
     if (from === to) return { move: null, outcome: 'invalid' };
 
     const expectedMove = this.solutionMoves[this.currentMoveIndex];
-    // Note: promotion usually lowercase in solution strings
     const playerMoveStr = `${from}${to}${promotion || ''}`;
 
-    // We rely on super to validate legality
     const move = super.makeMove(from, to, promotion);
     if (!move) return { move: null, outcome: 'invalid' };
 
@@ -85,7 +82,7 @@ export class PuzzleSession extends ChessSession {
         this.status = 'success';
         return { move, outcome: 'success' };
       } else {
-        this.playerTurn = false; // Now opponent turn
+        this.playerTurn = false;
         return { move, outcome: 'continue' };
       }
     } else {

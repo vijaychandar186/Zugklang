@@ -67,7 +67,7 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
             currentFEN: session.fen,
             moves: [...session.moves],
             positionHistory: [...state.positionHistory, session.fen],
-            viewingIndex: state.positionHistory.length // history length increased by 1, so this points to last
+            viewingIndex: state.positionHistory.length
           }));
 
           return move;
@@ -75,7 +75,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
 
         addMove: (move, fen) => {
           const { session } = get();
-          // Attempt to sync session
           session.addMove(move, fen);
           set((state) => ({
             moves: [...state.moves, move],
@@ -93,12 +92,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
             set({
               currentFEN: session.fen,
               moves: [...session.moves],
-              // Reconstruction of full history array if needed
-              // session.history might be just [FEN] if loadPgn doesn't fill it.
-              // My ChessSession.loadPgn implementation tried to fill _moves, but history?
-              // Let's rely on standard session behavior or what we implemented.
-              // If session.history is incomplete, we might need a better impl in session.
-              // For now, let's assume session provides a reasonable state or we init history
               positionHistory:
                 session.history.length > 1 ? session.history : [session.fen],
               viewingIndex:
@@ -172,9 +165,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
           try {
             const fen = state.currentFEN || STARTING_FEN;
             state.session.loadFen(fen);
-            // Ideally we should sync history too, but rehydrating simple FEN is baseline safety.
-            // If moves exist, we could try to replay them if we derived session state from moves,
-            // but for now relying on stored props + synced FEN in session.
           } catch {
             state.session.reset();
             state.currentFEN = STARTING_FEN;

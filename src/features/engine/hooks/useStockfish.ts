@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Chess, Square } from 'chess.js';
+import { Chess, ChessJSSquare as Square } from '@/lib/chess';
 import { StockfishEngine } from '@/lib/engine';
 import { MOVE_DELAY } from '@/features/chess/config/animation';
 import { SoundType } from '@/features/game/utils/sounds';
@@ -97,9 +97,9 @@ export function useStockfish({
       }
       engine.stop();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fen is used instead of game to trigger effect since game reference doesn't change
   }, [
     fen,
+    game,
     playAs,
     gameId,
     engine,

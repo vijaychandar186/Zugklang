@@ -2,10 +2,7 @@
 
 import Image from 'next/image';
 import { useGameReviewStore } from '../stores/useGameReviewStore';
-import {
-  CLASSIFICATION_ICONS,
-  CLASSIFICATION_LABELS
-} from '../types';
+import { CLASSIFICATION_ICONS, CLASSIFICATION_LABELS } from '../types';
 
 export function MoveInfo() {
   const { report, currentMoveIndex } = useGameReviewStore();
@@ -24,8 +21,11 @@ export function MoveInfo() {
   const classification = position.classification;
   const playedMove = position.move?.san;
   const bestMoveLine = lastPosition.topLines?.[0];
-  const bestMove = bestMoveLine?.moveSAN || 
-    (bestMoveLine?.moveUCI && bestMoveLine.moveUCI.length >= 4 ? bestMoveLine.moveUCI : null);
+  const bestMove =
+    bestMoveLine?.moveSAN ||
+    (bestMoveLine?.moveUCI && bestMoveLine.moveUCI.length >= 4
+      ? bestMoveLine.moveUCI
+      : null);
 
   if (!classification || !playedMove) {
     return null;
@@ -44,7 +44,6 @@ export function MoveInfo() {
 
   return (
     <div className='flex flex-col gap-2 py-2'>
-      {/* Played move classification */}
       <div className='flex items-center gap-2'>
         {classificationIcon && (
           <Image
@@ -64,7 +63,6 @@ export function MoveInfo() {
         </span>
       </div>
 
-      {/* Best move suggestion */}
       {showBestMove && (
         <div className='flex items-center gap-2'>
           <Image

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
-import { Chess } from 'chess.js';
+import { Chess } from '@/lib/chess';
 import { STARTING_FEN, EMPTY_FEN } from '@/features/chess/config/constants';
 
 type BoardEditorStore = {
@@ -18,7 +18,6 @@ type BoardEditorStore = {
   validatePosition: () => { valid: boolean; error?: string };
 };
 
-// Helper to parse FEN and count kings
 function parseFENPosition(fen: string): string[][] {
   const position = fen.split(' ')[0];
   const rows = position.split('/');
@@ -108,7 +107,6 @@ export const useBoardEditorStore = create<BoardEditorStore>()((set, get) => ({
       };
     }
 
-    // Try to create a chess.js instance to validate the position
     try {
       new Chess(state.editorPosition);
       return { valid: true };

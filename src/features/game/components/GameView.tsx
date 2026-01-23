@@ -77,7 +77,6 @@ export function GameView({
     setMode(mode);
   }, [mode, setMode]);
 
-  // Set the game type and variant when mounting - this ensures the correct dialog shows
   useEffect(() => {
     setGameType(initialGameType);
     setVariant(variant);

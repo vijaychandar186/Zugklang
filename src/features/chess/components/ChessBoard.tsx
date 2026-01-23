@@ -39,6 +39,7 @@ export function ChessBoard({
     playAs,
     stockfishLevel,
     gameOver,
+    gameStarted,
     gameId,
     playingAgainstStockfish,
     playerColor,
@@ -111,7 +112,7 @@ export function ChessBoard({
     soundEnabled,
     makeMove,
     goToEnd,
-    isGameOver: gameOver,
+    isGameOver: gameOver || (isPlayMode && !gameStarted),
     onMoveExecuted,
     allowOpponentMoves: !stockfishEnabled,
     enablePremoves: stockfishEnabled && isPlayMode,
@@ -148,7 +149,6 @@ export function ChessBoard({
       : playAs
     : boardOrientation;
 
-  // Handle game over detection
   useEffect(() => {
     if (!isPlayMode) return;
 
@@ -182,7 +182,6 @@ export function ChessBoard({
     soundEnabled
   ]);
 
-  // Setup new game handler
   const onNewGame = useCallback(() => {
     if (soundEnabled) playSound('game-start');
     clearState();
@@ -197,11 +196,14 @@ export function ChessBoard({
     ? effectiveBoardOrientation
     : serverOrientation || 'white';
 
-  // Common board props
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
-    canDrag: isMounted && !isViewingHistory && !pendingPromotion,
+    canDrag:
+      isMounted &&
+      !isViewingHistory &&
+      !pendingPromotion &&
+      !(isPlayMode && !gameStarted),
     squareStyles: isMounted ? squareStyles : {},
     onPieceDrop: onDrop,
     onSquareClick: handleSquareClick,
@@ -209,7 +211,6 @@ export function ChessBoard({
     arrows: analysisArrows
   };
 
-  // Use initialBoard3dEnabled for SSR consistency, then fall back to store state
   const shouldShow3d = isMounted
     ? board3dEnabled
     : (initialBoard3dEnabled ?? false);
@@ -236,4 +237,3 @@ export function ChessBoard({
     </div>
   );
 }
-

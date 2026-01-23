@@ -2,7 +2,6 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
-// Lichess win percentage formula
 const MULTIPLIER = -0.00368208;
 
 export function getWinPercentageFromCp(cp: number): number {
@@ -40,8 +39,6 @@ export function getWinPercentageFromEval(evaluation: Evaluation): number {
   return getWinPercentageFromCp(evaluation.value);
 }
 
-// Move classification based on win percentage difference
-// Thresholds from Chesskit reference implementation
 export type MoveClassification =
   | 'blunder'
   | 'mistake'
@@ -70,8 +67,6 @@ export function classifyMoveByWinPercentage(
     return 'best';
   }
 
-  // Win percentage diff from the moving player's perspective
-  // Positive = good for player, negative = bad for player
   const winPercentageDiff =
     (currWinPercentage - prevWinPercentage) * (isWhiteMove ? 1 : -1);
 
@@ -83,7 +78,6 @@ export function classifyMoveByWinPercentage(
   return 'excellent';
 }
 
-// Accuracy calculation using harmonic mean of move scores
 const CLASSIFICATION_SCORES: Record<MoveClassification, number> = {
   blunder: 0,
   mistake: 0.15,
@@ -114,22 +108,9 @@ export function calculateAccuracy(
   return (sum / classifications.length) * 100;
 }
 
-// Estimated Elo calculation based on average centipawn loss
-// Reference: Lichess uses ACPL to estimate playing strength
-// Note: This is a rough estimate - higher ACPL = lower rating
-
 export function getEloFromAverageCpl(averageCpl: number): number {
-  // - CPL 0 = ~2800 (perfect play)
-  // - CPL 10 = ~2400 (GM level)
-  // - CPL 25 = ~2000 (Expert level)
-  // - CPL 50 = ~1500 (Club level)
-  // - CPL 100 = ~1000 (Beginner)
-  // - CPL 200+ = ~600 (Very beginner)
-
-  // Clamp CPL to reasonable range
   const clampedCpl = Math.max(0, Math.min(300, averageCpl));
 
-  // Exponential decay from ~2800 to ~500
   const baseElo = 2800;
   const minElo = 500;
   const decayFactor = 0.015;
@@ -139,7 +120,6 @@ export function getEloFromAverageCpl(averageCpl: number): number {
 }
 
 export function getAverageCplFromElo(elo: number): number {
-  // Inverse of the above formula
   const clampedElo = Math.max(500, Math.min(2800, elo));
   return -Math.log((clampedElo - 500) / 2300) / 0.015;
 }
@@ -149,8 +129,6 @@ export interface PositionEvaluation {
   fen: string;
 }
 
-// Calculate estimated Elo from actual position evaluations
-// This uses the actual centipawn values, not win percentages
 export function computeEstimatedEloFromPositions(
   positions: Array<{
     topLines?: Array<{ evaluation: Evaluation }>;
@@ -175,12 +153,8 @@ export function computeEstimatedEloFromPositions(
 
     if (!prevEval || !currEval) continue;
 
-    // Determine who moved (position i contains the FEN AFTER the move)
-    // A FEN with ' b ' means it's Black's turn, so the previous move was by White.
-    // A FEN with ' w ' means it's White's turn, so the previous move was by Black.
     const isWhiteMove = currPos.fen.includes(' b ');
 
-    // Get centipawn values (mate is treated as winning by a lot)
     const prevCp =
       prevEval.type === 'mate'
         ? prevEval.value > 0
@@ -194,20 +168,13 @@ export function computeEstimatedEloFromPositions(
           : -10000
         : currEval.value;
 
-    // Calculate centipawn loss from the moving player's perspective
-    // Positive = player lost advantage, negative = player gained advantage
     let cpl: number;
     if (isWhiteMove) {
-      // White moved, so we compare from White's perspective
-      // Loss = what we had - what we have now
       cpl = prevCp - currCp;
     } else {
-      // Black moved, perspective is inverted
       cpl = currCp - prevCp;
     }
 
-    // Only count actual losses (positive CPL)
-    // Clamp to avoid extreme values skewing the average
     const clampedCpl = Math.max(0, Math.min(cpl, 500));
 
     if (isWhiteMove) {

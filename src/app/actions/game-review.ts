@@ -1,20 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { Chess } from 'chess.js';
-import { Position } from '@/types/Position';
+'use server';
+
+import { Chess } from '@/lib/chess';
+import type { Position, GameReport } from '@/features/game-review/types';
+import analyse from '@/lib/analysis';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 function detectInputType(input: string): 'pgn' | 'fen' | 'moves' {
   const trimmed = input.trim();
 
-  // Check if it looks like a FEN (contains forward slashes in a specific pattern)
   const fenPattern =
     /^[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+/;
   if (fenPattern.test(trimmed)) {
     return 'fen';
   }
 
-  // Check if it has PGN headers (like [Event "..."])
   if (
     trimmed.includes('[Event ') ||
     trimmed.includes('[White ') ||
@@ -23,23 +23,20 @@ function detectInputType(input: string): 'pgn' | 'fen' | 'moves' {
     return 'pgn';
   }
 
-  // Check if it has move numbers like "1. e4" or "1.e4"
   if (/\d+\./.test(trimmed)) {
     return 'pgn';
   }
 
-  // Otherwise treat as simple move list
   return 'moves';
 }
 
 function parseMoveList(input: string, board: Chess): Position[] {
   const positions: Position[] = [{ fen: board.fen() }];
 
-  // Clean up: remove move numbers, extra whitespace, result indicators
   const cleaned = input
-    .replace(/\d+\.\s*/g, '') // Remove move numbers
-    .replace(/\s+/g, ' ') // Normalize whitespace
-    .replace(/1-0|0-1|1\/2-1\/2|\*/g, '') // Remove game results
+    .replace(/\d+\.\s*/g, '')
+    .replace(/\s+/g, ' ')
+    .replace(/1-0|0-1|1\/2-1\/2|\*/g, '')
     .trim();
 
   const moves = cleaned.split(' ').filter((m) => m.length > 0);
@@ -58,7 +55,6 @@ function parseMoveList(input: string, board: Chess): Position[] {
         });
       }
     } catch {
-      // Skip invalid moves
       continue;
     }
   }
@@ -66,39 +62,32 @@ function parseMoveList(input: string, board: Chess): Position[] {
   return positions;
 }
 
-export async function POST(req: NextRequest) {
+export async function parseGameInput(
+  gameInput: string
+): Promise<{ success: boolean; positions?: Position[]; message?: string }> {
+  if (!gameInput || typeof gameInput !== 'string' || !gameInput.trim()) {
+    return {
+      success: false,
+      message: 'Enter a PGN, FEN, or moves to analyse.'
+    };
+  }
+
   try {
-    const body = await req.json();
-    const { input: gameInput } = body;
-
-    if (!gameInput || typeof gameInput !== 'string' || !gameInput.trim()) {
-      return NextResponse.json(
-        { message: 'Enter a PGN, FEN, or moves to analyse.' },
-        { status: 400 }
-      );
-    }
-
     const inputType = detectInputType(gameInput);
     const board = new Chess();
     let positions: Position[] = [];
 
     if (inputType === 'fen') {
-      // Parse as FEN - just return single position
       try {
         board.load(gameInput.trim().split('\n')[0].trim());
         positions = [{ fen: board.fen() }];
       } catch {
-        return NextResponse.json(
-          { message: 'Invalid FEN position.' },
-          { status: 400 }
-        );
+        return { success: false, message: 'Invalid FEN position.' };
       }
     } else if (inputType === 'pgn') {
-      // Parse as PGN using chess.js built-in parser
       try {
         board.loadPgn(gameInput);
 
-        // Rebuild positions from move history
         const history = board.history({ verbose: true });
         const tempBoard = new Chess();
         positions = [{ fen: STARTING_FEN }];
@@ -115,32 +104,45 @@ export async function POST(req: NextRequest) {
           });
         }
       } catch {
-        return NextResponse.json(
-          { message: 'Failed to parse PGN. Check format and try again.' },
-          { status: 400 }
-        );
+        return {
+          success: false,
+          message: 'Failed to parse PGN. Check format and try again.'
+        };
       }
     } else {
-      // Parse as simple move list
       positions = parseMoveList(gameInput, board);
 
       if (positions.length <= 1) {
-        return NextResponse.json(
-          {
-            message:
-              'No valid moves found. Enter moves in standard notation (e.g., e4 e5 Nf3).'
-          },
-          { status: 400 }
-        );
+        return {
+          success: false,
+          message:
+            'No valid moves found. Enter moves in standard notation (e.g., e4 e5 Nf3).'
+        };
       }
     }
 
-    return NextResponse.json({ positions });
+    return { success: true, positions };
   } catch (error) {
     console.error('Parse error:', error);
-    return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 }
-    );
+    return {
+      success: false,
+      message: 'Internal server error while parsing game.'
+    };
+  }
+}
+
+export async function generateGameReport(
+  positions: Position[]
+): Promise<{ success: boolean; results?: GameReport; message?: string }> {
+  if (!positions) {
+    return { success: false, message: 'Missing parameters.' };
+  }
+
+  try {
+    const results = await analyse(positions);
+    return { success: true, results };
+  } catch (err) {
+    console.error(err);
+    return { success: false, message: 'Failed to generate report.' };
   }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect } from 'react';
+import { toast } from 'sonner';
 
 export type UseClipboardOptions = {
   resetDelay?: number;
@@ -32,6 +33,52 @@ export function useClipboard({ resetDelay = 2000 }: UseClipboardOptions = {}) {
     copy,
     isCopied,
     copiedKey
+  };
+}
+
+export interface UseChessClipboardOptions {
+  getFEN: () => string;
+  getPGN: () => string;
+  getMoves?: () => string;
+}
+
+export interface UseChessClipboardReturn {
+  copyFEN: () => void;
+  copyPGN: () => void;
+  copyMoves: () => void;
+}
+
+export function useChessClipboard({
+  getFEN,
+  getPGN,
+  getMoves
+}: UseChessClipboardOptions): UseChessClipboardReturn {
+  const copyFEN = useCallback(() => {
+    const fen = getFEN();
+    navigator.clipboard.writeText(fen);
+    toast.success('FEN copied');
+  }, [getFEN]);
+
+  const copyPGN = useCallback(() => {
+    const pgn = getPGN();
+    navigator.clipboard.writeText(pgn || '[No moves]');
+    toast.success('PGN copied');
+  }, [getPGN]);
+
+  const copyMoves = useCallback(() => {
+    if (!getMoves) {
+      toast.error('No moves to copy');
+      return;
+    }
+    const moves = getMoves();
+    navigator.clipboard.writeText(moves || 'No moves');
+    toast.success('Moves copied');
+  }, [getMoves]);
+
+  return {
+    copyFEN,
+    copyPGN,
+    copyMoves
   };
 }
 

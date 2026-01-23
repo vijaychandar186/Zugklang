@@ -38,7 +38,6 @@ export function useGameView() {
     boardOrientation === 'white' ? 'black' : 'white';
   const bottomColor: 'white' | 'black' = boardOrientation;
 
-  // In local games, neither player is Stockfish
   const isTopStockfish = isLocalGame ? false : topColor !== playAs;
   const isBottomStockfish = isLocalGame ? false : bottomColor !== playAs;
 

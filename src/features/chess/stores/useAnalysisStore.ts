@@ -148,7 +148,6 @@ export const useAnalysisStore = create<AnalysisStore>()(
         }
 
         try {
-          // Use WASM version for better performance if supported
           const stockfishPath =
             typeof WebAssembly === 'object'
               ? '/stockfish/stockfish.wasm.js'
@@ -365,7 +364,6 @@ export const useAnalysisStore = create<AnalysisStore>()(
                 turn === 'w'
                   ? (['white', 'black'] as const)
                   : (['black', 'white'] as const);
-              // When mate=0, the side to move is checkmated, so opponent wins
               const advantage: Advantage =
                 mate === 0
                   ? opponentColor

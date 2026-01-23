@@ -2,7 +2,6 @@
 
 import { SparePiece } from 'react-chessboard';
 
-// Piece types for spare pieces
 const BLACK_PIECE_TYPES = ['bK', 'bQ', 'bR', 'bB', 'bN', 'bP'];
 const WHITE_PIECE_TYPES = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP'];
 
@@ -10,14 +9,9 @@ interface SparePiecePaletteProps {
   orientation?: 'white' | 'black';
 }
 
-/**
- * Spare piece palette for the sidebar.
- * IMPORTANT: This component must be rendered inside a ChessboardProvider to work.
- */
 export function SparePiecePalette({
   orientation = 'white'
 }: SparePiecePaletteProps) {
-  // Order pieces based on board orientation
   const topPieces =
     orientation === 'white' ? WHITE_PIECE_TYPES : BLACK_PIECE_TYPES;
   const bottomPieces =

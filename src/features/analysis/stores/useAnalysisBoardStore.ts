@@ -1,11 +1,7 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import { persist } from 'zustand/middleware';
-import {
-  Chess,
-  ChessJSSquare as Square,
-  ChessJSMove as Move
-} from '@/lib/chess';
+import { ChessJSMove as Move } from '@/lib/chess';
 import { createModeStorage } from '@/features/chess/stores/gameStorage';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import {

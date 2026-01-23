@@ -115,7 +115,6 @@ export function EvaluationGraph({
       onMouseLeave={() => setHoverIndex(null)}
       onClick={() => hoverIndex !== null && onMoveClick?.(hoverIndex)}
     >
-      {}
       <div className='absolute inset-0 grid grid-rows-2'>
         <div className='bg-muted' />
         <div className='bg-background' />
@@ -126,7 +125,6 @@ export function EvaluationGraph({
         viewBox='-2 -2 104 104'
         preserveAspectRatio='none'
       >
-        {}
         <line
           x1='0'
           y1='50'
@@ -137,14 +135,12 @@ export function EvaluationGraph({
           vectorEffect='non-scaling-stroke'
         />
 
-        {}
         <path
           d={graph.fill}
           className='fill-background/70'
           vectorEffect='non-scaling-stroke'
         />
 
-        {}
         <path
           d={graph.d}
           fill='none'
@@ -153,7 +149,6 @@ export function EvaluationGraph({
           vectorEffect='non-scaling-stroke'
         />
 
-        {}
         <line
           x1={(currentMoveIndex / Math.max(totalMoves - 1, 1)) * 100}
           y1='0'
@@ -164,7 +159,6 @@ export function EvaluationGraph({
           vectorEffect='non-scaling-stroke'
         />
 
-        {}
         {hoverIndex !== null && graph.points[hoverIndex] && (
           <>
             <line

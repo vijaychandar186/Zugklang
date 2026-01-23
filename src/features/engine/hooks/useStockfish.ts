@@ -99,6 +99,7 @@ export function useStockfish({
     };
   }, [
     fen,
+    game,
     playAs,
     gameId,
     engine,

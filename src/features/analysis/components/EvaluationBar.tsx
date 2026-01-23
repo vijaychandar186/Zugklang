@@ -82,7 +82,6 @@ export function EvaluationBar({
         className
       )}
     >
-      {}
       <div
         className='relative transition-all duration-500 ease-out'
         style={{
@@ -100,7 +99,6 @@ export function EvaluationBar({
         )}
       </div>
 
-      {}
       <div
         className='relative transition-all duration-500 ease-out'
         style={{

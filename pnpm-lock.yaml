@@ -53,9 +53,9 @@ importers:
       '@radix-ui/react-tooltip':
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      chess.js:
-        specifier: ^1.4.0
-        version: 1.4.0
+      chessops:
+        specifier: ^0.15.0
+        version: 0.15.0
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -145,6 +145,10 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
+
+  '@badrap/result@0.3.1':
+    resolution: {integrity: sha512-ECvpsyZYknoRD0peG1K+UkX5llld3TyK1Ot9Cq2epSoWK19nyzpGKVl98sadSmohu5wHNuiDl+Ex9SVdcIjiFg==}
+    engines: {node: '>= 22'}
 
   '@dnd-kit/accessibility@3.1.1':
     resolution: {integrity: sha512-2P+YgaXF+gRsIihwwY1gCsQSYnu9Zyj2py8kY5fFvUM1qm2WA2u639R6YNVfU4GWr+ZM5mqEsfHZZLoRONbemw==}
@@ -1380,8 +1384,8 @@ packages:
     resolution: {integrity: sha512-zgVZuo2WcZgfUEmsn6eO3kINexW8RAE4maiQ8QNs8CtpPCSyMiYsULR3HQYkm3w8FIA3SberyMJMSldGsW+U3w==}
     engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
 
-  chess.js@1.4.0:
-    resolution: {integrity: sha512-BBJgrrtKQOzFLonR0l+k64A98NLemPwNsCskwb+29bRwobUa4iTm51E1kwGPbWXAcfdDa18nad6vpPPKPWarqw==}
+  chessops@0.15.0:
+    resolution: {integrity: sha512-4Ps0O8/UO09tDGbze1mMilUSMZjVYMFtQvrhlCQV385cO0BgdUPUZsq/r1Qrf6UQ4J0i7XcMbRRvFRKu+Ith1w==}
 
   chownr@3.0.0:
     resolution: {integrity: sha512-+IxzY9BZOQd/XuYPRmrvEVjF/nqj5kgT4kEq7VofrDoM1MxoRjEWkrCC3EtLi59TVawxTAn+orJwFQcrqEN1+g==}
@@ -2774,6 +2778,8 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.12
       '@jridgewell/trace-mapping': 0.3.29
 
+  '@badrap/result@0.3.1': {}
+
   '@dnd-kit/accessibility@3.1.1(react@19.1.0)':
     dependencies:
       react: 19.1.0
@@ -3987,7 +3993,9 @@ snapshots:
 
   chalk@5.4.1: {}
 
-  chess.js@1.4.0: {}
+  chessops@0.15.0:
+    dependencies:
+      '@badrap/result': 0.3.1
 
   chownr@3.0.0: {}
 

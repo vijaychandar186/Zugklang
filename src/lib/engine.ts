@@ -1,4 +1,3 @@
-// Use WebAssembly version if available for better performance
 const getStockfishPath = () => {
   const supportsWasm = typeof WebAssembly === 'object';
   return supportsWasm

@@ -2,7 +2,11 @@
 
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import type { GameReport, Position } from '@/features/game-review/types';
+import type {
+  GameReport,
+  Position,
+  Classification
+} from '@/features/game-review/types';
 import {
   CLASSIFICATION_COLORS,
   CLASSIFICATION_ICONS
@@ -14,7 +18,7 @@ type ReviewReportProps = {
   currentMoveIndex: number;
 };
 
-const CLASSIFICATION_LABELS = [
+const CLASSIFICATION_LABELS: { key: Classification; label: string }[] = [
   { key: 'brilliant', label: 'Brilliant' },
   { key: 'great', label: 'Great' },
   { key: 'best', label: 'Best' },
@@ -34,7 +38,6 @@ export function ReviewReport({
 }: ReviewReportProps) {
   const classification = currentPosition?.classification;
 
-  // Get the best move from the PREVIOUS position (what should have been played)
   const previousPosition =
     currentMoveIndex > 0 ? report.positions[currentMoveIndex - 1] : undefined;
   const bestMoveLine = previousPosition?.topLines?.find((l) => l.id === 1);
@@ -45,7 +48,6 @@ export function ReviewReport({
         <CardTitle>Accuracies</CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
-        {/* Accuracy scores */}
         <div className='flex justify-around'>
           <div className='text-center'>
             <div className='text-3xl font-bold'>
@@ -65,7 +67,6 @@ export function ReviewReport({
           </div>
         </div>
 
-        {/* Estimated Elo */}
         {report.estimatedElo && (
           <div className='border-t pt-3'>
             <div className='text-muted-foreground mb-2 text-center text-xs uppercase'>
@@ -86,7 +87,6 @@ export function ReviewReport({
           </div>
         )}
 
-        {/* Classification breakdown */}
         <div className='border-t pt-3'>
           <table className='w-full text-sm'>
             <thead>
@@ -134,7 +134,6 @@ export function ReviewReport({
           </table>
         </div>
 
-        {/* Current position details */}
         {currentPosition && (
           <div className='space-y-3 border-t pt-3'>
             <div className='flex items-center gap-2'>
@@ -148,7 +147,11 @@ export function ReviewReport({
               )}
               <span
                 className='font-bold uppercase'
-                style={{ color: CLASSIFICATION_COLORS[classification || ''] }}
+                style={{
+                  color: classification
+                    ? CLASSIFICATION_COLORS[classification]
+                    : undefined
+                }}
               >
                 {classification || 'Base Position'}
               </span>
@@ -166,8 +169,8 @@ export function ReviewReport({
               classification !== 'forced' &&
               classification !== 'brilliant' &&
               classification !== 'great' &&
-              // Only show if we have a valid move string
-              (bestMoveLine.moveSAN || (bestMoveLine.moveUCI && bestMoveLine.moveUCI.length >= 4)) && (
+              (bestMoveLine.moveSAN ||
+                (bestMoveLine.moveUCI && bestMoveLine.moveUCI.length >= 4)) && (
                 <div className='flex items-center gap-2 text-sm'>
                   <Image
                     src={CLASSIFICATION_ICONS.best}
@@ -189,10 +192,12 @@ export function ReviewReport({
                 <div className='space-y-1'>
                   <div className='text-sm font-medium'>Engine Lines</div>
                   {currentPosition.topLines.map((line, i) => {
-                    // Determine the move to display
-                    const moveText = line.moveSAN || 
-                      (line.moveUCI && line.moveUCI.length >= 4 ? line.moveUCI : null);
-                    
+                    const moveText =
+                      line.moveSAN ||
+                      (line.moveUCI && line.moveUCI.length >= 4
+                        ? line.moveUCI
+                        : null);
+
                     return (
                       <div
                         key={i}
@@ -202,8 +207,8 @@ export function ReviewReport({
                         <span
                           className={
                             line.evaluation.value >= 0
-                              ? 'text-green-500'
-                              : 'text-red-500'
+                              ? '[color:var(--success)]'
+                              : 'text-destructive'
                           }
                         >
                           {line.evaluation.type === 'mate'

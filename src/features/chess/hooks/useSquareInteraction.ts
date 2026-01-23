@@ -80,7 +80,7 @@ export function useSquareInteraction(
   }, []);
 
   const squareStyles = useMemo<SquareStyles>(() => {
-    const styles: Record<string, CSSProperties> = {
+    const styles: SquareStyles = {
       ...additionalStyles,
       ...rightClickSquares
     };
@@ -114,7 +114,7 @@ export function getMoveOptionStyles(
   moves: Array<{ to: string; captured?: string }>,
   selectedSquare: string
 ): SquareStyles {
-  const styles: Record<string, CSSProperties> = {};
+  const styles: SquareStyles = {};
 
   moves.forEach((move) => {
     const isCapture = !!move.captured;

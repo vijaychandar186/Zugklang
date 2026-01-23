@@ -93,7 +93,6 @@ export function AnalysisChessBoard() {
 
   const resolvedOrientation = isMounted ? boardOrientation : 'white';
 
-  // Common board props
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
@@ -127,4 +126,3 @@ export function AnalysisChessBoard() {
     </div>
   );
 }
-

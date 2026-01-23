@@ -1,14 +1,15 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import { persist } from 'zustand/middleware';
-import { Chess, Square, Move } from 'chess.js';
+import {
+  Chess,
+  ChessJSSquare as Square,
+  ChessJSMove as Move
+} from '@/lib/chess';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
 import { STARTING_FEN } from '@/features/chess/config/constants';
-import {
-  COOKIE_CONFIG,
-  BOARD_3D_ENABLED_COOKIE
-} from '@/features/chess/config/board';
+import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
 import { TimeControl } from '@/features/game/types/rules';
 import {
   createMultiModeStorage,
@@ -19,12 +20,20 @@ import {
   ChessVariant,
   generateRandomChess960FEN
 } from '@/features/chess/utils/chess960';
+import {
+  createNavigationSlice,
+  NavigationSlice,
+  createBoardOrientationSlice,
+  BoardOrientationSlice
+} from './slices';
+import { setCookie, getBooleanCookie } from '@/lib/settings';
+import { initializeTimers, hasTimer, getIncrement } from '@/lib/timeControl';
+import * as gameLoader from '@/lib/gameLoader';
 
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
 const PLAY_AS_COOKIE = 'playAs';
 
-// Play modes handled by this store (add new modes here)
 type PlayMode = 'computer' | 'local';
 
 type PersistedPlayState = {
@@ -46,93 +55,56 @@ type PersistedPlayState = {
   lastActiveTimestamp: number | null;
   boardOrientation: 'white' | 'black';
   autoFlipBoard: boolean;
+  variant: ChessVariant;
 };
 
 export type ChessMode = 'play' | 'analysis';
 export type GameType = 'computer' | 'local';
 
-function getCookie(name: string): string | null {
-  if (typeof document === 'undefined') return null;
-  const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-  return match ? match[1] : null;
-}
-
-function setCookie(name: string, value: string) {
-  document.cookie = `${name}=${value};path=/;max-age=${COOKIE_CONFIG.maxAge}`;
-}
-
 function getInitialSoundEnabled(): boolean {
-  if (typeof document === 'undefined') return true;
-  const value = getCookie(SOUND_ENABLED_COOKIE);
-  return value !== 'false';
+  return getBooleanCookie(SOUND_ENABLED_COOKIE, true);
 }
 
 function getInitialBoard3dEnabled(): boolean {
-  if (typeof document === 'undefined') return false;
-  const value = getCookie(BOARD_3D_ENABLED_COOKIE);
-  return value === 'true';
+  return getBooleanCookie(BOARD_3D_ENABLED_COOKIE, false);
 }
 
-type ChessStore = {
+interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   mode: ChessMode;
   gameType: GameType;
   hasHydrated: boolean;
-
   game: Chess;
-  currentFEN: string;
   moves: string[];
-  positionHistory: string[];
-  viewingIndex: number;
-  boardOrientation: 'white' | 'black';
-
   playAs: 'white' | 'black';
   stockfishLevel: number;
   gameOver: boolean;
   gameResult: string | null;
   gameStarted: boolean;
   gameId: number;
-
   timeControl: TimeControl;
   whiteTime: number | null;
   blackTime: number | null;
   activeTimer: 'white' | 'black' | null;
   lastActiveTimestamp: number | null;
-
   playingAgainstStockfish: boolean;
   playerColor: 'white' | 'black';
-
   boardThemeName: BoardThemeName;
   soundEnabled: boolean;
   board3dEnabled: boolean;
-  boardFlipped: boolean;
   autoFlipBoard: boolean;
   fullscreenEnabled: boolean;
   variant: ChessVariant;
-
   onNewGame: () => void;
-
   setMode: (mode: ChessMode) => void;
-
   setBoardTheme: (name: BoardThemeName) => void;
   setSoundEnabled: (enabled: boolean) => void;
   setBoard3dEnabled: (enabled: boolean) => void;
   setFullscreenEnabled: (enabled: boolean) => void;
-  flipBoard: () => void;
-  toggleBoardOrientation: () => void;
-
   addMove: (move: string, fen: string) => void;
   makeMove: (from: string, to: string, promotion?: string) => Move | null;
   setMoves: (moves: string[]) => void;
   setCurrentFEN: (fen: string) => void;
   setOnNewGame: (onNewGame: () => void) => void;
-
-  goToStart: () => void;
-  goToEnd: () => void;
-  goToPrev: () => void;
-  goToNext: () => void;
-  goToMove: (moveIndex: number) => void;
-  isViewingHistory: () => boolean;
-
   setGameResult: (result: string | null) => void;
   setGameOver: (gameOver: boolean) => void;
   setGameStarted: (started: boolean) => void;
@@ -148,18 +120,22 @@ type ChessStore = {
   setGameType: (gameType: GameType) => void;
   setAutoFlipBoard: (enabled: boolean) => void;
   setVariant: (variant: ChessVariant) => void;
-
   setTimeControl: (timeControl: TimeControl) => void;
   tickTimer: (color: 'white' | 'black') => void;
   switchTimer: (toColor: 'white' | 'black') => void;
   stopTimer: () => void;
   onTimeout: (color: 'white' | 'black') => void;
-
   loadPGN: (pgn: string) => boolean;
   loadFEN: (fen: string) => boolean;
   resetToStarting: () => void;
   startPlayingFromPosition: (color: 'white' | 'black', level?: number) => void;
   stopPlayingFromPosition: () => void;
+}
+
+const DEFAULT_TIME_CONTROL: TimeControl = {
+  mode: 'unlimited',
+  minutes: 0,
+  increment: 0
 };
 
 export const useChessStore = create<ChessStore>()(
@@ -168,38 +144,32 @@ export const useChessStore = create<ChessStore>()(
       mode: 'play',
       gameType: 'computer' as GameType,
       hasHydrated: false,
-
       game: new Chess(),
       currentFEN: STARTING_FEN,
       moves: [],
       positionHistory: [STARTING_FEN],
       viewingIndex: 0,
       boardOrientation: 'white',
-
+      boardFlipped: false,
       playAs: 'white',
       stockfishLevel: 10,
       gameOver: false,
       gameResult: null,
       gameStarted: false,
       gameId: 0,
-
-      timeControl: { mode: 'unlimited', minutes: 0, increment: 0 },
+      timeControl: DEFAULT_TIME_CONTROL,
       whiteTime: null,
       blackTime: null,
       activeTimer: null,
       lastActiveTimestamp: null,
-
       playingAgainstStockfish: false,
       playerColor: 'white',
-
       boardThemeName: DEFAULT_BOARD_THEME,
       soundEnabled: getInitialSoundEnabled(),
       board3dEnabled: getInitialBoard3dEnabled(),
-      boardFlipped: false,
       autoFlipBoard: false,
       fullscreenEnabled: false,
       variant: 'standard' as ChessVariant,
-
       onNewGame: () => {},
 
       setMode: (mode) => {
@@ -212,10 +182,7 @@ export const useChessStore = create<ChessStore>()(
             activeTimer: null
           });
         } else {
-          set({
-            mode,
-            playingAgainstStockfish: false
-          });
+          set({ mode, playingAgainstStockfish: false });
         }
       },
 
@@ -234,18 +201,9 @@ export const useChessStore = create<ChessStore>()(
         set({ board3dEnabled: enabled });
       },
 
-      setFullscreenEnabled: (enabled) => {
-        set({ fullscreenEnabled: enabled });
-      },
+      setFullscreenEnabled: (enabled) => set({ fullscreenEnabled: enabled }),
 
-      flipBoard: () => set((state) => ({ boardFlipped: !state.boardFlipped })),
-
-      toggleBoardOrientation: () => {
-        set((state) => ({
-          boardOrientation:
-            state.boardOrientation === 'white' ? 'black' : 'white'
-        }));
-      },
+      ...createBoardOrientationSlice(set),
 
       addMove: (move, fen) =>
         set((state) => ({
@@ -283,56 +241,7 @@ export const useChessStore = create<ChessStore>()(
       setCurrentFEN: (fen) => set({ currentFEN: fen }),
       setOnNewGame: (onNewGame) => set({ onNewGame }),
 
-      goToStart: () =>
-        set((state) => ({
-          viewingIndex: 0,
-          currentFEN: state.positionHistory[0]
-        })),
-
-      goToEnd: () =>
-        set((state) => ({
-          viewingIndex: state.positionHistory.length - 1,
-          currentFEN: state.positionHistory[state.positionHistory.length - 1]
-        })),
-
-      goToPrev: () =>
-        set((state) => {
-          const newIndex = Math.max(0, state.viewingIndex - 1);
-          return {
-            viewingIndex: newIndex,
-            currentFEN: state.positionHistory[newIndex]
-          };
-        }),
-
-      goToNext: () =>
-        set((state) => {
-          const newIndex = Math.min(
-            state.positionHistory.length - 1,
-            state.viewingIndex + 1
-          );
-          return {
-            viewingIndex: newIndex,
-            currentFEN: state.positionHistory[newIndex]
-          };
-        }),
-
-      goToMove: (moveIndex) =>
-        set((state) => {
-          const positionIndex = moveIndex + 1;
-          const clampedIndex = Math.min(
-            Math.max(0, positionIndex),
-            state.positionHistory.length - 1
-          );
-          return {
-            viewingIndex: clampedIndex,
-            currentFEN: state.positionHistory[clampedIndex]
-          };
-        }),
-
-      isViewingHistory: () => {
-        const state = get();
-        return state.viewingIndex < state.positionHistory.length - 1;
-      },
+      ...createNavigationSlice(set, get),
 
       setGameResult: (result) => set({ gameResult: result }),
       setGameOver: (gameOver) =>
@@ -345,32 +254,14 @@ export const useChessStore = create<ChessStore>()(
         set({ playAs: color });
       },
 
-      startGame: (
-        level,
-        color,
-        timeControl = { mode: 'unlimited', minutes: 0, increment: 0 }
-      ) => {
+      startGame: (level, color, timeControl = DEFAULT_TIME_CONTROL) => {
         setCookie(PLAY_AS_COOKIE, color);
-
-        let whiteInitialTime: number | null = null;
-        let blackInitialTime: number | null = null;
-
-        if (timeControl.mode === 'timed') {
-          whiteInitialTime = timeControl.minutes * 60;
-          blackInitialTime = timeControl.minutes * 60;
-        } else if (timeControl.mode === 'custom') {
-          whiteInitialTime = (timeControl.whiteMinutes ?? 10) * 60;
-          blackInitialTime = (timeControl.blackMinutes ?? 10) * 60;
-        }
-
-        const hasTimer = timeControl.mode !== 'unlimited';
+        const timers = initializeTimers(timeControl);
         const state = get();
-        
-        // Generate starting FEN based on variant
-        const startingFEN = state.variant === 'fischerRandom' 
-          ? generateRandomChess960FEN() 
-          : STARTING_FEN;
-        
+        const startingFEN =
+          state.variant === 'fischerRandom'
+            ? generateRandomChess960FEN()
+            : STARTING_FEN;
         const newGame = new Chess(startingFEN);
 
         set({
@@ -390,36 +281,21 @@ export const useChessStore = create<ChessStore>()(
           currentFEN: startingFEN,
           gameId: state.gameId + 1,
           timeControl,
-          whiteTime: whiteInitialTime,
-          blackTime: blackInitialTime,
-          activeTimer: hasTimer ? 'white' : null,
-          lastActiveTimestamp: hasTimer ? Date.now() : null,
+          whiteTime: timers.whiteTime,
+          blackTime: timers.blackTime,
+          activeTimer: hasTimer(timeControl) ? 'white' : null,
+          lastActiveTimestamp: hasTimer(timeControl) ? Date.now() : null,
           playingAgainstStockfish: false
         });
       },
 
-      startLocalGame: (
-        timeControl = { mode: 'unlimited', minutes: 0, increment: 0 }
-      ) => {
-        let whiteInitialTime: number | null = null;
-        let blackInitialTime: number | null = null;
-
-        if (timeControl.mode === 'timed') {
-          whiteInitialTime = timeControl.minutes * 60;
-          blackInitialTime = timeControl.minutes * 60;
-        } else if (timeControl.mode === 'custom') {
-          whiteInitialTime = (timeControl.whiteMinutes ?? 10) * 60;
-          blackInitialTime = (timeControl.blackMinutes ?? 10) * 60;
-        }
-
-        const hasTimer = timeControl.mode !== 'unlimited';
+      startLocalGame: (timeControl = DEFAULT_TIME_CONTROL) => {
+        const timers = initializeTimers(timeControl);
         const state = get();
-        
-        // Generate starting FEN based on variant
-        const startingFEN = state.variant === 'fischerRandom' 
-          ? generateRandomChess960FEN() 
-          : STARTING_FEN;
-        
+        const startingFEN =
+          state.variant === 'fischerRandom'
+            ? generateRandomChess960FEN()
+            : STARTING_FEN;
         const newGame = new Chess(startingFEN);
 
         set({
@@ -428,7 +304,7 @@ export const useChessStore = create<ChessStore>()(
           game: newGame,
           playAs: 'white',
           boardFlipped: false,
-          boardOrientation: state.autoFlipBoard ? 'white' : 'white',
+          boardOrientation: 'white',
           gameStarted: true,
           gameOver: false,
           moves: [],
@@ -438,10 +314,10 @@ export const useChessStore = create<ChessStore>()(
           currentFEN: startingFEN,
           gameId: state.gameId + 1,
           timeControl,
-          whiteTime: whiteInitialTime,
-          blackTime: blackInitialTime,
-          activeTimer: hasTimer ? 'white' : null,
-          lastActiveTimestamp: hasTimer ? Date.now() : null,
+          whiteTime: timers.whiteTime,
+          blackTime: timers.blackTime,
+          activeTimer: hasTimer(timeControl) ? 'white' : null,
+          lastActiveTimestamp: hasTimer(timeControl) ? Date.now() : null,
           playingAgainstStockfish: false
         });
       },
@@ -450,9 +326,7 @@ export const useChessStore = create<ChessStore>()(
         const state = get();
         const oldGameType = state.gameType;
 
-        // If switching game types, save current state to old storage and load from new storage
         if (oldGameType !== newGameType) {
-          // Save current state to old game type's storage
           const currentState: PersistedPlayState = {
             mode: state.mode,
             gameType: oldGameType,
@@ -471,11 +345,11 @@ export const useChessStore = create<ChessStore>()(
             activeTimer: state.activeTimer,
             lastActiveTimestamp: state.lastActiveTimestamp,
             boardOrientation: state.boardOrientation,
-            autoFlipBoard: state.autoFlipBoard
+            autoFlipBoard: state.autoFlipBoard,
+            variant: state.variant
           };
           saveToModeStorage(oldGameType, currentState);
 
-          // Load state from new game type's storage
           const savedState =
             loadFromModeStorage<PersistedPlayState>(newGameType);
           if (savedState) {
@@ -493,20 +367,16 @@ export const useChessStore = create<ChessStore>()(
                 gameStarted: savedState.gameStarted || false,
                 gameOver: savedState.gameOver || false,
                 gameResult: savedState.gameResult || null,
-                timeControl: savedState.timeControl || {
-                  mode: 'unlimited',
-                  minutes: 0,
-                  increment: 0
-                },
+                timeControl: savedState.timeControl || DEFAULT_TIME_CONTROL,
                 whiteTime: savedState.whiteTime,
                 blackTime: savedState.blackTime,
                 activeTimer: savedState.activeTimer,
                 lastActiveTimestamp: savedState.lastActiveTimestamp,
                 boardOrientation: savedState.boardOrientation || 'white',
-                autoFlipBoard: savedState.autoFlipBoard || false
+                autoFlipBoard: savedState.autoFlipBoard || false,
+                variant: savedState.variant || 'standard'
               });
             } catch {
-              // If loading fails, reset to fresh state
               set({
                 gameType: newGameType,
                 game: new Chess(),
@@ -520,7 +390,6 @@ export const useChessStore = create<ChessStore>()(
               });
             }
           } else {
-            // No saved state for this game type, reset to fresh state
             set({
               gameType: newGameType,
               game: new Chess(),
@@ -537,24 +406,13 @@ export const useChessStore = create<ChessStore>()(
           set({ gameType: newGameType });
         }
       },
+
       setAutoFlipBoard: (enabled) => set({ autoFlipBoard: enabled }),
-      
       setVariant: (variant) => set({ variant }),
 
       resetGame: () => {
         const state = get();
-        let whiteInitialTime: number | null = null;
-        let blackInitialTime: number | null = null;
-
-        if (state.timeControl.mode === 'timed') {
-          whiteInitialTime = state.timeControl.minutes * 60;
-          blackInitialTime = state.timeControl.minutes * 60;
-        } else if (state.timeControl.mode === 'custom') {
-          whiteInitialTime = (state.timeControl.whiteMinutes ?? 10) * 60;
-          blackInitialTime = (state.timeControl.blackMinutes ?? 10) * 60;
-        }
-
-        const hasTimer = state.timeControl.mode !== 'unlimited';
+        const timers = initializeTimers(state.timeControl);
         const newGame = new Chess();
 
         set({
@@ -566,10 +424,13 @@ export const useChessStore = create<ChessStore>()(
           gameResult: null,
           currentFEN: STARTING_FEN,
           gameId: state.gameId + 1,
-          whiteTime: whiteInitialTime,
-          blackTime: blackInitialTime,
-          activeTimer: hasTimer && state.playAs === 'white' ? 'white' : null,
-          lastActiveTimestamp: hasTimer ? Date.now() : null,
+          whiteTime: timers.whiteTime,
+          blackTime: timers.blackTime,
+          activeTimer:
+            hasTimer(state.timeControl) && state.playAs === 'white'
+              ? 'white'
+              : null,
+          lastActiveTimestamp: hasTimer(state.timeControl) ? Date.now() : null,
           playingAgainstStockfish: false
         });
       },
@@ -582,8 +443,10 @@ export const useChessStore = create<ChessStore>()(
           const timeKey = color === 'white' ? 'whiteTime' : 'blackTime';
           const currentTime = state[timeKey];
           if (currentTime === null || currentTime <= 0) return {};
-          const newTime = currentTime - 1;
-          return { [timeKey]: newTime, lastActiveTimestamp: Date.now() };
+          return {
+            [timeKey]: currentTime - 1,
+            lastActiveTimestamp: Date.now()
+          };
         }),
 
       switchTimer: (toColor) =>
@@ -594,13 +457,7 @@ export const useChessStore = create<ChessStore>()(
           const movedTimeKey =
             movedColor === 'white' ? 'whiteTime' : 'blackTime';
           const currentTime = state[movedTimeKey];
-          let increment = state.timeControl.increment;
-          if (state.timeControl.mode === 'custom') {
-            increment =
-              movedColor === 'white'
-                ? (state.timeControl.whiteIncrement ?? 0)
-                : (state.timeControl.blackIncrement ?? 0);
-          }
+          const increment = getIncrement(state.timeControl, movedColor);
           const newTime = currentTime !== null ? currentTime + increment : null;
           return {
             activeTimer: toColor,
@@ -625,52 +482,29 @@ export const useChessStore = create<ChessStore>()(
       },
 
       loadPGN: (pgn) => {
-        try {
-          const newGame = new Chess();
-          newGame.loadPgn(pgn);
-
-          const moves: string[] = [];
-          const positions: string[] = [STARTING_FEN];
-
-          const tempGame = new Chess();
-          const history = newGame.history({ verbose: true });
-
-          for (const move of history) {
-            tempGame.move(move.san);
-            moves.push(move.san);
-            positions.push(tempGame.fen());
-          }
-
-          set({
-            game: newGame,
-            currentFEN: newGame.fen(),
-            moves,
-            positionHistory: positions,
-            viewingIndex: positions.length - 1
-          });
-
-          return true;
-        } catch (error) {
-          console.error('Failed to load PGN:', error);
-          return false;
-        }
+        const result = gameLoader.loadPGN(pgn);
+        if (!result) return false;
+        set({
+          game: result.game,
+          currentFEN: result.currentFEN,
+          moves: result.moves,
+          positionHistory: result.positionHistory,
+          viewingIndex: result.viewingIndex
+        });
+        return true;
       },
 
       loadFEN: (fen) => {
-        try {
-          const newGame = new Chess(fen);
-          set({
-            game: newGame,
-            currentFEN: fen,
-            moves: [],
-            positionHistory: [fen],
-            viewingIndex: 0
-          });
-          return true;
-        } catch (error) {
-          console.error('Invalid FEN:', error);
-          return false;
-        }
+        const result = gameLoader.loadFEN(fen);
+        if (!result) return false;
+        set({
+          game: result.game,
+          currentFEN: result.currentFEN,
+          moves: result.moves,
+          positionHistory: result.positionHistory,
+          viewingIndex: result.viewingIndex
+        });
+        return true;
       },
 
       resetToStarting: () => {
@@ -697,17 +531,13 @@ export const useChessStore = create<ChessStore>()(
         });
       },
 
-      stopPlayingFromPosition: () => {
-        set({
-          playingAgainstStockfish: false
-        });
-      }
+      stopPlayingFromPosition: () => set({ playingAgainstStockfish: false })
     }),
     {
       name: 'zugklang-play-storage',
       storage: createMultiModeStorage(
         (state) => (state as { gameType?: PlayMode })?.gameType,
-        'computer' // default mode
+        'computer'
       ),
       partialize: (state) => ({
         mode: state.mode,
@@ -727,20 +557,19 @@ export const useChessStore = create<ChessStore>()(
         activeTimer: state.activeTimer,
         lastActiveTimestamp: state.lastActiveTimestamp,
         boardOrientation: state.boardOrientation,
-        autoFlipBoard: state.autoFlipBoard
+        autoFlipBoard: state.autoFlipBoard,
+        variant: state.variant
       }),
       onRehydrateStorage: () => (state) => {
         if (state) {
           try {
             const fen = state.currentFEN || STARTING_FEN;
             state.game = new Chess(fen);
-          } catch (e) {
-            console.error('Failed to rehydrate chess game:', e);
+          } catch {
             state.game = new Chess();
             state.currentFEN = STARTING_FEN;
           }
 
-          // Calculate elapsed time since last tick and subtract from active timer
           if (
             state.activeTimer &&
             state.lastActiveTimestamp &&
@@ -755,8 +584,7 @@ export const useChessStore = create<ChessStore>()(
                 state.activeTimer === 'white' ? 'whiteTime' : 'blackTime';
               const currentTime = state[timeKey];
               if (currentTime !== null) {
-                const newTime = Math.max(0, currentTime - elapsedSeconds);
-                state[timeKey] = newTime;
+                state[timeKey] = Math.max(0, currentTime - elapsedSeconds);
               }
             }
             state.lastActiveTimestamp = Date.now();

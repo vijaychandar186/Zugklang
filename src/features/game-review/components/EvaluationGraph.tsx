@@ -15,8 +15,6 @@ import {
   CLASSIFICATION_ICONS
 } from '@/features/game-review/types';
 
-/* ---------------- utilities ---------------- */
-
 const clamp = (v: number, min = 0, max = 100) =>
   Math.min(max, Math.max(min, v));
 
@@ -26,7 +24,7 @@ const getControlPoint = (
   next: number[] | undefined,
   reverse = false
 ) => {
-  const smoothing = 0.15; // reduced to prevent overshoot
+  const smoothing = 0.15;
   const p = prev ?? current;
   const n = next ?? current;
 
@@ -50,8 +48,6 @@ const getSmoothPath = (points: number[][]) => {
 
   return d;
 };
-
-/* ---------------- component ---------------- */
 
 export function EvaluationGraph({
   positions,
@@ -119,7 +115,6 @@ export function EvaluationGraph({
       onMouseLeave={() => setHoverIndex(null)}
       onClick={() => hoverIndex !== null && onMoveClick?.(hoverIndex)}
     >
-      {/* background split */}
       <div className='absolute inset-0 grid grid-rows-2'>
         <div className='bg-muted' />
         <div className='bg-background' />
@@ -130,7 +125,6 @@ export function EvaluationGraph({
         viewBox='-2 -2 104 104'
         preserveAspectRatio='none'
       >
-        {/* zero line */}
         <line
           x1='0'
           y1='50'
@@ -141,14 +135,12 @@ export function EvaluationGraph({
           vectorEffect='non-scaling-stroke'
         />
 
-        {/* fill */}
         <path
           d={graph.fill}
           className='fill-background/70'
           vectorEffect='non-scaling-stroke'
         />
 
-        {/* line */}
         <path
           d={graph.d}
           fill='none'
@@ -157,7 +149,6 @@ export function EvaluationGraph({
           vectorEffect='non-scaling-stroke'
         />
 
-        {/* current move */}
         <line
           x1={(currentMoveIndex / Math.max(totalMoves - 1, 1)) * 100}
           y1='0'
@@ -168,7 +159,6 @@ export function EvaluationGraph({
           vectorEffect='non-scaling-stroke'
         />
 
-        {/* hover */}
         {hoverIndex !== null && graph.points[hoverIndex] && (
           <>
             <line

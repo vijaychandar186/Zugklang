@@ -1,11 +1,9 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Chess, type PieceSymbol } from 'chess.js';
+import { Chess } from '@/lib/chess';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -14,37 +12,34 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
-  DialogTrigger
+  DialogTitle
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 
-import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
-import { Board3D } from '@/features/chess/components/Board3D';
-import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
-import { MoveHistory } from '@/features/chess/components/sidebar/MoveHistory';
-import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
 import { AnalysisLines } from '@/features/analysis/components/AnalysisLines';
 import { EditorProvider, EditorChessboard } from './SpareEditorBoard';
 import { SparePiecePalette } from './SparePiecePalette';
 import { AnalysisChessBoard } from './AnalysisChessBoard';
-import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
-import { PromotionDialog } from '@/features/chess/components/PromotionDialog';
+import { BoardContainer } from '@/features/chess/components/BoardContainer';
+import { UnifiedBoardWithPromotion } from '@/features/chess/components/board';
+import { GameViewLayout } from '@/features/chess/components/layout';
+import {
+  SidebarPanel,
+  SidebarHeader,
+  MoveHistorySection,
+  StandardActionBar
+} from '@/features/chess/components/sidebar';
+import { ImportDialog, ExportMenu } from '@/features/chess/components/dialogs';
 
-import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
-import { usePlayback } from '@/features/chess/hooks/usePlayback';
+import { useNavigation } from '@/features/chess/hooks/useNavigation';
+import { usePromotion } from '@/features/chess/hooks/usePromotion';
+import { useEngineInit } from '@/features/chess/hooks/useEngineInit';
 
 import {
   useAnalysisBoardState,
@@ -61,29 +56,17 @@ import {
   useBoardEditorState,
   useBoardEditorActions
 } from '../stores/useBoardEditorStore';
-import { useChessStore } from '@/features/chess/stores/useChessStore';
 
 interface AnalysisViewProps {
   initialBoard3dEnabled?: boolean;
 }
 
-type PendingPromotion = {
-  from: string;
-  to: string;
-  color: 'white' | 'black';
-};
-
 export function AnalysisView({
   initialBoard3dEnabled
 }: AnalysisViewProps = {}) {
-  const [pgnFenInput, setPgnFenInput] = useState('');
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [continueDialogOpen, setContinueDialogOpen] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(10);
-  const [isMounted, setIsMounted] = useState(false);
-  const [pendingPromotion, setPendingPromotion] =
-    useState<PendingPromotion | null>(null);
 
   const {
     currentFEN,
@@ -102,16 +85,11 @@ export function AnalysisView({
     startPlayingFromPosition,
     stopPlayingFromPosition,
     toggleBoardOrientation,
-    goToStart,
-    goToEnd,
-    goToPrev,
-    goToNext,
     goToMove
   } = useAnalysisBoardActions();
 
   const { isAnalysisOn, isInitialized } = useAnalysisState();
-  const { initializeEngine, setPosition, cleanup, startAnalysis, endAnalysis } =
-    useAnalysisActions();
+  const { setPosition, startAnalysis, endAnalysis } = useAnalysisActions();
   const { uciLines } = useEngineAnalysis();
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
   const { turn: analysisTurn } = useAnalysisPosition();
@@ -124,9 +102,6 @@ export function AnalysisView({
     resetBoard,
     validatePosition
   } = useBoardEditorActions();
-
-  const theme = useBoardTheme();
-  const board3dEnabled = useChessStore((s) => s.board3dEnabled);
 
   const displayedFEN = isEditorMode ? editorPosition : currentFEN;
   const gameTurn = (displayedFEN?.split(' ')[1] || 'w') as 'w' | 'b';
@@ -141,24 +116,19 @@ export function AnalysisView({
     analysisTurn
   });
 
-  const canGoBack = viewingIndex > 0;
-  const canGoForward = viewingIndex < positionHistory.length - 1;
-
-  const { isPlaying, togglePlay } = usePlayback({
-    currentIndex: viewingIndex,
-    totalItems: positionHistory.length,
-    onNext: goToNext,
-    enabled: !isEditorMode
+  const navigation = useNavigation({
+    viewingIndex,
+    totalPositions: positionHistory.length,
+    onIndexChange: goToMove,
+    playbackEnabled: !isEditorMode
   });
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
+  const promotion = usePromotion({
+    fen: currentFEN,
+    onMove: makeMove
+  });
 
-  useEffect(() => {
-    initializeEngine();
-    return () => cleanup();
-  }, [initializeEngine, cleanup]);
+  useEngineInit();
 
   useEffect(() => {
     if (!currentFEN || isEditorMode) return;
@@ -172,22 +142,21 @@ export function AnalysisView({
     setPosition(editorPosition, turn);
   }, [isEditorMode, editorPosition, setPosition]);
 
-  const handleToggleAnalysis = () => {
+  const handleToggleAnalysis = useCallback(() => {
     if (isAnalysisOn) {
       endAnalysis();
     } else {
       startAnalysis();
     }
-  };
+  }, [isAnalysisOn, startAnalysis, endAnalysis]);
 
-  const handleToggleEditorMode = () => {
+  const handleToggleEditorMode = useCallback(() => {
     if (isEditorMode) {
       const validation = validatePosition();
       if (!validation.valid) {
         toast.error(validation.error || 'Invalid position');
         return;
       }
-
       const success = loadFEN(editorPosition);
       if (success) {
         setEditorMode(false);
@@ -199,134 +168,118 @@ export function AnalysisView({
       setEditorPosition(currentFEN);
       setEditorMode(true);
     }
-  };
+  }, [
+    isEditorMode,
+    validatePosition,
+    loadFEN,
+    editorPosition,
+    setEditorMode,
+    setEditorPosition,
+    currentFEN
+  ]);
 
-  const detectInputType = (input: string): 'pgn' | 'fen' | 'moves' => {
-    const fenPattern =
-      /^[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+/;
-    if (fenPattern.test(input)) {
-      return 'fen';
-    }
-    if (
-      input.includes('[Event ') ||
-      input.includes('[White ') ||
-      input.includes('[Black ')
-    ) {
-      return 'pgn';
-    }
-    if (/\d+\./.test(input)) {
-      return 'pgn';
-    }
-    return 'moves';
-  };
-
-  const loadMoveList = (input: string): boolean => {
-    try {
-      const board = new Chess();
-      const cleaned = input
-        .replace(/\d+\.\s*/g, '')
-        .replace(/\s+/g, ' ')
-        .replace(/1-0|0-1|1\/2-1\/2|\*/g, '')
-        .trim();
-
-      const movesList = cleaned.split(' ').filter((m) => m.length > 0);
-      let moveCount = 0;
-
-      for (const moveSAN of movesList) {
-        try {
-          const move = board.move(moveSAN);
-          if (move) moveCount++;
-        } catch {
-          // Skip invalid moves
+  const loadMoveList = useCallback(
+    (input: string): boolean => {
+      try {
+        const board = new Chess();
+        const cleaned = input
+          .replace(/\d+\.\s*/g, '')
+          .replace(/\s+/g, ' ')
+          .replace(/1-0|0-1|1\/2-1\/2|\*/g, '')
+          .trim();
+        const movesList = cleaned.split(' ').filter((m) => m.length > 0);
+        let moveCount = 0;
+        for (const moveSAN of movesList) {
+          try {
+            const move = board.move(moveSAN);
+            if (move) moveCount++;
+          } catch {}
         }
+        if (moveCount === 0) return false;
+        return loadPGN(board.pgn());
+      } catch {
+        return false;
       }
+    },
+    [loadPGN]
+  );
 
-      if (moveCount === 0) return false;
-      return loadPGN(board.pgn());
-    } catch {
-      return false;
-    }
-  };
-
-  const handleImport = () => {
-    const trimmed = pgnFenInput.trim();
-    if (!trimmed) {
-      toast.error('Please enter a PGN, FEN, or moves');
-      return;
-    }
-
-    const inputType = detectInputType(trimmed);
-
-    if (inputType === 'fen') {
-      if (isEditorMode) {
-        try {
-          new Chess(trimmed);
-          setEditorPosition(trimmed);
-          toast.success('FEN loaded to editor');
-          setImportDialogOpen(false);
-          setPgnFenInput('');
-        } catch {
-          toast.error('Invalid FEN string');
-        }
-      } else {
-        const success = loadFEN(trimmed);
-        if (success) {
-          toast.success('FEN loaded successfully');
-          setImportDialogOpen(false);
-          setPgnFenInput('');
+  const handleImport = useCallback(
+    (input: string, type: 'pgn' | 'fen' | 'moves') => {
+      if (type === 'fen') {
+        if (isEditorMode) {
+          try {
+            new Chess(input);
+            setEditorPosition(input);
+            toast.success('FEN loaded to editor');
+          } catch {
+            toast.error('Invalid FEN string');
+          }
         } else {
-          toast.error('Invalid FEN string');
+          const success = loadFEN(input);
+          if (success) {
+            toast.success('FEN loaded successfully');
+          } else {
+            toast.error('Invalid FEN string');
+          }
+        }
+      } else if (type === 'pgn') {
+        const success = loadPGN(input);
+        if (success) {
+          toast.success('PGN loaded successfully');
+        } else {
+          toast.error('Invalid PGN format');
+        }
+      } else {
+        const success = loadMoveList(input);
+        if (success) {
+          toast.success('Moves loaded successfully');
+        } else {
+          toast.error('No valid moves found');
         }
       }
-    } else if (inputType === 'pgn') {
-      const success = loadPGN(trimmed);
-      if (success) {
-        toast.success('PGN loaded successfully');
-        setImportDialogOpen(false);
-        setPgnFenInput('');
-      } else {
-        toast.error('Invalid PGN format');
-      }
-    } else {
-      const success = loadMoveList(trimmed);
-      if (success) {
-        toast.success('Moves loaded successfully');
-        setImportDialogOpen(false);
-        setPgnFenInput('');
-      } else {
-        toast.error('No valid moves found');
-      }
-    }
-  };
+    },
+    [isEditorMode, setEditorPosition, loadFEN, loadPGN, loadMoveList]
+  );
 
-  const handleContinueFromPosition = (color: 'white' | 'black') => {
-    if (isEditorMode) {
-      const validation = validatePosition();
-      if (!validation.valid) {
-        toast.error(validation.error || 'Invalid position');
-        return;
+  const handleContinueFromPosition = useCallback(
+    (color: 'white' | 'black') => {
+      if (isEditorMode) {
+        const validation = validatePosition();
+        if (!validation.valid) {
+          toast.error(validation.error || 'Invalid position');
+          return;
+        }
+        const success = loadFEN(editorPosition);
+        if (!success) {
+          toast.error('Invalid position');
+          return;
+        }
+        setEditorMode(false);
       }
-      const success = loadFEN(editorPosition);
-      if (!success) {
-        toast.error('Invalid position');
-        return;
-      }
-      setEditorMode(false);
-    }
+      startPlayingFromPosition(color, selectedLevel);
+      setContinueDialogOpen(false);
+      toast.success(
+        `Playing as ${color} against Stockfish (Level ${selectedLevel})`
+      );
+    },
+    [
+      isEditorMode,
+      validatePosition,
+      loadFEN,
+      editorPosition,
+      setEditorMode,
+      startPlayingFromPosition,
+      selectedLevel
+    ]
+  );
 
-    startPlayingFromPosition(color, selectedLevel);
-    setContinueDialogOpen(false);
-    toast.success(
-      `Playing as ${color} against Stockfish (Level ${selectedLevel})`
-    );
-  };
-
-  const handleStopPlaying = () => {
+  const handleStopPlaying = useCallback(() => {
     stopPlayingFromPosition();
     toast.success('Stopped playing');
-  };
+  }, [stopPlayingFromPosition]);
 
-  const handleNewAnalysis = () => {
+  const handleNewAnalysis = useCallback(() => {
     if (isEditorMode) {
       resetBoard();
       setEditorMode(false);
@@ -335,16 +288,40 @@ export function AnalysisView({
     if (playingAgainstStockfish) {
       stopPlayingFromPosition();
     }
-  };
+  }, [
+    isEditorMode,
+    resetBoard,
+    setEditorMode,
+    resetToStarting,
+    playingAgainstStockfish,
+    stopPlayingFromPosition
+  ]);
 
-  const copyFEN = () => {
-    const fen = isEditorMode ? editorPosition : currentFEN;
-    navigator.clipboard.writeText(fen);
-    toast.success('FEN copied');
-  };
+  const handlePieceDrop = useCallback(
+    ({
+      sourceSquare,
+      targetSquare
+    }: {
+      sourceSquare: string;
+      targetSquare: string | null;
+    }) => {
+      if (!targetSquare || sourceSquare === targetSquare) return false;
+      const promotionTriggered = promotion.handleMoveWithPromotionCheck(
+        sourceSquare,
+        targetSquare
+      );
+      return promotionTriggered || !!makeMove(sourceSquare, targetSquare);
+    },
+    [promotion, makeMove]
+  );
 
-  const copyPGN = () => {
-    const movesPGN = moves
+  const getFEN = useCallback(
+    () => (isEditorMode ? editorPosition : currentFEN),
+    [isEditorMode, editorPosition, currentFEN]
+  );
+
+  const getPGN = useCallback(() => {
+    return moves
       .reduce((acc, move, index) => {
         if (index % 2 === 0) {
           return acc + `${Math.floor(index / 2) + 1}. ${move} `;
@@ -352,346 +329,105 @@ export function AnalysisView({
         return acc + `${move} `;
       }, '')
       .trim();
-    navigator.clipboard.writeText(movesPGN || '[No moves]');
-    toast.success('PGN copied');
-  };
+  }, [moves]);
 
-  const copyMoves = () => {
-    const movesList = moves.join(' ');
-    navigator.clipboard.writeText(movesList || 'No moves');
-    toast.success('Moves copied');
-  };
+  const getMoves = useCallback(() => moves.join(' '), [moves]);
 
-  // Check if a move is a pawn promotion
-  const isPromotionMove = useCallback(
-    (from: string, to: string, fen: string): boolean => {
-      try {
-        const game = new Chess(fen);
-        const piece = game.get(from as 'a1');
-        if (!piece || piece.type !== 'p') return false;
-        const targetRank = to[1];
-        return targetRank === '8' || targetRank === '1';
-      } catch {
-        return false;
-      }
-    },
-    []
+  const topPlayer = (
+    <PlayerInfo
+      name={boardOrientation === 'white' ? 'Black' : 'White'}
+      isStockfish={false}
+    />
   );
 
-  // Complete promotion with selected piece
-  const completePromotion = useCallback(
-    (piece: PieceSymbol) => {
-      if (!pendingPromotion) return;
-      makeMove(pendingPromotion.from, pendingPromotion.to, piece);
-      setPendingPromotion(null);
-    },
-    [pendingPromotion, makeMove]
+  const bottomPlayer = (
+    <PlayerInfo
+      name={boardOrientation === 'white' ? 'White' : 'Black'}
+      isStockfish={false}
+    />
   );
 
-  // Cancel promotion
-  const cancelPromotion = useCallback(() => {
-    setPendingPromotion(null);
-  }, []);
+  const boardContent = isEditorMode ? (
+    <EditorChessboard />
+  ) : (
+    <BoardContainer showEvaluation={true}>
+      {playingAgainstStockfish ? (
+        <AnalysisChessBoard />
+      ) : (
+        <UnifiedBoardWithPromotion
+          position={currentFEN}
+          boardOrientation={boardOrientation}
+          initialBoard3dEnabled={initialBoard3dEnabled}
+          canDrag={!promotion.pendingPromotion}
+          onPieceDrop={handlePieceDrop}
+          arrows={analysisArrows}
+          pendingPromotion={promotion.pendingPromotion}
+          onPromotionSelect={promotion.completePromotion}
+          onPromotionCancel={promotion.cancelPromotion}
+        />
+      )}
+    </BoardContainer>
+  );
 
-  const handlePieceDrop = ({
-    sourceSquare,
-    targetSquare
-  }: {
-    sourceSquare: string;
-    targetSquare: string | null;
-  }) => {
-    if (!targetSquare) return false;
-
-    // Check if this is a promotion move
-    if (isPromotionMove(sourceSquare, targetSquare, currentFEN)) {
-      // Validate move is legal before showing dialog
-      try {
-        const game = new Chess(currentFEN);
-        const moves = game.moves({
-          square: sourceSquare as 'a1',
-          verbose: true
-        });
-        const isLegal = moves.some((m) => m.to === targetSquare);
-        if (isLegal) {
-          const piece = game.get(sourceSquare as 'a1');
-          setPendingPromotion({
-            from: sourceSquare,
-            to: targetSquare,
-            color: piece?.color === 'w' ? 'white' : 'black'
-          });
-          return true; // Return true to prevent piece snapping back
-        }
-      } catch {
-        return false;
-      }
-    }
-
-    const move = makeMove(sourceSquare, targetSquare);
-    return !!move;
-  };
-
-  // Main layout content - reused for both editor and non-editor modes
-  const layoutContent = (
+  const sidebar = (
     <>
-      {/* Left column - Board */}
-      <div className='flex flex-col items-center gap-2'>
-        <div className='flex w-full items-center py-2'>
-          <PlayerInfo
-            name={boardOrientation === 'white' ? 'Black' : 'White'}
-            isStockfish={false}
-          />
-        </div>
+      {isAnalysisOn && !isEditorMode && (
+        <SidebarPanel>
+          <AnalysisLines />
+        </SidebarPanel>
+      )}
 
-        {isEditorMode ? (
-          <EditorChessboard />
-        ) : (
-          <BoardContainer showEvaluation={true}>
-            {playingAgainstStockfish ? (
-              <AnalysisChessBoard />
-            ) : (
-              <div className='relative'>
-                {(
-                  isMounted ? board3dEnabled : (initialBoard3dEnabled ?? false)
-                ) ? (
-                  <Board3D
-                    position={currentFEN}
-                    boardOrientation={boardOrientation}
-                    canDrag={!pendingPromotion}
-                    onPieceDrop={handlePieceDrop}
-                    arrows={analysisArrows}
-                  />
-                ) : (
-                  <Board
-                    position={currentFEN}
-                    boardOrientation={boardOrientation}
-                    canDrag={!pendingPromotion}
-                    onPieceDrop={handlePieceDrop}
-                    darkSquareStyle={theme.darkSquareStyle}
-                    lightSquareStyle={theme.lightSquareStyle}
-                    arrows={analysisArrows}
-                  />
-                )}
-                <PromotionDialog
-                  isOpen={!!pendingPromotion}
-                  color={pendingPromotion?.color || 'white'}
-                  targetSquare={pendingPromotion?.to || 'a8'}
-                  boardOrientation={boardOrientation}
-                  onSelect={completePromotion}
-                  onCancel={cancelPromotion}
-                />
-              </div>
-            )}
-          </BoardContainer>
-        )}
-
-        <div className='flex w-full items-center py-2'>
-          <PlayerInfo
-            name={boardOrientation === 'white' ? 'White' : 'Black'}
-            isStockfish={false}
-          />
-        </div>
-      </div>
-
-      {/* Right column - Sidebar */}
-      <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {isAnalysisOn && !isEditorMode && (
-          <div className='bg-card shrink-0 rounded-lg border'>
-            <AnalysisLines />
-          </div>
-        )}
-
-        <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:min-h-0 lg:flex-1'>
-          <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
-            <h3 className='font-semibold'>
-              {isEditorMode ? 'Board Editor' : 'Analysis'}
-            </h3>
-            <div className='flex items-center gap-1'>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant='ghost' size='icon' className='h-8 w-8'>
-                    <Icons.share className='h-4 w-4' />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align='end'>
-                  <DropdownMenuItem onClick={copyFEN}>
-                    <Icons.copy className='mr-2 h-4 w-4' />
-                    Copy FEN
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={copyPGN}>
-                    <Icons.fileText className='mr-2 h-4 w-4' />
-                    Copy PGN
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={copyMoves}>
-                    <Icons.arrowRight className='mr-2 h-4 w-4' />
-                    Copy Moves
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Dialog
-                open={importDialogOpen}
-                onOpenChange={setImportDialogOpen}
-              >
-                <DialogTrigger asChild>
+      <SidebarPanel flexible>
+        <SidebarHeader
+          title={isEditorMode ? 'Board Editor' : 'Analysis'}
+          actions={
+            <>
+              <ExportMenu
+                getFEN={getFEN}
+                getPGN={getPGN}
+                getMoves={getMoves}
+                className='h-8 w-8'
+              />
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <Button
                     variant='ghost'
                     size='icon'
                     className='h-8 w-8'
-                    title='Import PGN/FEN'
+                    onClick={() => setImportDialogOpen(true)}
                   >
                     <Icons.upload className='h-4 w-4' />
                   </Button>
-                </DialogTrigger>
-                <DialogContent className='sm:max-w-[600px]'>
-                  <DialogHeader>
-                    <DialogTitle>Import Position or Game</DialogTitle>
-                    <DialogDescription>
-                      Paste a PGN, FEN, or move list to analyze.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className='space-y-4 py-4'>
-                    <Textarea
-                      placeholder='Paste PGN, FEN, or moves here...'
-                      value={pgnFenInput}
-                      onChange={(e) => setPgnFenInput(e.target.value)}
-                      className='min-h-[200px] font-mono text-sm'
-                    />
-                    <div className='flex flex-wrap gap-2'>
-                      <Button
-                        variant='secondary'
-                        size='sm'
-                        onClick={() =>
-                          setPgnFenInput(
-                            '1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7'
-                          )
-                        }
-                      >
-                        Sample PGN
-                      </Button>
-                      <Button
-                        variant='secondary'
-                        size='sm'
-                        onClick={() =>
-                          setPgnFenInput(
-                            'r1bqkbnr/pppp1ppp/2n5/4p3/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3'
-                          )
-                        }
-                      >
-                        Sample FEN
-                      </Button>
-                      <Button
-                        variant='secondary'
-                        size='sm'
-                        onClick={() => setPgnFenInput('e4 e5 Nf3 Nc6 Bb5 a6')}
-                      >
-                        Sample Moves
-                      </Button>
-                      {pgnFenInput && (
-                        <Button
-                          variant='ghost'
-                          size='sm'
-                          onClick={() => setPgnFenInput('')}
-                        >
-                          <Icons.close className='mr-1 h-3 w-3' />
-                          Clear
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  <div className='flex justify-end gap-2'>
-                    <Button
-                      variant='outline'
-                      onClick={() => setImportDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button onClick={handleImport}>Import</Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </div>
-
-          {/* Editor mode: show spare pieces palette in sidebar */}
-          {isEditorMode ? (
-            <div className='flex-1 overflow-auto'>
-              <SparePiecePalette orientation={boardOrientation} />
-            </div>
-          ) : (
-            <>
-              <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
-                <div className='px-4 py-2'>
-                  <MoveHistory
-                    moves={moves}
-                    viewingIndex={viewingIndex}
-                    onMoveClick={goToMove}
-                  />
-                </div>
-              </ScrollArea>
-
-              <NavigationControls
-                viewingIndex={viewingIndex}
-                totalPositions={positionHistory.length}
-                canGoBack={canGoBack}
-                canGoForward={canGoForward}
-                isPlaying={isPlaying}
-                onTogglePlay={togglePlay}
-                onGoToStart={goToStart}
-                onGoToEnd={goToEnd}
-                onGoToPrev={goToPrev}
-                onGoToNext={goToNext}
-              />
+                </TooltipTrigger>
+                <TooltipContent>Import PGN/FEN</TooltipContent>
+              </Tooltip>
             </>
-          )}
+          }
+        />
 
-          <div className='bg-muted/50 flex items-center justify-between border-t p-2'>
-            <div className='flex items-center gap-1'>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    onClick={() => setSettingsOpen(true)}
-                  >
-                    <Icons.settings className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Settings</TooltipContent>
-              </Tooltip>
+        {isEditorMode ? (
+          <div className='flex-1 overflow-auto'>
+            <SparePiecePalette orientation={boardOrientation} />
+          </div>
+        ) : (
+          <MoveHistorySection
+            moves={moves}
+            viewingIndex={viewingIndex}
+            totalPositions={positionHistory.length}
+            navigation={navigation}
+            emptyMessage='Make a move to start analysis'
+          />
+        )}
 
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    onClick={toggleBoardOrientation}
-                  >
-                    <Icons.flipBoard className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Flip Board</TooltipContent>
-              </Tooltip>
-
-              {!isEditorMode && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant={isAnalysisOn ? 'default' : 'ghost'}
-                      size='icon'
-                      onClick={handleToggleAnalysis}
-                      disabled={!isInitialized}
-                    >
-                      <Icons.engine className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {isAnalysisOn ? 'Disable Engine' : 'Enable Engine'}
-                  </TooltipContent>
-                </Tooltip>
-              )}
-            </div>
-
-            <div className='flex items-center gap-1'>
+        <StandardActionBar
+          onFlipBoard={toggleBoardOrientation}
+          show3dToggle={!isEditorMode}
+          showEngine={!isEditorMode}
+          isEngineOn={isAnalysisOn}
+          isEngineDisabled={!isInitialized}
+          onToggleEngine={handleToggleAnalysis}
+          rightActions={
+            <>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -721,7 +457,6 @@ export function AnalysisView({
                     </TooltipTrigger>
                     <TooltipContent>Reset Board</TooltipContent>
                   </Tooltip>
-
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant='ghost' size='icon' onClick={clearBoard}>
@@ -760,7 +495,6 @@ export function AnalysisView({
                       <TooltipContent>Play vs Computer</TooltipContent>
                     </Tooltip>
                   )}
-
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
@@ -775,12 +509,15 @@ export function AnalysisView({
                   </Tooltip>
                 </>
               )}
-            </div>
-          </div>
-        </div>
-      </div>
+            </>
+          }
+        />
+      </SidebarPanel>
+    </>
+  );
 
-      {/* Dialogs */}
+  const dialogs = (
+    <>
       <Dialog open={continueDialogOpen} onOpenChange={setContinueDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -827,24 +564,34 @@ export function AnalysisView({
         </DialogContent>
       </Dialog>
 
-      <SettingsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        show3dToggle={!isEditorMode}
+      <ImportDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+        onImport={handleImport}
       />
     </>
   );
 
-  // Wrap with EditorProvider when in editor mode
+  const layout = (
+    <GameViewLayout
+      topPlayerInfo={topPlayer}
+      bottomPlayerInfo={bottomPlayer}
+      board={boardContent}
+      showEvaluation={false}
+      sidebar={sidebar}
+    />
+  );
+
   return (
-    <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
+    <>
       {isEditorMode ? (
         <EditorProvider boardOrientation={boardOrientation}>
-          {layoutContent}
+          {layout}
         </EditorProvider>
       ) : (
-        layoutContent
+        layout
       )}
-    </div>
+      {dialogs}
+    </>
   );
 }

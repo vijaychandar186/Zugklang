@@ -9,10 +9,6 @@ interface MemoryPiecePaletteProps {
   orientation?: 'white' | 'black';
 }
 
-/**
- * Spare piece palette for memory training.
- * Must be rendered inside a ChessboardProvider to work.
- */
 export function MemoryPiecePalette({
   orientation = 'white'
 }: MemoryPiecePaletteProps) {

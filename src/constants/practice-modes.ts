@@ -8,8 +8,7 @@ export const practiceModes: MenuCardItem[] = [
     title: 'Learn',
     description:
       'Study chess concepts, openings, endgames, and more. Build foundational knowledge.',
-    actionText: 'Start Learning',
-    comingSoon: true
+    actionText: 'Start Learning'
   },
   {
     href: '/practice/puzzles',

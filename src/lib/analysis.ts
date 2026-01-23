@@ -1,39 +1,14 @@
-import { Chess, Square } from 'chess.js';
+import { Chess, Square } from '@/lib/chess';
 import type { Position } from '@/types/Position';
+import type { Classification } from '@/types/classification';
+import { CLASSIFICATION_VALUES } from '@/types/classification';
+import type { GameReport } from '@/features/game-review/types';
 import openingsData from '@/resources/openings.json';
 import {
   getWinPercentageFromEval,
   computeEstimatedEloFromPositions,
   type Evaluation
 } from './winPercentage';
-
-export enum Classification {
-  BRILLIANT = 'brilliant',
-  GREAT = 'great',
-  BEST = 'best',
-  EXCELLENT = 'excellent',
-  GOOD = 'good',
-  INACCURACY = 'inaccuracy',
-  MISTAKE = 'mistake',
-  MISS = 'miss',
-  BLUNDER = 'blunder',
-  BOOK = 'book',
-  FORCED = 'forced'
-}
-
-const classificationValues: Record<string, number> = {
-  blunder: 0,
-  mistake: 0.15,
-  miss: 0.25,
-  inaccuracy: 0.35,
-  good: 0.55,
-  excellent: 0.85,
-  best: 1,
-  great: 1,
-  brilliant: 1,
-  book: 0.9,
-  forced: 1
-};
 
 const pieceValues: Record<string, number> = {
   p: 1,
@@ -47,8 +22,6 @@ const pieceValues: Record<string, number> = {
 
 const promotions = [undefined, 'b', 'n', 'r', 'q'] as const;
 
-// Win percentage based move classification
-// Based on Lichess/Chesskit approach
 function classifyByWinPercentage(
   prevEval: Evaluation,
   currEval: Evaluation,
@@ -56,16 +29,14 @@ function classifyByWinPercentage(
 ): Classification {
   const prevWinPct = getWinPercentageFromEval(prevEval);
   const currWinPct = getWinPercentageFromEval(currEval);
-
-  // Win percentage diff from the moving player's perspective
   const winPctDiff = (currWinPct - prevWinPct) * (isWhiteMove ? 1 : -1);
 
-  if (winPctDiff < -20) return Classification.BLUNDER;
-  if (winPctDiff < -10) return Classification.MISTAKE;
-  if (winPctDiff < -7) return Classification.MISS;
-  if (winPctDiff < -5) return Classification.INACCURACY;
-  if (winPctDiff < -2) return Classification.GOOD;
-  return Classification.EXCELLENT;
+  if (winPctDiff < -20) return 'blunder';
+  if (winPctDiff < -10) return 'mistake';
+  if (winPctDiff < -7) return 'miss';
+  if (winPctDiff < -5) return 'inaccuracy';
+  if (winPctDiff < -2) return 'good';
+  return 'excellent';
 }
 
 interface InfluencingPiece {
@@ -137,19 +108,7 @@ function isPieceHanging(lastFen: string, fen: string, square: Square): boolean {
   return false;
 }
 
-interface Report {
-  accuracies: {
-    white: number;
-    black: number;
-  };
-  estimatedElo?: {
-    white: number;
-    black: number;
-  };
-  positions: Position[];
-}
-
-async function analyse(positions: Position[]): Promise<Report> {
+async function analyse(positions: Position[]): Promise<GameReport> {
   let positionIndex = 0;
   for (const position of positions.slice(1)) {
     positionIndex++;
@@ -222,16 +181,15 @@ async function analyse(positions: Position[]): Promise<Report> {
     evalLoss = Math.min(evalLoss, cutoffEvalLoss, lastLineEvalLoss);
 
     if (!secondTopMove) {
-      position.classification = Classification.FORCED;
+      position.classification = 'forced';
       continue;
     }
 
     const noMate = previousEvaluation.type === 'cp' && evaluation.type === 'cp';
 
     if (topMove.moveUCI === position.move?.uci) {
-      position.classification = Classification.BEST;
+      position.classification = 'best';
     } else {
-      // Use win percentage based classification
       const isWhiteMove = moveColour === 'white';
       position.classification = classifyByWinPercentage(
         previousEvaluation,
@@ -239,86 +197,64 @@ async function analyse(positions: Position[]): Promise<Report> {
         isWhiteMove
       );
 
-      // Special handling for mate transitions
       if (previousEvaluation.type === 'cp' && evaluation.type === 'mate') {
         if (absoluteEvaluation > 0) {
-          // Finding mate for yourself
-          position.classification = Classification.BEST;
+          position.classification = 'best';
         } else if (absoluteEvaluation >= -3) {
-          // Allowing mate in 1-3 is a blunder
-          position.classification = Classification.BLUNDER;
+          position.classification = 'blunder';
         } else if (absoluteEvaluation >= -8) {
-          // Allowing mate in 4-8 is a mistake
-          position.classification = Classification.MISTAKE;
+          position.classification = 'mistake';
         } else {
-          // Allowing mate in 9+ is still an inaccuracy (it's far off)
-          position.classification = Classification.INACCURACY;
+          position.classification = 'inaccuracy';
         }
       } else if (
         previousEvaluation.type === 'mate' &&
         evaluation.type === 'cp'
       ) {
         if (previousAbsoluteEvaluation < 0 && absoluteEvaluation < 0) {
-          // You were getting mated and still losing - escaping mate is good
-          position.classification = Classification.BEST;
+          position.classification = 'best';
         } else if (previousAbsoluteEvaluation < 0) {
-          // You escaped getting mated and are now better
-          position.classification = Classification.BEST;
+          position.classification = 'best';
         } else if (absoluteEvaluation >= 600) {
-          // Had mate, still completely winning - inaccuracy at worst
-          position.classification = Classification.INACCURACY;
+          position.classification = 'inaccuracy';
         } else if (absoluteEvaluation >= 300) {
-          // Had mate, gave up significant advantage - mistake
-          position.classification = Classification.MISTAKE;
+          position.classification = 'mistake';
         } else if (absoluteEvaluation >= 0) {
-          // Had mate, now only slightly better or equal - blunder
-          position.classification = Classification.BLUNDER;
+          position.classification = 'blunder';
         } else {
-          // Had mate, now losing - major blunder
-          position.classification = Classification.BLUNDER;
+          position.classification = 'blunder';
         }
       } else if (
         previousEvaluation.type === 'mate' &&
         evaluation.type === 'mate'
       ) {
         if (previousAbsoluteEvaluation > 0) {
-          // You had mate, what happened?
           if (absoluteEvaluation < 0) {
-            // Went from giving mate to getting mated - always blunder
-            position.classification = Classification.BLUNDER;
+            position.classification = 'blunder';
           } else if (absoluteEvaluation < previousAbsoluteEvaluation) {
-            // Shortened the mate - best
-            position.classification = Classification.BEST;
+            position.classification = 'best';
           } else if (absoluteEvaluation === previousAbsoluteEvaluation) {
-            // Same mate distance - excellent
-            position.classification = Classification.EXCELLENT;
+            position.classification = 'excellent';
           } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 2) {
-            // Extended mate by 1-2 moves - good
-            position.classification = Classification.GOOD;
+            position.classification = 'good';
           } else if (absoluteEvaluation <= previousAbsoluteEvaluation + 5) {
-            // Extended mate by 3-5 moves - inaccuracy
-            position.classification = Classification.INACCURACY;
+            position.classification = 'inaccuracy';
           } else {
-            // Extended mate significantly - mistake
-            position.classification = Classification.MISTAKE;
+            position.classification = 'mistake';
           }
         } else {
-          // You were getting mated
           if (absoluteEvaluation === previousAbsoluteEvaluation) {
-            position.classification = Classification.BEST;
+            position.classification = 'best';
           } else if (absoluteEvaluation > previousAbsoluteEvaluation) {
-            // Delayed getting mated - good
-            position.classification = Classification.GOOD;
+            position.classification = 'good';
           } else {
-            // Let them mate faster - mistake
-            position.classification = Classification.MISTAKE;
+            position.classification = 'mistake';
           }
         }
       }
     }
 
-    // Check for brilliant/great moves
-    if (position.classification === Classification.BEST) {
+    if (position.classification === 'best') {
       const winningAnyways =
         (absoluteSecondEvaluation >= 700 && topMove.evaluation.type === 'cp') ||
         (topMove.evaluation.type === 'mate' &&
@@ -344,7 +280,7 @@ async function analyse(positions: Position[]): Promise<Report> {
               if (
                 isPieceHanging(lastPosition.fen, position.fen, piece.square)
               ) {
-                position.classification = Classification.BRILLIANT;
+                position.classification = 'brilliant';
                 sacrificedPieces.push(piece);
               }
             }
@@ -403,7 +339,7 @@ async function analyse(positions: Position[]): Promise<Report> {
 
                   captureTestBoard.undo();
                 } catch {
-                  // Move not legal
+                  continue;
                 }
               }
               if (anyPieceViablyCapturable) break;
@@ -412,15 +348,15 @@ async function analyse(positions: Position[]): Promise<Report> {
           }
 
           if (!anyPieceViablyCapturable) {
-            position.classification = Classification.BEST;
+            position.classification = 'best';
           }
         }
       }
 
       if (
         noMate &&
-        position.classification !== Classification.BRILLIANT &&
-        lastPosition.classification === Classification.BLUNDER &&
+        position.classification !== 'brilliant' &&
+        lastPosition.classification === 'blunder' &&
         secondTopMove &&
         Math.abs(topMove.evaluation.value - secondTopMove.evaluation.value) >=
           150 &&
@@ -431,53 +367,49 @@ async function analyse(positions: Position[]): Promise<Report> {
           position.move.uci.slice(2, 4) as Square
         )
       ) {
-        position.classification = Classification.GREAT;
+        position.classification = 'great';
       }
     }
 
-    // Only downgrade blunder to mistake if position is completely won/lost
-    // (>= 1000cp or <= -1000cp) to maintain accuracy
-    if (
-      position.classification === Classification.BLUNDER &&
-      absoluteEvaluation >= 1000
-    ) {
-      position.classification = Classification.MISTAKE;
+    if (position.classification === 'blunder' && absoluteEvaluation >= 1000) {
+      position.classification = 'mistake';
     }
 
     if (
-      position.classification === Classification.BLUNDER &&
+      position.classification === 'blunder' &&
       previousAbsoluteEvaluation <= -1000
     ) {
-      position.classification = Classification.MISTAKE;
+      position.classification = 'mistake';
     }
 
-    position.classification = position.classification ?? Classification.BOOK;
+    position.classification = position.classification ?? 'book';
   }
 
-  // Generate opening names for named positions
+  interface OpeningData {
+    name: string;
+    fen: string;
+  }
+
   for (const position of positions) {
-    const opening = openingsData.find((o: { name: string; fen: string }) =>
+    const opening = (openingsData as OpeningData[]).find((o) =>
       position.fen.includes(o.fen)
     );
     position.opening = opening?.name;
   }
 
-  // Apply book moves for named opening positions only
-  // Original also checked for cloud-evaluated positions, but we only use local evaluation
   for (const position of positions.slice(1)) {
     if (position.opening) {
-      position.classification = Classification.BOOK;
+      position.classification = 'book';
     } else {
       break;
     }
   }
 
-  // Generate SAN moves from engine lines
   for (const position of positions) {
     for (const line of position.topLines || []) {
-      // Skip if no valid UCI move or if it's mate in 0 (game already over)
       if (!line.moveUCI || line.moveUCI.length < 4) continue;
-      if (line.evaluation.type === 'mate' && line.evaluation.value === 0) continue;
+      if (line.evaluation.type === 'mate' && line.evaluation.value === 0)
+        continue;
 
       const board = new Chess(position.fen);
 
@@ -492,15 +424,14 @@ async function analyse(positions: Position[]): Promise<Report> {
             | 'n'
             | undefined
         });
+        if (!move) throw new Error('Invalid move');
         line.moveSAN = move.san;
       } catch {
-        // Keep moveUCI as fallback if SAN conversion fails
         line.moveSAN = '';
       }
     }
   }
 
-  // Calculate accuracies
   const accuracies = {
     white: { current: 0, maximum: 0 },
     black: { current: 0, maximum: 0 }
@@ -508,12 +439,12 @@ async function analyse(positions: Position[]): Promise<Report> {
 
   for (const position of positions.slice(1)) {
     const moveColour = position.fen.includes(' b ') ? 'white' : 'black';
+    const classification = position.classification as Classification;
     accuracies[moveColour].current +=
-      classificationValues[position.classification!];
+      CLASSIFICATION_VALUES[classification] ?? 0;
     accuracies[moveColour].maximum++;
   }
 
-  // Calculate estimated Elo from actual centipawn loss
   const estimatedElo = computeEstimatedEloFromPositions(positions);
 
   return {

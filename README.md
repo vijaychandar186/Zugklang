@@ -19,7 +19,7 @@ Where Strategy Meets Symphony - A modern chess application with immersive audio 
 - [Tailwind CSS 4](https://tailwindcss.com/)
 - [Zustand](https://zustand-demo.pmnd.rs/) for state management
 - [Radix UI](https://www.radix-ui.com/) for accessible components
-- [chess.js](https://github.com/jhlywa/chess.js) for game logic
+- [chessops](https://github.com/niklasf/chessops) for game logic
 - [react-chessboard](https://github.com/Clariity/react-chessboard) for board rendering
 
 ## Getting Started

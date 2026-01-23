@@ -22,14 +22,10 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger
-} from '@/components/ui/tooltip';
 
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
-import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
+import { StandardActionBar } from '@/features/chess/components/sidebar';
+import { StatBox } from '@/features/chess/components/common';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 
@@ -156,8 +152,6 @@ function generateRandomPiecePosition(): {
 }
 
 export function VisionView() {
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
   const [gameStatus, setGameStatus] = useState<GameStatus>('setup');
   const [trainingMode, setTrainingMode] = useState<TrainingMode>('coordinates');
   const [colorMode, setColorMode] = useState<ColorMode>('white');
@@ -377,8 +371,8 @@ export function VisionView() {
     if (trainingMode === 'coordinates' && lastClickedSquare) {
       styles[lastClickedSquare.square] = {
         backgroundColor: lastClickedSquare.correct
-          ? 'rgba(34, 197, 94, 0.6)'
-          : 'rgba(239, 68, 68, 0.6)'
+          ? 'color-mix(in srgb, var(--success) 60%, transparent)'
+          : 'color-mix(in srgb, var(--destructive) 60%, transparent)'
       };
     }
 
@@ -387,22 +381,25 @@ export function VisionView() {
         styles[sq] = {
           backgroundColor: movesSubmitted
             ? piecePosition.validMoves.includes(sq)
-              ? 'rgba(34, 197, 94, 0.5)'
-              : 'rgba(239, 68, 68, 0.5)'
-            : 'rgba(59, 130, 246, 0.5)'
+              ? 'color-mix(in srgb, var(--success) 50%, transparent)'
+              : 'color-mix(in srgb, var(--destructive) 50%, transparent)'
+            : 'color-mix(in srgb, var(--primary) 50%, transparent)'
         };
       });
 
       if (movesSubmitted) {
         piecePosition.validMoves.forEach((sq) => {
           if (!selectedMoves.has(sq)) {
-            styles[sq] = { backgroundColor: 'rgba(234, 179, 8, 0.5)' };
+            styles[sq] = {
+              backgroundColor:
+                'color-mix(in srgb, var(--classification-inaccuracy) 50%, transparent)'
+            };
           }
         });
       }
 
       styles[piecePosition.square] = {
-        backgroundColor: 'rgba(147, 51, 234, 0.5)'
+        backgroundColor: 'color-mix(in srgb, var(--chart-5) 50%, transparent)'
       };
     }
 
@@ -565,47 +562,33 @@ export function VisionView() {
               </DialogTitle>
             </DialogHeader>
             <div className='space-y-6 py-4'>
-              {}
               <div className='grid grid-cols-2 gap-4'>
-                <div className='bg-muted/50 rounded-lg p-4 text-center'>
-                  <p className='text-muted-foreground text-sm'>Score</p>
-                  <p className='text-3xl font-bold'>{score}</p>
-                  <p className='text-muted-foreground text-xs'>
-                    of {attempts.length} attempts
-                  </p>
-                </div>
-                <div className='bg-muted/50 rounded-lg p-4 text-center'>
-                  <p className='text-muted-foreground text-sm'>Accuracy</p>
-                  <p
-                    className={`text-3xl font-bold ${
-                      accuracy >= 80
-                        ? 'text-green-600 dark:text-green-400'
-                        : accuracy >= 50
-                          ? 'text-yellow-600 dark:text-yellow-400'
-                          : 'text-red-600 dark:text-red-400'
-                    }`}
-                  >
-                    {accuracy}%
-                  </p>
-                </div>
+                <StatBox
+                  label='Score'
+                  value={`${score}/${attempts.length}`}
+                  size='lg'
+                />
+                <StatBox
+                  label='Accuracy'
+                  value={`${accuracy}%`}
+                  variant={
+                    accuracy >= 80
+                      ? 'success'
+                      : accuracy >= 50
+                        ? 'warning'
+                        : 'error'
+                  }
+                  size='lg'
+                />
               </div>
 
-              {}
-              <div className='bg-primary/10 rounded-lg p-6 text-center'>
-                <p className='text-muted-foreground text-sm'>
-                  Average Response Time
-                </p>
-                <p className='text-primary text-4xl font-bold'>
-                  {averageResponseTime}
-                  <span className='text-lg'>ms</span>
-                </p>
-                <p className='text-muted-foreground mt-1 text-xs'>
-                  Based on {attempts.filter((a) => a.correct).length} correct
-                  answers
-                </p>
-              </div>
+              <StatBox
+                label='Avg Response Time'
+                value={`${averageResponseTime}ms`}
+                variant='primary'
+                size='lg'
+              />
 
-              {}
               <div className='space-y-2'>
                 <p className='text-muted-foreground text-center text-sm'>
                   Recent Attempts
@@ -616,8 +599,8 @@ export function VisionView() {
                       key={i}
                       className={`flex aspect-square flex-col items-center justify-center rounded text-xs ${
                         attempt.correct
-                          ? 'bg-green-500/20 text-green-600 dark:text-green-400'
-                          : 'bg-red-500/20 text-red-600 dark:text-red-400'
+                          ? 'bg-[color:var(--success)]/20 [color:var(--success)]'
+                          : 'bg-destructive/20 text-destructive'
                       }`}
                     >
                       {attempt.correct ? (
@@ -679,7 +662,7 @@ export function VisionView() {
                 <p className='text-muted-foreground text-xs'>Time Left</p>
                 <p
                   className={`text-2xl font-bold tabular-nums ${
-                    timeRemaining <= 10 ? 'text-red-600 dark:text-red-400' : ''
+                    timeRemaining <= 10 ? 'text-destructive' : ''
                   }`}
                 >
                   {timeRemaining}s
@@ -726,7 +709,6 @@ export function VisionView() {
             </span>
           </div>
 
-          {}
           <div className='bg-card flex flex-col overflow-hidden rounded-lg border lg:flex-1'>
             <div className='flex-1 overflow-y-auto p-2'>
               <div className='grid grid-cols-8 gap-1'>
@@ -735,8 +717,8 @@ export function VisionView() {
                     key={i}
                     className={`flex aspect-square flex-col items-center justify-center rounded text-xs ${
                       attempt.correct
-                        ? 'bg-green-500/20 text-green-600 dark:text-green-400'
-                        : 'bg-red-500/20 text-red-600 dark:text-red-400'
+                        ? 'bg-[color:var(--success)]/20 [color:var(--success)]'
+                        : 'bg-destructive/20 text-destructive'
                     }`}
                   >
                     {attempt.correct ? (
@@ -751,53 +733,25 @@ export function VisionView() {
             </div>
           </div>
 
-          {}
-          <div className='bg-card shrink-0 rounded-lg border p-2'>
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center gap-1'>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      onClick={() => setSettingsOpen(true)}
-                    >
-                      <Icons.settings className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Settings</TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      onClick={() =>
-                        setBoardOrientation((o) =>
-                          o === 'white' ? 'black' : 'white'
-                        )
-                      }
-                    >
-                      <Icons.flipBoard className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Flip Board</TooltipContent>
-                </Tooltip>
-              </div>
-
-              <Button
-                size='sm'
-                variant='outline'
-                onClick={() => setGameStatus('results')}
-              >
-                End Training
-              </Button>
-            </div>
+          <div className='bg-card shrink-0 overflow-hidden rounded-lg border'>
+            <StandardActionBar
+              onFlipBoard={() =>
+                setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))
+              }
+              showSettings
+              show3dToggle={false}
+              rightActions={
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() => setGameStatus('results')}
+                >
+                  End Training
+                </Button>
+              }
+            />
           </div>
         </div>
-
-        <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       </div>
     </ChessboardProvider>
   );

@@ -26,11 +26,14 @@ export const PlayerClock = memo(function PlayerClock({
         'rounded-md px-3 py-1 font-mono text-lg font-bold tabular-nums transition-colors',
         isActive ? 'bg-primary text-primary-foreground' : 'bg-muted',
         !isActive && 'opacity-70',
-        isLow && isPlayer && isActive && 'bg-yellow-500 text-yellow-950',
+        isLow &&
+          isPlayer &&
+          isActive &&
+          'text-background bg-[color:var(--classification-inaccuracy)]',
         isCritical &&
           isPlayer &&
           isActive &&
-          'animate-pulse bg-red-500 text-white'
+          'bg-destructive text-destructive-foreground animate-pulse'
       )}
     >
       {formatTime(time)}

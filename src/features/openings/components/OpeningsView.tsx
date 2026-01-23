@@ -22,16 +22,16 @@ import {
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { Board3D } from '@/features/chess/components/Board3D';
-import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
-import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import {
   MoveHistoryBase,
   type MoveData
 } from '@/features/chess/components/sidebar/MoveHistoryBase';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
+import { StandardActionBar } from '@/features/chess/components/sidebar';
 import { AnalysisLines } from '@/features/analysis/components/AnalysisLines';
 import { usePlayback } from '@/features/chess/hooks/usePlayback';
-import { useChessState } from '@/features/chess/stores/useChessStore';
+import { useBoardMounting } from '@/features/chess/hooks/useBoardMounting';
+import { useEngineInit } from '@/features/chess/hooks/useEngineInit';
 import {
   useAnalysisState,
   useAnalysisActions,
@@ -80,9 +80,7 @@ interface OpeningsViewProps {
 }
 
 export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
-  const [isMounted, setIsMounted] = useState(false);
   const [viewingMoveIndex, setViewingMoveIndex] = useState(0);
 
   const {
@@ -104,22 +102,15 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     getFavoriteKey
   } = useOpeningsStore();
 
-  const { board3dEnabled } = useChessState();
-  const theme = useBoardTheme();
+  const { isMounted, shouldShow3d, theme } = useBoardMounting({
+    initialBoard3dEnabled
+  });
 
   const { isAnalysisOn, isInitialized } = useAnalysisState();
-  const { initializeEngine, startAnalysis, endAnalysis, setPosition, cleanup } =
-    useAnalysisActions();
+  const { startAnalysis, endAnalysis, setPosition } = useAnalysisActions();
   const { uciLines } = useEngineAnalysis();
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    initializeEngine();
-    return () => cleanup();
-  }, [initializeEngine, cleanup]);
+  useEngineInit();
 
   useEffect(() => {
     setInputValue(searchQuery);
@@ -328,13 +319,8 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     arrows: analysisArrows
   };
 
-  const shouldShow3d = isMounted
-    ? board3dEnabled
-    : (initialBoard3dEnabled ?? false);
-
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-      {}
       <div className='flex flex-col items-center gap-2'>
         <BoardContainer showEvaluation={isAnalysisOn}>
           {shouldShow3d ? (
@@ -349,16 +335,13 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
         </BoardContainer>
       </div>
 
-      {}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {}
         {isAnalysisOn && (
           <div className='bg-card w-full shrink-0 rounded-lg border'>
             <AnalysisLines />
           </div>
         )}
 
-        {}
         <div className='bg-card flex min-h-[300px] w-full flex-col overflow-hidden rounded-lg border lg:min-h-0 lg:flex-1'>
           <div className='flex shrink-0 items-center justify-between gap-2 border-b px-4 py-3'>
             <h3 className='min-w-0 flex-1 font-semibold'>
@@ -396,7 +379,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                     <Icons.heart
                       className={`h-4 w-4 ${
                         isFavorite(selectedOpening)
-                          ? 'fill-red-500 text-red-500'
+                          ? 'fill-destructive text-destructive'
                           : ''
                       }`}
                     />
@@ -439,90 +422,47 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
             onGoToNext={goToMoveNext}
           />
 
-          {}
-          <div className='bg-muted/50 flex items-center justify-between border-t p-2'>
-            <div className='flex items-center gap-1'>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    onClick={() => setSettingsOpen(true)}
-                  >
-                    <Icons.settings className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Settings</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    onClick={toggleBoardOrientation}
-                  >
-                    <Icons.flipBoard className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Flip Board</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={isAnalysisOn ? 'default' : 'ghost'}
-                    size='icon'
-                    onClick={handleToggleAnalysis}
-                    disabled={!isInitialized}
-                  >
-                    <Icons.engine className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isAnalysisOn
-                    ? 'Turn Off Analysis (e)'
-                    : 'Turn On Analysis (e)'}
-                </TooltipContent>
-              </Tooltip>
-            </div>
-
-            <div className='flex items-center gap-1'>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    onClick={goToPrevOpening}
-                    disabled={filteredOpenings.length === 0}
-                  >
-                    <Icons.chevronLeft className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Previous Opening (↑/k)</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    onClick={goToNextOpening}
-                    disabled={filteredOpenings.length === 0}
-                  >
-                    <Icons.chevronRight className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Next Opening (↓/j)</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
+          <StandardActionBar
+            onFlipBoard={toggleBoardOrientation}
+            showEngine={true}
+            isEngineOn={isAnalysisOn}
+            isEngineDisabled={!isInitialized}
+            onToggleEngine={handleToggleAnalysis}
+            rightActions={
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      onClick={goToPrevOpening}
+                      disabled={filteredOpenings.length === 0}
+                    >
+                      <Icons.chevronLeft className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Previous Opening (↑/k)</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      onClick={goToNextOpening}
+                      disabled={filteredOpenings.length === 0}
+                    >
+                      <Icons.chevronRight className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Next Opening (↓/j)</TooltipContent>
+                </Tooltip>
+              </>
+            }
+          />
         </div>
       </div>
 
-      {}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-        {}
         <div className='bg-card w-full shrink-0 rounded-lg border p-1'>
           <div className='flex w-full gap-1'>
             <button
@@ -548,7 +488,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
           </div>
         </div>
 
-        {}
         <div className='bg-card w-full shrink-0 rounded-lg border p-3'>
           <div className='flex w-full gap-2'>
             <div className='relative min-w-0 flex-1'>
@@ -577,7 +516,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
           </div>
         </div>
 
-        {}
         <div className='bg-card flex min-h-[300px] w-full flex-col overflow-hidden rounded-lg border lg:min-h-0 lg:flex-1'>
           {filteredOpenings.length === 0 ? (
             <div className='flex h-full flex-col items-center justify-center gap-2 p-4'>
@@ -621,7 +559,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                               removeFavorite(getFavoriteKey(opening))
                             }
                           >
-                            <Icons.trash className='h-3.5 w-3.5 text-red-500' />
+                            <Icons.trash className='text-destructive h-3.5 w-3.5' />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>Remove from favorites</TooltipContent>
@@ -629,7 +567,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                     ) : (
                       isMounted &&
                       isFavorite(opening) && (
-                        <Icons.heart className='mr-3 h-3 w-3 shrink-0 fill-red-500 text-red-500' />
+                        <Icons.heart className='fill-destructive text-destructive mr-3 h-3 w-3 shrink-0' />
                       )
                     )}
                   </div>
@@ -639,8 +577,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
           )}
         </div>
       </div>
-
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 }

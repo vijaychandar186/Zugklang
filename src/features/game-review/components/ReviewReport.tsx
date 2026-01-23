@@ -211,8 +211,8 @@ export function ReviewReport({
                         <span
                           className={
                             line.evaluation.value >= 0
-                              ? 'text-green-500'
-                              : 'text-red-500'
+                              ? '[color:var(--success)]'
+                              : 'text-destructive'
                           }
                         >
                           {line.evaluation.type === 'mate'

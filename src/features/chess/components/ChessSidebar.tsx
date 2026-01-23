@@ -221,7 +221,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                         </span>
                       </div>
                       {isCopied('fen') ? (
-                        <Icons.check className='h-4 w-4 text-green-500' />
+                        <Icons.check className='h-4 w-4 [color:var(--success)]' />
                       ) : (
                         <Icons.copy className='text-muted-foreground h-4 w-4' />
                       )}
@@ -238,7 +238,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                         </span>
                       </div>
                       {isCopied('pgn') ? (
-                        <Icons.check className='h-4 w-4 text-green-500' />
+                        <Icons.check className='h-4 w-4 [color:var(--success)]' />
                       ) : (
                         <Icons.copy className='text-muted-foreground h-4 w-4' />
                       )}
@@ -255,7 +255,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                         </span>
                       </div>
                       {isCopied('moves') ? (
-                        <Icons.check className='h-4 w-4 text-green-500' />
+                        <Icons.check className='h-4 w-4 [color:var(--success)]' />
                       ) : (
                         <Icons.copy className='text-muted-foreground h-4 w-4' />
                       )}
@@ -314,7 +314,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
                     disabled={!isInitialized}
                   >
                     <Icons.stockfish
-                      className={`mr-2 h-4 w-4 ${isAnalysisOn ? 'text-green-500' : 'text-muted-foreground'}`}
+                      className={`mr-2 h-4 w-4 ${isAnalysisOn ? '[color:var(--success)]' : 'text-muted-foreground'}`}
                     />
                     {isAnalysisOn ? 'Disable Engine' : 'Enable Engine'}
                   </DropdownMenuItem>

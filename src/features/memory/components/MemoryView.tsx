@@ -24,7 +24,8 @@ import { toast } from 'sonner';
 
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
-import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
+import { StandardActionBar } from '@/features/chess/components/sidebar';
+import { StatBox } from '@/features/chess/components/common';
 import { MemoryPiecePalette } from './MemoryPiecePalette';
 
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
@@ -106,8 +107,6 @@ const SQUARES: Square[] = [
 ];
 
 export function MemoryView() {
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
   const [gameStatus, setGameStatus] = useState<GameStatus>('setup');
   const [trainingMode, setTrainingMode] = useState<TrainingMode>('standard');
   const [pieceCount, setPieceCount] = useState(6);
@@ -379,15 +378,23 @@ export function MemoryView() {
         userPiece.type === targetPiece.type &&
         userPiece.color === targetPiece.color
       ) {
-        styles[square] = { backgroundColor: 'rgba(34, 197, 94, 0.5)' };
+        styles[square] = {
+          backgroundColor: 'color-mix(in srgb, var(--success) 50%, transparent)'
+        };
       } else {
-        styles[square] = { backgroundColor: 'rgba(239, 68, 68, 0.5)' };
+        styles[square] = {
+          backgroundColor:
+            'color-mix(in srgb, var(--destructive) 50%, transparent)'
+        };
       }
     });
 
     userPosition.forEach((_, square) => {
       if (!targetPosition.has(square)) {
-        styles[square] = { backgroundColor: 'rgba(239, 68, 68, 0.5)' };
+        styles[square] = {
+          backgroundColor:
+            'color-mix(in srgb, var(--destructive) 50%, transparent)'
+        };
       }
     });
 
@@ -437,7 +444,6 @@ export function MemoryView() {
               </p>
             </DialogHeader>
             <div className='space-y-6 py-4'>
-              {}
               <div className='grid grid-cols-2 gap-3'>
                 <button
                   onClick={() => setTrainingMode('standard')}
@@ -467,7 +473,6 @@ export function MemoryView() {
                 </button>
               </div>
 
-              {}
               <div className='bg-muted/50 rounded-lg p-3'>
                 {trainingMode === 'standard' ? (
                   <p className='text-muted-foreground text-sm'>
@@ -482,7 +487,6 @@ export function MemoryView() {
                 )}
               </div>
 
-              {}
               {trainingMode === 'standard' && (
                 <div className='space-y-3'>
                   <Label className='block text-center'>
@@ -503,7 +507,6 @@ export function MemoryView() {
                 </div>
               )}
 
-              {}
               <div className='space-y-3'>
                 <Label className='block text-center'>
                   Set Memorization Time
@@ -540,7 +543,6 @@ export function MemoryView() {
     const accuracy = Math.round((score.correct / score.total) * 100);
     return (
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-        {}
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
             <Board
@@ -554,33 +556,36 @@ export function MemoryView() {
           </BoardContainer>
         </div>
 
-        {}
         <div className='flex w-full flex-col gap-4 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
           <div className='bg-card flex flex-col rounded-lg border p-6 text-center lg:flex-1'>
             <h2 className='mb-4 text-2xl font-bold'>Results</h2>
-            <div className='mb-6 space-y-4'>
-              <div>
-                <p className='text-muted-foreground text-sm'>Accuracy</p>
-                <p
-                  className={`text-4xl font-bold ${accuracy >= 80 ? 'text-green-600 dark:text-green-400' : accuracy >= 50 ? 'text-yellow-600 dark:text-yellow-400' : 'text-red-600 dark:text-red-400'}`}
-                >
-                  {accuracy}%
-                </p>
-              </div>
-              <div>
-                <p className='text-muted-foreground text-sm'>Pieces Correct</p>
-                <p className='text-2xl font-bold'>
-                  {score.correct} / {score.total}
-                </p>
-              </div>
+            <div className='mb-6 grid grid-cols-2 gap-4'>
+              <StatBox
+                label='Accuracy'
+                value={`${accuracy}%`}
+                variant={
+                  accuracy >= 80
+                    ? 'success'
+                    : accuracy >= 50
+                      ? 'warning'
+                      : 'error'
+                }
+                size='lg'
+              />
+              <StatBox
+                label='Pieces Correct'
+                value={`${score.correct}/${score.total}`}
+                size='lg'
+              />
               {trainingMode === 'progressive' && (
-                <div>
-                  <p className='text-muted-foreground text-sm'>Level</p>
-                  <p className='text-2xl font-bold'>{progressiveLevel}</p>
-                  <p className='text-muted-foreground text-xs'>
-                    Streak: {progressiveStreak}/3
-                  </p>
-                </div>
+                <>
+                  <StatBox label='Level' value={progressiveLevel} size='md' />
+                  <StatBox
+                    label='Streak'
+                    value={`${progressiveStreak}/3`}
+                    size='md'
+                  />
+                </>
               )}
             </div>
             <div className='flex gap-2'>
@@ -651,59 +656,27 @@ export function MemoryView() {
             </div>
           </div>
 
-          {}
           <div className='bg-card hidden rounded-lg border lg:flex lg:flex-1' />
 
-          <div className='bg-card shrink-0 rounded-lg border p-2'>
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center gap-1'>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      onClick={() => setSettingsOpen(true)}
-                    >
-                      <Icons.settings className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Settings</TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      onClick={() =>
-                        setBoardOrientation((o) =>
-                          o === 'white' ? 'black' : 'white'
-                        )
-                      }
-                    >
-                      <Icons.flipBoard className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Flip Board</TooltipContent>
-                </Tooltip>
-              </div>
-
-              <Button
-                size='sm'
-                variant='outline'
-                onClick={() => setGameStatus('placing')}
-              >
-                Skip to Placing
-              </Button>
-            </div>
+          <div className='bg-card shrink-0 overflow-hidden rounded-lg border'>
+            <StandardActionBar
+              onFlipBoard={() =>
+                setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))
+              }
+              showSettings
+              show3dToggle={false}
+              rightActions={
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() => setGameStatus('placing')}
+                >
+                  Skip to Placing
+                </Button>
+              }
+            />
           </div>
         </div>
-
-        <SettingsDialog
-          open={settingsOpen}
-          onOpenChange={setSettingsOpen}
-          show3dToggle={false}
-        />
       </div>
     );
   }
@@ -756,40 +729,14 @@ export function MemoryView() {
             </div>
           </div>
 
-          {}
-          <div className='bg-card shrink-0 rounded-lg border p-2'>
-            <div className='flex items-center justify-between'>
-              <div className='flex items-center gap-1'>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      onClick={() => setSettingsOpen(true)}
-                    >
-                      <Icons.settings className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Settings</TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      onClick={() =>
-                        setBoardOrientation((o) =>
-                          o === 'white' ? 'black' : 'white'
-                        )
-                      }
-                    >
-                      <Icons.flipBoard className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Flip Board</TooltipContent>
-                </Tooltip>
-
+          <div className='bg-card shrink-0 overflow-hidden rounded-lg border'>
+            <StandardActionBar
+              onFlipBoard={() =>
+                setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))
+              }
+              showSettings
+              show3dToggle={false}
+              leftActions={
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button variant='ghost' size='icon' onClick={clearBoard}>
@@ -798,20 +745,15 @@ export function MemoryView() {
                   </TooltipTrigger>
                   <TooltipContent>Clear Board</TooltipContent>
                 </Tooltip>
-              </div>
-
-              <Button size='sm' onClick={checkAnswer}>
-                Check Answer
-              </Button>
-            </div>
+              }
+              rightActions={
+                <Button size='sm' onClick={checkAnswer}>
+                  Check Answer
+                </Button>
+              }
+            />
           </div>
         </div>
-
-        <SettingsDialog
-          open={settingsOpen}
-          onOpenChange={setSettingsOpen}
-          show3dToggle={false}
-        />
       </div>
     </ChessboardProvider>
   );

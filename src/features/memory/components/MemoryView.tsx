@@ -712,12 +712,10 @@ export function MemoryView() {
             </div>
           </div>
 
-          {}
           <div className='bg-card flex flex-col rounded-lg border lg:flex-1'>
             <MemoryPiecePalette orientation={boardOrientation} />
           </div>
 
-          {}
           <div className='bg-card shrink-0 rounded-lg border p-4'>
             <div className='flex items-center justify-between'>
               <span className='text-muted-foreground text-sm'>

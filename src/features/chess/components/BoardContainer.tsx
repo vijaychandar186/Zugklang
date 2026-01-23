@@ -23,14 +23,11 @@ export function BoardContainer({
     <div
       className={`flex w-full items-stretch justify-center gap-1 sm:gap-2 ${className ?? ''}`}
     >
-      {}
-      {}
       <div
         className={`shrink-0 ${shouldShowEval ? 'w-5 sm:w-7' : 'hidden w-0 sm:block sm:w-7'}`}
       >
         {shouldShowEval && <EvaluationBar />}
       </div>
-      {}
       <div
         className={`shrink-0 ${shouldShowEval ? 'flex-1 sm:w-[400px] sm:flex-none lg:w-[560px]' : 'w-full sm:w-[400px] lg:w-[560px]'}`}
         data-board-container

@@ -36,7 +36,6 @@ export function PromotionDialog({
 
   return (
     <>
-      {}
       <div
         className='absolute inset-0 z-40 bg-black/20'
         onClick={onCancel}
@@ -46,7 +45,6 @@ export function PromotionDialog({
         }}
       />
 
-      {}
       <div
         className={`absolute z-50 flex flex-col overflow-hidden rounded-sm shadow-lg ${
           color === 'white' ? 'bg-zinc-800' : 'bg-zinc-100'

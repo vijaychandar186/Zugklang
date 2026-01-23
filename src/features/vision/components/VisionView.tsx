@@ -462,7 +462,6 @@ export function VisionView() {
               </p>
             </DialogHeader>
             <div className='space-y-6 py-4'>
-              {}
               <div className='space-y-2'>
                 <Label>Training Mode</Label>
                 <Select
@@ -484,7 +483,6 @@ export function VisionView() {
                 </p>
               </div>
 
-              {}
               <div className='space-y-2'>
                 <Label>Color</Label>
                 <Select
@@ -505,7 +503,6 @@ export function VisionView() {
                 </p>
               </div>
 
-              {}
               <div className='space-y-3'>
                 <Label className='block text-center'>
                   Time Limit: {timeLimit}s
@@ -524,7 +521,6 @@ export function VisionView() {
                 </div>
               </div>
 
-              {}
               <div className='flex items-center justify-between'>
                 <div className='space-y-0.5'>
                   <Label>Show Coordinates</Label>
@@ -645,7 +641,6 @@ export function VisionView() {
         </div>
 
         <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
-          {}
           <div className='bg-card shrink-0 rounded-lg border p-4'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
@@ -671,7 +666,6 @@ export function VisionView() {
             </div>
           </div>
 
-          {}
           <div className='bg-card flex shrink-0 flex-col items-center justify-center rounded-lg border p-6'>
             {trainingMode === 'coordinates' && targetSquare && (
               <>
@@ -698,7 +692,6 @@ export function VisionView() {
             )}
           </div>
 
-          {}
           <div className='bg-card flex shrink-0 items-center justify-between rounded-lg border p-4'>
             <div className='flex items-center gap-2'>
               <Icons.chessPawn className='text-muted-foreground h-5 w-5' />

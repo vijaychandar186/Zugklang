@@ -48,7 +48,6 @@ export function ReviewReport({
         <CardTitle>Accuracies</CardTitle>
       </CardHeader>
       <CardContent className='space-y-4'>
-        {}
         <div className='flex justify-around'>
           <div className='text-center'>
             <div className='text-3xl font-bold'>
@@ -68,7 +67,6 @@ export function ReviewReport({
           </div>
         </div>
 
-        {}
         {report.estimatedElo && (
           <div className='border-t pt-3'>
             <div className='text-muted-foreground mb-2 text-center text-xs uppercase'>
@@ -89,7 +87,6 @@ export function ReviewReport({
           </div>
         )}
 
-        {}
         <div className='border-t pt-3'>
           <table className='w-full text-sm'>
             <thead>
@@ -137,7 +134,6 @@ export function ReviewReport({
           </table>
         </div>
 
-        {}
         {currentPosition && (
           <div className='space-y-3 border-t pt-3'>
             <div className='flex items-center gap-2'>

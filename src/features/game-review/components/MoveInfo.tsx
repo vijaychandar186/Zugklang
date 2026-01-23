@@ -44,7 +44,6 @@ export function MoveInfo() {
 
   return (
     <div className='flex flex-col gap-2 py-2'>
-      {}
       <div className='flex items-center gap-2'>
         {classificationIcon && (
           <Image
@@ -64,7 +63,6 @@ export function MoveInfo() {
         </span>
       </div>
 
-      {}
       {showBestMove && (
         <div className='flex items-center gap-2'>
           <Image

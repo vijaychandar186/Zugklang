@@ -1,0 +1,16 @@
+import { VisionView } from '@/features/vision/components/VisionView';
+import { PageContainer } from '@/components/layout/PageContainer';
+
+export const metadata = {
+  title: 'Vision Training | Zugklang',
+  description:
+    'Train your board awareness by identifying coordinates and valid moves'
+};
+
+export default function VisionPage() {
+  return (
+    <PageContainer scrollable={true}>
+      <VisionView />
+    </PageContainer>
+  );
+}

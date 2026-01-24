@@ -1,0 +1,174 @@
+/* Chess theme colors */
+:root {
+  /* Classification colors (move quality) */
+  --classification-brilliant: oklch(0.604 0.212 188.2);
+  --classification-great: oklch(0.558 0.11 259);
+  --classification-best: oklch(0.705 0.197 108.3);
+  --classification-excellent: oklch(0.705 0.197 108.3);
+  --classification-good: oklch(0.657 0.101 122.2);
+  --classification-inaccuracy: oklch(0.799 0.16093 88.295);
+  --classification-mistake: oklch(0.671 0.1615 52.742 / 0.689);
+  --classification-miss: oklch(0.657 0.15185 35.167 / 0.7);
+  --classification-blunder: oklch(0.468 0.196 17.6);
+  --classification-forced: oklch(0.657 0.101 122.2);
+  --classification-book: oklch(0.554 0.132 46);
+
+  /* Board highlight colors */
+  --highlight-move-option: oklch(0 0 0 / 10%);
+  --highlight-selected: oklch(0.97 0.21 110 / 40%);
+  --highlight-premove: oklch(0.65 0.25 25 / 60%);
+  --highlight-right-click: oklch(0.65 0.25 25 / 50%);
+  --board-shadow: oklch(0 0 0 / 30%);
+
+  /* Move list colors */
+  --move-white: oklch(0.623 0.214 259.815);
+  --move-white-active: oklch(0.623 0.214 259.815 / 20%);
+  --move-black: oklch(0.795 0.184 86.047);
+  --move-black-active: oklch(0.795 0.184 86.047 / 20%);
+
+  /* Feedback colors */
+  --success: oklch(0.723 0.219 142.136);
+
+  /* Analysis/Evaluation colors */
+  --eval-white: oklch(0.95 0 0);
+  --eval-black: oklch(0.15 0 0);
+  --eval-equal: oklch(0.5 0 0);
+  --eval-bar-marker: oklch(0.5 0 0);
+
+  /* Arrow colors - User-drawn arrows */
+  --arrow-user-primary: oklch(0.85 0.2 85);
+  --arrow-user-secondary: oklch(0.65 0.2 145);
+  --arrow-user-tertiary: oklch(0.63 0.26 25);
+
+  /* Arrow colors - Analysis arrows */
+  --arrow-best-move: oklch(0.7 0.22 130);
+  --arrow-threat: oklch(0.5 0.22 25);
+
+  /* Arrow colors - Move quality */
+  --arrow-alternative: oklch(0.55 0.18 240);
+  --arrow-blunder: oklch(0.55 0.3 27);
+  --arrow-good: oklch(0.7 0.15 145);
+  --arrow-mistake: oklch(0.7 0.18 60);
+  --arrow-brilliant: oklch(0.85 0.2 85);
+  --arrow-info: oklch(0.6 0 0);
+
+  /* Drop highlight */
+  --highlight-drop: oklch(0.97 0.21 110 / 50%);
+
+  /* Piece interaction */
+  --piece-drag-shadow: oklch(0 0 0 / 30%);
+  --highlight-drop-alt: oklch(1 0 0 / 40%);
+
+  /* Board theme colors - Default (Green) */
+  --board-default-dark: oklch(0.55 0.12 120);
+  --board-default-light: oklch(0.92 0.04 105);
+
+  /* Board theme colors - Blue */
+  --board-blue-dark: oklch(0.52 0.08 240);
+  --board-blue-light: oklch(0.9 0.02 240);
+
+  /* Board theme colors - Teal */
+  --board-teal-dark: oklch(0.55 0.1 185);
+  --board-teal-light: oklch(0.92 0.03 185);
+
+  /* Board theme colors - Gold */
+  --board-gold-dark: oklch(0.58 0.1 60);
+  --board-gold-light: oklch(0.93 0.04 85);
+
+  /* Board theme colors - Orange */
+  --board-orange-dark: oklch(0.62 0.14 55);
+  --board-orange-light: oklch(0.95 0.06 75);
+
+  /* Board theme colors - Mono */
+  --board-mono-dark: oklch(0.45 0 0);
+  --board-mono-light: oklch(0.82 0 0);
+
+  /* Default board colors (fallback) */
+  --board-square-dark: var(--board-default-dark);
+  --board-square-light: var(--board-default-light);
+
+  /* 3D Board styling */
+  --board-3d-frame: oklch(0.62 0.08 45);
+  --board-3d-frame-right: oklch(0.58 0.08 45);
+  --board-3d-shadow: oklch(0 0 0 / 50%);
+  --board-3d-background: oklch(0.82 0.05 80);
+}
+
+[data-board-scheme='blue'] {
+  --board-square-dark: var(--board-blue-dark);
+  --board-square-light: var(--board-blue-light);
+}
+
+[data-board-scheme='teal'] {
+  --board-square-dark: var(--board-teal-dark);
+  --board-square-light: var(--board-teal-light);
+}
+
+[data-board-scheme='gold'] {
+  --board-square-dark: var(--board-gold-dark);
+  --board-square-light: var(--board-gold-light);
+}
+
+[data-board-scheme='orange'] {
+  --board-square-dark: var(--board-orange-dark);
+  --board-square-light: var(--board-orange-light);
+}
+
+[data-board-scheme='mono'] {
+  --board-square-dark: var(--board-mono-dark);
+  --board-square-light: var(--board-mono-light);
+}
+
+.dark {
+  /* Board highlight colors */
+  --highlight-move-option: oklch(1 0 0 / 15%);
+  --highlight-selected: oklch(0.97 0.21 110 / 40%);
+  --highlight-premove: oklch(0.65 0.25 25 / 60%);
+  --highlight-right-click: oklch(0.65 0.25 25 / 50%);
+  --board-shadow: oklch(0 0 0 / 50%);
+
+  /* Move list colors */
+  --move-white: oklch(0.707 0.165 254.624);
+  --move-white-active: oklch(0.707 0.165 254.624 / 20%);
+  --move-black: oklch(0.852 0.199 91.936);
+  --move-black-active: oklch(0.852 0.199 91.936 / 20%);
+
+  /* Feedback colors */
+  --success: oklch(0.723 0.219 142.136);
+
+  /* Analysis/Evaluation colors */
+  --eval-white: oklch(0.9 0 0);
+  --eval-black: oklch(0.2 0 0);
+  --eval-equal: oklch(0.5 0 0);
+  --eval-bar-marker: oklch(0.45 0 0);
+
+  /* Board theme colors - Default (Green) */
+  --board-default-dark: oklch(0.48 0.1 120);
+  --board-default-light: oklch(0.8 0.03 105);
+
+  /* Board theme colors - Blue */
+  --board-blue-dark: oklch(0.45 0.07 240);
+  --board-blue-light: oklch(0.78 0.02 240);
+
+  /* Board theme colors - Teal */
+  --board-teal-dark: oklch(0.48 0.08 185);
+  --board-teal-light: oklch(0.78 0.03 185);
+
+  /* Board theme colors - Gold */
+  --board-gold-dark: oklch(0.48 0.08 60);
+  --board-gold-light: oklch(0.78 0.04 85);
+
+  /* Board theme colors - Orange */
+  --board-orange-dark: oklch(0.52 0.1 55);
+  --board-orange-light: oklch(0.8 0.05 75);
+
+  /* Board theme colors - Mono */
+  --board-mono-dark: oklch(0.35 0 0);
+  --board-mono-light: oklch(0.6 0 0);
+
+  /* 3D Board styling - Dark mode */
+  --board-3d-frame: oklch(0.75 0.02 0);
+  --board-3d-frame-right: oklch(0.75 0.02 0);
+  --board-3d-shadow: oklch(0 0 0 / 60%);
+  --board-3d-background: oklch(0.82 0.02 0);
+}

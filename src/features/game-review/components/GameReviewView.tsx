@@ -51,7 +51,6 @@ import {
   CLASSIFICATION_COLORS,
   CLASSIFICATION_ICONS
 } from '@/features/game-review/types';
-import { parseGameInput, generateGameReport } from '@/app/actions/game-review';
 
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
@@ -266,13 +265,20 @@ export function GameReviewView({
     setProgress(0);
 
     try {
-      const parseData = await parseGameInput(pgn);
+      const parseRes = await fetch('/api/game-review/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ input: pgn })
+      });
 
-      if (!parseData.success || !parseData.positions) {
-        setErrorMsg(parseData.message || 'Failed to parse');
+      if (!parseRes.ok) {
+        const error = await parseRes.json();
+        setErrorMsg(error.message || 'Failed to parse');
         setStatus('error');
         return;
       }
+
+      const parseData = await parseRes.json();
 
       let positions = parseData.positions;
       if (!positions || positions.length === 0) {
@@ -321,13 +327,20 @@ export function GameReviewView({
       setStatus('reporting');
       setProgress(95);
 
-      const reportData = await generateGameReport(positions);
+      const reportRes = await fetch('/api/game-review/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ positions })
+      });
 
-      if (!reportData.success || !reportData.results) {
-        setErrorMsg(reportData.message || 'Failed to generate report');
+      if (!reportRes.ok) {
+        const error = await reportRes.json();
+        setErrorMsg(error.message || 'Failed to generate report');
         setStatus('error');
         return;
       }
+
+      const reportData = await reportRes.json();
 
       setReport(reportData.results);
       setStatus('complete');
@@ -425,12 +438,14 @@ export function GameReviewView({
 
   const sidebar = (
     <>
-      <SidebarPanel>
-        <AnalysisLines />
-      </SidebarPanel>
+      {isAnalysisOn && (
+        <SidebarPanel>
+          <AnalysisLines />
+        </SidebarPanel>
+      )}
 
       {(report || (status === 'evaluating' && liveEvaluations.length > 0)) && (
-        <SidebarPanel className='p-3'>
+        <div className='shrink-0'>
           <EvaluationGraph
             positions={
               report?.positions ||
@@ -444,7 +459,7 @@ export function GameReviewView({
             currentMoveIndex={currentMoveIndex}
             onMoveClick={goToMove}
           />
-        </SidebarPanel>
+        </div>
       )}
 
       <SidebarPanel flexible>

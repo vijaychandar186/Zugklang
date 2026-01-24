@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Chess, ChessJSSquare as Square } from '@/lib/chess';
+import { Chess, ChessopsSquare as Square } from '@/lib/chess';
 import { StockfishEngine } from '@/lib/engine';
 import { MOVE_DELAY } from '@/features/chess/config/animation';
 import { SoundType } from '@/features/game/utils/sounds';

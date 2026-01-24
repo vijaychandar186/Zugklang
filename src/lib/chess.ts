@@ -20,25 +20,25 @@ import {
 } from 'chessops/pgn';
 import { setupPosition, defaultPosition } from 'chessops/variant';
 
-export type ChessJSColor = 'w' | 'b';
-export type ChessJSPieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
-export type ChessJSSquare = string;
+export type ChessopsColor = 'w' | 'b';
+export type ChessopsPieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
+export type ChessopsSquare = string;
 
-export interface ChessJSMove {
-  color: ChessJSColor;
-  from: ChessJSSquare;
-  to: ChessJSSquare;
+export interface ChessopsMove {
+  color: ChessopsColor;
+  from: ChessopsSquare;
+  to: ChessopsSquare;
   flags: string;
-  piece: ChessJSPieceType;
-  promotion?: ChessJSPieceType;
+  piece: ChessopsPieceType;
+  promotion?: ChessopsPieceType;
   san: string;
   lan?: string;
-  captured?: ChessJSPieceType;
+  captured?: ChessopsPieceType;
 }
 
-export interface ChessJSPiece {
-  type: ChessJSPieceType;
-  color: ChessJSColor;
+export interface ChessopsPiece {
+  type: ChessopsPieceType;
+  color: ChessopsColor;
 }
 
 export type MoveOptions = {
@@ -47,18 +47,18 @@ export type MoveOptions = {
   maxWidth?: number;
 };
 
-export type PieceSymbol = ChessJSPieceType;
-export type Color = ChessJSColor;
-export type Square = ChessJSSquare;
-export type Move = ChessJSMove;
-export type Piece = ChessJSPiece;
+export type PieceSymbol = ChessopsPieceType;
+export type Color = ChessopsColor;
+export type Square = ChessopsSquare;
+export type Move = ChessopsMove;
+export type Piece = ChessopsPiece;
 export type ShortMove = {
-  from: ChessJSSquare;
-  to: ChessJSSquare;
-  promotion?: ChessJSPieceType;
+  from: ChessopsSquare;
+  to: ChessopsSquare;
+  promotion?: ChessopsPieceType;
 };
 
-const roleToType: Record<string, ChessJSPieceType> = {
+const roleToType: Record<string, ChessopsPieceType> = {
   pawn: 'p',
   knight: 'n',
   bishop: 'b',
@@ -76,7 +76,7 @@ const typeToRole: Record<string, Role> = {
   k: 'king'
 };
 
-const colorToChar: Record<string, ChessJSColor> = {
+const colorToChar: Record<string, ChessopsColor> = {
   white: 'w',
   black: 'b'
 };
@@ -92,7 +92,7 @@ export class Chess {
   private _pos: Position;
   private _startFen: string;
   private _headers: Map<string, string>;
-  private _historyStack: { position: Position; move: ChessJSMove }[] = [];
+  private _historyStack: { position: Position; move: ChessopsMove }[] = [];
 
   constructor(
     fen?: string,
@@ -178,7 +178,7 @@ export class Chess {
 
   move(
     move: string | { from: string; to: string; promotion?: string }
-  ): ChessJSMove | null {
+  ): ChessopsMove | null {
     try {
       let m: ChessOpsMove;
 
@@ -227,7 +227,7 @@ export class Chess {
     }
   }
 
-  put(piece: ChessJSPiece, square: string): boolean {
+  put(piece: ChessopsPiece, square: string): boolean {
     const sq = parseSquare(square);
     if (sq === undefined) return false;
     const role = typeToRole[piece.type];
@@ -240,7 +240,7 @@ export class Chess {
     return true;
   }
 
-  remove(square: string): ChessJSPiece | null {
+  remove(square: string): ChessopsPiece | null {
     const sq = parseSquare(square);
     if (sq === undefined) return null;
     const piece = this._pos.board.take(sq);
@@ -251,11 +251,11 @@ export class Chess {
     };
   }
 
-  turn(): ChessJSColor {
+  turn(): ChessopsColor {
     return colorToChar[this._pos.turn];
   }
 
-  get(square: string): ChessJSPiece | null {
+  get(square: string): ChessopsPiece | null {
     const sq = parseSquare(square);
     if (sq === undefined) return null;
     const piece = this._pos.board.get(sq);
@@ -266,11 +266,11 @@ export class Chess {
     };
   }
 
-  history(options: { verbose: true }): ChessJSMove[];
+  history(options: { verbose: true }): ChessopsMove[];
   history(options?: { verbose: false }): string[];
-  history(options?: { verbose?: boolean }): (string | ChessJSMove)[];
-  history(options?: { verbose?: boolean }): (string | ChessJSMove)[] {
-    const moves: (string | ChessJSMove)[] = [];
+  history(options?: { verbose?: boolean }): (string | ChessopsMove)[];
+  history(options?: { verbose?: boolean }): (string | ChessopsMove)[] {
+    const moves: (string | ChessopsMove)[] = [];
     const verbose = options?.verbose;
 
     if (!verbose) {
@@ -308,14 +308,14 @@ export class Chess {
   }
 
   moves(): string[];
-  moves(options: { verbose: true; square?: string }): ChessJSMove[];
+  moves(options: { verbose: true; square?: string }): ChessopsMove[];
   moves(options?: { verbose: false; square?: string }): string[];
   moves(options?: {
     verbose?: boolean;
     square?: string;
-  }): (string | ChessJSMove)[];
-  moves({ square, verbose }: MoveOptions = {}): (string | ChessJSMove)[] {
-    const moves: (string | ChessJSMove)[] = [];
+  }): (string | ChessopsMove)[];
+  moves({ square, verbose }: MoveOptions = {}): (string | ChessopsMove)[] {
+    const moves: (string | ChessopsMove)[] = [];
     const ctx = this._pos.ctx();
 
     const generateForSquare = (sq: ChessOpsSquare) => {
@@ -361,7 +361,7 @@ export class Chess {
     return moves;
   }
 
-  undo(): ChessJSMove | null {
+  undo(): ChessopsMove | null {
     if (this._historyStack.length === 0) return null;
 
     const last = this._historyStack.pop()!;
@@ -396,21 +396,21 @@ export class Chess {
   }
 
   board(): ({
-    type: ChessJSPieceType;
-    color: ChessJSColor;
-    square: ChessJSSquare;
+    type: ChessopsPieceType;
+    color: ChessopsColor;
+    square: ChessopsSquare;
   } | null)[][] {
     const output: ({
-      type: ChessJSPieceType;
-      color: ChessJSColor;
-      square: ChessJSSquare;
+      type: ChessopsPieceType;
+      color: ChessopsColor;
+      square: ChessopsSquare;
     } | null)[][] = [];
     const board = this._pos.board;
     for (let r = 7; r >= 0; r--) {
       const row: ({
-        type: ChessJSPieceType;
-        color: ChessJSColor;
-        square: ChessJSSquare;
+        type: ChessopsPieceType;
+        color: ChessopsColor;
+        square: ChessopsSquare;
       } | null)[] = [];
       for (let f = 0; f < 8; f++) {
         const sq = r * 8 + f;
@@ -477,7 +477,7 @@ export class Chess {
     move: ChessOpsMove,
     san: string,
     pos: Position
-  ): ChessJSMove {
+  ): ChessopsMove {
     const from = isDrop(move) ? '@' : makeSquare(move.from);
     const to = makeSquare(move.to);
     const pieceObj = !isDrop(move)

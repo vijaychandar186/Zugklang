@@ -1,4 +1,4 @@
-import { Chess, ChessJSMove as Move } from '@/lib/chess';
+import { Chess, ChessopsMove as Move } from '@/lib/chess';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import {
   ChessVariant,

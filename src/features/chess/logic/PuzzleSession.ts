@@ -1,5 +1,5 @@
 import { ChessSession, ChessSessionState } from './ChessSession';
-import { ChessJSMove as Move } from '@/lib/chess';
+import { ChessopsMove as Move } from '@/lib/chess';
 import { Puzzle, PuzzleStatus } from '@/features/puzzles/types';
 
 export interface PuzzleSessionState extends ChessSessionState {

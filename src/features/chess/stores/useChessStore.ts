@@ -3,8 +3,8 @@ import { useShallow } from 'zustand/shallow';
 import { persist } from 'zustand/middleware';
 import {
   Chess,
-  ChessJSSquare as Square,
-  ChessJSMove as Move
+  ChessopsSquare as Square,
+  ChessopsMove as Move
 } from '@/lib/chess';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';

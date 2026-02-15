@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { UnifiedChessBoard as Board } from './Board';
 import { Board3D } from './Board3D';
 import { PromotionDialog } from './PromotionDialog';
@@ -26,6 +27,7 @@ import {
   getEngineName,
   hasBoardOverlay
 } from '../config/variants';
+import { useAtomicThreats } from '../hooks/useAtomicThreats';
 
 export function ChessBoard({
   serverOrientation,
@@ -111,6 +113,8 @@ export function ChessBoard({
     handleSquareRightClick,
     clearState,
     squareStyles,
+    moveFrom,
+    captureTargets,
     pendingPromotion,
     completePromotion,
     cancelPromotion
@@ -176,6 +180,21 @@ export function ChessBoard({
       : playAs
     : boardOrientation;
 
+  const resolvedOrientation =
+    isMounted && hasHydrated
+      ? effectiveBoardOrientation
+      : serverOrientation || 'white';
+
+  const atomicOverlays = useAtomicThreats({
+    game,
+    variant,
+    currentFEN,
+    playerColor: playerColorShort,
+    boardFlipped: resolvedOrientation === 'black',
+    selectedSquare: moveFrom,
+    captureTargets
+  });
+
   useEffect(() => {
     if (!isPlayMode || !gameStarted) return;
 
@@ -221,11 +240,6 @@ export function ChessBoard({
     setOnNewGame(onNewGame);
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
-
-  const resolvedOrientation =
-    isMounted && hasHydrated
-      ? effectiveBoardOrientation
-      : serverOrientation || 'white';
 
   const boardProps = {
     position,
@@ -274,6 +288,17 @@ export function ChessBoard({
           }}
         />
       )}
+      {atomicOverlays.map(({ square, type, left, top }) => (
+        <Image
+          key={`${type}-${square}`}
+          src={`/atomic/${type}.svg`}
+          alt={type}
+          width={28}
+          height={28}
+          className='pointer-events-none absolute z-40'
+          style={{ left, top }}
+        />
+      ))}
       <PromotionDialog
         isOpen={!!pendingPromotion}
         color={pendingPromotion?.color || 'white'}

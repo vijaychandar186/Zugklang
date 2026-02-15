@@ -65,6 +65,8 @@ import {
   BookOpen,
   Target,
   CarFront,
+  Wrench,
+  BicepsFlexed,
   type LucideIcon
 } from 'lucide-react';
 
@@ -105,6 +107,8 @@ export const Icons = {
   redo: Redo2,
   shuffle: Shuffle,
   rotate: RotateCw,
+  wrench: Wrench,
+  practice: BicepsFlexed,
 
   player: User,
   stockfish: Bot,

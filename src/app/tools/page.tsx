@@ -15,7 +15,7 @@ export default function ToolsPage() {
   return (
     <PageContainer scrollable={true}>
       <MenuPageLayout
-        icon={Icons.engine}
+        icon={Icons.wrench}
         title='Chess Tools'
         description='Powerful analysis and review tools to improve your game.'
       >

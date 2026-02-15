@@ -26,5 +26,13 @@ export const playModes: MenuCardItem[] = [
     description:
       'Play with a friend on the same device. Standard chess and variants available.',
     actionText: 'Choose Mode'
+  },
+  {
+    href: '/play/four-player',
+    icon: Icons.usersRound,
+    title: '4-Player Chess',
+    description:
+      'Play 4-player chess on a 14×14 board with friends on the same device. Free-move mode.',
+    actionText: 'Start Game'
   }
 ];

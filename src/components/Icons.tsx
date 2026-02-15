@@ -72,6 +72,7 @@ import {
   Skull,
   Mountain,
   Recycle,
+  UsersRound,
   type LucideIcon
 } from 'lucide-react';
 
@@ -157,7 +158,8 @@ export const Icons = {
   listChecks: ListChecks,
   skull: Skull,
   mountain: Mountain,
-  recycle: Recycle
+  recycle: Recycle,
+  usersRound: UsersRound
 } as const;
 
 export type { LucideIcon };

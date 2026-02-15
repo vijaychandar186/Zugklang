@@ -6,6 +6,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog';
+import { useSettingsStore } from '@/features/settings/stores/useSettingsStore';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { useTheme } from 'next-themes';
 import { BoardThemeSelector } from './ThemeSelector';
@@ -26,12 +27,12 @@ export function SettingsDialog({
   onOpenChange,
   show3dToggle = true
 }: SettingsDialogProps) {
-  const setBoardTheme = useChessStore((s) => s.setBoardTheme);
-  const currentBoardTheme = useChessStore((s) => s.boardThemeName);
-  const soundEnabled = useChessStore((s) => s.soundEnabled);
-  const setSoundEnabled = useChessStore((s) => s.setSoundEnabled);
-  const board3dEnabled = useChessStore((s) => s.board3dEnabled);
-  const setBoard3dEnabled = useChessStore((s) => s.setBoard3dEnabled);
+  const setBoardTheme = useSettingsStore((s) => s.setBoardTheme);
+  const currentBoardTheme = useSettingsStore((s) => s.boardThemeName);
+  const soundEnabled = useSettingsStore((s) => s.soundEnabled);
+  const setSoundEnabled = useSettingsStore((s) => s.setSoundEnabled);
+  const board3dEnabled = useSettingsStore((s) => s.board3dEnabled);
+  const setBoard3dEnabled = useSettingsStore((s) => s.setBoard3dEnabled);
   const fullscreenEnabled = useChessStore((s) => s.fullscreenEnabled);
   const setFullscreenEnabled = useChessStore((s) => s.setFullscreenEnabled);
   const { theme, setTheme } = useTheme();

@@ -4,36 +4,35 @@ import { useEffect, useMemo, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { defaultPieces, defaultDraggingPieceStyle } from 'react-chessboard';
 import { useFourPlayerStore } from '../store';
+import { TEAM_CSS_VARS } from '../config/teams';
 import { isCorner, toSquare } from '../engine';
 import type { CSSProperties } from 'react';
 
 const BOARD_ID = 'four-player-chess';
-
-const TEAM_COLORS: Record<string, string> = {
-  r: '#D7263D',
-  b: '#1E90FF',
-  y: '#FFD700',
-  g: '#00A86B'
-};
 
 export function FourPlayerBoard() {
   const position = useFourPlayerStore((s) => s.position);
   const orientation = useFourPlayerStore((s) => s.orientation);
   const selectedSquare = useFourPlayerStore((s) => s.selectedSquare);
   const validMoves = useFourPlayerStore((s) => s.validMoves);
+  const loseOrder = useFourPlayerStore((s) => s.loseOrder);
   const movePiece = useFourPlayerStore((s) => s.movePiece);
   const selectSquare = useFourPlayerStore((s) => s.selectSquare);
 
-  // Build piece renderers for all 4 colors
+  const eliminatedSet = useMemo(() => new Set(loseOrder), [loseOrder]);
+
   const fourPlayerPieces = useMemo(() => {
     const pieces: Record<
       string,
       (props?: { fill?: string; svgStyle?: CSSProperties }) => React.JSX.Element
     > = {};
 
-    for (const [prefix, hex] of Object.entries(TEAM_COLORS)) {
+    for (const [prefix, cssColor] of Object.entries(TEAM_CSS_VARS)) {
+      const fill = eliminatedSet.has(prefix as keyof typeof TEAM_CSS_VARS)
+        ? 'var(--team-eliminated)'
+        : cssColor;
       const style = {
-        fill: hex,
+        fill,
         svgStyle: { transform: `rotate(${-orientation}deg)` }
       };
 
@@ -46,7 +45,7 @@ export function FourPlayerBoard() {
     }
 
     return pieces;
-  }, [orientation]);
+  }, [orientation, eliminatedSet]);
 
   // Hide corner squares via DOM
   useEffect(() => {

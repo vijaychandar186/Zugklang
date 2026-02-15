@@ -4,14 +4,8 @@ import { defaultPieces } from 'react-chessboard';
 import { FourPlayerBoard } from './FourPlayerBoard';
 import { FourPlayerSidebar } from './FourPlayerSidebar';
 import { useFourPlayerStore } from '../store';
+import { TEAM_INFO } from '../config/teams';
 import type { Team, PieceType } from '../engine';
-
-const TEAM_INFO: Record<Team, { label: string; hex: string }> = {
-  r: { label: 'Red', hex: '#D7263D' },
-  b: { label: 'Blue', hex: '#1E90FF' },
-  y: { label: 'Yellow', hex: '#FFD700' },
-  g: { label: 'Green', hex: '#00A86B' }
-};
 
 const PROMO_PIECES: PieceType[] = ['Q', 'R', 'B', 'N'];
 
@@ -22,7 +16,7 @@ function PromotionDialog({
   team: Team;
   onSelect: (piece: PieceType) => void;
 }) {
-  const hex = TEAM_INFO[team].hex;
+  const hex = TEAM_INFO[team].cssVar;
   return (
     <div className='bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm'>
       <div className='bg-card flex flex-col items-center gap-3 rounded-xl border p-6 shadow-lg'>

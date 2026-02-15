@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -9,21 +9,24 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
+import { GameOverPanel } from '@/features/chess/components/sidebar/GameOverPanel';
 import { usePlayback } from '@/features/chess/hooks/usePlayback';
 import { useFourPlayerStore, TEAM_ROTATIONS } from '../store';
+import { FourPlayerGameDialog } from './FourPlayerGameDialog';
+import { TEAM_INFO, TEAMS } from '../config/teams';
 import type { Team, MoveRecord } from '../engine';
-
-const TEAM_INFO: Record<Team, { label: string; hex: string; short: string }> = {
-  r: { label: 'Red', hex: '#D7263D', short: 'R' },
-  b: { label: 'Blue', hex: '#1E90FF', short: 'B' },
-  y: { label: 'Yellow', hex: '#FFD700', short: 'Y' },
-  g: { label: 'Green', hex: '#00A86B', short: 'G' }
-};
-
-const TEAMS: Team[] = ['r', 'b', 'y', 'g'];
-
-// ── Move History for 4-player ──────────────────────────────────────────
 
 type MoveItemProps = {
   move: MoveRecord;
@@ -50,7 +53,7 @@ const MoveItem = memo(function MoveItem({
     >
       <span
         className='inline-block h-2 w-2 shrink-0 rounded-full'
-        style={{ backgroundColor: info.hex }}
+        style={{ backgroundColor: info.cssVar }}
       />
       <span>{move.notation}</span>
     </button>
@@ -109,15 +112,19 @@ function FourPlayerMoveHistory({
   );
 }
 
-// ── Sidebar ──────────────────────────────────────────────────────────
-
 function PlayerButton({
   team,
   isActive,
+  isCurrent,
+  isEliminated,
+  score,
   onClick
 }: {
   team: Team;
   isActive: boolean;
+  isCurrent: boolean;
+  isEliminated: boolean;
+  score: number;
   onClick: () => void;
 }) {
   const info = TEAM_INFO[team];
@@ -125,15 +132,29 @@ function PlayerButton({
     <button
       onClick={onClick}
       className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all ${
-        isActive ? 'bg-foreground/10' : 'hover:bg-muted'
+        isEliminated
+          ? 'line-through opacity-40'
+          : isActive
+            ? 'bg-foreground/10'
+            : 'hover:bg-muted'
       }`}
-      style={isActive ? { boxShadow: `0 0 0 2px ${info.hex}` } : undefined}
+      style={
+        isActive && !isEliminated
+          ? { boxShadow: `0 0 0 2px ${info.cssVar}` }
+          : undefined
+      }
     >
       <div
-        className='h-2.5 w-2.5 rounded-full'
-        style={{ backgroundColor: info.hex }}
+        className={`rounded-full ${isCurrent && !isEliminated ? 'h-3 w-3 animate-pulse' : 'h-2.5 w-2.5'}`}
+        style={{
+          backgroundColor: info.cssVar,
+          opacity: isEliminated ? 0.3 : 1
+        }}
       />
       {info.label}
+      <span className='text-muted-foreground ml-auto text-[10px] tabular-nums'>
+        {score}
+      </span>
     </button>
   );
 }
@@ -147,6 +168,10 @@ export function FourPlayerSidebar() {
   const winner = useFourPlayerStore((s) => s.winner);
   const loseOrder = useFourPlayerStore((s) => s.loseOrder);
   const game = useFourPlayerStore((s) => s.game);
+  const scores = useFourPlayerStore((s) => s.scores);
+  const gameStarted = useFourPlayerStore((s) => s.gameStarted);
+  const hasHydrated = useFourPlayerStore((s) => s.hasHydrated);
+  const startGame = useFourPlayerStore((s) => s.startGame);
 
   const goToMove = useFourPlayerStore((s) => s.goToMove);
   const goToStart = useFourPlayerStore((s) => s.goToStart);
@@ -155,6 +180,18 @@ export function FourPlayerSidebar() {
   const goToNext = useFourPlayerStore((s) => s.goToNext);
   const resetGame = useFourPlayerStore((s) => s.resetGame);
   const setOrientation = useFourPlayerStore((s) => s.setOrientation);
+
+  const [newGameOpen, setNewGameOpen] = useState(false);
+
+  const canAbort = moves.length < 4;
+
+  useEffect(() => {
+    if (hasHydrated && !gameStarted && !isGameOver) {
+      setNewGameOpen(true);
+    }
+  }, [hasHydrated, gameStarted, isGameOver]);
+
+  const handleNewGame = () => setNewGameOpen(true);
 
   const canGoBack = viewingMoveIndex > -1;
   const canGoForward = viewingMoveIndex < moves.length - 1;
@@ -169,171 +206,196 @@ export function FourPlayerSidebar() {
   const isChecked = !isGameOver && game.isChecked;
 
   return (
-    <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
-      {/* Header */}
-      <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
-        <h3 className='font-semibold'>Moves</h3>
-        <span className='text-muted-foreground text-xs'>
-          {moves.length} move{moves.length !== 1 ? 's' : ''}
-        </span>
-      </div>
-
-      {/* Move History */}
-      <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
-        <div className='px-4 py-2'>
-          <FourPlayerMoveHistory
-            moves={moves}
-            viewingMoveIndex={viewingMoveIndex}
-            onMoveClick={goToMove}
-          />
+    <>
+      <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
+        {/* Header */}
+        <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
+          <h3 className='font-semibold'>Moves</h3>
+          <span className='text-muted-foreground text-xs'>
+            {moves.length} move{moves.length !== 1 ? 's' : ''}
+          </span>
         </div>
-      </ScrollArea>
 
-      {/* Navigation Controls */}
-      <NavigationControls
-        viewingIndex={viewingMoveIndex + 1}
-        totalPositions={moves.length + 1}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        isPlaying={isPlaying}
-        onTogglePlay={togglePlay}
-        onGoToStart={goToStart}
-        onGoToEnd={goToEnd}
-        onGoToPrev={goToPrev}
-        onGoToNext={goToNext}
-      />
-
-      {/* Game Status & Actions */}
-      <div className='bg-muted/50 space-y-2 border-t p-2'>
-        {/* Game over panel */}
-        {isGameOver && winner && (
-          <div className='flex flex-col gap-2 border-b pb-2'>
-            <div className='flex items-center justify-center gap-2'>
-              <div
-                className='h-3.5 w-3.5 rounded-full'
-                style={{ backgroundColor: TEAM_INFO[winner].hex }}
-              />
-              <span className='text-sm font-bold'>
-                {TEAM_INFO[winner].label} wins!
-              </span>
-            </div>
-            {loseOrder.length > 0 && (
-              <p className='text-muted-foreground text-center text-xs'>
-                Eliminated:{' '}
-                {loseOrder.map((t, i) => (
-                  <span key={t}>
-                    {i > 0 && ', '}
-                    <span style={{ color: TEAM_INFO[t].hex }}>
-                      {TEAM_INFO[t].label}
-                    </span>
-                  </span>
-                ))}
-              </p>
-            )}
-            <Button
-              variant='default'
-              size='sm'
-              className='w-full'
-              onClick={resetGame}
-            >
-              <Icons.newGame className='mr-2 h-4 w-4' />
-              New Game
-            </Button>
+        {/* Move History */}
+        <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
+          <div className='px-4 py-2'>
+            <FourPlayerMoveHistory
+              moves={moves}
+              viewingMoveIndex={viewingMoveIndex}
+              onMoveClick={goToMove}
+            />
           </div>
-        )}
+        </ScrollArea>
 
-        {/* Game status during play */}
-        {!isGameOver && (
-          <div className='flex flex-col gap-2'>
-            {/* Current turn + check indicator */}
-            <div className='flex items-center justify-center gap-2'>
-              <div
-                className='h-3 w-3 rounded-full'
-                style={{ backgroundColor: currentInfo.hex }}
-              />
-              <span className='text-sm font-medium'>
-                {currentInfo.label}&apos;s turn
-              </span>
-              {isChecked && (
-                <span className='bg-destructive/10 text-destructive rounded px-1.5 py-0.5 text-xs font-bold'>
-                  Check!
+        {/* Navigation Controls */}
+        <NavigationControls
+          viewingIndex={viewingMoveIndex + 1}
+          totalPositions={moves.length + 1}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          isPlaying={isPlaying}
+          onTogglePlay={togglePlay}
+          onGoToStart={goToStart}
+          onGoToEnd={goToEnd}
+          onGoToPrev={goToPrev}
+          onGoToNext={goToNext}
+        />
+
+        {/* Game Status & Actions */}
+        <div className='bg-muted/50 space-y-2 border-t p-2'>
+          {/* No active game panel */}
+          {!gameStarted && !isGameOver && (
+            <GameOverPanel
+              gameResult='No active game'
+              onNewGame={handleNewGame}
+            />
+          )}
+
+          {/* Game over panel */}
+          {isGameOver && winner && (
+            <div className='flex flex-col gap-2 border-b pb-2'>
+              <div className='flex items-center justify-center gap-2'>
+                <div
+                  className='h-3.5 w-3.5 rounded-full'
+                  style={{ backgroundColor: TEAM_INFO[winner].cssVar }}
+                />
+                <span className='text-sm font-bold'>
+                  {TEAM_INFO[winner].label} wins!
                 </span>
+              </div>
+              {loseOrder.length > 0 && (
+                <p className='text-muted-foreground text-center text-xs'>
+                  Eliminated:{' '}
+                  {loseOrder.map((t, i) => (
+                    <span key={t}>
+                      {i > 0 && ', '}
+                      <span style={{ color: TEAM_INFO[t].cssVar }}>
+                        {TEAM_INFO[t].label}
+                      </span>
+                    </span>
+                  ))}
+                </p>
+              )}
+              <Button
+                variant='default'
+                size='sm'
+                className='w-full'
+                onClick={handleNewGame}
+              >
+                <Icons.newGame className='mr-2 h-4 w-4' />
+                New Game
+              </Button>
+            </div>
+          )}
+
+          {/* Game status during play */}
+          {gameStarted && !isGameOver && (
+            <div className='flex flex-col gap-2'>
+              {/* Current turn + check indicator */}
+              <div className='flex items-center justify-center gap-2'>
+                <div
+                  className='h-3 w-3 rounded-full'
+                  style={{ backgroundColor: currentInfo.cssVar }}
+                />
+                <span className='text-sm font-medium'>
+                  {currentInfo.label}&apos;s turn
+                </span>
+                {isChecked && (
+                  <span className='bg-destructive/10 text-destructive rounded px-1.5 py-0.5 text-xs font-bold'>
+                    Check!
+                  </span>
+                )}
+              </div>
+
+              {/* Eliminated players */}
+              {loseOrder.length > 0 && (
+                <p className='text-muted-foreground text-center text-xs'>
+                  {loseOrder.length} eliminated:{' '}
+                  {loseOrder.map((t, i) => (
+                    <span key={t}>
+                      {i > 0 && ', '}
+                      <span style={{ color: TEAM_INFO[t].cssVar }}>
+                        {TEAM_INFO[t].label}
+                      </span>
+                    </span>
+                  ))}
+                </p>
               )}
             </div>
+          )}
 
-            {/* Eliminated players */}
-            {loseOrder.length > 0 && (
-              <p className='text-muted-foreground text-center text-xs'>
-                {loseOrder.length} eliminated:{' '}
-                {loseOrder.map((t, i) => (
-                  <span key={t}>
-                    {i > 0 && ', '}
-                    <span style={{ color: TEAM_INFO[t].hex }}>
-                      {TEAM_INFO[t].label}
-                    </span>
-                  </span>
-                ))}
-              </p>
-            )}
+          {/* View perspective & player statuses (combined) */}
+          <div className='flex flex-wrap items-center justify-center gap-1'>
+            {TEAMS.map((team) => (
+              <PlayerButton
+                key={team}
+                team={team}
+                isActive={orientation === TEAM_ROTATIONS[team]}
+                isCurrent={team === currentTeam && !isGameOver}
+                isEliminated={loseOrder.includes(team)}
+                score={scores[team]}
+                onClick={() => setOrientation(TEAM_ROTATIONS[team])}
+              />
+            ))}
+          </div>
 
-            {/* Player statuses */}
-            <div className='flex justify-center gap-3'>
-              {TEAMS.map((team) => {
-                const info = TEAM_INFO[team];
-                const isEliminated = loseOrder.includes(team);
-                const isCurrent = team === currentTeam;
-                return (
-                  <div
-                    key={team}
-                    className={`flex items-center gap-1 text-xs ${
-                      isEliminated
-                        ? 'text-muted-foreground line-through opacity-50'
-                        : isCurrent
-                          ? 'font-bold'
-                          : 'text-muted-foreground'
-                    }`}
-                  >
-                    <div
-                      className='h-2 w-2 rounded-full'
-                      style={{
-                        backgroundColor: info.hex,
-                        opacity: isEliminated ? 0.3 : 1
-                      }}
-                    />
-                    {info.label}
-                  </div>
-                );
-              })}
+          {/* Abort/Resign button */}
+          {gameStarted && !isGameOver && (
+            <div className='flex justify-center'>
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive'
+                      >
+                        {canAbort ? (
+                          <Icons.abort className='h-4 w-4' />
+                        ) : (
+                          <Icons.flag className='h-4 w-4' />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {canAbort ? 'Abort Game' : 'Resign Game'}
+                  </TooltipContent>
+                </Tooltip>
+
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {canAbort ? 'Abort Game?' : 'Resign Game?'}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {canAbort
+                        ? 'Are you sure you want to abort? This game will not be counted.'
+                        : 'Are you sure you want to resign? This will end the game.'}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={resetGame}
+                      className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                    >
+                      {canAbort ? 'Abort' : 'Resign'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
-          </div>
-        )}
-
-        {/* View perspective */}
-        <div className='flex flex-wrap items-center justify-center gap-1'>
-          {TEAMS.map((team) => (
-            <PlayerButton
-              key={team}
-              team={team}
-              isActive={orientation === TEAM_ROTATIONS[team]}
-              onClick={() => setOrientation(TEAM_ROTATIONS[team])}
-            />
-          ))}
+          )}
         </div>
-
-        {/* New game button */}
-        {!isGameOver && (
-          <div className='flex justify-center'>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant='ghost' size='icon' onClick={resetGame}>
-                  <Icons.rematch className='h-4 w-4' />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>New Game</TooltipContent>
-            </Tooltip>
-          </div>
-        )}
       </div>
-    </div>
+
+      <FourPlayerGameDialog
+        open={newGameOpen}
+        onOpenChange={setNewGameOpen}
+        onStart={startGame}
+      />
+    </>
   );
 }

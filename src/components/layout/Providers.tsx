@@ -3,7 +3,7 @@
 import { ThemeProvider, useTheme } from 'next-themes';
 import { Toaster } from 'sonner';
 import { useEffect, useRef } from 'react';
-import { useChessStore } from '@/features/chess/stores/useChessStore';
+import { useSettingsStore } from '@/features/settings/stores/useSettingsStore';
 import {
   BoardThemeName,
   DEFAULT_BOARD_THEME
@@ -23,7 +23,7 @@ function ThemeCookieSync() {
 }
 
 function BoardSchemeSync() {
-  const boardThemeName = useChessStore((s) => s.boardThemeName);
+  const boardThemeName = useSettingsStore((s) => s.boardThemeName);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-board-scheme', boardThemeName);
@@ -33,17 +33,14 @@ function BoardSchemeSync() {
 }
 
 function StoreInitializer({
-  initialBoardTheme,
-  initialPlayAs
+  initialBoardTheme
 }: {
   initialBoardTheme: BoardThemeName;
-  initialPlayAs: 'white' | 'black' | undefined;
 }) {
   const initialized = useRef(false);
   if (!initialized.current) {
-    useChessStore.setState({
-      boardThemeName: initialBoardTheme,
-      ...(initialPlayAs && { playAs: initialPlayAs })
+    useSettingsStore.setState({
+      boardThemeName: initialBoardTheme
     });
     initialized.current = true;
   }
@@ -56,11 +53,7 @@ interface ProvidersProps {
   initialPlayAs?: string;
 }
 
-export function Providers({
-  children,
-  initialBoardTheme,
-  initialPlayAs
-}: ProvidersProps) {
+export function Providers({ children, initialBoardTheme }: ProvidersProps) {
   return (
     <ThemeProvider
       attribute='class'
@@ -72,11 +65,6 @@ export function Providers({
       <StoreInitializer
         initialBoardTheme={
           (initialBoardTheme as BoardThemeName) || DEFAULT_BOARD_THEME
-        }
-        initialPlayAs={
-          initialPlayAs === 'white' || initialPlayAs === 'black'
-            ? initialPlayAs
-            : undefined
         }
       />
       <ThemeCookieSync />

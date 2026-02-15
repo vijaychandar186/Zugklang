@@ -48,6 +48,12 @@
   --piece-drag-shadow: oklch(0 0 0 / 30%);
   --highlight-drop-alt: oklch(1 0 0 / 40%);
 
+  --team-red: #d7263d;
+  --team-blue: #1e90ff;
+  --team-yellow: #ffd700;
+  --team-green: #00a86b;
+  --team-eliminated: #888888;
+
   --board-default-dark: oklch(0.55 0.12 120);
   --board-default-light: oklch(0.92 0.04 105);
 

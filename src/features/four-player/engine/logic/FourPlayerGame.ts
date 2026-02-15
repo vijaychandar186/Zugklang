@@ -22,6 +22,7 @@ interface GameConfig {
   readonly totalMoves?: number;
   readonly status?: GameStatus;
   readonly moveHistory?: MoveRecord[];
+  readonly eliminatedBy?: Record<Team, Team>;
 }
 
 // ── Game class ─────────────────────────────────────────────────────
@@ -34,6 +35,7 @@ export class FourPlayerGame {
   private _status: GameStatus;
   private _pendingPromotion: { piece: Piece; x: number; y: number } | null;
   private _moveHistory: MoveRecord[];
+  private _eliminatedBy: Partial<Record<Team, Team>>;
 
   constructor(config: GameConfig = {}) {
     this._pieces = config.pieces ?? createInitialPieces();
@@ -43,6 +45,7 @@ export class FourPlayerGame {
     this._status = config.status ?? 'playing';
     this._pendingPromotion = null;
     this._moveHistory = config.moveHistory ?? [];
+    this._eliminatedBy = config.eliminatedBy ? { ...config.eliminatedBy } : {};
     this.calculateAllMoves();
   }
 
@@ -74,6 +77,10 @@ export class FourPlayerGame {
 
   get moveHistory(): readonly MoveRecord[] {
     return this._moveHistory;
+  }
+
+  get eliminatedBy(): Readonly<Partial<Record<Team, Team>>> {
+    return this._eliminatedBy;
   }
 
   get winner(): Team | null {
@@ -215,7 +222,8 @@ export class FourPlayerGame {
       loseOrder: [...this._loseOrder],
       totalMoves: this._totalMoves,
       status: this._status,
-      moveHistory: this._moveHistory.map((move) => ({ ...move }))
+      moveHistory: this._moveHistory.map((move) => ({ ...move })),
+      eliminatedBy: { ...this._eliminatedBy } as Record<Team, Team>
     });
   }
 
@@ -259,6 +267,10 @@ export class FourPlayerGame {
 
     if (!hasLegalMoves && this._status === 'playing') {
       const eliminatedTeam = this._currentTeam;
+      const lastMove = this._moveHistory[this._moveHistory.length - 1];
+      if (lastMove) {
+        this._eliminatedBy[eliminatedTeam] = lastMove.team;
+      }
       this._currentTeam = this.getNextTeam();
       this._loseOrder.push(eliminatedTeam);
 

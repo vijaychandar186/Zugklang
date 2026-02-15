@@ -29,7 +29,7 @@ export function BoardContainer({
         {shouldShowEval && <EvaluationBar />}
       </div>
       <div
-        className={`shrink-0 ${shouldShowEval ? 'flex-1 sm:w-[400px] sm:flex-none lg:w-[560px]' : 'w-full sm:w-[400px] lg:w-[560px]'}`}
+        className={`shrink-0 ${shouldShowEval ? 'flex-1 sm:w-[400px] sm:flex-none lg:w-[min(560px,calc(100dvh-200px))] xl:w-[min(640px,calc(100dvh-200px))] 2xl:w-[min(720px,calc(100dvh-200px))]' : 'w-full sm:w-[400px] lg:w-[min(560px,calc(100dvh-200px))] xl:w-[min(640px,calc(100dvh-200px))] 2xl:w-[min(720px,calc(100dvh-200px))]'}`}
         data-board-container
       >
         {children}

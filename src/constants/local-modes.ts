@@ -17,5 +17,13 @@ export const localModes: MenuCardItem[] = [
     description:
       'Randomized starting positions. No opening theory, pure skill and creativity.',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/local/atomic',
+    icon: Icons.zap,
+    title: 'Atomic Chess',
+    description:
+      'Captures cause explosions! Pieces around the capture square are destroyed.',
+    actionText: 'Play Now'
   }
 ];

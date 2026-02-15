@@ -17,5 +17,13 @@ export const computerModes: MenuCardItem[] = [
     description:
       'Chess960 against the engine. Test your skills without opening preparation.',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/computer/atomic',
+    icon: Icons.zap,
+    title: 'Atomic Chess',
+    description:
+      'Explosive chess against Fairy-Stockfish. Captures destroy surrounding pieces!',
+    actionText: 'Play Now'
   }
 ];

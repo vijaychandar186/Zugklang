@@ -19,6 +19,7 @@ import { useChessArrows } from '../hooks/useChessArrows';
 import { useChessBoardLogic } from '../hooks/useChessBoardLogic';
 import { useBoardTheme } from '../hooks/useSquareInteraction';
 import { useStockfish } from '@/features/engine/hooks/useStockfish';
+import { useFairyStockfish } from '@/features/engine/hooks/useFairyStockfish';
 import { playSound } from '@/features/game/utils/sounds';
 
 export function ChessBoard({
@@ -46,7 +47,8 @@ export function ChessBoard({
     soundEnabled,
     board3dEnabled,
     boardFlipped,
-    autoFlipBoard
+    autoFlipBoard,
+    variant
   } = useChessState();
 
   const {
@@ -72,6 +74,10 @@ export function ChessBoard({
 
   const stockfishEnabled =
     (isPlayMode && !isLocalGame) || playingAgainstStockfish;
+
+  // Use Fairy-Stockfish for variant chess (atomic, etc.), regular Stockfish for standard/fischer-random
+  const useFairyEngine = variant === 'atomic';
+  const useStandardEngine = !useFairyEngine;
 
   const onMoveExecuted = useCallback(() => {
     if (isPlayMode) {
@@ -119,13 +125,28 @@ export function ChessBoard({
     onPremoveAdded
   });
 
+  // Standard Stockfish for regular chess and fischer-random
   useStockfish({
     game,
     fen: currentFEN,
     gameId: isPlayMode ? gameId : 1,
     playAs: effectivePlayAs,
     stockfishLevel,
-    enabled: stockfishEnabled && !gameOver,
+    enabled: stockfishEnabled && !gameOver && useStandardEngine,
+    onMove: executeMove,
+    soundEnabled,
+    playSound
+  });
+
+  // Fairy-Stockfish for variant chess (atomic, etc.)
+  useFairyStockfish({
+    game,
+    fen: currentFEN,
+    gameId: isPlayMode ? gameId : 1,
+    playAs: effectivePlayAs,
+    stockfishLevel,
+    enabled: stockfishEnabled && !gameOver && useFairyEngine,
+    variant,
     onMove: executeMove,
     soundEnabled,
     playSound
@@ -162,7 +183,8 @@ export function ChessBoard({
           const isUserWin =
             (playAs === 'white' && winner === 'White') ||
             (playAs === 'black' && winner === 'Black');
-          setGameResult(isUserWin ? 'You win!' : 'Stockfish wins!');
+          const engineName = useFairyEngine ? 'Fairy-Stockfish' : 'Stockfish';
+          setGameResult(isUserWin ? 'You win!' : `${engineName} wins!`);
         }
       } else if (game.isDraw()) {
         setGameResult('Draw!');
@@ -179,7 +201,8 @@ export function ChessBoard({
     playAs,
     setGameResult,
     setGameOver,
-    soundEnabled
+    soundEnabled,
+    useFairyEngine
   ]);
 
   const onNewGame = useCallback(() => {

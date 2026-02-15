@@ -2,7 +2,8 @@ import { Chess, ChessJSMove as Move } from '@/lib/chess';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import {
   ChessVariant,
-  generateRandomChess960FEN
+  generateRandomChess960FEN,
+  variantToRules
 } from '@/features/chess/utils/chess960';
 
 export interface ChessSessionState {
@@ -27,7 +28,7 @@ export class ChessSession {
 
   constructor(fen: string = STARTING_FEN, variant: ChessVariant = 'standard') {
     this._variant = variant;
-    this.game = new Chess(fen, variant === 'fischerRandom' ? 'chess' : 'chess');
+    this.game = new Chess(fen, variantToRules(variant));
     this._history = [fen];
     this._moves = [];
   }
@@ -92,7 +93,7 @@ export class ChessSession {
     if (variant === 'fischerRandom') {
       fen = generateRandomChess960FEN();
     }
-    this.game = new Chess(fen, variant === 'fischerRandom' ? 'chess' : 'chess');
+    this.game = new Chess(fen, variantToRules(variant));
     this._history = [fen];
     this._moves = [];
   }

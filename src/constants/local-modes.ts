@@ -64,5 +64,13 @@ export const localModes: MenuCardItem[] = [
     description:
       'Get your king to the center to win! Standard rules plus a new victory condition.',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/local/crazyhouse',
+    icon: Icons.recycle,
+    title: 'Crazyhouse',
+    description:
+      'Captured pieces switch sides and can be dropped back on the board!',
+    actionText: 'Play Now'
   }
 ];

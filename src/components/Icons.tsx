@@ -71,6 +71,7 @@ import {
   ListChecks,
   Skull,
   Mountain,
+  Recycle,
   type LucideIcon
 } from 'lucide-react';
 
@@ -155,7 +156,8 @@ export const Icons = {
   brickWall: BrickWall,
   listChecks: ListChecks,
   skull: Skull,
-  mountain: Mountain
+  mountain: Mountain,
+  recycle: Recycle
 } as const;
 
 export type { LucideIcon };

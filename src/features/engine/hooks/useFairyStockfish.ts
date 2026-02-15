@@ -14,6 +14,7 @@ type UseFairyStockfishProps = {
   enabled: boolean;
   variant: ChessVariant;
   onMove: (from: Square, to: Square, promotion?: string) => boolean;
+  onDropMove?: (san: string) => unknown;
   soundEnabled: boolean;
   playSound: (type: SoundType) => void;
 };
@@ -27,6 +28,7 @@ export function useFairyStockfish({
   enabled,
   variant,
   onMove,
+  onDropMove,
   soundEnabled,
   playSound
 }: UseFairyStockfishProps) {
@@ -54,6 +56,12 @@ export function useFairyStockfish({
       if (bestMove) {
         if (gameRef.current.fen() !== fenToEvaluate) return;
 
+        // Drop moves (e.g. "P@e4") contain "@" - handle via SAN
+        if (bestMove.includes('@') && onDropMove) {
+          onDropMove(bestMove);
+          return;
+        }
+
         const from = bestMove.substring(0, 2) as Square;
         const to = bestMove.substring(2, 4) as Square;
         const promotion = bestMove.substring(4, 5) || undefined;
@@ -63,7 +71,7 @@ export function useFairyStockfish({
     });
 
     await engine.evaluatePosition(fenToEvaluate, stockfishLevel, variant);
-  }, [engine, playAs, stockfishLevel, variant, onMove]);
+  }, [engine, playAs, stockfishLevel, variant, onMove, onDropMove]);
 
   useEffect(() => {
     if (!enabled) return;

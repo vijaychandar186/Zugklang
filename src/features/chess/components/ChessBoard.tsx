@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { UnifiedChessBoard as Board } from './Board';
 import { Board3D } from './Board3D';
@@ -28,6 +28,7 @@ import {
   hasBoardOverlay
 } from '../config/variants';
 import { useAtomicThreats } from '../hooks/useAtomicThreats';
+import { useCrazyhousePocket } from '../hooks/useCrazyhousePocket';
 
 export function ChessBoard({
   serverOrientation,
@@ -64,6 +65,7 @@ export function ChessBoard({
     setGameResult,
     setOnNewGame,
     makeMove,
+    makeDropMove,
     goToEnd,
     flipBoard
   } = useChessActions();
@@ -148,6 +150,17 @@ export function ChessBoard({
     playSound
   });
 
+  const executeDropMove = useCallback(
+    (san: string) => {
+      const move = makeDropMove(san);
+      if (move) {
+        onMoveExecuted();
+      }
+      return move;
+    },
+    [makeDropMove, onMoveExecuted]
+  );
+
   // Fairy-Stockfish for variant chess (atomic, etc.)
   useFairyStockfish({
     game,
@@ -158,6 +171,7 @@ export function ChessBoard({
     enabled: stockfishEnabled && !gameOver && useFairy,
     variant,
     onMove: executeMove,
+    onDropMove: executeDropMove,
     soundEnabled,
     playSound
   });
@@ -193,6 +207,50 @@ export function ChessBoard({
     selectedSquare: moveFrom,
     captureTargets
   });
+
+  const {
+    selectedDropPiece,
+    dropSquareStyles,
+    handleDropOnSquare,
+    clearDropSelection
+  } = useCrazyhousePocket({
+    game,
+    variant,
+    currentFEN,
+    playerColor: effectivePlayAs,
+    makeDropMove,
+    onMoveExecuted,
+    isGameOver: gameOver || (isPlayMode && !gameStarted)
+  });
+
+  const wrappedSquareClick = useCallback(
+    ({ square }: { square: string }) => {
+      if (selectedDropPiece) {
+        if (handleDropOnSquare(square)) return;
+        clearDropSelection();
+        return;
+      }
+      handleSquareClick({ square });
+    },
+    [
+      selectedDropPiece,
+      handleDropOnSquare,
+      clearDropSelection,
+      handleSquareClick
+    ]
+  );
+
+  const mergedSquareStyles = useMemo(() => {
+    const base = isMounted && hasHydrated ? squareStyles : {};
+    if (!selectedDropPiece) return base;
+    return { ...base, ...dropSquareStyles };
+  }, [
+    isMounted,
+    hasHydrated,
+    squareStyles,
+    selectedDropPiece,
+    dropSquareStyles
+  ]);
 
   useEffect(() => {
     if (!isPlayMode || !gameStarted) return;
@@ -249,9 +307,9 @@ export function ChessBoard({
       !isViewingHistory &&
       !pendingPromotion &&
       !(isPlayMode && !gameStarted),
-    squareStyles: isMounted && hasHydrated ? squareStyles : {},
+    squareStyles: mergedSquareStyles,
     onPieceDrop: onDrop,
-    onSquareClick: handleSquareClick,
+    onSquareClick: wrappedSquareClick,
     onSquareRightClick: handleSquareRightClick,
     arrows: analysisArrows
   };
@@ -265,47 +323,49 @@ export function ChessBoard({
   const finishLineAtTop = resolvedOrientation === 'white';
 
   return (
-    <div className='relative'>
-      {shouldShow3d ? (
-        <Board3D {...boardProps} />
-      ) : (
-        <Board
-          {...boardProps}
-          darkSquareStyle={theme.darkSquareStyle}
-          lightSquareStyle={theme.lightSquareStyle}
+    <>
+      <div className='relative'>
+        {shouldShow3d ? (
+          <Board3D {...boardProps} />
+        ) : (
+          <Board
+            {...boardProps}
+            darkSquareStyle={theme.darkSquareStyle}
+            lightSquareStyle={theme.lightSquareStyle}
+          />
+        )}
+        {showFinishLine && (
+          <div
+            className='pointer-events-none absolute right-0 left-0'
+            style={{
+              [finishLineAtTop ? 'top' : 'bottom']: 0,
+              height: '12.5%',
+              background:
+                'repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0 / 12.5% 50%',
+              opacity: 0.12
+            }}
+          />
+        )}
+        {atomicOverlays.map(({ square, type, left, top }) => (
+          <Image
+            key={`${type}-${square}`}
+            src={`/atomic/${type}.svg`}
+            alt={type}
+            width={28}
+            height={28}
+            className='pointer-events-none absolute z-40'
+            style={{ left, top }}
+          />
+        ))}
+        <PromotionDialog
+          isOpen={!!pendingPromotion}
+          color={pendingPromotion?.color || 'white'}
+          targetSquare={pendingPromotion?.to || 'a8'}
+          boardOrientation={resolvedOrientation}
+          onSelect={completePromotion}
+          onCancel={cancelPromotion}
         />
-      )}
-      {showFinishLine && (
-        <div
-          className='pointer-events-none absolute right-0 left-0'
-          style={{
-            [finishLineAtTop ? 'top' : 'bottom']: 0,
-            height: '12.5%',
-            background:
-              'repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0 / 12.5% 50%',
-            opacity: 0.12
-          }}
-        />
-      )}
-      {atomicOverlays.map(({ square, type, left, top }) => (
-        <Image
-          key={`${type}-${square}`}
-          src={`/atomic/${type}.svg`}
-          alt={type}
-          width={28}
-          height={28}
-          className='pointer-events-none absolute z-40'
-          style={{ left, top }}
-        />
-      ))}
-      <PromotionDialog
-        isOpen={!!pendingPromotion}
-        color={pendingPromotion?.color || 'white'}
-        targetSquare={pendingPromotion?.to || 'a8'}
-        boardOrientation={resolvedOrientation}
-        onSelect={completePromotion}
-        onCancel={cancelPromotion}
-      />
-    </div>
+      </div>
+    </>
   );
 }

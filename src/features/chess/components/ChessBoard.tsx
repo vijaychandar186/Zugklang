@@ -188,7 +188,6 @@ export function ChessBoard({
   const atomicOverlays = useAtomicThreats({
     game,
     variant,
-    currentFEN,
     playerColor: playerColorShort,
     boardFlipped: resolvedOrientation === 'black',
     selectedSquare: moveFrom,

@@ -40,5 +40,29 @@ export const localModes: MenuCardItem[] = [
     description:
       'A massive pawn army vs a full set of pieces. Can the horde overwhelm the defense?',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/local/three-check',
+    icon: Icons.listChecks,
+    title: 'Three-Check',
+    description:
+      'Give three checks to win! Standard chess with an explosive twist.',
+    actionText: 'Play Now'
+  },
+  {
+    href: '/play/local/antichess',
+    icon: Icons.skull,
+    title: 'Antichess',
+    description:
+      'Lose all your pieces to win! Captures are mandatory in this reverse chess variant.',
+    actionText: 'Play Now'
+  },
+  {
+    href: '/play/local/king-of-the-hill',
+    icon: Icons.mountain,
+    title: 'King of the Hill',
+    description:
+      'Get your king to the center to win! Standard rules plus a new victory condition.',
+    actionText: 'Play Now'
   }
 ];

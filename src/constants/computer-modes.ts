@@ -25,5 +25,13 @@ export const computerModes: MenuCardItem[] = [
     description:
       'Explosive chess against Fairy-Stockfish. Captures destroy surrounding pieces!',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/computer/racing-kings',
+    icon: Icons.crown,
+    title: 'Racing Kings',
+    description:
+      'Race your king to the eighth rank against Fairy-Stockfish. No checks allowed!',
+    actionText: 'Play Now'
   }
 ];

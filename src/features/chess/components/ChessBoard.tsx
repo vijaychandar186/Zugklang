@@ -75,8 +75,8 @@ export function ChessBoard({
   const stockfishEnabled =
     (isPlayMode && !isLocalGame) || playingAgainstStockfish;
 
-  // Use Fairy-Stockfish for variant chess (atomic, etc.), regular Stockfish for standard/fischer-random
-  const useFairyEngine = variant === 'atomic';
+  // Use Fairy-Stockfish for variant chess (atomic, racing kings, etc.), regular Stockfish for standard/fischer-random
+  const useFairyEngine = variant === 'atomic' || variant === 'racingKings';
   const useStandardEngine = !useFairyEngine;
 
   const onMoveExecuted = useCallback(() => {
@@ -171,17 +171,16 @@ export function ChessBoard({
     : boardOrientation;
 
   useEffect(() => {
-    if (!isPlayMode) return;
+    if (!isPlayMode || !gameStarted) return;
 
     if (game.isGameOver()) {
       if (soundEnabled) playSound('game-end');
-      if (game.isDraw()) {
+      const outcome = game.outcome();
+      if (!outcome || outcome.winner === undefined) {
+        // Draw: stalemate, insufficient material, or variant draw (e.g. both kings reach rank 8)
         setGameResult('Draw!');
-      } else if (game.isStalemate()) {
-        setGameResult('Stalemate!');
       } else {
-        // Checkmate or variant win (e.g. atomic king explosion)
-        const winner = game.turn() === 'w' ? 'Black' : 'White';
+        const winner = outcome.winner === 'w' ? 'White' : 'Black';
         if (isLocalGame) {
           setGameResult(`${winner} wins!`);
         } else {
@@ -198,6 +197,7 @@ export function ChessBoard({
     game,
     currentFEN,
     isPlayMode,
+    gameStarted,
     isLocalGame,
     playAs,
     setGameResult,

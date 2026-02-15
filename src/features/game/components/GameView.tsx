@@ -65,7 +65,9 @@ export function GameView({
     }
     if (isStockfish) {
       // Use Fairy-Stockfish for variant chess
-      return storeVariant === 'atomic' ? 'Fairy-Stockfish' : 'Stockfish';
+      return storeVariant === 'atomic' || storeVariant === 'racingKings'
+        ? 'Fairy-Stockfish'
+        : 'Stockfish';
     }
     return 'Player';
   };

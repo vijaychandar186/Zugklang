@@ -25,5 +25,12 @@ export const localModes: MenuCardItem[] = [
     description:
       'Captures cause explosions! Pieces around the capture square are destroyed.',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/local/racing-kings',
+    icon: Icons.crown,
+    title: 'Racing Kings',
+    description: 'Race your king to the eighth rank. No checks allowed!',
+    actionText: 'Play Now'
   }
 ];

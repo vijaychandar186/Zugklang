@@ -88,12 +88,18 @@ export function isValidChess960BackRank(pieces: string[]): boolean {
 
 import type { Rules } from 'chessops/types';
 
-export type ChessVariant = 'standard' | 'fischerRandom' | 'atomic';
+export type ChessVariant =
+  | 'standard'
+  | 'fischerRandom'
+  | 'atomic'
+  | 'racingKings';
 
 export function variantToRules(variant: ChessVariant): Rules {
   switch (variant) {
     case 'atomic':
       return 'atomic';
+    case 'racingKings':
+      return 'racingkings';
     case 'fischerRandom':
     case 'standard':
     default:

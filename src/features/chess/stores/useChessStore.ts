@@ -18,7 +18,8 @@ import {
 } from './gameStorage';
 import {
   ChessVariant,
-  generateRandomChess960FEN
+  generateRandomChess960FEN,
+  variantToRules
 } from '@/features/chess/utils/chess960';
 import {
   createNavigationSlice,
@@ -262,7 +263,7 @@ export const useChessStore = create<ChessStore>()(
           state.variant === 'fischerRandom'
             ? generateRandomChess960FEN()
             : STARTING_FEN;
-        const newGame = new Chess(startingFEN);
+        const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
         set({
           mode: 'play',
@@ -296,7 +297,7 @@ export const useChessStore = create<ChessStore>()(
           state.variant === 'fischerRandom'
             ? generateRandomChess960FEN()
             : STARTING_FEN;
-        const newGame = new Chess(startingFEN);
+        const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
         set({
           mode: 'play',
@@ -354,7 +355,11 @@ export const useChessStore = create<ChessStore>()(
             loadFromModeStorage<PersistedPlayState>(newGameType);
           if (savedState) {
             try {
-              const game = new Chess(savedState.currentFEN || STARTING_FEN);
+              const savedVariant = savedState.variant || 'standard';
+              const game = new Chess(
+                savedState.currentFEN || STARTING_FEN,
+                variantToRules(savedVariant)
+              );
               set({
                 gameType: newGameType,
                 game,
@@ -471,10 +476,12 @@ export const useChessStore = create<ChessStore>()(
       onTimeout: (color) => {
         const state = get();
         const isPlayerTimeout = color === state.playAs;
+        const engineName =
+          state.variant === 'atomic' ? 'Fairy-Stockfish' : 'Stockfish';
         set({
           gameOver: true,
           gameResult: isPlayerTimeout
-            ? 'Stockfish wins on time!'
+            ? `${engineName} wins on time!`
             : 'You win on time!',
           activeTimer: null,
           lastActiveTimestamp: null
@@ -564,7 +571,8 @@ export const useChessStore = create<ChessStore>()(
         if (state) {
           try {
             const fen = state.currentFEN || STARTING_FEN;
-            state.game = new Chess(fen);
+            const variant = state.variant || 'standard';
+            state.game = new Chess(fen, variantToRules(variant));
           } catch {
             state.game = new Chess();
             state.currentFEN = STARTING_FEN;
@@ -622,7 +630,8 @@ export const useChessState = () =>
       soundEnabled: s.soundEnabled,
       board3dEnabled: s.board3dEnabled,
       boardFlipped: s.boardFlipped,
-      autoFlipBoard: s.autoFlipBoard
+      autoFlipBoard: s.autoFlipBoard,
+      variant: s.variant
     }))
   );
 

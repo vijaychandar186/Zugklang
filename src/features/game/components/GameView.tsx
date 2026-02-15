@@ -57,11 +57,17 @@ export function GameView({
     currentFEN
   } = useGameView();
 
+  const storeVariant = useChessStore((s) => s.variant);
+
   const getPlayerName = (color: 'white' | 'black', isStockfish: boolean) => {
     if (isLocalGame) {
       return color === 'white' ? 'White' : 'Black';
     }
-    return isStockfish ? 'Stockfish' : 'Player';
+    if (isStockfish) {
+      // Use Fairy-Stockfish for variant chess
+      return storeVariant === 'atomic' ? 'Fairy-Stockfish' : 'Stockfish';
+    }
+    return 'Player';
   };
 
   const setMode = useChessStore((s) => s.setMode);
@@ -156,7 +162,7 @@ export function GameView({
           />
         </div>
       </div>
-      <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
+      <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(560px,calc(100dvh-200px))] lg:w-80 lg:overflow-hidden xl:h-[min(640px,calc(100dvh-200px))] 2xl:h-[min(720px,calc(100dvh-200px))]'>
         {isAnalysisOn && (
           <div className='bg-card shrink-0 rounded-lg border'>
             <AnalysisLines />

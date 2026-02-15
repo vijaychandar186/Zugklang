@@ -1,52 +1,55 @@
 import type { ChessVariant } from '@/features/chess/utils/chess960';
 
-// Type definitions for ffish-es6
-interface FfishBoard {
-  delete(): void;
-  legalMoves(): string;
-  legalMovesSan(): string;
-  numberLegalMoves(): number;
-  push(uciMove: string): boolean;
-  pop(): void;
-  fen(): string;
-  setFen(fen: string): void;
-  turn(): boolean; // true = white, false = black
-  isGameOver(): boolean;
-  isCheck(): boolean;
-  isCapture(uciMove: string): boolean;
-  result(): string;
+/**
+ * FairyStockfishEngine - Uses the actual Fairy Stockfish NNUE UCI engine
+ * for variant chess (atomic, etc.).
+ *
+ * The fairy-stockfish WASM is NOT a simple Worker script. It's a module
+ * that exposes a Stockfish() factory function which internally manages
+ * its own threads. The API is:
+ *   - instance.postMessage(command) to send UCI commands
+ *   - instance.addMessageListener(fn) where fn receives plain strings
+ */
+
+// The Stockfish factory function exposed by the loaded script
+interface FairyStockfishInstance {
+  postMessage(command: string): void;
+  addMessageListener(listener: (line: string) => void): void;
+  removeMessageListener(listener: (line: string) => void): void;
+  terminate(): void;
 }
 
-interface FfishBoardConstructor {
-  new (uciVariant?: string, fen?: string, is960?: boolean): FfishBoard;
+// Declared on window after script loads
+declare global {
+  // eslint-disable-next-line no-var
+  var Stockfish:
+    | ((params?: Record<string, unknown>) => Promise<FairyStockfishInstance>)
+    | undefined;
 }
 
-interface FfishModule {
-  Board: FfishBoardConstructor;
-  variants(): string;
-  startingFen(uciVariant: string): string;
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // Don't load twice
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    document.head.appendChild(script);
+  });
 }
-
-// Piece values for evaluation
-const PIECE_VALUES: Record<string, number> = {
-  p: 100,
-  n: 320,
-  b: 330,
-  r: 500,
-  q: 900,
-  k: 20000
-};
 
 export class FairyStockfishEngine {
-  private ffish: FfishModule | null = null;
-  private board: FfishBoard | null = null;
+  private engine: FairyStockfishInstance | null = null;
+  private currentHandler: ((line: string) => void) | null = null;
   private isDestroyed = false;
   private isReady = false;
   private readyPromise: Promise<void>;
   private resolveReady: (() => void) | null = null;
-  private currentVariant: string = 'atomic';
-  private currentHandler: ((data: { bestMove: string }) => void) | null = null;
-  private searchDepth = 4; // Default search depth
+  private currentVariant: string = '';
 
   private static instance: FairyStockfishEngine | null = null;
 
@@ -75,45 +78,34 @@ export class FairyStockfishEngine {
     }
 
     try {
-      // Dynamic import of ffish-es6
-      const Module = (await import('ffish-es6')).default;
+      // Load the fairy-stockfish script which exposes global Stockfish()
+      await loadScript('/fairy-stockfish/stockfish.js');
 
-      // Create a promise that resolves when WASM runtime is initialized
-      const ffish = await new Promise<FfishModule>((resolve, reject) => {
-        let resolved = false;
+      if (!window.Stockfish) {
+        throw new Error('Stockfish factory not found after script load');
+      }
 
-        const moduleOpts = {
-          locateFile: (file: string) => `/fairy-stockfish/${file}`,
-          onRuntimeInitialized: function (this: FfishModule) {
-            if (!resolved) {
-              resolved = true;
-              resolve(this);
-            }
+      // Create the engine instance via the factory
+      const engine = await window.Stockfish();
+      this.engine = engine;
+
+      // Wait for readyok
+      await new Promise<void>((resolve) => {
+        const initHandler = (line: string) => {
+          if (line.includes('readyok')) {
+            this.isReady = true;
+            engine.removeMessageListener(initHandler);
+            resolve();
           }
         };
+        engine.addMessageListener(initHandler);
 
-        Module(moduleOpts)
-          .then((instance: FfishModule) => {
-            // Module resolved directly (some versions)
-            if (!resolved && instance && instance.Board) {
-              resolved = true;
-              resolve(instance);
-            }
-          })
-          .catch((err: Error) => {
-            if (!resolved) {
-              resolved = true;
-              reject(err);
-            }
-          });
+        // Initialize UCI protocol
+        engine.postMessage('uci');
+        engine.postMessage('isready');
       });
 
-      this.ffish = ffish;
-      this.isReady = true;
-      console.log(
-        'Fairy-Stockfish initialized, variants:',
-        ffish.variants?.() || 'N/A'
-      );
+      console.log('Fairy-Stockfish engine ready');
       this.resolveReady?.();
     } catch (e) {
       console.error('Failed to initialize Fairy-Stockfish:', e);
@@ -138,15 +130,36 @@ export class FairyStockfishEngine {
   }
 
   setVariant(variant: ChessVariant): void {
-    this.currentVariant = this.getUciVariant(variant);
+    const uciVariant = this.getUciVariant(variant);
+    if (this.currentVariant !== uciVariant) {
+      this.currentVariant = uciVariant;
+      this.sendCommand(`setoption name UCI_Variant value ${uciVariant}`);
+    }
   }
 
   onMessage(callback: (data: { bestMove: string }) => void): void {
-    this.currentHandler = callback;
+    if (this.engine && !this.isDestroyed) {
+      this.clearCurrentHandler();
+
+      const handler = (line: string) => {
+        const bestMove = line.match(/bestmove\s+(\S+)/)?.[1];
+        if (bestMove) {
+          this.clearCurrentHandler();
+          if (!this.isDestroyed) {
+            callback({ bestMove });
+          }
+        }
+      };
+      this.currentHandler = handler;
+      this.engine.addMessageListener(handler);
+    }
   }
 
   private clearCurrentHandler(): void {
-    this.currentHandler = null;
+    if (this.currentHandler && this.engine) {
+      this.engine.removeMessageListener(this.currentHandler);
+      this.currentHandler = null;
+    }
   }
 
   async evaluatePosition(
@@ -154,212 +167,72 @@ export class FairyStockfishEngine {
     depth: number,
     variant?: ChessVariant
   ): Promise<void> {
-    if (this.isDestroyed) return;
+    if (this.engine && !this.isDestroyed) {
+      await this.readyPromise;
+      if (!this.isDestroyed) {
+        if (variant) {
+          this.setVariant(variant);
+        }
 
-    await this.readyPromise;
-    if (this.isDestroyed || !this.ffish) return;
-
-    if (variant) {
-      this.setVariant(variant);
-    }
-
-    this.searchDepth = Math.min(depth, 6); // Cap depth for performance
-
-    try {
-      // Create a new board for this position
-      if (this.board) {
-        this.board.delete();
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const BoardClass = this.ffish.Board as any;
-      this.board = new BoardClass(this.currentVariant, fen) as FfishBoard;
-
-      console.log('Board created for variant:', this.currentVariant);
-      console.log('Legal moves:', this.board.legalMoves());
-
-      // Find best move using minimax with alpha-beta pruning
-      const bestMove = this.findBestMove();
-      console.log('Best move found:', bestMove);
-
-      if (bestMove && this.currentHandler) {
-        // Small delay to simulate engine thinking
-        setTimeout(
-          () => {
-            if (!this.isDestroyed && this.currentHandler) {
-              this.currentHandler({ bestMove });
-              this.clearCurrentHandler();
-            }
-          },
-          200 + Math.random() * 300
-        );
-      }
-    } catch (e) {
-      console.error('Error evaluating position:', e);
-    }
-  }
-
-  private findBestMove(): string | null {
-    if (!this.board) return null;
-
-    const legalMoves = this.board
-      .legalMoves()
-      .split(' ')
-      .filter((m) => m);
-    if (legalMoves.length === 0) return null;
-    if (legalMoves.length === 1) return legalMoves[0];
-
-    let bestMove = legalMoves[0];
-    let bestScore = -Infinity;
-    const isMaximizing = this.board.turn(); // true = white
-
-    for (const move of legalMoves) {
-      this.board.push(move);
-      const score = this.minimax(
-        this.searchDepth - 1,
-        -Infinity,
-        Infinity,
-        !isMaximizing
-      );
-      this.board.pop();
-
-      const adjustedScore = isMaximizing ? score : -score;
-      if (adjustedScore > bestScore) {
-        bestScore = adjustedScore;
-        bestMove = move;
+        this.sendCommand(`position fen ${fen}`);
+        this.sendCommand(`go depth ${depth}`);
       }
     }
-
-    return bestMove;
-  }
-
-  private minimax(
-    depth: number,
-    alpha: number,
-    beta: number,
-    isMaximizing: boolean
-  ): number {
-    if (!this.board) return 0;
-
-    if (depth === 0 || this.board.isGameOver()) {
-      return this.evaluate();
-    }
-
-    const legalMoves = this.board
-      .legalMoves()
-      .split(' ')
-      .filter((m) => m);
-    if (legalMoves.length === 0) {
-      return this.evaluate();
-    }
-
-    if (isMaximizing) {
-      let maxEval = -Infinity;
-      for (const move of legalMoves) {
-        this.board.push(move);
-        const evalScore = this.minimax(depth - 1, alpha, beta, false);
-        this.board.pop();
-        maxEval = Math.max(maxEval, evalScore);
-        alpha = Math.max(alpha, evalScore);
-        if (beta <= alpha) break;
-      }
-      return maxEval;
-    } else {
-      let minEval = Infinity;
-      for (const move of legalMoves) {
-        this.board.push(move);
-        const evalScore = this.minimax(depth - 1, alpha, beta, true);
-        this.board.pop();
-        minEval = Math.min(minEval, evalScore);
-        beta = Math.min(beta, evalScore);
-        if (beta <= alpha) break;
-      }
-      return minEval;
-    }
-  }
-
-  private evaluate(): number {
-    if (!this.board) return 0;
-
-    // Check for game over conditions
-    if (this.board.isGameOver()) {
-      const result = this.board.result();
-      if (result === '1-0') return 100000;
-      if (result === '0-1') return -100000;
-      return 0; // Draw
-    }
-
-    // Simple material evaluation from FEN
-    const fen = this.board.fen();
-    const piecePlacement = fen.split(' ')[0];
-
-    let score = 0;
-    for (const char of piecePlacement) {
-      const lowerChar = char.toLowerCase();
-      if (PIECE_VALUES[lowerChar]) {
-        const pieceValue = PIECE_VALUES[lowerChar];
-        // Uppercase = white (positive), lowercase = black (negative)
-        score += char === char.toUpperCase() ? pieceValue : -pieceValue;
-      }
-    }
-
-    // Bonus for being in check (opponent is weak)
-    if (this.board.isCheck()) {
-      score += this.board.turn() ? -50 : 50;
-    }
-
-    return score;
   }
 
   async newGame(variant?: ChessVariant): Promise<void> {
-    if (this.isDestroyed) return;
+    if (this.engine && !this.isDestroyed) {
+      await this.readyPromise;
 
-    await this.readyPromise;
+      this.sendCommand('ucinewgame');
 
-    if (variant) {
-      this.setVariant(variant);
-    }
+      // Set variant AFTER ucinewgame since it resets engine state
+      if (variant) {
+        // Force re-send by clearing cached variant
+        this.currentVariant = '';
+        this.setVariant(variant);
+      }
 
-    if (this.board) {
-      this.board.delete();
-      this.board = null;
+      this.sendCommand('isready');
+
+      return new Promise((resolve) => {
+        const handler = (line: string) => {
+          if (line.includes('readyok')) {
+            this.engine?.removeMessageListener(handler);
+            resolve();
+          }
+        };
+        this.engine?.addMessageListener(handler);
+      });
     }
   }
 
   stop(): void {
     this.clearCurrentHandler();
+    if (this.isReady && this.engine) {
+      this.sendCommand('stop');
+    }
   }
 
   quit(): void {
-    // No-op for ffish-based engine
+    if (this.engine) {
+      this.sendCommand('quit');
+    }
   }
 
   destroy(): void {
     this.isDestroyed = true;
     this.clearCurrentHandler();
-    if (this.board) {
-      this.board.delete();
-      this.board = null;
+    this.stop();
+    this.quit();
+    if (this.engine) {
+      this.engine.terminate();
+      this.engine = null;
     }
     FairyStockfishEngine.instance = null;
   }
 
   sendCommand(command: string): void {
-    // No-op - ffish doesn't use UCI commands
-    console.debug('FairyStockfish command (no-op):', command);
-  }
-
-  addEventListener(
-    _type: 'message',
-    _listener: (e: MessageEvent) => void
-  ): void {
-    // No-op - using callback pattern instead
-  }
-
-  removeEventListener(
-    _type: 'message',
-    _listener: (e: MessageEvent) => void
-  ): void {
-    // No-op - using callback pattern instead
+    this.engine?.postMessage(command);
   }
 }

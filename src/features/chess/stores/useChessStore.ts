@@ -4,7 +4,8 @@ import { persist } from 'zustand/middleware';
 import {
   Chess,
   ChessJSSquare as Square,
-  ChessJSMove as Move
+  ChessJSMove as Move,
+  PieceSymbol
 } from '@/lib/chess';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
@@ -96,6 +97,7 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   autoFlipBoard: boolean;
   fullscreenEnabled: boolean;
   variant: ChessVariant;
+  selectedDropPiece: PieceSymbol | null;
   onNewGame: () => void;
   setMode: (mode: ChessMode) => void;
   setBoardTheme: (name: BoardThemeName) => void;
@@ -104,6 +106,8 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   setFullscreenEnabled: (enabled: boolean) => void;
   addMove: (move: string, fen: string) => void;
   makeMove: (from: string, to: string, promotion?: string) => Move | null;
+  makeDropMove: (san: string) => Move | null;
+  setSelectedDropPiece: (piece: PieceSymbol | null) => void;
   setMoves: (moves: string[]) => void;
   setCurrentFEN: (fen: string) => void;
   setOnNewGame: (onNewGame: () => void) => void;
@@ -172,6 +176,7 @@ export const useChessStore = create<ChessStore>()(
       autoFlipBoard: false,
       fullscreenEnabled: false,
       variant: 'standard' as ChessVariant,
+      selectedDropPiece: null,
       onNewGame: () => {},
 
       setMode: (mode) => {
@@ -238,6 +243,29 @@ export const useChessStore = create<ChessStore>()(
           return null;
         }
       },
+
+      makeDropMove: (san) => {
+        const state = get();
+        try {
+          const move = state.game.move(san);
+          if (!move) return null;
+
+          const newFEN = state.game.fen();
+          set({
+            currentFEN: newFEN,
+            moves: [...state.moves, move.san],
+            positionHistory: [...state.positionHistory, newFEN],
+            viewingIndex: state.positionHistory.length,
+            selectedDropPiece: null
+          });
+
+          return move;
+        } catch {
+          return null;
+        }
+      },
+
+      setSelectedDropPiece: (piece) => set({ selectedDropPiece: piece }),
 
       setMoves: (moves) => set({ moves }),
       setCurrentFEN: (fen) => set({ currentFEN: fen }),
@@ -648,7 +676,8 @@ export const useChessState = () =>
       board3dEnabled: s.board3dEnabled,
       boardFlipped: s.boardFlipped,
       autoFlipBoard: s.autoFlipBoard,
-      variant: s.variant
+      variant: s.variant,
+      selectedDropPiece: s.selectedDropPiece
     }))
   );
 
@@ -687,6 +716,8 @@ export const useChessActions = () =>
       setMode: s.setMode,
       addMove: s.addMove,
       makeMove: s.makeMove,
+      makeDropMove: s.makeDropMove,
+      setSelectedDropPiece: s.setSelectedDropPiece,
       setOnNewGame: s.setOnNewGame,
       startGame: s.startGame,
       startLocalGame: s.startLocalGame,

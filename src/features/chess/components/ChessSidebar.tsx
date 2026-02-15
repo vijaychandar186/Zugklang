@@ -59,6 +59,8 @@ import {
   formatPGN
 } from '../hooks/useClipboard';
 import { playSound } from '@/features/game/utils/sounds';
+import { CrazyhousePocket } from './CrazyhousePocket';
+import type { PieceSymbol } from '@/lib/chess';
 
 interface ChessSidebarProps {
   mode: ChessMode;
@@ -77,7 +79,11 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     playingAgainstStockfish,
     boardOrientation,
     soundEnabled,
-    hasHydrated
+    hasHydrated,
+    game,
+    currentFEN,
+    variant,
+    selectedDropPiece
   } = useChessState();
 
   const isLocalGame = gameType === 'local';
@@ -94,7 +100,8 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     setGameResult,
     resetToStarting,
     startPlayingFromPosition,
-    stopPlayingFromPosition
+    stopPlayingFromPosition,
+    setSelectedDropPiece
   } = useChessActions();
 
   const { isAnalysisOn, isInitialized } = useAnalysisState();
@@ -186,6 +193,18 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     } else {
       toggleBoardOrientation();
     }
+  };
+
+  const isCrazyhouse = variant === 'crazyhouse';
+  const isGameActive = isPlayMode && gameStarted && !gameOver;
+
+  const emptyPocket = { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 };
+  const whitePocket = isCrazyhouse ? game.getPocket('w') : emptyPocket;
+  const blackPocket = isCrazyhouse ? game.getPocket('b') : emptyPocket;
+
+  const handlePocketSelect = (role: PieceSymbol) => {
+    if (!isGameActive) return;
+    setSelectedDropPiece(selectedDropPiece === role ? null : role);
   };
 
   return (
@@ -360,6 +379,61 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
             )}
           </div>
         </div>
+
+        {isCrazyhouse && isPlayMode && (
+          <div className='flex shrink-0 flex-col gap-2 border-b px-4 py-2'>
+            <div className='flex items-center justify-between'>
+              <span className='text-muted-foreground text-xs font-medium'>
+                {isLocalGame
+                  ? 'Black'
+                  : playAs === 'black'
+                    ? 'Your'
+                    : "Opponent's"}{' '}
+                pocket
+              </span>
+              <CrazyhousePocket
+                color='black'
+                pocket={blackPocket}
+                selectedRole={
+                  game.turn() === 'b' && (isLocalGame || playAs === 'black')
+                    ? selectedDropPiece
+                    : null
+                }
+                onPieceSelect={handlePocketSelect}
+                isActive={
+                  isGameActive &&
+                  game.turn() === 'b' &&
+                  (isLocalGame || playAs === 'black')
+                }
+              />
+            </div>
+            <div className='flex items-center justify-between'>
+              <span className='text-muted-foreground text-xs font-medium'>
+                {isLocalGame
+                  ? 'White'
+                  : playAs === 'white'
+                    ? 'Your'
+                    : "Opponent's"}{' '}
+                pocket
+              </span>
+              <CrazyhousePocket
+                color='white'
+                pocket={whitePocket}
+                selectedRole={
+                  game.turn() === 'w' && (isLocalGame || playAs === 'white')
+                    ? selectedDropPiece
+                    : null
+                }
+                onPieceSelect={handlePocketSelect}
+                isActive={
+                  isGameActive &&
+                  game.turn() === 'w' &&
+                  (isLocalGame || playAs === 'white')
+                }
+              />
+            </div>
+          </div>
+        )}
 
         <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
           <div className='px-4 py-2'>

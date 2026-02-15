@@ -547,6 +547,31 @@ export class Chess {
     return result;
   }
 
+  getPocket(color: ChessJSColor): Record<PieceSymbol, number> {
+    const result: Record<PieceSymbol, number> = {
+      p: 0,
+      n: 0,
+      b: 0,
+      r: 0,
+      q: 0,
+      k: 0
+    };
+    if (!this._pos.pockets) return result;
+    const side = this._pos.pockets[color === 'w' ? 'white' : 'black'];
+    result.p = side.pawn;
+    result.n = side.knight;
+    result.b = side.bishop;
+    result.r = side.rook;
+    result.q = side.queen;
+    result.k = side.king;
+    return result;
+  }
+
+  getDropSquares(): string[] {
+    const dropDests = this._pos.dropDests();
+    return [...dropDests].map((sq) => makeSquare(sq));
+  }
+
   private _makeMoveObjectInternal(
     move: ChessOpsMove,
     san: string,

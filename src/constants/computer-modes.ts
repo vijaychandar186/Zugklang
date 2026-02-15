@@ -65,5 +65,13 @@ export const computerModes: MenuCardItem[] = [
     description:
       'Get your king to the center to win! Standard rules plus a new victory condition.',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/computer/crazyhouse',
+    icon: Icons.recycle,
+    title: 'Crazyhouse',
+    description:
+      'Captured pieces switch sides and can be dropped back on the board!',
+    actionText: 'Play Now'
   }
 ];

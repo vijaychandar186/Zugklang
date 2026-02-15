@@ -81,6 +81,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     soundEnabled,
     hasHydrated,
     game,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     currentFEN,
     variant,
     selectedDropPiece

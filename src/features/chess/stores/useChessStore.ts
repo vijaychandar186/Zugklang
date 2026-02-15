@@ -413,7 +413,30 @@ export const useChessStore = create<ChessStore>()(
       },
 
       setAutoFlipBoard: (enabled) => set({ autoFlipBoard: enabled }),
-      setVariant: (variant) => set({ variant }),
+      setVariant: (variant) => {
+        const state = get();
+        if (state.variant !== variant) {
+          const startingFEN =
+            variant === 'fischerRandom'
+              ? generateRandomChess960FEN()
+              : STARTING_FEN;
+          const newGame = new Chess(startingFEN, variantToRules(variant));
+          set({
+            variant,
+            game: newGame,
+            currentFEN: startingFEN,
+            moves: [],
+            positionHistory: [startingFEN],
+            viewingIndex: 0,
+            gameStarted: false,
+            gameOver: false,
+            gameResult: null,
+            playingAgainstStockfish: false,
+            activeTimer: null,
+            lastActiveTimestamp: null
+          });
+        }
+      },
 
       resetGame: () => {
         const state = get();

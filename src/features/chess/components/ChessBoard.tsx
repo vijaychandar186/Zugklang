@@ -175,7 +175,12 @@ export function ChessBoard({
 
     if (game.isGameOver()) {
       if (soundEnabled) playSound('game-end');
-      if (game.isCheckmate()) {
+      if (game.isDraw()) {
+        setGameResult('Draw!');
+      } else if (game.isStalemate()) {
+        setGameResult('Stalemate!');
+      } else {
+        // Checkmate or variant win (e.g. atomic king explosion)
         const winner = game.turn() === 'w' ? 'Black' : 'White';
         if (isLocalGame) {
           setGameResult(`${winner} wins!`);
@@ -186,10 +191,6 @@ export function ChessBoard({
           const engineName = useFairyEngine ? 'Fairy-Stockfish' : 'Stockfish';
           setGameResult(isUserWin ? 'You win!' : `${engineName} wins!`);
         }
-      } else if (game.isDraw()) {
-        setGameResult('Draw!');
-      } else if (game.isStalemate()) {
-        setGameResult('Stalemate!');
       }
       setGameOver(true);
     }

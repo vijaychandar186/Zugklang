@@ -4,6 +4,8 @@ export const STARTING_FEN =
   'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 export const RACING_KINGS_STARTING_FEN =
   '8/8/8/8/8/8/krbnNBRK/qrbnNBRQ w - - 0 1';
+export const HORDE_STARTING_FEN =
+  'rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1';
 export const EMPTY_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
 
 export const PIECE_VALUES: Record<CapturablePiece, number> = {

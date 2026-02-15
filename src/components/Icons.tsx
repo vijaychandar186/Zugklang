@@ -67,6 +67,7 @@ import {
   CarFront,
   Wrench,
   BicepsFlexed,
+  BrickWall,
   type LucideIcon
 } from 'lucide-react';
 
@@ -147,7 +148,8 @@ export const Icons = {
   clock: Clock,
   book: BookOpen,
   target: Target,
-  carFront: CarFront
+  carFront: CarFront,
+  brickWall: BrickWall
 } as const;
 
 export type { LucideIcon };

@@ -20,7 +20,7 @@ export const computerModes: MenuCardItem[] = [
   },
   {
     href: '/play/computer/atomic',
-    icon: Icons.zap,
+    icon: Icons.radiation,
     title: 'Atomic Chess',
     description:
       'Explosive chess against Fairy-Stockfish. Captures destroy surrounding pieces!',

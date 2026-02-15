@@ -20,7 +20,7 @@ export const localModes: MenuCardItem[] = [
   },
   {
     href: '/play/local/atomic',
-    icon: Icons.zap,
+    icon: Icons.radiation,
     title: 'Atomic Chess',
     description:
       'Captures cause explosions! Pieces around the capture square are destroyed.',

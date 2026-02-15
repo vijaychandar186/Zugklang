@@ -86,23 +86,6 @@ export function isValidChess960BackRank(pieces: string[]): boolean {
   return true;
 }
 
-import type { Rules } from 'chessops/types';
-
-export type ChessVariant =
-  | 'standard'
-  | 'fischerRandom'
-  | 'atomic'
-  | 'racingKings';
-
-export function variantToRules(variant: ChessVariant): Rules {
-  switch (variant) {
-    case 'atomic':
-      return 'atomic';
-    case 'racingKings':
-      return 'racingkings';
-    case 'fischerRandom':
-    case 'standard':
-    default:
-      return 'chess';
-  }
-}
+// Re-export variant types and utilities from centralized config
+export type { ChessVariant } from '../config/variants';
+export { variantToRules } from '../config/variants';

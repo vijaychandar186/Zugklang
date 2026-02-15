@@ -8,10 +8,7 @@ import {
 } from '@/lib/chess';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
-import {
-  STARTING_FEN,
-  RACING_KINGS_STARTING_FEN
-} from '@/features/chess/config/constants';
+import { STARTING_FEN } from '@/features/chess/config/constants';
 import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
 import { TimeControl } from '@/features/game/types/rules';
 import {
@@ -20,10 +17,11 @@ import {
   loadFromModeStorage
 } from './gameStorage';
 import {
-  ChessVariant,
-  generateRandomChess960FEN,
-  variantToRules
-} from '@/features/chess/utils/chess960';
+  type ChessVariant,
+  variantToRules,
+  getStartingFEN,
+  getEngineName
+} from '@/features/chess/config/variants';
 import {
   createNavigationSlice,
   NavigationSlice,
@@ -262,12 +260,7 @@ export const useChessStore = create<ChessStore>()(
         setCookie(PLAY_AS_COOKIE, color);
         const timers = initializeTimers(timeControl);
         const state = get();
-        const startingFEN =
-          state.variant === 'fischerRandom'
-            ? generateRandomChess960FEN()
-            : state.variant === 'racingKings'
-              ? RACING_KINGS_STARTING_FEN
-              : STARTING_FEN;
+        const startingFEN = getStartingFEN(state.variant);
         const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
         set({
@@ -298,12 +291,7 @@ export const useChessStore = create<ChessStore>()(
       startLocalGame: (timeControl = DEFAULT_TIME_CONTROL) => {
         const timers = initializeTimers(timeControl);
         const state = get();
-        const startingFEN =
-          state.variant === 'fischerRandom'
-            ? generateRandomChess960FEN()
-            : state.variant === 'racingKings'
-              ? RACING_KINGS_STARTING_FEN
-              : STARTING_FEN;
+        const startingFEN = getStartingFEN(state.variant);
         const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
         set({
@@ -423,12 +411,7 @@ export const useChessStore = create<ChessStore>()(
       setVariant: (variant) => {
         const state = get();
         if (state.variant !== variant) {
-          const startingFEN =
-            variant === 'fischerRandom'
-              ? generateRandomChess960FEN()
-              : variant === 'racingKings'
-                ? RACING_KINGS_STARTING_FEN
-                : STARTING_FEN;
+          const startingFEN = getStartingFEN(variant);
           const newGame = new Chess(startingFEN, variantToRules(variant));
           set({
             variant,
@@ -450,12 +433,7 @@ export const useChessStore = create<ChessStore>()(
       resetGame: () => {
         const state = get();
         const timers = initializeTimers(state.timeControl);
-        const startingFEN =
-          state.variant === 'fischerRandom'
-            ? generateRandomChess960FEN()
-            : state.variant === 'racingKings'
-              ? RACING_KINGS_STARTING_FEN
-              : STARTING_FEN;
+        const startingFEN = getStartingFEN(state.variant);
         const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
         set({
@@ -514,10 +492,7 @@ export const useChessStore = create<ChessStore>()(
       onTimeout: (color) => {
         const state = get();
         const isPlayerTimeout = color === state.playAs;
-        const engineName =
-          state.variant === 'atomic' || state.variant === 'racingKings'
-            ? 'Fairy-Stockfish'
-            : 'Stockfish';
+        const engineName = getEngineName(state.variant);
         set({
           gameOver: true,
           gameResult: isPlayerTimeout
@@ -556,12 +531,7 @@ export const useChessStore = create<ChessStore>()(
 
       resetToStarting: () => {
         const state = get();
-        const startingFEN =
-          state.variant === 'fischerRandom'
-            ? generateRandomChess960FEN()
-            : state.variant === 'racingKings'
-              ? RACING_KINGS_STARTING_FEN
-              : STARTING_FEN;
+        const startingFEN = getStartingFEN(state.variant);
         const newGame = new Chess(startingFEN, variantToRules(state.variant));
         set({
           game: newGame,

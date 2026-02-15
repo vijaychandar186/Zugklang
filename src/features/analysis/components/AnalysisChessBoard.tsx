@@ -60,6 +60,7 @@ export function AnalysisChessBoard() {
   } = useChessBoardLogic({
     game,
     currentFEN,
+    hasHydrated: true,
     viewingIndex,
     positionHistory,
     playerColor,

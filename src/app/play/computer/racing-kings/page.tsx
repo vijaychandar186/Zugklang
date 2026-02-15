@@ -12,6 +12,10 @@ export const metadata: Metadata = {
 
 export default async function RacingKingsComputerPage() {
   const cookieStore = await cookies();
+  const playAs = cookieStore.get('playAs')?.value as
+    | 'white'
+    | 'black'
+    | undefined;
   const board3dEnabled =
     cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
 
@@ -19,6 +23,7 @@ export default async function RacingKingsComputerPage() {
     <PageContainer scrollable={true}>
       <GameView
         gameType='computer'
+        serverOrientation={playAs}
         initialBoard3dEnabled={board3dEnabled}
         variant='racingKings'
       />

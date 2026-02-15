@@ -33,5 +33,13 @@ export const computerModes: MenuCardItem[] = [
     description:
       'Race your king to the eighth rank against Fairy-Stockfish. No checks allowed!',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/computer/horde',
+    icon: Icons.brickWall,
+    title: 'Horde Chess',
+    description:
+      'A massive pawn army vs a full set of pieces. Can the horde overwhelm the defense?',
+    actionText: 'Play Now'
   }
 ];

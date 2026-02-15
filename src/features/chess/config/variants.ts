@@ -1,12 +1,17 @@
 import type { Rules } from 'chessops/types';
-import { STARTING_FEN, RACING_KINGS_STARTING_FEN } from './constants';
+import {
+  STARTING_FEN,
+  RACING_KINGS_STARTING_FEN,
+  HORDE_STARTING_FEN
+} from './constants';
 import { generateRandomChess960FEN } from '../utils/chess960';
 
 export type ChessVariant =
   | 'standard'
   | 'fischerRandom'
   | 'atomic'
-  | 'racingKings';
+  | 'racingKings'
+  | 'horde';
 
 type VariantConfig = {
   rules: Rules;
@@ -46,6 +51,13 @@ const VARIANT_CONFIG: Record<ChessVariant, VariantConfig> = {
     engineName: 'Fairy-Stockfish',
     getStartingFEN: () => RACING_KINGS_STARTING_FEN,
     boardOverlay: 'finishLine'
+  },
+  horde: {
+    rules: 'horde',
+    uciVariant: 'horde',
+    useFairyEngine: true,
+    engineName: 'Fairy-Stockfish',
+    getStartingFEN: () => HORDE_STARTING_FEN
   }
 };
 

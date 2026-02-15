@@ -32,5 +32,13 @@ export const localModes: MenuCardItem[] = [
     title: 'Racing Kings',
     description: 'Race your king to the eighth rank. No checks allowed!',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/local/horde',
+    icon: Icons.brickWall,
+    title: 'Horde Chess',
+    description:
+      'A massive pawn army vs a full set of pieces. Can the horde overwhelm the defense?',
+    actionText: 'Play Now'
   }
 ];

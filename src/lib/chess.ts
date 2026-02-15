@@ -384,7 +384,17 @@ export class Chess {
   }
 
   isDraw(): boolean {
+    const outcome = this._pos.outcome();
+    if (outcome && outcome.winner === undefined) return true;
     return this._pos.isStalemate() || this._pos.isInsufficientMaterial();
+  }
+
+  outcome(): { winner: 'w' | 'b' | undefined } | undefined {
+    const o = this._pos.outcome();
+    if (!o) return undefined;
+    return {
+      winner: o.winner ? colorToChar[o.winner] : undefined
+    };
   }
 
   isStalemate(): boolean {

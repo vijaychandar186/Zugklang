@@ -8,7 +8,10 @@ import {
 } from '@/lib/chess';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
-import { STARTING_FEN } from '@/features/chess/config/constants';
+import {
+  STARTING_FEN,
+  RACING_KINGS_STARTING_FEN
+} from '@/features/chess/config/constants';
 import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
 import { TimeControl } from '@/features/game/types/rules';
 import {
@@ -262,7 +265,9 @@ export const useChessStore = create<ChessStore>()(
         const startingFEN =
           state.variant === 'fischerRandom'
             ? generateRandomChess960FEN()
-            : STARTING_FEN;
+            : state.variant === 'racingKings'
+              ? RACING_KINGS_STARTING_FEN
+              : STARTING_FEN;
         const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
         set({
@@ -296,7 +301,9 @@ export const useChessStore = create<ChessStore>()(
         const startingFEN =
           state.variant === 'fischerRandom'
             ? generateRandomChess960FEN()
-            : STARTING_FEN;
+            : state.variant === 'racingKings'
+              ? RACING_KINGS_STARTING_FEN
+              : STARTING_FEN;
         const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
         set({
@@ -419,7 +426,9 @@ export const useChessStore = create<ChessStore>()(
           const startingFEN =
             variant === 'fischerRandom'
               ? generateRandomChess960FEN()
-              : STARTING_FEN;
+              : variant === 'racingKings'
+                ? RACING_KINGS_STARTING_FEN
+                : STARTING_FEN;
           const newGame = new Chess(startingFEN, variantToRules(variant));
           set({
             variant,
@@ -441,16 +450,22 @@ export const useChessStore = create<ChessStore>()(
       resetGame: () => {
         const state = get();
         const timers = initializeTimers(state.timeControl);
-        const newGame = new Chess();
+        const startingFEN =
+          state.variant === 'fischerRandom'
+            ? generateRandomChess960FEN()
+            : state.variant === 'racingKings'
+              ? RACING_KINGS_STARTING_FEN
+              : STARTING_FEN;
+        const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
         set({
           game: newGame,
           gameOver: false,
           moves: [],
-          positionHistory: [STARTING_FEN],
+          positionHistory: [startingFEN],
           viewingIndex: 0,
           gameResult: null,
-          currentFEN: STARTING_FEN,
+          currentFEN: startingFEN,
           gameId: state.gameId + 1,
           whiteTime: timers.whiteTime,
           blackTime: timers.blackTime,
@@ -500,7 +515,9 @@ export const useChessStore = create<ChessStore>()(
         const state = get();
         const isPlayerTimeout = color === state.playAs;
         const engineName =
-          state.variant === 'atomic' ? 'Fairy-Stockfish' : 'Stockfish';
+          state.variant === 'atomic' || state.variant === 'racingKings'
+            ? 'Fairy-Stockfish'
+            : 'Stockfish';
         set({
           gameOver: true,
           gameResult: isPlayerTimeout
@@ -538,12 +555,19 @@ export const useChessStore = create<ChessStore>()(
       },
 
       resetToStarting: () => {
-        const newGame = new Chess();
+        const state = get();
+        const startingFEN =
+          state.variant === 'fischerRandom'
+            ? generateRandomChess960FEN()
+            : state.variant === 'racingKings'
+              ? RACING_KINGS_STARTING_FEN
+              : STARTING_FEN;
+        const newGame = new Chess(startingFEN, variantToRules(state.variant));
         set({
           game: newGame,
-          currentFEN: STARTING_FEN,
+          currentFEN: startingFEN,
           moves: [],
-          positionHistory: [STARTING_FEN],
+          positionHistory: [startingFEN],
           viewingIndex: 0,
           playingAgainstStockfish: false,
           boardOrientation: 'white',

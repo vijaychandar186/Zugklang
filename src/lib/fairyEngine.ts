@@ -121,6 +121,8 @@ export class FairyStockfishEngine {
     switch (variant) {
       case 'atomic':
         return 'atomic';
+      case 'racingKings':
+        return 'racingkings';
       case 'fischerRandom':
         return 'chess';
       case 'standard':

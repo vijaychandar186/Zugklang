@@ -68,6 +68,9 @@ import {
   Wrench,
   BicepsFlexed,
   BrickWall,
+  ListChecks,
+  Skull,
+  Mountain,
   type LucideIcon
 } from 'lucide-react';
 
@@ -149,7 +152,10 @@ export const Icons = {
   book: BookOpen,
   target: Target,
   carFront: CarFront,
-  brickWall: BrickWall
+  brickWall: BrickWall,
+  listChecks: ListChecks,
+  skull: Skull,
+  mountain: Mountain
 } as const;
 
 export type { LucideIcon };

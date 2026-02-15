@@ -22,7 +22,6 @@ interface FairyStockfishInstance {
 
 // Declared on window after script loads
 declare global {
-  // eslint-disable-next-line no-var
   var Stockfish:
     | ((params?: Record<string, unknown>) => Promise<FairyStockfishInstance>)
     | undefined;

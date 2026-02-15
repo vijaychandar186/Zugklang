@@ -11,7 +11,10 @@ export type ChessVariant =
   | 'fischerRandom'
   | 'atomic'
   | 'racingKings'
-  | 'horde';
+  | 'horde'
+  | 'threeCheck'
+  | 'antichess'
+  | 'kingOfTheHill';
 
 type VariantConfig = {
   rules: Rules;
@@ -58,6 +61,27 @@ const VARIANT_CONFIG: Record<ChessVariant, VariantConfig> = {
     useFairyEngine: true,
     engineName: 'Fairy-Stockfish',
     getStartingFEN: () => HORDE_STARTING_FEN
+  },
+  threeCheck: {
+    rules: '3check',
+    uciVariant: '3check',
+    useFairyEngine: true,
+    engineName: 'Fairy-Stockfish',
+    getStartingFEN: () => STARTING_FEN
+  },
+  antichess: {
+    rules: 'antichess',
+    uciVariant: 'antichess',
+    useFairyEngine: true,
+    engineName: 'Fairy-Stockfish',
+    getStartingFEN: () => STARTING_FEN
+  },
+  kingOfTheHill: {
+    rules: 'kingofthehill',
+    uciVariant: 'kingofthehill',
+    useFairyEngine: true,
+    engineName: 'Fairy-Stockfish',
+    getStartingFEN: () => STARTING_FEN
   }
 };
 

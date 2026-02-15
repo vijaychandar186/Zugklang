@@ -29,7 +29,6 @@ function squareToCoords(
 export function useAtomicThreats({
   game,
   variant,
-  currentFEN,
   playerColor,
   boardFlipped,
   selectedSquare,
@@ -37,7 +36,6 @@ export function useAtomicThreats({
 }: {
   game: Chess;
   variant: ChessVariant;
-  currentFEN: string;
   playerColor: ChessJSColor;
   boardFlipped: boolean;
   selectedSquare: string | null;
@@ -108,13 +106,12 @@ export function useAtomicThreats({
     }
 
     return overlays;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    game,
     variant,
-    currentFEN,
     playerColor,
     boardFlipped,
     selectedSquare,
-    captureTargets.join(',')
+    captureTargets
   ]);
 }

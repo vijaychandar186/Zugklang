@@ -63,6 +63,7 @@ import {
   Clock,
   BookOpen,
   Target,
+  CarFront,
   type LucideIcon
 } from 'lucide-react';
 
@@ -139,7 +140,8 @@ export const Icons = {
   heart: Heart,
   clock: Clock,
   book: BookOpen,
-  target: Target
+  target: Target,
+  carFront: CarFront
 } as const;
 
 export type { LucideIcon };

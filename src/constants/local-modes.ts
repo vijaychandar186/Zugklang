@@ -28,7 +28,7 @@ export const localModes: MenuCardItem[] = [
   },
   {
     href: '/play/local/racing-kings',
-    icon: Icons.crown,
+    icon: Icons.carFront,
     title: 'Racing Kings',
     description: 'Race your king to the eighth rank. No checks allowed!',
     actionText: 'Play Now'

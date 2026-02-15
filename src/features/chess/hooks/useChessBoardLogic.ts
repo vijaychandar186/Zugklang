@@ -7,8 +7,6 @@ import { getMoveOptionStyles } from '@/features/chess/hooks/useSquareInteraction
 import { playSound, getSoundType } from '@/features/game/utils/sounds';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 
-const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
 type PositionObject = Record<string, { pieceType: string }>;
 
 function fenToPosition(fen: string): PositionObject {
@@ -61,6 +59,7 @@ export type PendingPromotion = {
 export type ChessBoardLogicOptions = {
   game: Chess;
   currentFEN: string;
+  hasHydrated: boolean;
   viewingIndex: number;
   positionHistory: string[];
   playerColor: 'white' | 'black';
@@ -77,6 +76,7 @@ export type ChessBoardLogicOptions = {
 export function useChessBoardLogic({
   game,
   currentFEN,
+  hasHydrated,
   viewingIndex,
   positionHistory,
   playerColor,
@@ -370,11 +370,10 @@ export function useChessBoardLogic({
   }, []);
 
   const position = useMemo(() => {
-    const baseFen = isMounted
-      ? isViewingHistory
-        ? currentFEN
-        : game.fen()
-      : STARTING_FEN;
+    // Show empty board until store is hydrated to prevent wrong-position flash
+    if (!isMounted || !hasHydrated) return {};
+
+    const baseFen = isViewingHistory ? currentFEN : game.fen();
 
     if (!enablePremoves || premoves.length === 0) {
       return baseFen;
@@ -391,7 +390,15 @@ export function useChessBoardLogic({
     }
 
     return posObj;
-  }, [isMounted, isViewingHistory, currentFEN, game, enablePremoves, premoves]);
+  }, [
+    isMounted,
+    hasHydrated,
+    isViewingHistory,
+    currentFEN,
+    game,
+    enablePremoves,
+    premoves
+  ]);
 
   return {
     isMounted,

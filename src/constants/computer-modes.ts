@@ -28,7 +28,7 @@ export const computerModes: MenuCardItem[] = [
   },
   {
     href: '/play/computer/racing-kings',
-    icon: Icons.crown,
+    icon: Icons.carFront,
     title: 'Racing Kings',
     description:
       'Race your king to the eighth rank against Fairy-Stockfish. No checks allowed!',

@@ -32,6 +32,7 @@ export function ChessBoard({
   const {
     mode,
     gameType,
+    hasHydrated,
     game,
     currentFEN,
     viewingIndex,
@@ -112,6 +113,7 @@ export function ChessBoard({
   } = useChessBoardLogic({
     game,
     currentFEN,
+    hasHydrated,
     viewingIndex,
     positionHistory,
     playerColor: effectivePlayAs,
@@ -216,28 +218,34 @@ export function ChessBoard({
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
 
-  const resolvedOrientation = isMounted
-    ? effectiveBoardOrientation
-    : serverOrientation || 'white';
+  const resolvedOrientation =
+    isMounted && hasHydrated
+      ? effectiveBoardOrientation
+      : serverOrientation || 'white';
 
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
     canDrag:
       isMounted &&
+      hasHydrated &&
       !isViewingHistory &&
       !pendingPromotion &&
       !(isPlayMode && !gameStarted),
-    squareStyles: isMounted ? squareStyles : {},
+    squareStyles: isMounted && hasHydrated ? squareStyles : {},
     onPieceDrop: onDrop,
     onSquareClick: handleSquareClick,
     onSquareRightClick: handleSquareRightClick,
     arrows: analysisArrows
   };
 
-  const shouldShow3d = isMounted
-    ? board3dEnabled
-    : (initialBoard3dEnabled ?? false);
+  const shouldShow3d =
+    isMounted && hasHydrated
+      ? board3dEnabled
+      : (initialBoard3dEnabled ?? false);
+
+  const isRacingKings = variant === 'racingKings';
+  const finishLineAtTop = resolvedOrientation === 'white';
 
   return (
     <div className='relative'>
@@ -248,6 +256,18 @@ export function ChessBoard({
           {...boardProps}
           darkSquareStyle={theme.darkSquareStyle}
           lightSquareStyle={theme.lightSquareStyle}
+        />
+      )}
+      {isRacingKings && (
+        <div
+          className='pointer-events-none absolute right-0 left-0'
+          style={{
+            [finishLineAtTop ? 'top' : 'bottom']: 0,
+            height: '12.5%',
+            background:
+              'repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0 / 12.5% 50%',
+            opacity: 0.12
+          }}
         />
       )}
       <PromotionDialog

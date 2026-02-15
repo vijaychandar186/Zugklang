@@ -21,6 +21,7 @@ import {
 
 import { GameType } from '@/features/chess/stores/useChessStore';
 import { ChessVariant } from '@/features/chess/utils/chess960';
+import { getEngineName } from '@/features/chess/config/variants';
 
 interface GameViewProps {
   serverOrientation?: 'white' | 'black';
@@ -64,10 +65,7 @@ export function GameView({
       return color === 'white' ? 'White' : 'Black';
     }
     if (isStockfish) {
-      // Use Fairy-Stockfish for variant chess
-      return storeVariant === 'atomic' || storeVariant === 'racingKings'
-        ? 'Fairy-Stockfish'
-        : 'Stockfish';
+      return getEngineName(storeVariant);
     }
     return 'Player';
   };

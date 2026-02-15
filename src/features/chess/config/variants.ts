@@ -1,0 +1,80 @@
+import type { Rules } from 'chessops/types';
+import { STARTING_FEN, RACING_KINGS_STARTING_FEN } from './constants';
+import { generateRandomChess960FEN } from '../utils/chess960';
+
+export type ChessVariant =
+  | 'standard'
+  | 'fischerRandom'
+  | 'atomic'
+  | 'racingKings';
+
+type VariantConfig = {
+  rules: Rules;
+  uciVariant: string;
+  useFairyEngine: boolean;
+  engineName: string;
+  getStartingFEN: () => string;
+  boardOverlay?: 'finishLine';
+};
+
+const VARIANT_CONFIG: Record<ChessVariant, VariantConfig> = {
+  standard: {
+    rules: 'chess',
+    uciVariant: 'chess',
+    useFairyEngine: false,
+    engineName: 'Stockfish',
+    getStartingFEN: () => STARTING_FEN
+  },
+  fischerRandom: {
+    rules: 'chess',
+    uciVariant: 'chess',
+    useFairyEngine: false,
+    engineName: 'Stockfish',
+    getStartingFEN: () => generateRandomChess960FEN()
+  },
+  atomic: {
+    rules: 'atomic',
+    uciVariant: 'atomic',
+    useFairyEngine: true,
+    engineName: 'Fairy-Stockfish',
+    getStartingFEN: () => STARTING_FEN
+  },
+  racingKings: {
+    rules: 'racingkings',
+    uciVariant: 'racingkings',
+    useFairyEngine: true,
+    engineName: 'Fairy-Stockfish',
+    getStartingFEN: () => RACING_KINGS_STARTING_FEN,
+    boardOverlay: 'finishLine'
+  }
+};
+
+export function getVariantConfig(variant: ChessVariant): VariantConfig {
+  return VARIANT_CONFIG[variant];
+}
+
+export function variantToRules(variant: ChessVariant): Rules {
+  return VARIANT_CONFIG[variant].rules;
+}
+
+export function getStartingFEN(variant: ChessVariant): string {
+  return VARIANT_CONFIG[variant].getStartingFEN();
+}
+
+export function usesFairyEngine(variant: ChessVariant): boolean {
+  return VARIANT_CONFIG[variant].useFairyEngine;
+}
+
+export function getEngineName(variant: ChessVariant): string {
+  return VARIANT_CONFIG[variant].engineName;
+}
+
+export function getUciVariant(variant: ChessVariant): string {
+  return VARIANT_CONFIG[variant].uciVariant;
+}
+
+export function hasBoardOverlay(
+  variant: ChessVariant
+): VariantConfig['boardOverlay'] | undefined {
+  return VARIANT_CONFIG[variant].boardOverlay;
+}

@@ -21,6 +21,11 @@ import { useBoardTheme } from '../hooks/useSquareInteraction';
 import { useStockfish } from '@/features/engine/hooks/useStockfish';
 import { useFairyStockfish } from '@/features/engine/hooks/useFairyStockfish';
 import { playSound } from '@/features/game/utils/sounds';
+import {
+  usesFairyEngine,
+  getEngineName,
+  hasBoardOverlay
+} from '../config/variants';
 
 export function ChessBoard({
   serverOrientation,
@@ -76,9 +81,8 @@ export function ChessBoard({
   const stockfishEnabled =
     (isPlayMode && !isLocalGame) || playingAgainstStockfish;
 
-  // Use Fairy-Stockfish for variant chess (atomic, racing kings, etc.), regular Stockfish for standard/fischer-random
-  const useFairyEngine = variant === 'atomic' || variant === 'racingKings';
-  const useStandardEngine = !useFairyEngine;
+  const useFairy = usesFairyEngine(variant);
+  const useStandardEngine = !useFairy;
 
   const onMoveExecuted = useCallback(() => {
     if (isPlayMode) {
@@ -147,7 +151,7 @@ export function ChessBoard({
     gameId: isPlayMode ? gameId : 1,
     playAs: effectivePlayAs,
     stockfishLevel,
-    enabled: stockfishEnabled && !gameOver && useFairyEngine,
+    enabled: stockfishEnabled && !gameOver && useFairy,
     variant,
     onMove: executeMove,
     soundEnabled,
@@ -189,7 +193,7 @@ export function ChessBoard({
           const isUserWin =
             (playAs === 'white' && winner === 'White') ||
             (playAs === 'black' && winner === 'Black');
-          const engineName = useFairyEngine ? 'Fairy-Stockfish' : 'Stockfish';
+          const engineName = getEngineName(variant);
           setGameResult(isUserWin ? 'You win!' : `${engineName} wins!`);
         }
       }
@@ -205,7 +209,7 @@ export function ChessBoard({
     setGameResult,
     setGameOver,
     soundEnabled,
-    useFairyEngine
+    variant
   ]);
 
   const onNewGame = useCallback(() => {
@@ -244,7 +248,7 @@ export function ChessBoard({
       ? board3dEnabled
       : (initialBoard3dEnabled ?? false);
 
-  const isRacingKings = variant === 'racingKings';
+  const showFinishLine = hasBoardOverlay(variant) === 'finishLine';
   const finishLineAtTop = resolvedOrientation === 'white';
 
   return (
@@ -258,7 +262,7 @@ export function ChessBoard({
           lightSquareStyle={theme.lightSquareStyle}
         />
       )}
-      {isRacingKings && (
+      {showFinishLine && (
         <div
           className='pointer-events-none absolute right-0 left-0'
           style={{

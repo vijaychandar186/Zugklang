@@ -1,4 +1,5 @@
-import type { ChessVariant } from '@/features/chess/utils/chess960';
+import type { ChessVariant } from '@/features/chess/config/variants';
+import { getUciVariant } from '@/features/chess/config/variants';
 
 /**
  * FairyStockfishEngine - Uses the actual Fairy Stockfish NNUE UCI engine
@@ -117,22 +118,8 @@ export class FairyStockfishEngine {
     return this.readyPromise;
   }
 
-  private getUciVariant(variant: ChessVariant): string {
-    switch (variant) {
-      case 'atomic':
-        return 'atomic';
-      case 'racingKings':
-        return 'racingkings';
-      case 'fischerRandom':
-        return 'chess';
-      case 'standard':
-      default:
-        return 'chess';
-    }
-  }
-
   setVariant(variant: ChessVariant): void {
-    const uciVariant = this.getUciVariant(variant);
+    const uciVariant = getUciVariant(variant);
     if (this.currentVariant !== uciVariant) {
       this.currentVariant = uciVariant;
       this.sendCommand(`setoption name UCI_Variant value ${uciVariant}`);

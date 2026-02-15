@@ -15,7 +15,7 @@ export default function PracticePage() {
   return (
     <PageContainer scrollable={true}>
       <MenuPageLayout
-        icon={Icons.chessKing}
+        icon={Icons.practice}
         title='Practice'
         description='Improve your chess skills with openings study and tactical puzzles.'
       >

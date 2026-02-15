@@ -345,6 +345,12 @@ export function useChessBoardLogic({
     }
   }, [enablePremoves, premoves, isPlayerTurn, game, executeMove]);
 
+  const captureTargets = useMemo<string[]>(() => {
+    if (!moveFrom) return [];
+    const moves = game.moves({ square: moveFrom, verbose: true });
+    return moves.filter((m) => m.captured).map((m) => m.to);
+  }, [game, moveFrom]);
+
   const premoveStyles = useMemo<SquareStyles>(() => {
     if (!enablePremoves || premoves.length === 0) return {};
     return premoves.reduce(
@@ -409,6 +415,7 @@ export function useChessBoardLogic({
     gameTurn,
     playerColorShort,
     moveFrom,
+    captureTargets,
     premoves,
     pendingPromotion,
     executeMove,

@@ -8,6 +8,15 @@ import {
   Rules
 } from 'chessops/types';
 import { parseSquare, makeSquare, squareRank } from 'chessops/util';
+import {
+  pawnAttacks,
+  knightAttacks,
+  bishopAttacks,
+  rookAttacks,
+  queenAttacks,
+  kingAttacks
+} from 'chessops/attacks';
+import { SquareSet } from 'chessops/squareSet';
 import { parseFen, makeFen } from 'chessops/fen';
 import { parseSan, makeSan } from 'chessops/san';
 import {
@@ -481,6 +490,61 @@ export class Chess {
       h[k] = v;
     }
     return h;
+  }
+
+  getSquaresAttackedBy(color: ChessJSColor): string[] {
+    const chessOpsColor: ChessOpsColor = charToColor[color];
+    let allAttacked = SquareSet.empty();
+
+    for (const sq of this._pos.board[chessOpsColor]) {
+      const piece = this._pos.board.get(sq);
+      if (!piece) continue;
+
+      let attacks: SquareSet;
+      switch (piece.role) {
+        case 'pawn':
+          attacks = pawnAttacks(chessOpsColor, sq);
+          break;
+        case 'knight':
+          attacks = knightAttacks(sq);
+          break;
+        case 'bishop':
+          attacks = bishopAttacks(sq, this._pos.board.occupied);
+          break;
+        case 'rook':
+          attacks = rookAttacks(sq, this._pos.board.occupied);
+          break;
+        case 'queen':
+          attacks = queenAttacks(sq, this._pos.board.occupied);
+          break;
+        case 'king':
+          attacks = kingAttacks(sq);
+          break;
+        default:
+          continue;
+      }
+      allAttacked = allAttacked.union(attacks);
+    }
+
+    return [...allAttacked].map((sq) => makeSquare(sq));
+  }
+
+  getAdjacentOccupied(square: string, excludePawns = false): string[] {
+    const sq = parseSquare(square);
+    if (sq === undefined) return [];
+
+    const adjacent = kingAttacks(sq);
+    const result: string[] = [];
+
+    for (const adjSq of adjacent.intersect(this._pos.board.occupied)) {
+      if (excludePawns) {
+        const piece = this._pos.board.get(adjSq);
+        if (piece?.role === 'pawn') continue;
+      }
+      result.push(makeSquare(adjSq));
+    }
+
+    return result;
   }
 
   private _makeMoveObjectInternal(

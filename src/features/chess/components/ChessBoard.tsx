@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { UnifiedChessBoard as Board } from './Board';
 import { Board3D } from './Board3D';
 import { PromotionDialog } from './PromotionDialog';
@@ -128,6 +127,7 @@ export function ChessBoard({
     positionHistory,
     playerColor: effectivePlayAs,
     soundEnabled,
+    variant,
     makeMove,
     goToEnd,
     isGameOver: gameOver || (isPlayMode && !gameStarted),
@@ -185,6 +185,13 @@ export function ChessBoard({
     gameTurn,
     analysisTurn
   });
+
+  const loserColor = useMemo((): 'w' | 'b' | null => {
+    if (!gameOver) return null;
+    const outcome = game.outcome();
+    if (!outcome || outcome.winner === undefined) return null;
+    return outcome.winner === 'w' ? 'b' : 'w';
+  }, [gameOver, game]);
 
   const effectiveBoardOrientation = isPlayMode
     ? boardFlipped
@@ -311,7 +318,8 @@ export function ChessBoard({
     onPieceDrop: onDrop,
     onSquareClick: wrappedSquareClick,
     onSquareRightClick: handleSquareRightClick,
-    arrows: analysisArrows
+    arrows: analysisArrows,
+    loserColor
   };
 
   const shouldShow3d =
@@ -347,9 +355,9 @@ export function ChessBoard({
           />
         )}
         {atomicOverlays.map(({ square, type, left, top }) => (
-          <Image
+          <img
             key={`${type}-${square}`}
-            src={`/atomic/${type}.svg`}
+            src={`/variant/atomic/${type}.svg`}
             alt={type}
             width={28}
             height={28}

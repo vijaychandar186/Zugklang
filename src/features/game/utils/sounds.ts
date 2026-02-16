@@ -64,6 +64,27 @@ export function playSound(type: SoundType) {
   }
 }
 
+const rawAudioCache: Record<string, HTMLAudioElement> = {};
+
+export function playRawSound(path: string) {
+  try {
+    let audio = rawAudioCache[path];
+    if (!audio) {
+      audio = new Audio(path);
+      audio.preload = 'auto';
+      audio.load();
+      rawAudioCache[path] = audio;
+    }
+    const clone = audio.cloneNode() as HTMLAudioElement;
+    clone.volume = audio.volume;
+    clone.play().catch((error) => {
+      console.warn(`Failed to play raw sound: ${path}`, error);
+    });
+  } catch (error) {
+    console.warn('Audio playback error', error);
+  }
+}
+
 export function getSoundType(
   isCapture: boolean,
   isCheck: boolean,

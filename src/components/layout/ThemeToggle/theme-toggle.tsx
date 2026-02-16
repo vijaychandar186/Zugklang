@@ -7,11 +7,28 @@ import { Icons } from '@/components/Icons';
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
+  const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const x = e.clientX;
+    const y = e.clientY;
+
+    if (!document.startViewTransition) {
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+      return;
+    }
+
+    document.documentElement.style.setProperty('--x', `${x}px`);
+    document.documentElement.style.setProperty('--y', `${y}px`);
+
+    document.startViewTransition(() => {
+      setTheme(theme === 'dark' ? 'light' : 'dark');
+    });
+  };
+
   return (
     <Button
       variant='ghost'
       size='icon'
-      onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+      onClick={handleToggle}
       className='h-9 w-9'
     >
       <Icons.sun className='h-4 w-4 scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90' />

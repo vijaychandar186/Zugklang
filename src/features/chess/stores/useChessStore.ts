@@ -372,10 +372,11 @@ export const useChessStore = create<ChessStore>()(
             autoFlipBoard: state.autoFlipBoard,
             variant: state.variant
           };
-          saveToModeStorage(oldGameType, currentState);
+          saveToModeStorage(`${oldGameType}-${state.variant}`, currentState);
 
-          const savedState =
-            loadFromModeStorage<PersistedPlayState>(newGameType);
+          const savedState = loadFromModeStorage<PersistedPlayState>(
+            `${newGameType}-${state.variant}`
+          );
           if (savedState) {
             try {
               const savedVariant = savedState.variant || 'standard';
@@ -439,6 +440,70 @@ export const useChessStore = create<ChessStore>()(
       setVariant: (variant) => {
         const state = get();
         if (state.variant !== variant) {
+          // Save current variant's state
+          const currentState: PersistedPlayState = {
+            mode: state.mode,
+            gameType: state.gameType,
+            moves: state.moves,
+            positionHistory: state.positionHistory,
+            viewingIndex: state.viewingIndex,
+            currentFEN: state.currentFEN,
+            playAs: state.playAs,
+            stockfishLevel: state.stockfishLevel,
+            gameStarted: state.gameStarted,
+            gameOver: state.gameOver,
+            gameResult: state.gameResult,
+            timeControl: state.timeControl,
+            whiteTime: state.whiteTime,
+            blackTime: state.blackTime,
+            activeTimer: state.activeTimer,
+            lastActiveTimestamp: state.lastActiveTimestamp,
+            boardOrientation: state.boardOrientation,
+            autoFlipBoard: state.autoFlipBoard,
+            variant: state.variant
+          };
+          saveToModeStorage(`${state.gameType}-${state.variant}`, currentState);
+
+          // Try to load saved state for the new variant
+          const savedState = loadFromModeStorage<PersistedPlayState>(
+            `${state.gameType}-${variant}`
+          );
+          if (savedState) {
+            try {
+              const game = new Chess(
+                savedState.currentFEN || getStartingFEN(variant),
+                variantToRules(variant)
+              );
+              set({
+                variant,
+                game,
+                moves: savedState.moves || [],
+                positionHistory: savedState.positionHistory || [
+                  getStartingFEN(variant)
+                ],
+                viewingIndex: savedState.viewingIndex || 0,
+                currentFEN: savedState.currentFEN || getStartingFEN(variant),
+                playAs: savedState.playAs || 'white',
+                stockfishLevel: savedState.stockfishLevel || 10,
+                gameStarted: savedState.gameStarted || false,
+                gameOver: savedState.gameOver || false,
+                gameResult: savedState.gameResult || null,
+                timeControl: savedState.timeControl || DEFAULT_TIME_CONTROL,
+                whiteTime: savedState.whiteTime,
+                blackTime: savedState.blackTime,
+                activeTimer: savedState.activeTimer,
+                lastActiveTimestamp: savedState.lastActiveTimestamp,
+                boardOrientation: savedState.boardOrientation || 'white',
+                autoFlipBoard: savedState.autoFlipBoard || false,
+                playingAgainstStockfish: false
+              });
+              return;
+            } catch {
+              // Fall through to fresh state
+            }
+          }
+
+          // No saved state or load failed - start fresh
           const startingFEN = getStartingFEN(variant);
           const newGame = new Chess(startingFEN, variantToRules(variant));
           set({
@@ -587,10 +652,13 @@ export const useChessStore = create<ChessStore>()(
     }),
     {
       name: 'zugklang-play-storage',
-      storage: createMultiModeStorage(
-        (state) => (state as { gameType?: PlayMode })?.gameType,
-        'computer'
-      ),
+      storage: createMultiModeStorage((state) => {
+        const s = state as {
+          gameType?: PlayMode;
+          variant?: ChessVariant;
+        };
+        return `${s?.gameType || 'computer'}-${s?.variant || 'standard'}`;
+      }, 'computer-standard'),
       partialize: (state) => ({
         mode: state.mode,
         gameType: state.gameType,

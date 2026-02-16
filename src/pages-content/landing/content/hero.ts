@@ -2,7 +2,7 @@ export const HERO_TEXT = {
   title: 'ZUGKLANG',
   subtitle: 'Where Strategy Meets Symphony',
   description:
-    'Experience the game of kings with immersive audio feedback and premium aesthetics. Play against advanced AI, analyze your games, and improve your chess skills.',
+    'Play standard chess and 9 variants against Stockfish and Fairy-Stockfish, solve puzzles, explore openings, and train your board vision — all with immersive audio and premium aesthetics.',
   buttonText: 'Start Playing'
 };
 

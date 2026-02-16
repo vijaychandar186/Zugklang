@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Chess } from '@/lib/chess';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -80,6 +81,7 @@ interface OpeningsViewProps {
 }
 
 export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
+  const router = useRouter();
   const [inputValue, setInputValue] = useState('');
   const [viewingMoveIndex, setViewingMoveIndex] = useState(0);
 
@@ -428,6 +430,20 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
             isEngineOn={isAnalysisOn}
             isEngineDisabled={!isInitialized}
             onToggleEngine={handleToggleAnalysis}
+            leftActions={
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    onClick={() => router.push('/')}
+                  >
+                    <Icons.home className='h-4 w-4' />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Home</TooltipContent>
+              </Tooltip>
+            }
             rightActions={
               <>
                 <Tooltip>

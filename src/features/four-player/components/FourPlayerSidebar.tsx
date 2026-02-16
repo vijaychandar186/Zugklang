@@ -1,27 +1,99 @@
 'use client';
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
+import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
 import { usePlayback } from '@/features/chess/hooks/usePlayback';
 import { useFourPlayerStore, TEAM_ROTATIONS } from '../store';
+import { useFourPlayerTimer } from '../hooks/useFourPlayerTimer';
+import { formatTime } from '@/features/game/utils/formatting';
+import { cn } from '@/lib/utils';
 import type { Team, MoveRecord } from '../engine';
 
-const TEAM_INFO: Record<Team, { label: string; hex: string; short: string }> = {
-  r: { label: 'Red', hex: '#D7263D', short: 'R' },
-  b: { label: 'Blue', hex: '#1E90FF', short: 'B' },
-  y: { label: 'Yellow', hex: '#FFD700', short: 'Y' },
-  g: { label: 'Green', hex: '#00A86B', short: 'G' }
+const TEAM_INFO: Record<
+  Team,
+  { label: string; cssVar: string; short: string }
+> = {
+  r: { label: 'Red', cssVar: 'var(--four-player-red)', short: 'R' },
+  b: { label: 'Blue', cssVar: 'var(--four-player-blue)', short: 'B' },
+  y: { label: 'Yellow', cssVar: 'var(--four-player-yellow)', short: 'Y' },
+  g: { label: 'Green', cssVar: 'var(--four-player-green)', short: 'G' }
 };
 
 const TEAMS: Team[] = ['r', 'b', 'y', 'g'];
+
+// Clipboard hook
+function useClipboard({ resetDelay = 2000 }: { resetDelay?: number } = {}) {
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+
+  const copy = useCallback(
+    async (text: string, key: string) => {
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopiedKey(key);
+        setTimeout(() => setCopiedKey(null), resetDelay);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    [resetDelay]
+  );
+
+  const isCopied = useCallback((key: string) => copiedKey === key, [copiedKey]);
+
+  return {
+    copy,
+    isCopied,
+    copiedKey
+  };
+}
+
+// Format moves for text output
+function formatMovesText(moves: MoveRecord[]): string {
+  const rounds: string[] = [];
+  for (let i = 0; i < moves.length; i += 4) {
+    const roundNum = Math.floor(i / 4) + 1;
+    const roundMoves: string[] = [];
+    for (let j = 0; j < 4; j++) {
+      const move = moves[i + j];
+      if (move) {
+        const info = TEAM_INFO[move.team];
+        roundMoves.push(`${info.label}: ${move.notation}`);
+      }
+    }
+    rounds.push(`${roundNum}. ${roundMoves.join(', ')}`);
+  }
+  return rounds.join('\n');
+}
 
 type MoveItemProps = {
   move: MoveRecord;
@@ -48,7 +120,7 @@ const MoveItem = memo(function MoveItem({
     >
       <span
         className='inline-block h-2 w-2 shrink-0 rounded-full'
-        style={{ backgroundColor: info.hex }}
+        style={{ backgroundColor: info.cssVar }}
       />
       <span>{move.notation}</span>
     </button>
@@ -122,11 +194,11 @@ function PlayerButton({
       className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all ${
         isActive ? 'bg-foreground/10' : 'hover:bg-muted'
       }`}
-      style={isActive ? { boxShadow: `0 0 0 2px ${info.hex}` } : undefined}
+      style={isActive ? { boxShadow: `0 0 0 2px ${info.cssVar}` } : undefined}
     >
       <div
         className='h-2.5 w-2.5 rounded-full'
-        style={{ backgroundColor: info.hex }}
+        style={{ backgroundColor: info.cssVar }}
       />
       {info.label}
     </button>
@@ -134,6 +206,7 @@ function PlayerButton({
 }
 
 export function FourPlayerSidebar() {
+  const router = useRouter();
   const {
     moves,
     viewingMoveIndex,
@@ -143,14 +216,21 @@ export function FourPlayerSidebar() {
     winner,
     loseOrder,
     game,
+    gameStarted,
+    gameResult,
+    points,
     goToMove,
     goToStart,
     goToEnd,
     goToPrev,
     goToNext,
     resetGame,
+    abortGame,
     setOrientation
   } = useFourPlayerStore();
+
+  const { hasTimer, teamTimes, activeTimer } = useFourPlayerTimer();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const canGoBack = viewingMoveIndex > -1;
   const canGoForward = viewingMoveIndex < moves.length - 1;
@@ -161,164 +241,342 @@ export function FourPlayerSidebar() {
     onNext: goToNext
   });
 
+  const { copy, isCopied } = useClipboard();
+
   const currentInfo = TEAM_INFO[currentTeam];
   const isChecked = !isGameOver && game.isChecked;
 
+  const handleAbort = () => {
+    abortGame();
+  };
+
+  const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
+  const handleCopyGameState = () => {
+    const gameState = JSON.stringify(
+      {
+        moves: moves,
+        currentTeam: currentTeam,
+        winner: winner,
+        loseOrder: loseOrder,
+        points: points
+      },
+      null,
+      2
+    );
+    copy(gameState, 'state');
+  };
+
   return (
-    <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
-      <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
-        <h3 className='font-semibold'>Moves</h3>
-        <span className='text-muted-foreground text-xs'>
-          {moves.length} move{moves.length !== 1 ? 's' : ''}
-        </span>
-      </div>
-
-      <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
-        <div className='px-4 py-2'>
-          <FourPlayerMoveHistory
-            moves={moves}
-            viewingMoveIndex={viewingMoveIndex}
-            onMoveClick={goToMove}
-          />
-        </div>
-      </ScrollArea>
-
-      <NavigationControls
-        viewingIndex={viewingMoveIndex + 1}
-        totalPositions={moves.length + 1}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        isPlaying={isPlaying}
-        onTogglePlay={togglePlay}
-        onGoToStart={goToStart}
-        onGoToEnd={goToEnd}
-        onGoToPrev={goToPrev}
-        onGoToNext={goToNext}
-      />
-
-      <div className='bg-muted/50 space-y-2 border-t p-2'>
-        {isGameOver && winner && (
-          <div className='flex flex-col gap-2 border-b pb-2'>
-            <div className='flex items-center justify-center gap-2'>
-              <div
-                className='h-3.5 w-3.5 rounded-full'
-                style={{ backgroundColor: TEAM_INFO[winner].hex }}
-              />
-              <span className='text-sm font-bold'>
-                {TEAM_INFO[winner].label} wins!
-              </span>
-            </div>
-            {loseOrder.length > 0 && (
-              <p className='text-muted-foreground text-center text-xs'>
-                Eliminated:{' '}
-                {loseOrder.map((t, i) => (
-                  <span key={t}>
-                    {i > 0 && ', '}
-                    <span style={{ color: TEAM_INFO[t].hex }}>
-                      {TEAM_INFO[t].label}
-                    </span>
-                  </span>
-                ))}
-              </p>
-            )}
-            <Button
-              variant='default'
-              size='sm'
-              className='w-full'
-              onClick={resetGame}
-            >
-              <Icons.newGame className='mr-2 h-4 w-4' />
-              New Game
-            </Button>
-          </div>
-        )}
-
-        {!isGameOver && (
-          <div className='flex flex-col gap-2'>
-            <div className='flex items-center justify-center gap-2'>
-              <div
-                className='h-3 w-3 rounded-full'
-                style={{ backgroundColor: currentInfo.hex }}
-              />
-              <span className='text-sm font-medium'>
-                {currentInfo.label}&apos;s turn
-              </span>
-              {isChecked && (
-                <span className='bg-destructive/10 text-destructive rounded px-1.5 py-0.5 text-xs font-bold'>
-                  Check!
-                </span>
-              )}
-            </div>
-
-            {loseOrder.length > 0 && (
-              <p className='text-muted-foreground text-center text-xs'>
-                {loseOrder.length} eliminated:{' '}
-                {loseOrder.map((t, i) => (
-                  <span key={t}>
-                    {i > 0 && ', '}
-                    <span style={{ color: TEAM_INFO[t].hex }}>
-                      {TEAM_INFO[t].label}
-                    </span>
-                  </span>
-                ))}
-              </p>
-            )}
-
-            <div className='flex justify-center gap-3'>
-              {TEAMS.map((team) => {
-                const info = TEAM_INFO[team];
-                const isEliminated = loseOrder.includes(team);
-                const isCurrent = team === currentTeam;
-                return (
-                  <div
-                    key={team}
-                    className={`flex items-center gap-1 text-xs ${
-                      isEliminated
-                        ? 'text-muted-foreground line-through opacity-50'
-                        : isCurrent
-                          ? 'font-bold'
-                          : 'text-muted-foreground'
-                    }`}
-                  >
-                    <div
-                      className='h-2 w-2 rounded-full'
-                      style={{
-                        backgroundColor: info.hex,
-                        opacity: isEliminated ? 0.3 : 1
-                      }}
-                    />
-                    {info.label}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
-        <div className='flex flex-wrap items-center justify-center gap-1'>
-          {TEAMS.map((team) => (
-            <PlayerButton
-              key={team}
-              team={team}
-              isActive={orientation === TEAM_ROTATIONS[team]}
-              onClick={() => setOrientation(TEAM_ROTATIONS[team])}
-            />
-          ))}
-        </div>
-
-        {!isGameOver && (
-          <div className='flex justify-center'>
+    <>
+      <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
+        <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
+          <h3 className='font-semibold'>Moves</h3>
+          <div className='flex items-center gap-1'>
+            <span className='text-muted-foreground mr-2 text-xs'>
+              {moves.length} move{moves.length !== 1 ? 's' : ''}
+            </span>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant='ghost' size='icon' onClick={resetGame}>
-                  <Icons.rematch className='h-4 w-4' />
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='h-8 w-8'
+                  onClick={() => router.push('/')}
+                >
+                  <Icons.home className='h-4 w-4' />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>New Game</TooltipContent>
+              <TooltipContent>Home</TooltipContent>
+            </Tooltip>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant='ghost' size='icon' className='h-8 w-8'>
+                  <Icons.share className='h-4 w-4' />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Share Game</DialogTitle>
+                  <DialogDescription>
+                    Copy moves or game state to clipboard.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className='flex flex-col gap-3 pt-2'>
+                  <Button
+                    onClick={handleCopyMoves}
+                    variant='outline'
+                    className='h-auto justify-between py-3'
+                  >
+                    <div className='flex flex-col items-start'>
+                      <span className='font-medium'>Copy Moves</span>
+                      <span className='text-muted-foreground text-xs'>
+                        Simple move list
+                      </span>
+                    </div>
+                    {isCopied('moves') ? (
+                      <Icons.check className='h-4 w-4 [color:var(--success)]' />
+                    ) : (
+                      <Icons.copy className='text-muted-foreground h-4 w-4' />
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleCopyGameState}
+                    variant='outline'
+                    className='h-auto justify-between py-3'
+                  >
+                    <div className='flex flex-col items-start'>
+                      <span className='font-medium'>Copy Game State</span>
+                      <span className='text-muted-foreground text-xs'>
+                        Full game state as JSON
+                      </span>
+                    </div>
+                    {isCopied('state') ? (
+                      <Icons.check className='h-4 w-4 [color:var(--success)]' />
+                    ) : (
+                      <Icons.copy className='text-muted-foreground h-4 w-4' />
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='h-8 w-8'
+                  onClick={() => setSettingsOpen(true)}
+                >
+                  <Icons.settings className='h-4 w-4' />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Settings</TooltipContent>
             </Tooltip>
           </div>
-        )}
+        </div>
+
+        <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
+          <div className='px-4 py-2'>
+            <FourPlayerMoveHistory
+              moves={moves}
+              viewingMoveIndex={viewingMoveIndex}
+              onMoveClick={goToMove}
+            />
+          </div>
+        </ScrollArea>
+
+        <NavigationControls
+          viewingIndex={viewingMoveIndex + 1}
+          totalPositions={moves.length + 1}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          isPlaying={isPlaying}
+          onTogglePlay={togglePlay}
+          onGoToStart={goToStart}
+          onGoToEnd={goToEnd}
+          onGoToPrev={goToPrev}
+          onGoToNext={goToNext}
+        />
+
+        <div className='bg-muted/50 space-y-2 border-t p-2'>
+          {(isGameOver || !gameStarted) && (
+            <div className='flex flex-col gap-2 border-b pb-2'>
+              {gameResult ? (
+                <p className='text-center text-sm font-medium'>{gameResult}</p>
+              ) : isGameOver && winner ? (
+                <>
+                  <div className='flex items-center justify-center gap-2'>
+                    <div
+                      className='h-3.5 w-3.5 rounded-full'
+                      style={{ backgroundColor: TEAM_INFO[winner].cssVar }}
+                    />
+                    <span className='text-sm font-bold'>
+                      {TEAM_INFO[winner].label} wins!
+                    </span>
+                  </div>
+                  {loseOrder.length > 0 && (
+                    <p className='text-muted-foreground text-center text-xs'>
+                      Eliminated:{' '}
+                      {loseOrder.map((t, i) => (
+                        <span key={t}>
+                          {i > 0 && ', '}
+                          <span style={{ color: TEAM_INFO[t].cssVar }}>
+                            {TEAM_INFO[t].label}
+                          </span>
+                        </span>
+                      ))}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className='text-center text-sm font-medium'>
+                  No active game
+                </p>
+              )}
+              <Button
+                variant='default'
+                size='sm'
+                className='w-full'
+                onClick={resetGame}
+              >
+                <Icons.newGame className='mr-2 h-4 w-4' />
+                New Game
+              </Button>
+            </div>
+          )}
+
+          {!isGameOver && (
+            <div className='flex flex-col gap-2'>
+              <div className='flex items-center justify-center gap-2'>
+                <div
+                  className='h-3 w-3 rounded-full'
+                  style={{ backgroundColor: currentInfo.cssVar }}
+                />
+                <span className='text-sm font-medium'>
+                  {currentInfo.label}&apos;s turn
+                </span>
+                {isChecked && (
+                  <span className='bg-destructive/10 text-destructive rounded px-1.5 py-0.5 text-xs font-bold'>
+                    Check!
+                  </span>
+                )}
+              </div>
+
+              {loseOrder.length > 0 && (
+                <p className='text-muted-foreground text-center text-xs'>
+                  {loseOrder.length} eliminated:{' '}
+                  {loseOrder.map((t, i) => (
+                    <span key={t}>
+                      {i > 0 && ', '}
+                      <span style={{ color: TEAM_INFO[t].cssVar }}>
+                        {TEAM_INFO[t].label}
+                      </span>
+                    </span>
+                  ))}
+                </p>
+              )}
+
+              <div className='flex justify-center gap-2'>
+                {TEAMS.map((team) => {
+                  const info = TEAM_INFO[team];
+                  const isEliminated = loseOrder.includes(team);
+                  const isCurrent = team === currentTeam;
+                  const time = teamTimes[team];
+                  const isActive = activeTimer === team;
+                  const isLow = time !== null && time <= 30;
+                  const isCritical = time !== null && time <= 10;
+                  return (
+                    <div
+                      key={team}
+                      className='flex flex-col items-center gap-0.5 text-xs'
+                    >
+                      <div className='flex items-center gap-1'>
+                        <div
+                          className='h-2 w-2 rounded-full'
+                          style={{
+                            backgroundColor: isEliminated
+                              ? 'var(--four-player-eliminated)'
+                              : info.cssVar
+                          }}
+                        />
+                        <span
+                          className={`${
+                            isEliminated
+                              ? 'text-muted-foreground line-through opacity-50'
+                              : isCurrent
+                                ? 'font-bold'
+                                : 'text-muted-foreground'
+                          }`}
+                        >
+                          {info.short}
+                        </span>
+                      </div>
+                      <span className='text-muted-foreground text-[10px]'>
+                        {points[team]}pts
+                      </span>
+                      {hasTimer && time !== null && (
+                        <div
+                          className={cn(
+                            'rounded px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums transition-colors',
+                            isActive
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted',
+                            !isActive && 'opacity-70',
+                            isLow &&
+                              isActive &&
+                              'text-background bg-[color:var(--classification-inaccuracy)]',
+                            isCritical &&
+                              isActive &&
+                              'bg-destructive text-destructive-foreground animate-pulse'
+                          )}
+                        >
+                          {formatTime(time)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          <div className='flex flex-wrap items-center justify-center gap-1'>
+            {TEAMS.map((team) => (
+              <PlayerButton
+                key={team}
+                team={team}
+                isActive={orientation === TEAM_ROTATIONS[team]}
+                onClick={() => setOrientation(TEAM_ROTATIONS[team])}
+              />
+            ))}
+          </div>
+
+          {gameStarted && !isGameOver && (
+            <div className='flex justify-center'>
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive'
+                      >
+                        <Icons.flag className='h-4 w-4' />
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>End Game</TooltipContent>
+                </Tooltip>
+
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>End Game?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to end the game? The current
+                      progress will be saved.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleAbort}
+                      className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                    >
+                      End Game
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+      <SettingsDialog
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        show3dToggle={false}
+      />
+    </>
   );
 }

@@ -8,19 +8,22 @@ export class Piece {
   private readonly _team: Team;
   private _hasMoved: boolean;
   private _possibleMoves: BoardPosition[] = [];
+  private _isPromoted: boolean = false;
 
   constructor(
     x: number,
     y: number,
     type: PieceType,
     team: Team,
-    hasMoved: boolean = false
+    hasMoved: boolean = false,
+    isPromoted: boolean = false
   ) {
     this._x = x;
     this._y = y;
     this._type = type;
     this._team = team;
     this._hasMoved = hasMoved;
+    this._isPromoted = isPromoted;
   }
 
   get x(): number {
@@ -41,6 +44,10 @@ export class Piece {
 
   get hasMoved(): boolean {
     return this._hasMoved;
+  }
+
+  get isPromoted(): boolean {
+    return this._isPromoted;
   }
 
   get possibleMoves(): readonly BoardPosition[] {
@@ -68,6 +75,7 @@ export class Piece {
   promote(newType: PieceType): void {
     this._type = newType;
     this._hasMoved = true;
+    this._isPromoted = true;
   }
 
   setPossibleMoves(moves: BoardPosition[]): void {
@@ -84,7 +92,8 @@ export class Piece {
       this._y,
       this._type,
       this._team,
-      this._hasMoved
+      this._hasMoved,
+      this._isPromoted
     );
     cloned._possibleMoves = this._possibleMoves.map((move) => ({ ...move }));
     return cloned;

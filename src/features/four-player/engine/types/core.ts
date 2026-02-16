@@ -15,6 +15,11 @@ export interface MoveRecord {
   readonly team: Team;
   notation: string;
   readonly captured?: string;
+  readonly promotedPiece?: boolean;
+  readonly checkedKings?: Team[];
+  readonly checkingPieceType?: PieceType;
+  isCheckmate?: boolean;
+  isStalemate?: boolean;
 }
 
 export interface PendingPromotion {

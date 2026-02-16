@@ -32,7 +32,8 @@ export function useAtomicThreats({
   playerColor,
   boardFlipped,
   selectedSquare,
-  captureTargets
+  captureTargets,
+  currentFEN
 }: {
   game: Chess;
   variant: ChessVariant;
@@ -40,6 +41,7 @@ export function useAtomicThreats({
   boardFlipped: boolean;
   selectedSquare: string | null;
   captureTargets: string[];
+  currentFEN: string;
 }): AtomicOverlay[] {
   return useMemo(() => {
     if (variant !== 'atomic') return [];
@@ -106,8 +108,9 @@ export function useAtomicThreats({
     }
 
     return overlays;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    game,
+    currentFEN,
     variant,
     playerColor,
     boardFlipped,

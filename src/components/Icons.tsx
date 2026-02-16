@@ -74,6 +74,7 @@ import {
   Recycle,
   UsersRound,
   Home,
+  Dices,
   type LucideIcon
 } from 'lucide-react';
 
@@ -161,7 +162,8 @@ export const Icons = {
   mountain: Mountain,
   recycle: Recycle,
   usersRound: UsersRound,
-  home: Home
+  home: Home,
+  dices: Dices
 } as const;
 
 export type { LucideIcon };

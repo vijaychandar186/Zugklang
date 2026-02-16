@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -66,6 +67,7 @@ const DIFFICULTY_COLORS: Record<PuzzleDifficulty, string> = {
 };
 
 export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
+  const router = useRouter();
   const {
     currentPuzzle,
     puzzleIndex,
@@ -271,23 +273,38 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
             <SidebarHeader
               title='Moves'
               actions={
-                <Select
-                  value={difficulty}
-                  onValueChange={(v) =>
-                    handleDifficultyChange(v as PuzzleDifficulty)
-                  }
-                >
-                  <SelectTrigger className='w-[140px]'>
-                    <SelectValue placeholder='Difficulty' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='beginner'>Beginner</SelectItem>
-                    <SelectItem value='intermediate'>Intermediate</SelectItem>
-                    <SelectItem value='advanced'>Advanced</SelectItem>
-                    <SelectItem value='master'>Master</SelectItem>
-                    <SelectItem value='elite'>Elite</SelectItem>
-                  </SelectContent>
-                </Select>
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='h-8 w-8'
+                        onClick={() => router.push('/')}
+                      >
+                        <Icons.home className='h-4 w-4' />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Home</TooltipContent>
+                  </Tooltip>
+                  <Select
+                    value={difficulty}
+                    onValueChange={(v) =>
+                      handleDifficultyChange(v as PuzzleDifficulty)
+                    }
+                  >
+                    <SelectTrigger className='w-[140px]'>
+                      <SelectValue placeholder='Difficulty' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='beginner'>Beginner</SelectItem>
+                      <SelectItem value='intermediate'>Intermediate</SelectItem>
+                      <SelectItem value='advanced'>Advanced</SelectItem>
+                      <SelectItem value='master'>Master</SelectItem>
+                      <SelectItem value='elite'>Elite</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </>
               }
             />
 

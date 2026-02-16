@@ -21,10 +21,10 @@ const SOUND_FILES: Record<SoundType, string> = {
   check: '/audio/sounds/move-check.mp3',
   castle: '/audio/sounds/castle.mp3',
   promote: '/audio/sounds/promote.mp3',
-  premove: '/audio/sounds/premove.mp3',
+  premove: '/audio/sounds/pre-move.mp3',
   notify: '/audio/sounds/notify.mp3',
   illegal: '/audio/sounds/illegal.mp3',
-  tenseconds: '/audio/sounds/tenseconds.mp3'
+  tenseconds: '/audio/sounds/ten-seconds.mp3'
 };
 
 const audioCache: Partial<Record<SoundType, HTMLAudioElement>> = {};

@@ -212,7 +212,8 @@ export function ChessBoard({
     playerColor: playerColorShort,
     boardFlipped: resolvedOrientation === 'black',
     selectedSquare: moveFrom,
-    captureTargets
+    captureTargets,
+    currentFEN
   });
 
   const {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -61,6 +62,7 @@ interface GameReviewViewProps {
 export function GameReviewView({
   initialBoard3dEnabled
 }: GameReviewViewProps = {}) {
+  const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [shouldAutoReview, setShouldAutoReview] = useState(false);
@@ -467,6 +469,19 @@ export function GameReviewView({
           title='Game Review'
           actions={
             <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8'
+                    onClick={() => router.push('/')}
+                  >
+                    <Icons.home className='h-4 w-4' />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Home</TooltipContent>
+              </Tooltip>
               <ExportMenu
                 getFEN={getFEN}
                 getPGN={getPGN}

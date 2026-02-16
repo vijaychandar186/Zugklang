@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -67,6 +68,7 @@ interface ChessSidebarProps {
 }
 
 export function ChessSidebar({ mode }: ChessSidebarProps) {
+  const router = useRouter();
   const {
     moves,
     viewingIndex,
@@ -215,74 +217,89 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
           <h3 className='font-semibold'>Moves</h3>
           <div className='flex items-center gap-1'>
             {isPlayMode && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant='ghost' size='icon' className='h-8 w-8'>
-                    <Icons.share className='h-4 w-4' />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Share Game</DialogTitle>
-                    <DialogDescription>
-                      Copy moves or PGN to clipboard.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className='flex flex-col gap-3 pt-2'>
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
                     <Button
-                      onClick={handleCopyFEN}
-                      variant='outline'
-                      className='h-auto justify-between py-3'
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8'
+                      onClick={() => router.push('/')}
                     >
-                      <div className='flex flex-col items-start'>
-                        <span className='font-medium'>Copy FEN</span>
-                        <span className='text-muted-foreground text-xs'>
-                          Current position
-                        </span>
-                      </div>
-                      {isCopied('fen') ? (
-                        <Icons.check className='h-4 w-4 [color:var(--success)]' />
-                      ) : (
-                        <Icons.copy className='text-muted-foreground h-4 w-4' />
-                      )}
+                      <Icons.home className='h-4 w-4' />
                     </Button>
-                    <Button
-                      onClick={handleCopyPGN}
-                      variant='outline'
-                      className='h-auto justify-between py-3'
-                    >
-                      <div className='flex flex-col items-start'>
-                        <span className='font-medium'>Copy PGN</span>
-                        <span className='text-muted-foreground text-xs'>
-                          Standard PGN format
-                        </span>
-                      </div>
-                      {isCopied('pgn') ? (
-                        <Icons.check className='h-4 w-4 [color:var(--success)]' />
-                      ) : (
-                        <Icons.copy className='text-muted-foreground h-4 w-4' />
-                      )}
+                  </TooltipTrigger>
+                  <TooltipContent>Home</TooltipContent>
+                </Tooltip>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant='ghost' size='icon' className='h-8 w-8'>
+                      <Icons.share className='h-4 w-4' />
                     </Button>
-                    <Button
-                      onClick={handleCopyMoves}
-                      variant='outline'
-                      className='h-auto justify-between py-3'
-                    >
-                      <div className='flex flex-col items-start'>
-                        <span className='font-medium'>Copy Moves</span>
-                        <span className='text-muted-foreground text-xs'>
-                          Simple move list
-                        </span>
-                      </div>
-                      {isCopied('moves') ? (
-                        <Icons.check className='h-4 w-4 [color:var(--success)]' />
-                      ) : (
-                        <Icons.copy className='text-muted-foreground h-4 w-4' />
-                      )}
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Share Game</DialogTitle>
+                      <DialogDescription>
+                        Copy moves or PGN to clipboard.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className='flex flex-col gap-3 pt-2'>
+                      <Button
+                        onClick={handleCopyFEN}
+                        variant='outline'
+                        className='h-auto justify-between py-3'
+                      >
+                        <div className='flex flex-col items-start'>
+                          <span className='font-medium'>Copy FEN</span>
+                          <span className='text-muted-foreground text-xs'>
+                            Current position
+                          </span>
+                        </div>
+                        {isCopied('fen') ? (
+                          <Icons.check className='h-4 w-4 [color:var(--success)]' />
+                        ) : (
+                          <Icons.copy className='text-muted-foreground h-4 w-4' />
+                        )}
+                      </Button>
+                      <Button
+                        onClick={handleCopyPGN}
+                        variant='outline'
+                        className='h-auto justify-between py-3'
+                      >
+                        <div className='flex flex-col items-start'>
+                          <span className='font-medium'>Copy PGN</span>
+                          <span className='text-muted-foreground text-xs'>
+                            Standard PGN format
+                          </span>
+                        </div>
+                        {isCopied('pgn') ? (
+                          <Icons.check className='h-4 w-4 [color:var(--success)]' />
+                        ) : (
+                          <Icons.copy className='text-muted-foreground h-4 w-4' />
+                        )}
+                      </Button>
+                      <Button
+                        onClick={handleCopyMoves}
+                        variant='outline'
+                        className='h-auto justify-between py-3'
+                      >
+                        <div className='flex flex-col items-start'>
+                          <span className='font-medium'>Copy Moves</span>
+                          <span className='text-muted-foreground text-xs'>
+                            Simple move list
+                          </span>
+                        </div>
+                        {isCopied('moves') ? (
+                          <Icons.check className='h-4 w-4 [color:var(--success)]' />
+                        ) : (
+                          <Icons.copy className='text-muted-foreground h-4 w-4' />
+                        )}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </>
             )}
 
             {isAnalysisMode && (

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Chess } from '@/lib/chess';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -64,6 +65,7 @@ interface AnalysisViewProps {
 export function AnalysisView({
   initialBoard3dEnabled
 }: AnalysisViewProps = {}) {
+  const router = useRouter();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [continueDialogOpen, setContinueDialogOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(10);
@@ -382,6 +384,19 @@ export function AnalysisView({
           title={isEditorMode ? 'Board Editor' : 'Analysis'}
           actions={
             <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant='ghost'
+                    size='icon'
+                    className='h-8 w-8'
+                    onClick={() => router.push('/')}
+                  >
+                    <Icons.home className='h-4 w-4' />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Home</TooltipContent>
+              </Tooltip>
               <ExportMenu
                 getFEN={getFEN}
                 getPGN={getPGN}

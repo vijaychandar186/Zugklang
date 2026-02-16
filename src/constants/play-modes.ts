@@ -34,5 +34,13 @@ export const playModes: MenuCardItem[] = [
     description:
       'Play 4-player chess on a 14×14 board with friends on the same device. Free-move mode.',
     actionText: 'Start Game'
+  },
+  {
+    href: '/play/dice-chess',
+    icon: Icons.dices,
+    title: 'Dice Chess',
+    description:
+      'Roll 3 dice to determine which pieces you can move each turn. Capture the enemy King to win!',
+    actionText: 'Start Game'
   }
 ];

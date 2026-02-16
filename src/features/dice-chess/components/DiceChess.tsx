@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, forwardRef, useImperativeHandle } from 'react';
+import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 
@@ -8,12 +8,11 @@ type DiceValue = 1 | 2 | 3 | 4 | 5 | 6;
 
 type DiceChessProps = {
   size?: number;
-  rollingTime?: number;
   defaultValue?: DiceValue;
+  targetValue?: DiceValue;
+  rolling?: boolean;
   disabled?: boolean;
-  cheatValue?: DiceValue;
   faces?: string[];
-  onRoll?: (value: DiceValue) => void;
   className?: string;
 };
 
@@ -21,13 +20,22 @@ type DiceChessRef = {
   rollDice: (value?: DiceValue) => void;
 };
 
-const DEFAULT_FACES = [
+const WHITE_FACES = [
   '/pieces/white-king.svg',
   '/pieces/white-queen.svg',
   '/pieces/white-bishop.svg',
   '/pieces/white-knight.svg',
   '/pieces/white-rook.svg',
   '/pieces/white-pawn.svg'
+];
+
+const BLACK_FACES = [
+  '/pieces/black-king.svg',
+  '/pieces/black-queen.svg',
+  '/pieces/black-bishop.svg',
+  '/pieces/black-knight.svg',
+  '/pieces/black-rook.svg',
+  '/pieces/black-pawn.svg'
 ];
 
 const BOX_ROTATION: Record<DiceValue, string> = {
@@ -68,54 +76,42 @@ const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
   (
     {
       size = 250,
-      rollingTime = 1000,
       defaultValue = 6,
+      targetValue,
+      rolling = false,
       disabled = false,
-      cheatValue,
-      faces = DEFAULT_FACES,
-      onRoll,
+      faces = WHITE_FACES,
       className
     },
     ref
   ) => {
     const [value, setValue] = useState<DiceValue>(defaultValue);
-    const [rolling, setRolling] = useState(false);
+
+    useEffect(() => {
+      if (targetValue && !rolling) {
+        setValue(targetValue);
+      }
+    }, [targetValue, rolling]);
+
     const t = size / 2;
 
-    const handleRoll = useCallback(
-      (forcedValue?: DiceValue) => {
-        if (disabled || rolling) return;
-
-        setRolling(true);
-        setTimeout(() => {
-          let rollValue = (Math.floor(Math.random() * 6) + 1) as DiceValue;
-          if (forcedValue) rollValue = forcedValue;
-          if (cheatValue) rollValue = cheatValue;
-
-          setRolling(false);
-          setValue(rollValue);
-          onRoll?.(rollValue);
-        }, rollingTime);
-      },
-      [disabled, rolling, cheatValue, rollingTime, onRoll]
-    );
-
-    useImperativeHandle(ref, () => ({ rollDice: handleRoll }));
+    useImperativeHandle(ref, () => ({
+      rollDice: (forcedValue?: DiceValue) => {
+        if (forcedValue) setValue(forcedValue);
+      }
+    }));
 
     return (
-      <button
-        disabled={disabled || rolling}
-        onClick={() => handleRoll()}
+      <div
         className={cn(
-          'inline-block cursor-pointer border-none bg-transparent p-0 shadow-none outline-none',
-          'disabled:cursor-not-allowed',
+          'inline-block',
+          disabled && 'opacity-40 grayscale',
           className
         )}
         style={{
           perspective: 1000,
           width: size,
-          height: size,
-          filter: disabled ? 'grayscale(100%)' : undefined
+          height: size
         }}
       >
         <div
@@ -142,7 +138,7 @@ const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
               }}
             >
               <Image
-                src={faces[face - 1] || DEFAULT_FACES[face - 1]}
+                src={faces[face - 1] || WHITE_FACES[face - 1]}
                 alt={`Face ${face}`}
                 width={size}
                 height={size}
@@ -152,12 +148,12 @@ const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
             </div>
           ))}
         </div>
-      </button>
+      </div>
     );
   }
 );
 
 DiceChess.displayName = 'DiceChess';
 
-export { DiceChess };
+export { DiceChess, WHITE_FACES, BLACK_FACES };
 export type { DiceChessProps, DiceChessRef, DiceValue };

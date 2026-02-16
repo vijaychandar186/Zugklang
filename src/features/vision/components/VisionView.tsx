@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { type Square, Chess } from '@/lib/chess';
 import { ChessboardProvider, Chessboard } from 'react-chessboard';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,11 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { StandardActionBar } from '@/features/chess/components/sidebar';
@@ -152,6 +158,7 @@ function generateRandomPiecePosition(): {
 }
 
 export function VisionView() {
+  const router = useRouter();
   const [gameStatus, setGameStatus] = useState<GameStatus>('setup');
   const [trainingMode, setTrainingMode] = useState<TrainingMode>('coordinates');
   const [colorMode, setColorMode] = useState<ColorMode>('white');
@@ -634,13 +641,13 @@ export function VisionView() {
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
-            <div className='w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]'>
+            <div className='w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[min(560px,calc(100dvh-200px))]'>
               <Chessboard />
             </div>
           </BoardContainer>
         </div>
 
-        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
+        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(560px,calc(100dvh-200px))] lg:w-80 lg:overflow-hidden'>
           <div className='bg-card shrink-0 rounded-lg border p-4'>
             <div className='flex items-center justify-between'>
               <div className='flex items-center gap-3'>
@@ -726,6 +733,8 @@ export function VisionView() {
             </div>
           </div>
 
+          <div className='bg-card hidden rounded-lg border lg:flex lg:flex-1' />
+
           <div className='bg-card shrink-0 overflow-hidden rounded-lg border'>
             <StandardActionBar
               onFlipBoard={() =>
@@ -733,6 +742,20 @@ export function VisionView() {
               }
               showSettings
               show3dToggle={false}
+              leftActions={
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      onClick={() => router.push('/')}
+                    >
+                      <Icons.home className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Home</TooltipContent>
+                </Tooltip>
+              }
               rightActions={
                 <Button
                   size='sm'

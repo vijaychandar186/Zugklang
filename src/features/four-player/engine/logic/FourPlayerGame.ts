@@ -94,6 +94,36 @@ export class FourPlayerGame {
     return false;
   }
 
+  getCheckedKings(byPiece: Piece): Team[] {
+    const checkedKings: Team[] = [];
+    const moves = generateRawMoves(byPiece, this._pieces);
+
+    for (const king of this._pieces.filter(
+      (p) => p.type === 'K' && p.team !== byPiece.team
+    )) {
+      if (moves.some((move) => move.x === king.x && move.y === king.y)) {
+        checkedKings.push(king.team);
+      }
+    }
+
+    return checkedKings;
+  }
+
+  isTeamInCheck(team: Team): boolean {
+    const king = this._pieces.find(
+      (piece) => piece.type === 'K' && piece.team === team
+    );
+    if (!king) return false;
+
+    for (const enemy of this._pieces.filter((piece) => piece.team !== team)) {
+      const enemyMoves = generateRawMoves(enemy, this._pieces);
+      if (enemyMoves.some((move) => move.x === king.x && move.y === king.y)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   getMovesForSquare(square: string): string[] {
     const { x, y } = fromSquare(square);
     const piece = this._pieces.find(
@@ -133,7 +163,7 @@ export class FourPlayerGame {
       return true;
     }
 
-    const notation = this.buildNotation(piece, fromSq, toSq, destPiece);
+    let notation = this.buildNotation(piece, fromSq, toSq, destPiece);
 
     if (destPiece) {
       this._pieces = this._pieces.filter((p) => p !== destPiece);
@@ -142,23 +172,24 @@ export class FourPlayerGame {
     piece.moveTo(to.x, to.y);
 
     if (piece.type === 'P' && this.isPawnPromotion(piece)) {
-      this._pendingPromotion = { piece, x: to.x, y: to.y };
-      this._moveHistory.push({
-        from: fromSq,
-        to: toSq,
-        team,
-        notation,
-        captured: destPiece?.pieceType
-      });
-      return true;
+      piece.promote('Q');
+      notation += '=Q';
     }
+
+    const movedPiece = this._pieces.find(
+      (p) => p.isAtPosition(to.x, to.y) && p.team === team
+    );
+    const checkedKings = movedPiece ? this.getCheckedKings(movedPiece) : [];
 
     this._moveHistory.push({
       from: fromSq,
       to: toSq,
       team,
       notation,
-      captured: destPiece?.pieceType
+      captured: destPiece?.pieceType,
+      promotedPiece: destPiece?.isPromoted,
+      checkedKings: checkedKings.length > 0 ? checkedKings : undefined,
+      checkingPieceType: checkedKings.length > 0 ? movedPiece?.type : undefined
     });
 
     this._totalMoves++;
@@ -234,6 +265,17 @@ export class FourPlayerGame {
 
     if (!hasLegalMoves && this._status === 'playing') {
       const eliminatedTeam = this._currentTeam;
+      const wasInCheck = this.isTeamInCheck(eliminatedTeam);
+      const lastMove = this._moveHistory[this._moveHistory.length - 1];
+
+      if (lastMove) {
+        if (wasInCheck) {
+          lastMove.isCheckmate = true;
+        } else {
+          lastMove.isStalemate = true;
+        }
+      }
+
       this._currentTeam = this.getNextTeam();
       this._loseOrder.push(eliminatedTeam);
 

@@ -409,7 +409,7 @@ export function GameReviewView({
         {(report || isAnalysisOn) && <ReviewEvaluationBar />}
       </div>
 
-      <div className='relative shrink-0 [&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[560px]'>
+      <div className='relative shrink-0 [&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[min(560px,calc(100dvh-200px))]'>
         <UnifiedBoardWithPromotion
           position={currentFen || STARTING_FEN}
           boardOrientation={boardFlipped ? 'black' : 'white'}
@@ -564,6 +564,8 @@ export function GameReviewView({
             onGoToNext={() => navigate(1)}
           />
         )}
+
+        <div className='hidden lg:flex lg:flex-1' />
 
         <StandardActionBar
           onFlipBoard={toggleBoardFlip}

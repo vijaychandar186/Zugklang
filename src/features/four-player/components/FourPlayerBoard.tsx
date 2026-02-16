@@ -5,16 +5,29 @@ import { Chessboard } from 'react-chessboard';
 import { defaultPieces, defaultDraggingPieceStyle } from 'react-chessboard';
 import { useFourPlayerStore } from '../store';
 import { isCorner, toSquare } from '../engine';
+import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import type { CSSProperties } from 'react';
 
 const BOARD_ID = 'four-player-chess';
 
-const TEAM_COLORS: Record<string, string> = {
-  r: '#D7263D',
-  b: '#1E90FF',
-  y: '#FFD700',
-  g: '#00A86B'
-};
+function getTeamColor(team: string, isEliminated: boolean): string {
+  if (isEliminated) {
+    return 'var(--four-player-eliminated)';
+  }
+
+  switch (team) {
+    case 'r':
+      return 'var(--four-player-red)';
+    case 'b':
+      return 'var(--four-player-blue)';
+    case 'y':
+      return 'var(--four-player-yellow)';
+    case 'g':
+      return 'var(--four-player-green)';
+    default:
+      return 'var(--four-player-eliminated)';
+  }
+}
 
 export function FourPlayerBoard() {
   const position = useFourPlayerStore((s) => s.position);
@@ -23,6 +36,8 @@ export function FourPlayerBoard() {
   const validMoves = useFourPlayerStore((s) => s.validMoves);
   const movePiece = useFourPlayerStore((s) => s.movePiece);
   const selectSquare = useFourPlayerStore((s) => s.selectSquare);
+  const loseOrder = useFourPlayerStore((s) => s.loseOrder);
+  const theme = useBoardTheme();
 
   const fourPlayerPieces = useMemo(() => {
     const pieces: Record<
@@ -30,22 +45,25 @@ export function FourPlayerBoard() {
       (props?: { fill?: string; svgStyle?: CSSProperties }) => React.JSX.Element
     > = {};
 
-    for (const [prefix, hex] of Object.entries(TEAM_COLORS)) {
+    const teams = ['r', 'b', 'y', 'g'];
+    for (const team of teams) {
+      const isEliminated = loseOrder.includes(team as 'r' | 'b' | 'y' | 'g');
+      const color = getTeamColor(team, isEliminated);
       const style = {
-        fill: hex,
+        fill: color,
         svgStyle: { transform: `rotate(${-orientation}deg)` }
       };
 
-      pieces[`${prefix}P`] = () => defaultPieces.wP(style);
-      pieces[`${prefix}R`] = () => defaultPieces.wR(style);
-      pieces[`${prefix}N`] = () => defaultPieces.wN(style);
-      pieces[`${prefix}B`] = () => defaultPieces.wB(style);
-      pieces[`${prefix}Q`] = () => defaultPieces.wQ(style);
-      pieces[`${prefix}K`] = () => defaultPieces.wK(style);
+      pieces[`${team}P`] = () => defaultPieces.wP(style);
+      pieces[`${team}R`] = () => defaultPieces.wR(style);
+      pieces[`${team}N`] = () => defaultPieces.wN(style);
+      pieces[`${team}B`] = () => defaultPieces.wB(style);
+      pieces[`${team}Q`] = () => defaultPieces.wQ(style);
+      pieces[`${team}K`] = () => defaultPieces.wK(style);
     }
 
     return pieces;
-  }, [orientation]);
+  }, [orientation, loseOrder]);
 
   useEffect(() => {
     for (let x = 0; x < 14; x++) {
@@ -115,6 +133,8 @@ export function FourPlayerBoard() {
       pieces: fourPlayerPieces,
       showNotation: false,
       squareStyles,
+      darkSquareStyle: theme.darkSquareStyle,
+      lightSquareStyle: theme.lightSquareStyle,
       boardStyle: {
         transform: `rotate(${orientation}deg)`
       },
@@ -130,6 +150,8 @@ export function FourPlayerBoard() {
       fourPlayerPieces,
       orientation,
       squareStyles,
+      theme.darkSquareStyle,
+      theme.lightSquareStyle,
       handleDrop,
       handleSquareClick
     ]

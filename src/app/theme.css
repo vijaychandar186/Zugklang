@@ -73,6 +73,12 @@
   --board-3d-frame-right: oklch(0.58 0.08 45);
   --board-3d-shadow: oklch(0 0 0 / 50%);
   --board-3d-background: oklch(0.82 0.05 80);
+
+  --four-player-red: oklch(0.548 0.183 17.6);
+  --four-player-blue: oklch(0.558 0.182 259);
+  --four-player-yellow: oklch(0.863 0.165 95.8);
+  --four-player-green: oklch(0.597 0.157 163.7);
+  --four-player-eliminated: oklch(0.55 0 0);
 }
 
 [data-board-scheme='blue'] {
@@ -141,4 +147,10 @@
   --board-3d-frame-right: oklch(0.75 0.02 0);
   --board-3d-shadow: oklch(0 0 0 / 60%);
   --board-3d-background: oklch(0.82 0.02 0);
+
+  --four-player-red: oklch(0.548 0.183 17.6);
+  --four-player-blue: oklch(0.558 0.182 259);
+  --four-player-yellow: oklch(0.863 0.165 95.8);
+  --four-player-green: oklch(0.597 0.157 163.7);
+  --four-player-eliminated: oklch(0.45 0 0);
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { type Square, type PieceSymbol, type Color } from '@/lib/chess';
 import { ChessboardProvider, Chessboard } from 'react-chessboard';
 import type { PieceDropHandlerArgs } from 'react-chessboard';
@@ -107,6 +108,7 @@ const SQUARES: Square[] = [
 ];
 
 export function MemoryView() {
+  const router = useRouter();
   const [gameStatus, setGameStatus] = useState<GameStatus>('setup');
   const [trainingMode, setTrainingMode] = useState<TrainingMode>('standard');
   const [pieceCount, setPieceCount] = useState(6);
@@ -665,6 +667,20 @@ export function MemoryView() {
               }
               showSettings
               show3dToggle={false}
+              leftActions={
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      onClick={() => router.push('/')}
+                    >
+                      <Icons.home className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Home</TooltipContent>
+                </Tooltip>
+              }
               rightActions={
                 <Button
                   size='sm'
@@ -735,14 +751,28 @@ export function MemoryView() {
               showSettings
               show3dToggle={false}
               leftActions={
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button variant='ghost' size='icon' onClick={clearBoard}>
-                      <Icons.eraser className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Clear Board</TooltipContent>
-                </Tooltip>
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        onClick={() => router.push('/')}
+                      >
+                        <Icons.home className='h-4 w-4' />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Home</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant='ghost' size='icon' onClick={clearBoard}>
+                        <Icons.eraser className='h-4 w-4' />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Clear Board</TooltipContent>
+                  </Tooltip>
+                </>
               }
               rightActions={
                 <Button size='sm' onClick={checkAnswer}>

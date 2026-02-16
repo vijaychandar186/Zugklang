@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Chess, type PieceSymbol } from '@/lib/chess';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -76,6 +77,7 @@ const DIFFICULTY_COLORS: Record<PuzzleDifficulty, string> = {
 export function PuzzleRushView({
   initialBoard3dEnabled
 }: PuzzleRushViewProps = {}) {
+  const router = useRouter();
   const [pendingPromotion, setPendingPromotion] =
     useState<PendingPromotion | null>(null);
 
@@ -682,20 +684,34 @@ export function PuzzleRushView({
               setBoardOrientation((o) => (o === 'white' ? 'black' : 'white'))
             }
             leftActions={
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={showHint ? 'default' : 'ghost'}
-                    size='icon'
-                    onClick={() => setShowHint((h) => !h)}
-                  >
-                    <Icons.zap className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {showHint ? 'Hide Hint' : 'Show Hint'}
-                </TooltipContent>
-              </Tooltip>
+              <>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      onClick={() => router.push('/')}
+                    >
+                      <Icons.home className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Home</TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={showHint ? 'default' : 'ghost'}
+                      size='icon'
+                      onClick={() => setShowHint((h) => !h)}
+                    >
+                      <Icons.zap className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {showHint ? 'Hide Hint' : 'Show Hint'}
+                  </TooltipContent>
+                </Tooltip>
+              </>
             }
             rightActions={
               <Tooltip>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useCallback, useMemo } from 'react';
+import Image from 'next/image';
 import { UnifiedChessBoard as Board } from './Board';
 import { Board3D } from './Board3D';
 import { PromotionDialog } from './PromotionDialog';
@@ -356,7 +357,7 @@ export function ChessBoard({
           />
         )}
         {atomicOverlays.map(({ square, type, left, top }) => (
-          <img
+          <Image
             key={`${type}-${square}`}
             src={`/variant/atomic/${type}.svg`}
             alt={type}

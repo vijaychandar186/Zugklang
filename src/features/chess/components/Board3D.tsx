@@ -38,6 +38,7 @@ export type Board3DProps = {
   onSquareRightClick?: (args: { square: string }) => void;
   arrows?: ChessArrow[];
   animationDuration?: number;
+  loserColor?: 'w' | 'b' | null;
 };
 
 export function Board3D({
@@ -49,7 +50,8 @@ export function Board3D({
   onSquareClick,
   onSquareRightClick,
   arrows = [],
-  animationDuration = ANIMATION_CONFIG.durationMs
+  animationDuration = ANIMATION_CONFIG.durationMs,
+  loserColor = null
 }: Board3DProps) {
   const theme = useBoardTheme();
   const hasMountedRef = useRef(false);
@@ -71,6 +73,8 @@ export function Board3D({
     pieces.forEach((piece) => {
       const fileName = PIECE_FILE_MAP[piece];
       const isKing = piece[1] === 'K';
+      const isLoserPiece =
+        loserColor && piece[0] === (loserColor === 'w' ? 'w' : 'b');
 
       pieceComponents[piece] = () => (
         <div
@@ -79,7 +83,10 @@ export function Board3D({
             height: '100%',
             position: 'relative',
             overflow: 'visible',
-            zIndex: 10
+            zIndex: 10,
+            ...(isLoserPiece
+              ? { filter: 'grayscale(100%)', opacity: 0.45 }
+              : {})
           }}
         >
           <Image
@@ -105,7 +112,7 @@ export function Board3D({
     });
 
     return pieceComponents;
-  }, []);
+  }, [loserColor]);
 
   const options = useMemo(() => {
     const boardStyle = {

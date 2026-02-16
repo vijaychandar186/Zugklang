@@ -4,7 +4,12 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Chess, Square, Move, PieceSymbol } from '@/lib/chess';
 import { SquareStyles, RightClickedSquares } from '@/features/chess/types/core';
 import { getMoveOptionStyles } from '@/features/chess/hooks/useSquareInteraction';
-import { playSound, getSoundType } from '@/features/game/utils/sounds';
+import {
+  playSound,
+  playRawSound,
+  getSoundType
+} from '@/features/game/utils/sounds';
+import type { ChessVariant } from '@/features/chess/config/variants';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 
 type PositionObject = Record<string, { pieceType: string }>;
@@ -64,6 +69,7 @@ export type ChessBoardLogicOptions = {
   positionHistory: string[];
   playerColor: 'white' | 'black';
   soundEnabled: boolean;
+  variant?: ChessVariant;
   makeMove: (from: string, to: string, promotion?: string) => Move | null;
   goToEnd: () => void;
   isGameOver?: boolean;
@@ -81,6 +87,7 @@ export function useChessBoardLogic({
   positionHistory,
   playerColor,
   soundEnabled,
+  variant,
   makeMove,
   goToEnd,
   isGameOver = false,
@@ -129,8 +136,16 @@ export function useChessBoardLogic({
         isPlayerMove
       );
       playSound(soundType);
+
+      if (variant === 'atomic') {
+        if (isCapture) {
+          playRawSound('/variant/atomic/impact.mp3');
+        } else {
+          playRawSound('/variant/atomic/threat.mp3');
+        }
+      }
     },
-    [playerColorShort]
+    [playerColorShort, variant]
   );
 
   const executeMove = useCallback(

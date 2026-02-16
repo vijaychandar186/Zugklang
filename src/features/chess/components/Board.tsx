@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import { Chessboard } from 'react-chessboard';
+import { Chessboard, defaultPieces } from 'react-chessboard';
 import type { CSSProperties } from 'react';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
@@ -24,7 +24,33 @@ export type UnifiedChessBoardProps = {
   onSquareRightClick?: (args: { square: string }) => void;
   arrows?: ChessArrow[];
   animationDuration?: number;
+  loserColor?: 'w' | 'b' | null;
 };
+
+const PIECE_KEYS = ['P', 'R', 'N', 'B', 'Q', 'K'] as const;
+const COLORS = ['w', 'b'] as const;
+
+function buildPiecesWithGrayed(loserColor: 'w' | 'b') {
+  const pieces: Record<string, () => React.JSX.Element> = {};
+
+  for (const color of COLORS) {
+    for (const key of PIECE_KEYS) {
+      const pieceKey = `${color}${key}`;
+      const OriginalPiece = defaultPieces[pieceKey];
+      if (color === loserColor) {
+        pieces[pieceKey] = () => (
+          <div style={{ filter: 'grayscale(100%)', opacity: 0.45 }}>
+            <OriginalPiece />
+          </div>
+        );
+      } else {
+        pieces[pieceKey] = OriginalPiece;
+      }
+    }
+  }
+
+  return pieces;
+}
 
 export function UnifiedChessBoard({
   position,
@@ -37,8 +63,14 @@ export function UnifiedChessBoard({
   onSquareClick,
   onSquareRightClick,
   arrows = [],
-  animationDuration = ANIMATION_CONFIG.durationMs
+  animationDuration = ANIMATION_CONFIG.durationMs,
+  loserColor = null
 }: UnifiedChessBoardProps) {
+  const grayedPieces = useMemo(
+    () => (loserColor ? buildPiecesWithGrayed(loserColor) : undefined),
+    [loserColor]
+  );
+
   const options = useMemo(
     () => ({
       position,
@@ -61,7 +93,8 @@ export function UnifiedChessBoard({
       })),
       onSquareClick,
       onSquareRightClick,
-      onPieceDrop
+      onPieceDrop,
+      ...(grayedPieces ? { pieces: grayedPieces } : {})
     }),
     [
       position,
@@ -74,7 +107,8 @@ export function UnifiedChessBoard({
       arrows,
       onSquareClick,
       onSquareRightClick,
-      onPieceDrop
+      onPieceDrop,
+      grayedPieces
     ]
   );
 

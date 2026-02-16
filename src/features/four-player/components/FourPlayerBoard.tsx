@@ -24,7 +24,6 @@ export function FourPlayerBoard() {
   const movePiece = useFourPlayerStore((s) => s.movePiece);
   const selectSquare = useFourPlayerStore((s) => s.selectSquare);
 
-  // Build piece renderers for all 4 colors
   const fourPlayerPieces = useMemo(() => {
     const pieces: Record<
       string,
@@ -48,7 +47,6 @@ export function FourPlayerBoard() {
     return pieces;
   }, [orientation]);
 
-  // Hide corner squares via DOM
   useEffect(() => {
     for (let x = 0; x < 14; x++) {
       for (let y = 0; y < 14; y++) {
@@ -62,7 +60,6 @@ export function FourPlayerBoard() {
     }
   }, []);
 
-  // Square styles for selection + valid move highlights
   const squareStyles = useMemo(() => {
     const styles: Record<string, CSSProperties> = {};
 
@@ -105,9 +102,7 @@ export function FourPlayerBoard() {
   );
 
   const handleSquareClick = useCallback(
-    ({ square }: { square: string }) => {
-      selectSquare(square);
-    },
+    ({ square }: { square: string }) => selectSquare(square),
     [selectSquare]
   );
 

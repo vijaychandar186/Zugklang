@@ -23,8 +23,6 @@ export class Piece {
     this._hasMoved = hasMoved;
   }
 
-  // ── Read-only accessors ──────────────────────────────────────────
-
   get x(): number {
     return this._x;
   }
@@ -49,23 +47,17 @@ export class Piece {
     return this._possibleMoves;
   }
 
-  /** Combined team+type identifier, e.g. "rK", "bQ" */
   get pieceType(): string {
     return this._team + this._type;
   }
 
-  /** Algebraic square notation for this piece's position */
   get square(): string {
     return toSquare(this._x, this._y);
   }
 
-  // ── Position queries ─────────────────────────────────────────────
-
   isAtPosition(x: number, y: number): boolean {
     return this._x === x && this._y === y;
   }
-
-  // ── Mutation methods ─────────────────────────────────────────────
 
   moveTo(x: number, y: number): void {
     this._x = x;
@@ -85,8 +77,6 @@ export class Piece {
   clearPossibleMoves(): void {
     this._possibleMoves = [];
   }
-
-  // ── Cloning ──────────────────────────────────────────────────────
 
   clone(): Piece {
     const cloned = new Piece(

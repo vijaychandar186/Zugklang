@@ -50,27 +50,22 @@ function PromotionDialog({
 }
 
 export function FourPlayerView() {
-  const game = useFourPlayerStore((s) => s.game);
-  const pendingPromotion = useFourPlayerStore((s) => s.pendingPromotion);
-  const completePromotion = useFourPlayerStore((s) => s.completePromotion);
+  const { game, pendingPromotion, completePromotion } = useFourPlayerStore();
 
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-      {/* Board section */}
       <div className='flex flex-col items-center gap-2'>
         <div className='w-full sm:w-[400px] lg:w-[min(560px,calc(100dvh-200px))] xl:w-[min(640px,calc(100dvh-200px))] 2xl:w-[min(720px,calc(100dvh-200px))]'>
           <FourPlayerBoard />
         </div>
       </div>
 
-      {/* Sidebar section — height matches the board (which is square, so height = width) */}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(560px,calc(100dvh-200px))] lg:w-80 lg:overflow-hidden xl:h-[min(640px,calc(100dvh-200px))] 2xl:h-[min(720px,calc(100dvh-200px))]'>
         <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
           <FourPlayerSidebar />
         </div>
       </div>
 
-      {/* Promotion dialog (overlay) */}
       {pendingPromotion && game.pendingPromotion && (
         <PromotionDialog
           team={game.pendingPromotion.piece.team}

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { UnifiedChessBoard as Board } from './Board';
 import { Board3D } from './Board3D';
 import { PromotionDialog } from './PromotionDialog';
@@ -22,13 +21,10 @@ import { useBoardTheme } from '../hooks/useSquareInteraction';
 import { useStockfish } from '@/features/engine/hooks/useStockfish';
 import { useFairyStockfish } from '@/features/engine/hooks/useFairyStockfish';
 import { playSound } from '@/features/game/utils/sounds';
-import {
-  usesFairyEngine,
-  getEngineName,
-  hasBoardOverlay
-} from '../config/variants';
-import { useAtomicThreats } from '../hooks/useAtomicThreats';
-import { useCrazyhousePocket } from '../hooks/useCrazyhousePocket';
+import { usesFairyEngine, getEngineName } from '../config/variants';
+import '../variants';
+import { variantRegistry } from '../variants/shared/VariantRegistry';
+import { useCrazyhousePocket } from '../variants/crazyhouse/hooks/useCrazyhousePocket';
 
 export function ChessBoard({
   serverOrientation,
@@ -207,15 +203,10 @@ export function ChessBoard({
       ? effectiveBoardOrientation
       : serverOrientation || 'white';
 
-  const atomicOverlays = useAtomicThreats({
-    game,
-    variant,
-    playerColor: playerColorShort,
-    boardFlipped: resolvedOrientation === 'black',
-    selectedSquare: moveFrom,
-    captureTargets,
-    currentFEN
-  });
+  // Get variant module from registry
+  const variantModule = variantRegistry.getModule(variant);
+
+  // Call hooks unconditionally (React hooks rules)
 
   const {
     selectedDropPiece,
@@ -329,8 +320,9 @@ export function ChessBoard({
       ? board3dEnabled
       : (initialBoard3dEnabled ?? false);
 
-  const showFinishLine = hasBoardOverlay(variant) === 'finishLine';
-  const finishLineAtTop = resolvedOrientation === 'white';
+  // Get variant overlay components
+  // Overlay components from variant registry
+  const BoardOverlayComponent = variantModule?.components?.BoardOverlay;
 
   return (
     <>
@@ -344,29 +336,19 @@ export function ChessBoard({
             lightSquareStyle={theme.lightSquareStyle}
           />
         )}
-        {showFinishLine && (
-          <div
-            className='pointer-events-none absolute right-0 left-0'
-            style={{
-              [finishLineAtTop ? 'top' : 'bottom']: 0,
-              height: '12.5%',
-              background:
-                'repeating-conic-gradient(#000 0% 25%, #fff 0% 50%) 0 0 / 12.5% 50%',
-              opacity: 0.12
-            }}
+        {/* Render variant-specific board overlay (e.g., Racing Kings finish line) */}
+        {BoardOverlayComponent && (
+          <BoardOverlayComponent
+            boardOrientation={resolvedOrientation}
+            game={game}
+            variant={variant}
+            playerColor={playerColorShort}
+            boardFlipped={resolvedOrientation === 'black'}
+            selectedSquare={moveFrom}
+            captureTargets={captureTargets}
+            currentFEN={currentFEN}
           />
         )}
-        {atomicOverlays.map(({ square, type, left, top }) => (
-          <Image
-            key={`${type}-${square}`}
-            src={`/variant/atomic/${type}.svg`}
-            alt={type}
-            width={28}
-            height={28}
-            className='pointer-events-none absolute z-40'
-            style={{ left, top }}
-          />
-        ))}
         <PromotionDialog
           isOpen={!!pendingPromotion}
           color={pendingPromotion?.color || 'white'}

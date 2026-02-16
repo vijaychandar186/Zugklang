@@ -22,12 +22,8 @@ interface FourPlayerStore {
   selectedSquare: string | null;
   validMoves: string[];
   pendingPromotion: boolean;
-
-  // Move history & navigation
   moves: MoveRecord[];
-  viewingMoveIndex: number; // -1 = initial, 0 = after 1st move, etc.
-
-  // Game status
+  viewingMoveIndex: number;
   isGameOver: boolean;
   winner: Team | null;
   loseOrder: Team[];
@@ -71,13 +67,11 @@ export const useFourPlayerStore = create<FourPlayerStore>()((set, get) => {
       const state = get();
       const { game } = state;
 
-      // If already selected and clicking a valid move target, play the move
       if (state.selectedSquare && state.validMoves.includes(square)) {
         state.movePiece(state.selectedSquare, square);
         return;
       }
 
-      // Check if clicked square has a piece belonging to current team
       const moves = game.getMovesForSquare(square);
       if (moves.length > 0) {
         set({ selectedSquare: square, validMoves: moves });

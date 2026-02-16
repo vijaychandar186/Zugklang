@@ -2,7 +2,6 @@ import { Piece } from './Piece';
 import type { PieceType, Team } from '../types/core';
 import { BOARD_CONFIG } from '../config/board';
 
-/** Piece layout for the back rank (rook through rook) */
 const BACK_RANK_LAYOUT: readonly PieceType[] = [
   'R',
   'N',
@@ -14,7 +13,6 @@ const BACK_RANK_LAYOUT: readonly PieceType[] = [
   'R'
 ] as const;
 
-/** Back rank layout mirrored — K and Q swap positions (for Yellow/Green) */
 const BACK_RANK_LAYOUT_MIRRORED: readonly PieceType[] = [
   'R',
   'N',
@@ -26,10 +24,7 @@ const BACK_RANK_LAYOUT_MIRRORED: readonly PieceType[] = [
   'R'
 ] as const;
 
-/** Number of pieces per team along the back rank */
 const PIECES_PER_RANK = 8;
-
-/** Starting file/rank offset for side-aligned pieces (skip 3 corner squares) */
 const RANK_START_OFFSET = 3;
 
 interface TeamSetup {
@@ -78,7 +73,6 @@ const TEAM_SETUPS: readonly TeamSetup[] = [
   }
 ];
 
-/** Create the initial 64 pieces for a new four-player game */
 export function createInitialPieces(): Piece[] {
   const pieces: Piece[] = [];
 

@@ -37,8 +37,8 @@ const VARIANT_CONFIG: Record<ChessVariant, VariantConfig> = {
   fischerRandom: {
     rules: 'chess',
     uciVariant: 'chess',
-    useFairyEngine: false,
-    engineName: 'Stockfish',
+    useFairyEngine: true,
+    engineName: 'Fairy-Stockfish',
     getStartingFEN: () => generateRandomChess960FEN()
   },
   atomic: {

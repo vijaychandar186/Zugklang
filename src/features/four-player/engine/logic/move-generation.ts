@@ -16,8 +16,6 @@ import {
   PAWN_ATTACK_OFFSETS
 } from '../config/directions';
 
-// ── Pawn moves ─────────────────────────────────────────────────────
-
 export function generatePawnMoves(
   piece: Piece,
   pieces: readonly Piece[]
@@ -26,12 +24,10 @@ export function generatePawnMoves(
   const config = TEAM_PAWN_CONFIG[piece.team];
 
   if (config.axis === 'vertical') {
-    // Forward move along y-axis
     const nextY = piece.y + config.direction;
     if (isInBounds(piece.x, nextY) && !isOccupied(pieces, piece.x, nextY)) {
       moves.push({ x: piece.x, y: nextY });
 
-      // Double push from starting rank
       const doubleY = nextY + config.direction;
       if (
         piece.y === config.startRank &&
@@ -42,7 +38,6 @@ export function generatePawnMoves(
       }
     }
 
-    // Diagonal captures
     for (const lateralOffset of PAWN_ATTACK_OFFSETS) {
       const attackX = piece.x + lateralOffset;
       const attackY = piece.y + config.direction;
@@ -54,12 +49,10 @@ export function generatePawnMoves(
       }
     }
   } else {
-    // Forward move along x-axis (horizontal teams: Blue/Green)
     const nextX = piece.x + config.direction;
     if (isInBounds(nextX, piece.y) && !isOccupied(pieces, nextX, piece.y)) {
       moves.push({ x: nextX, y: piece.y });
 
-      // Double push from starting rank
       const doubleX = nextX + config.direction;
       if (
         piece.x === config.startRank &&
@@ -70,7 +63,6 @@ export function generatePawnMoves(
       }
     }
 
-    // Lateral captures
     for (const lateralOffset of PAWN_ATTACK_OFFSETS) {
       const attackX = piece.x + config.direction;
       const attackY = piece.y + lateralOffset;
@@ -85,8 +77,6 @@ export function generatePawnMoves(
 
   return moves;
 }
-
-// ── Knight moves ───────────────────────────────────────────────────
 
 export function generateKnightMoves(
   piece: Piece,
@@ -108,8 +98,6 @@ export function generateKnightMoves(
   return moves;
 }
 
-// ── Sliding moves (bishop, rook, queen) ────────────────────────────
-
 export function generateSlidingMoves(
   piece: Piece,
   pieces: readonly Piece[],
@@ -130,7 +118,7 @@ export function generateSlidingMoves(
         moves.push({ x: targetX, y: targetY });
         break;
       } else {
-        break; // Blocked by own piece
+        break;
       }
     }
   }
@@ -159,8 +147,6 @@ export function generateQueenMoves(
   return generateSlidingMoves(piece, pieces, ALL_DIRECTIONS);
 }
 
-// ── King moves ─────────────────────────────────────────────────────
-
 export function generateKingMoves(
   piece: Piece,
   pieces: readonly Piece[]
@@ -181,9 +167,6 @@ export function generateKingMoves(
   return moves;
 }
 
-// ── Raw move dispatch ──────────────────────────────────────────────
-
-/** Dispatch to the correct move generator based on piece type */
 export function generateRawMoves(
   piece: Piece,
   pieces: readonly Piece[]
@@ -206,9 +189,6 @@ export function generateRawMoves(
   }
 }
 
-// ── Castling ───────────────────────────────────────────────────────
-
-/** Generate castling target squares for the given king */
 export function generateCastlingMoves(
   king: Piece,
   pieces: readonly Piece[]
@@ -230,10 +210,7 @@ export function generateCastlingMoves(
         ? 1
         : -1;
 
-    // Check path between king and rook is clear
     if (!isPathClear(king, rook, isVertical, direction, pieces)) continue;
-
-    // Check that king's path (current + 2 squares toward rook) is not attacked
     if (!isCastlingPathSafe(king, isVertical, direction, pieces)) continue;
 
     moves.push({ x: rook.x, y: rook.y });

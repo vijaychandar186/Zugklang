@@ -1,4 +1,3 @@
-// ── Types ──────────────────────────────────────────────────────────
 export type {
   Team,
   PieceType,
@@ -9,11 +8,9 @@ export type {
   PendingPromotion
 } from './types/core';
 
-// ── Classes ────────────────────────────────────────────────────────
 export { FourPlayerGame } from './logic/FourPlayerGame';
 export { Piece } from './logic/Piece';
 
-// ── Board utilities (used by components) ───────────────────────────
 export {
   toSquare,
   fromSquare,
@@ -21,6 +18,5 @@ export {
   isInBounds
 } from './utils/board-utils';
 
-// ── Constants (used by components/store) ───────────────────────────
 export { BOARD_CONFIG } from './config/board';
 export { TURN_ORDER } from './config/teams';

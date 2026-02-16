@@ -23,8 +23,6 @@ const TEAM_INFO: Record<Team, { label: string; hex: string; short: string }> = {
 
 const TEAMS: Team[] = ['r', 'b', 'y', 'g'];
 
-// ── Move History for 4-player ──────────────────────────────────────────
-
 type MoveItemProps = {
   move: MoveRecord;
   index: number;
@@ -74,7 +72,6 @@ function FourPlayerMoveHistory({
     );
   }
 
-  // Group moves into rounds of 4 (R, B, Y, G)
   const rounds: { roundNum: number; startIndex: number }[] = [];
   for (let i = 0; i < moves.length; i += 4) {
     rounds.push({ roundNum: Math.floor(i / 4) + 1, startIndex: i });
@@ -109,8 +106,6 @@ function FourPlayerMoveHistory({
   );
 }
 
-// ── Sidebar ──────────────────────────────────────────────────────────
-
 function PlayerButton({
   team,
   isActive,
@@ -139,22 +134,23 @@ function PlayerButton({
 }
 
 export function FourPlayerSidebar() {
-  const moves = useFourPlayerStore((s) => s.moves);
-  const viewingMoveIndex = useFourPlayerStore((s) => s.viewingMoveIndex);
-  const currentTeam = useFourPlayerStore((s) => s.currentTeam);
-  const orientation = useFourPlayerStore((s) => s.orientation);
-  const isGameOver = useFourPlayerStore((s) => s.isGameOver);
-  const winner = useFourPlayerStore((s) => s.winner);
-  const loseOrder = useFourPlayerStore((s) => s.loseOrder);
-  const game = useFourPlayerStore((s) => s.game);
-
-  const goToMove = useFourPlayerStore((s) => s.goToMove);
-  const goToStart = useFourPlayerStore((s) => s.goToStart);
-  const goToEnd = useFourPlayerStore((s) => s.goToEnd);
-  const goToPrev = useFourPlayerStore((s) => s.goToPrev);
-  const goToNext = useFourPlayerStore((s) => s.goToNext);
-  const resetGame = useFourPlayerStore((s) => s.resetGame);
-  const setOrientation = useFourPlayerStore((s) => s.setOrientation);
+  const {
+    moves,
+    viewingMoveIndex,
+    currentTeam,
+    orientation,
+    isGameOver,
+    winner,
+    loseOrder,
+    game,
+    goToMove,
+    goToStart,
+    goToEnd,
+    goToPrev,
+    goToNext,
+    resetGame,
+    setOrientation
+  } = useFourPlayerStore();
 
   const canGoBack = viewingMoveIndex > -1;
   const canGoForward = viewingMoveIndex < moves.length - 1;
@@ -170,7 +166,6 @@ export function FourPlayerSidebar() {
 
   return (
     <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
-      {/* Header */}
       <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
         <h3 className='font-semibold'>Moves</h3>
         <span className='text-muted-foreground text-xs'>
@@ -178,7 +173,6 @@ export function FourPlayerSidebar() {
         </span>
       </div>
 
-      {/* Move History */}
       <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
         <div className='px-4 py-2'>
           <FourPlayerMoveHistory
@@ -189,7 +183,6 @@ export function FourPlayerSidebar() {
         </div>
       </ScrollArea>
 
-      {/* Navigation Controls */}
       <NavigationControls
         viewingIndex={viewingMoveIndex + 1}
         totalPositions={moves.length + 1}
@@ -203,9 +196,7 @@ export function FourPlayerSidebar() {
         onGoToNext={goToNext}
       />
 
-      {/* Game Status & Actions */}
       <div className='bg-muted/50 space-y-2 border-t p-2'>
-        {/* Game over panel */}
         {isGameOver && winner && (
           <div className='flex flex-col gap-2 border-b pb-2'>
             <div className='flex items-center justify-center gap-2'>
@@ -242,10 +233,8 @@ export function FourPlayerSidebar() {
           </div>
         )}
 
-        {/* Game status during play */}
         {!isGameOver && (
           <div className='flex flex-col gap-2'>
-            {/* Current turn + check indicator */}
             <div className='flex items-center justify-center gap-2'>
               <div
                 className='h-3 w-3 rounded-full'
@@ -261,7 +250,6 @@ export function FourPlayerSidebar() {
               )}
             </div>
 
-            {/* Eliminated players */}
             {loseOrder.length > 0 && (
               <p className='text-muted-foreground text-center text-xs'>
                 {loseOrder.length} eliminated:{' '}
@@ -276,7 +264,6 @@ export function FourPlayerSidebar() {
               </p>
             )}
 
-            {/* Player statuses */}
             <div className='flex justify-center gap-3'>
               {TEAMS.map((team) => {
                 const info = TEAM_INFO[team];
@@ -308,7 +295,6 @@ export function FourPlayerSidebar() {
           </div>
         )}
 
-        {/* View perspective */}
         <div className='flex flex-wrap items-center justify-center gap-1'>
           {TEAMS.map((team) => (
             <PlayerButton
@@ -320,7 +306,6 @@ export function FourPlayerSidebar() {
           ))}
         </div>
 
-        {/* New game button */}
         {!isGameOver && (
           <div className='flex justify-center'>
             <Tooltip>

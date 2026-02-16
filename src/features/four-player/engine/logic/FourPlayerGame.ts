@@ -13,8 +13,6 @@ import { pieceAt } from '../utils/piece-utils';
 import { toSquare, fromSquare } from '../utils/board-utils';
 import { TURN_ORDER, TEAM_PAWN_CONFIG, isVerticalTeam } from '../config/teams';
 
-// ── Constructor config ─────────────────────────────────────────────
-
 interface GameConfig {
   readonly pieces?: Piece[];
   readonly currentTeam?: Team;
@@ -23,8 +21,6 @@ interface GameConfig {
   readonly status?: GameStatus;
   readonly moveHistory?: MoveRecord[];
 }
-
-// ── Game class ─────────────────────────────────────────────────────
 
 export class FourPlayerGame {
   private _pieces: Piece[];
@@ -45,8 +41,6 @@ export class FourPlayerGame {
     this._moveHistory = config.moveHistory ?? [];
     this.calculateAllMoves();
   }
-
-  // ── Read-only accessors ──────────────────────────────────────────
 
   get pieces(): readonly Piece[] {
     return this._pieces;
@@ -100,9 +94,6 @@ export class FourPlayerGame {
     return false;
   }
 
-  // ── Public methods ───────────────────────────────────────────────
-
-  /** Get valid move target squares for a piece at the given square */
   getMovesForSquare(square: string): string[] {
     const { x, y } = fromSquare(square);
     const piece = this._pieces.find(
@@ -112,7 +103,6 @@ export class FourPlayerGame {
     return piece.possibleMoves.map((move) => toSquare(move.x, move.y));
   }
 
-  /** Play a move. Returns true if successful. */
   playMove(fromSq: string, toSq: string): boolean {
     if (this._status !== 'playing' || this._pendingPromotion) return false;
 
@@ -133,7 +123,6 @@ export class FourPlayerGame {
     const destPiece = pieceAt(this._pieces, to.x, to.y);
     const team = this._currentTeam;
 
-    // Castling: king moves to own rook's square
     if (
       piece.type === 'K' &&
       destPiece?.type === 'R' &&
@@ -146,15 +135,12 @@ export class FourPlayerGame {
 
     const notation = this.buildNotation(piece, fromSq, toSq, destPiece);
 
-    // Capture
     if (destPiece) {
       this._pieces = this._pieces.filter((p) => p !== destPiece);
     }
 
-    // Move
     piece.moveTo(to.x, to.y);
 
-    // Check pawn promotion
     if (piece.type === 'P' && this.isPawnPromotion(piece)) {
       this._pendingPromotion = { piece, x: to.x, y: to.y };
       this._moveHistory.push({
@@ -164,7 +150,7 @@ export class FourPlayerGame {
         notation,
         captured: destPiece?.pieceType
       });
-      return true; // Caller must call completePromotion
+      return true;
     }
 
     this._moveHistory.push({
@@ -181,7 +167,6 @@ export class FourPlayerGame {
     return true;
   }
 
-  /** Complete a pending pawn promotion */
   completePromotion(promoteTo: PieceType): void {
     if (!this._pendingPromotion) return;
 
@@ -189,7 +174,6 @@ export class FourPlayerGame {
     piece.promote(promoteTo);
     this._pendingPromotion = null;
 
-    // Append promotion suffix to last recorded move
     const lastMove = this._moveHistory[this._moveHistory.length - 1];
     if (lastMove) lastMove.notation += `=${promoteTo}`;
 
@@ -198,7 +182,6 @@ export class FourPlayerGame {
     this.calculateAllMoves();
   }
 
-  /** Convert to react-chessboard position object */
   toPosition(): BoardPositionMap {
     const position: BoardPositionMap = {};
     for (const piece of this._pieces) {
@@ -207,7 +190,6 @@ export class FourPlayerGame {
     return position;
   }
 
-  /** Create a deep copy of this game */
   clone(): FourPlayerGame {
     return new FourPlayerGame({
       pieces: this._pieces.map((piece) => piece.clone()),
@@ -219,20 +201,16 @@ export class FourPlayerGame {
     });
   }
 
-  // ── Private methods ──────────────────────────────────────────────
-
   private getNextTeam(): Team {
     const active = TURN_ORDER.filter((team) => !this._loseOrder.includes(team));
     return active[(active.indexOf(this._currentTeam) + 1) % active.length];
   }
 
   private calculateAllMoves(): void {
-    // Calculate raw moves for all pieces
     for (const piece of this._pieces) {
       piece.setPossibleMoves(generateRawMoves(piece, this._pieces));
     }
 
-    // Add castling for current team's king(s)
     for (const king of this._pieces.filter(
       (piece) => piece.type === 'K' && piece.team === this._currentTeam
     )) {
@@ -242,17 +220,14 @@ export class FourPlayerGame {
       ]);
     }
 
-    // Filter out moves that leave own king in check
     this.filterIllegalMoves();
 
-    // Clear moves for non-current teams
     for (const piece of this._pieces) {
       if (piece.team !== this._currentTeam) {
         piece.clearPossibleMoves();
       }
     }
 
-    // Check if current team has any legal moves — if not, they're checkmated
     const hasLegalMoves = this._pieces
       .filter((piece) => piece.team === this._currentTeam)
       .some((piece) => piece.possibleMoves.length > 0);
@@ -275,28 +250,23 @@ export class FourPlayerGame {
       (p) => p.team === this._currentTeam
     )) {
       const legalMoves = piece.possibleMoves.filter((move) => {
-        // Simulate the move
         const simPieces = this._pieces.map((p) => p.clone());
 
-        // Remove captured piece
         const capturedIndex = simPieces.findIndex((p) =>
           p.isAtPosition(move.x, move.y)
         );
         if (capturedIndex !== -1) simPieces.splice(capturedIndex, 1);
 
-        // Move piece
         const simPiece = simPieces.find(
           (p) => p.isAtPosition(piece.x, piece.y) && p.team === piece.team
         )!;
         simPiece.moveTo(move.x, move.y);
 
-        // Find own king
         const king = simPieces.find(
           (p) => p.type === 'K' && p.team === this._currentTeam
         );
         if (!king) return false;
 
-        // Check if any enemy can attack the king
         for (const enemy of simPieces.filter(
           (p) => p.team !== this._currentTeam
         )) {

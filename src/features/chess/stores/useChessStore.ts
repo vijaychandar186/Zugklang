@@ -33,6 +33,7 @@ import {
 import { setCookie, getBooleanCookie } from '@/lib/settings';
 import { initializeTimers, hasTimer, getIncrement } from '@/lib/timeControl';
 import * as gameLoader from '@/lib/gameLoader';
+import { EngineConfig } from '@/features/chess/types/engine';
 
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
@@ -44,11 +45,13 @@ type PersistedPlayState = {
   mode: ChessMode;
   gameType: PlayMode;
   moves: string[];
+  moveDepths?: (number | null)[]; // Stockfish depth used for each move (null for human moves)
   positionHistory: string[];
   viewingIndex: number;
   currentFEN: string;
   playAs: 'white' | 'black';
   stockfishLevel: number;
+  engineConfig?: EngineConfig;
   gameStarted: boolean;
   gameOver: boolean;
   gameResult: string | null;
@@ -79,8 +82,10 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   hasHydrated: boolean;
   game: Chess;
   moves: string[];
+  moveDepths: (number | null)[]; // Stockfish depth used for each move (null for human moves)
   playAs: 'white' | 'black';
   stockfishLevel: number;
+  engineConfig: EngineConfig;
   gameOver: boolean;
   gameResult: string | null;
   gameStarted: boolean;
@@ -106,6 +111,7 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   setBoard3dEnabled: (enabled: boolean) => void;
   setFullscreenEnabled: (enabled: boolean) => void;
   addMove: (move: string, fen: string) => void;
+  recordMoveDepth: (depth: number | null) => void;
   makeMove: (from: string, to: string, promotion?: string) => Move | null;
   makeDropMove: (san: string) => Move | null;
   setSelectedDropPiece: (piece: PieceSymbol | null) => void;
@@ -116,11 +122,12 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   setGameOver: (gameOver: boolean) => void;
   setGameStarted: (started: boolean) => void;
   setStockfishLevel: (level: number) => void;
+  setEngineConfig: (config: EngineConfig) => void;
   setPlayAs: (color: 'white' | 'black') => void;
   startGame: (
-    level: number,
     color: 'white' | 'black',
-    timeControl?: TimeControl
+    timeControl?: TimeControl,
+    engineConfig?: EngineConfig
   ) => void;
   startLocalGame: (timeControl?: TimeControl) => void;
   resetGame: () => void;
@@ -145,6 +152,11 @@ const DEFAULT_TIME_CONTROL: TimeControl = {
   increment: 0
 };
 
+const DEFAULT_ENGINE_CONFIG: EngineConfig = {
+  mode: 'fixed',
+  level: 10
+};
+
 export const useChessStore = create<ChessStore>()(
   persist(
     (set, get) => ({
@@ -154,12 +166,14 @@ export const useChessStore = create<ChessStore>()(
       game: new Chess(),
       currentFEN: STARTING_FEN,
       moves: [],
+      moveDepths: [],
       positionHistory: [STARTING_FEN],
       viewingIndex: 0,
       boardOrientation: 'white',
       boardFlipped: false,
       playAs: 'white',
       stockfishLevel: 10,
+      engineConfig: DEFAULT_ENGINE_CONFIG,
       gameOver: false,
       gameResult: null,
       gameStarted: false,
@@ -221,6 +235,11 @@ export const useChessStore = create<ChessStore>()(
           currentFEN: fen
         })),
 
+      recordMoveDepth: (depth) =>
+        set((state) => ({
+          moveDepths: [...state.moveDepths, depth]
+        })),
+
       makeMove: (from, to, promotion = 'q') => {
         const state = get();
         try {
@@ -279,30 +298,43 @@ export const useChessStore = create<ChessStore>()(
         set({ gameOver, activeTimer: null, lastActiveTimestamp: null }),
       setGameStarted: (started) => set({ gameStarted: started }),
       setStockfishLevel: (level) => set({ stockfishLevel: level }),
+      setEngineConfig: (config) => set({ engineConfig: config }),
 
       setPlayAs: (color) => {
         setCookie(PLAY_AS_COOKIE, color);
         set({ playAs: color });
       },
 
-      startGame: (level, color, timeControl = DEFAULT_TIME_CONTROL) => {
+      startGame: (
+        color,
+        timeControl = DEFAULT_TIME_CONTROL,
+        engineConfig = DEFAULT_ENGINE_CONFIG
+      ) => {
         setCookie(PLAY_AS_COOKIE, color);
         const timers = initializeTimers(timeControl);
         const state = get();
         const startingFEN = getStartingFEN(state.variant);
         const newGame = new Chess(startingFEN, variantToRules(state.variant));
 
+        // Set stockfishLevel based on engine config
+        const level =
+          engineConfig.mode === 'fixed'
+            ? engineConfig.level
+            : engineConfig.mean;
+
         set({
           mode: 'play',
           gameType: 'computer',
           game: newGame,
           stockfishLevel: level,
+          engineConfig,
           playAs: color,
           boardFlipped: false,
           boardOrientation: color,
           gameStarted: true,
           gameOver: false,
           moves: [],
+          moveDepths: [],
           positionHistory: [startingFEN],
           viewingIndex: 0,
           gameResult: null,
@@ -333,6 +365,7 @@ export const useChessStore = create<ChessStore>()(
           gameStarted: true,
           gameOver: false,
           moves: [],
+          moveDepths: [],
           positionHistory: [startingFEN],
           viewingIndex: 0,
           gameResult: null,
@@ -356,11 +389,13 @@ export const useChessStore = create<ChessStore>()(
             mode: state.mode,
             gameType: oldGameType,
             moves: state.moves,
+            moveDepths: state.moveDepths,
             positionHistory: state.positionHistory,
             viewingIndex: state.viewingIndex,
             currentFEN: state.currentFEN,
             playAs: state.playAs,
             stockfishLevel: state.stockfishLevel,
+            engineConfig: state.engineConfig,
             gameStarted: state.gameStarted,
             gameOver: state.gameOver,
             gameResult: state.gameResult,
@@ -389,11 +424,13 @@ export const useChessStore = create<ChessStore>()(
                 gameType: newGameType,
                 game,
                 moves: savedState.moves || [],
+                moveDepths: savedState.moveDepths || [],
                 positionHistory: savedState.positionHistory || [STARTING_FEN],
                 viewingIndex: savedState.viewingIndex || 0,
                 currentFEN: savedState.currentFEN || STARTING_FEN,
                 playAs: savedState.playAs || 'white',
                 stockfishLevel: savedState.stockfishLevel || 10,
+                engineConfig: savedState.engineConfig || DEFAULT_ENGINE_CONFIG,
                 gameStarted: savedState.gameStarted || false,
                 gameOver: savedState.gameOver || false,
                 gameResult: savedState.gameResult || null,
@@ -411,6 +448,7 @@ export const useChessStore = create<ChessStore>()(
                 gameType: newGameType,
                 game: new Chess(),
                 moves: [],
+                moveDepths: [],
                 positionHistory: [STARTING_FEN],
                 viewingIndex: 0,
                 currentFEN: STARTING_FEN,
@@ -424,6 +462,7 @@ export const useChessStore = create<ChessStore>()(
               gameType: newGameType,
               game: new Chess(),
               moves: [],
+              moveDepths: [],
               positionHistory: [STARTING_FEN],
               viewingIndex: 0,
               currentFEN: STARTING_FEN,
@@ -446,11 +485,13 @@ export const useChessStore = create<ChessStore>()(
             mode: state.mode,
             gameType: state.gameType,
             moves: state.moves,
+            moveDepths: state.moveDepths,
             positionHistory: state.positionHistory,
             viewingIndex: state.viewingIndex,
             currentFEN: state.currentFEN,
             playAs: state.playAs,
             stockfishLevel: state.stockfishLevel,
+            engineConfig: state.engineConfig,
             gameStarted: state.gameStarted,
             gameOver: state.gameOver,
             gameResult: state.gameResult,
@@ -479,6 +520,7 @@ export const useChessStore = create<ChessStore>()(
                 variant,
                 game,
                 moves: savedState.moves || [],
+                moveDepths: savedState.moveDepths || [],
                 positionHistory: savedState.positionHistory || [
                   getStartingFEN(variant)
                 ],
@@ -486,6 +528,7 @@ export const useChessStore = create<ChessStore>()(
                 currentFEN: savedState.currentFEN || getStartingFEN(variant),
                 playAs: savedState.playAs || 'white',
                 stockfishLevel: savedState.stockfishLevel || 10,
+                engineConfig: savedState.engineConfig || DEFAULT_ENGINE_CONFIG,
                 gameStarted: savedState.gameStarted || false,
                 gameOver: savedState.gameOver || false,
                 gameResult: savedState.gameResult || null,
@@ -512,6 +555,7 @@ export const useChessStore = create<ChessStore>()(
             game: newGame,
             currentFEN: startingFEN,
             moves: [],
+            moveDepths: [],
             positionHistory: [startingFEN],
             viewingIndex: 0,
             gameStarted: false,
@@ -534,6 +578,7 @@ export const useChessStore = create<ChessStore>()(
           game: newGame,
           gameOver: false,
           moves: [],
+          moveDepths: [],
           positionHistory: [startingFEN],
           viewingIndex: 0,
           gameResult: null,
@@ -631,6 +676,7 @@ export const useChessStore = create<ChessStore>()(
           game: newGame,
           currentFEN: startingFEN,
           moves: [],
+          moveDepths: [],
           positionHistory: [startingFEN],
           viewingIndex: 0,
           playingAgainstStockfish: false,
@@ -664,11 +710,13 @@ export const useChessStore = create<ChessStore>()(
         mode: state.mode,
         gameType: state.gameType,
         moves: state.moves,
+        moveDepths: state.moveDepths,
         positionHistory: state.positionHistory,
         viewingIndex: state.viewingIndex,
         currentFEN: state.currentFEN,
         playAs: state.playAs,
         stockfishLevel: state.stockfishLevel,
+        engineConfig: state.engineConfig,
         gameStarted: state.gameStarted,
         gameOver: state.gameOver,
         gameResult: state.gameResult,
@@ -730,11 +778,13 @@ export const useChessState = () =>
       game: s.game,
       currentFEN: s.currentFEN,
       moves: s.moves,
+      moveDepths: s.moveDepths,
       viewingIndex: s.viewingIndex,
       positionHistory: s.positionHistory,
       boardOrientation: s.boardOrientation,
       playAs: s.playAs,
       stockfishLevel: s.stockfishLevel,
+      engineConfig: s.engineConfig,
       gameOver: s.gameOver,
       gameResult: s.gameResult,
       gameStarted: s.gameStarted,
@@ -784,6 +834,7 @@ export const useChessActions = () =>
     useShallow((s) => ({
       setMode: s.setMode,
       addMove: s.addMove,
+      recordMoveDepth: s.recordMoveDepth,
       makeMove: s.makeMove,
       makeDropMove: s.makeDropMove,
       setSelectedDropPiece: s.setSelectedDropPiece,

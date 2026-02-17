@@ -71,6 +71,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
   const router = useRouter();
   const {
     moves,
+    moveDepths,
     viewingIndex,
     positionHistory,
     gameOver,
@@ -86,7 +87,8 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     currentFEN,
     variant,
-    selectedDropPiece
+    selectedDropPiece,
+    engineConfig
   } = useChessState();
 
   const isLocalGame = gameType === 'local';
@@ -467,8 +469,12 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
           <div className='px-4 py-2'>
             <MoveHistory
               moves={moves}
+              moveDepths={moveDepths}
               viewingIndex={viewingIndex}
               onMoveClick={goToMove}
+              showDepthTooltips={
+                engineConfig.mode === 'probabilistic' && gameType === 'computer'
+              }
             />
           </div>
         </ScrollArea>
@@ -492,6 +498,12 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
               <GameOverPanel
                 gameResult={gameResult || 'No active game'}
                 onNewGame={handleNewGame}
+                moveDepths={moveDepths}
+                showDepthDistribution={
+                  gameOver &&
+                  engineConfig.mode === 'probabilistic' &&
+                  gameType === 'computer'
+                }
               />
             )}
             <div className='flex items-center gap-1'>

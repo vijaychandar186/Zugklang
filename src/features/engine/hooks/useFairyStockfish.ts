@@ -4,17 +4,22 @@ import { FairyStockfishEngine } from '@/lib/fairyEngine';
 import { MOVE_DELAY } from '@/features/chess/config/animation';
 import { SoundType } from '@/features/game/utils/sounds';
 import type { ChessVariant } from '@/features/chess/utils/chess960';
+import {
+  EngineConfig,
+  sampleFromGaussian
+} from '@/features/chess/types/engine';
 
 type UseFairyStockfishProps = {
   game: Chess;
   fen: string;
   gameId: number;
   playAs: 'white' | 'black';
-  stockfishLevel: number;
+  engineConfig: EngineConfig;
   enabled: boolean;
   variant: ChessVariant;
   onMove: (from: Square, to: Square, promotion?: string) => boolean;
   onDropMove?: (san: string) => unknown;
+  onMoveDepthRecorded?: (depth: number) => void;
   soundEnabled: boolean;
   playSound: (type: SoundType) => void;
 };
@@ -24,11 +29,12 @@ export function useFairyStockfish({
   fen,
   gameId,
   playAs,
-  stockfishLevel,
+  engineConfig,
   enabled,
   variant,
   onMove,
   onDropMove,
+  onMoveDepthRecorded,
   soundEnabled,
   playSound
 }: UseFairyStockfishProps) {
@@ -52,6 +58,18 @@ export function useFairyStockfish({
     const fenToEvaluate = currentGame.fen();
     engine.stop();
 
+    // Determine the depth to use based on engine config
+    let depthToUse: number;
+    if (engineConfig.mode === 'probabilistic') {
+      // Sample from Gaussian distribution for each move
+      depthToUse = sampleFromGaussian(engineConfig.mean, engineConfig.variance);
+      console.log(
+        `Probabilistic mode (Fairy): sampled depth ${depthToUse} (mean: ${engineConfig.mean}, variance: ${engineConfig.variance})`
+      );
+    } else {
+      depthToUse = engineConfig.level;
+    }
+
     engine.onMessage(({ bestMove }) => {
       if (bestMove) {
         if (gameRef.current.fen() !== fenToEvaluate) return;
@@ -59,6 +77,8 @@ export function useFairyStockfish({
         // Drop moves (e.g. "P@e4") contain "@" - handle via SAN
         if (bestMove.includes('@') && onDropMove) {
           onDropMove(bestMove);
+          // Record depth for drop moves too
+          onMoveDepthRecorded?.(depthToUse);
           return;
         }
 
@@ -67,11 +87,21 @@ export function useFairyStockfish({
         const promotion = bestMove.substring(4, 5) || undefined;
 
         onMove(from, to, promotion);
+        // Record the depth used for this move
+        onMoveDepthRecorded?.(depthToUse);
       }
     });
 
-    await engine.evaluatePosition(fenToEvaluate, stockfishLevel, variant);
-  }, [engine, playAs, stockfishLevel, variant, onMove, onDropMove]);
+    await engine.evaluatePosition(fenToEvaluate, depthToUse, variant);
+  }, [
+    engine,
+    playAs,
+    engineConfig,
+    variant,
+    onMove,
+    onDropMove,
+    onMoveDepthRecorded
+  ]);
 
   useEffect(() => {
     if (!enabled) return;

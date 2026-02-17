@@ -12,8 +12,9 @@ function CheckerPiece({ color }: { color: 'w' | 'b' }) {
       style={{
         width: '100%',
         height: '100%',
-        position: 'relative',
-        overflow: 'visible',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         zIndex: 10
       }}
     >
@@ -25,13 +26,10 @@ function CheckerPiece({ color }: { color: 'w' | 'b' }) {
         unoptimized
         draggable={false}
         style={{
-          position: 'absolute',
-          left: '50%',
-          transform: 'translateX(-50%) scale(0.75)',
-          transformOrigin: 'bottom center',
+          width: '75%',
+          height: '75%',
           objectFit: 'contain',
-          width: '100%',
-          height: 'auto'
+          marginTop: '15%'
         }}
       />
     </div>

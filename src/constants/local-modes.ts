@@ -72,5 +72,13 @@ export const localModes: MenuCardItem[] = [
     description:
       'Captured pieces switch sides and can be dropped back on the board!',
     actionText: 'Play Now'
+  },
+  {
+    href: '/play/local/checkers-chess',
+    icon: Icons.circle,
+    title: 'Chess with Checkers',
+    description:
+      'All pieces look like checkers but move as regular chess pieces. A fun visual twist!',
+    actionText: 'Play Now'
   }
 ];

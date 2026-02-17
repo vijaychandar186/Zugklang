@@ -17,13 +17,5 @@ export const customModes: MenuCardItem[] = [
     description:
       'Roll 3 dice to determine which pieces you can move each turn. Capture the enemy King to win!',
     actionText: 'Start Game'
-  },
-  {
-    href: '/play/custom/checkers-chess',
-    icon: Icons.circle,
-    title: 'Chess with Checkers',
-    description:
-      'All pieces look like checkers but move as regular chess pieces. White pieces are white, black pieces are black!',
-    actionText: 'Start Game'
   }
 ];

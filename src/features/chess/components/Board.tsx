@@ -25,6 +25,7 @@ export type UnifiedChessBoardProps = {
   arrows?: ChessArrow[];
   animationDuration?: number;
   loserColor?: 'w' | 'b' | null;
+  pieces?: Record<string, () => React.JSX.Element>;
 };
 
 const PIECE_KEYS = ['P', 'R', 'N', 'B', 'Q', 'K'] as const;
@@ -64,12 +65,15 @@ export function UnifiedChessBoard({
   onSquareRightClick,
   arrows = [],
   animationDuration = ANIMATION_CONFIG.durationMs,
-  loserColor = null
+  loserColor = null,
+  pieces
 }: UnifiedChessBoardProps) {
   const grayedPieces = useMemo(
     () => (loserColor ? buildPiecesWithGrayed(loserColor) : undefined),
     [loserColor]
   );
+
+  const finalPieces = pieces ?? grayedPieces;
 
   const options = useMemo(
     () => ({
@@ -94,7 +98,7 @@ export function UnifiedChessBoard({
       onSquareClick,
       onSquareRightClick,
       onPieceDrop,
-      ...(grayedPieces ? { pieces: grayedPieces } : {})
+      ...(finalPieces ? { pieces: finalPieces } : {})
     }),
     [
       position,
@@ -108,7 +112,7 @@ export function UnifiedChessBoard({
       onSquareClick,
       onSquareRightClick,
       onPieceDrop,
-      grayedPieces
+      finalPieces
     ]
   );
 

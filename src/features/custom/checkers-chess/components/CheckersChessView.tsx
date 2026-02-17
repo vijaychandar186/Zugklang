@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { Board3D } from '@/features/chess/components/Board3D';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { PlayerClock } from '@/features/chess/components/PlayerClock';
 import { CapturedPiecesDisplay } from '@/features/chess/components/CapturedPieces';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
-import { DiceChessSidebar } from './DiceChessSidebar';
-import { useDiceChessStore } from '../stores/useDiceChessStore';
-import { useDiceChessTimer } from '../hooks/useDiceChessTimer';
+import { CheckersChessSidebar } from './CheckersChessSidebar';
+import { useCheckersChessStore } from '../stores/useCheckersChessStore';
+import { useCheckersChessTimer } from '../hooks/useCheckersChessTimer';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useAnalysisActions } from '@/features/chess/stores/useAnalysisStore';
@@ -19,20 +19,20 @@ import {
 } from '@/features/chess/utils/fen-logic';
 import { playSound, getSoundType } from '@/features/game/utils/sounds';
 import type { CapturedPieces } from '@/features/chess/types/core';
+import { buildCheckerPieces } from './CheckerPieces';
 
-export function DiceChessView() {
+export function CheckersChessView() {
   const {
     currentFEN,
     gameStarted,
     gameOver,
     makeMove,
-    highlightedSquares,
     game,
     timeControl,
     whiteTime,
     blackTime,
     activeTimer
-  } = useDiceChessStore();
+  } = useCheckersChessStore();
 
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
@@ -40,13 +40,16 @@ export function DiceChessView() {
   const theme = useBoardTheme();
 
   // Initialize timer hook for countdown
-  useDiceChessTimer();
+  useCheckersChessTimer();
 
   const [captured, setCaptured] = useState<CapturedPieces>({
     white: [],
     black: []
   });
   const [materialAdvantage, setMaterialAdvantage] = useState(0);
+
+  // Build custom checker pieces
+  const checkerPieces = useMemo(() => buildCheckerPieces(), []);
 
   const { initializeEngine, setPosition, cleanup } = useAnalysisActions();
 
@@ -170,7 +173,6 @@ export function DiceChessView() {
               onPieceDrop={handlePieceDrop}
               boardOrientation={orientation}
               canDrag={isActive}
-              squareStyles={highlightedSquares}
             />
           ) : (
             <Board
@@ -181,7 +183,7 @@ export function DiceChessView() {
               lightSquareStyle={theme.lightSquareStyle}
               canDrag={isActive}
               animationDuration={200}
-              squareStyles={highlightedSquares}
+              pieces={checkerPieces}
             />
           )}
         </BoardContainer>
@@ -217,7 +219,7 @@ export function DiceChessView() {
       {/* Sidebar */}
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(560px,calc(100dvh-200px))] lg:w-80 lg:overflow-hidden xl:h-[min(640px,calc(100dvh-200px))] 2xl:h-[min(720px,calc(100dvh-200px))]'>
         <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
-          <DiceChessSidebar mode='play' />
+          <CheckersChessSidebar mode='play' />
         </div>
       </div>
     </div>

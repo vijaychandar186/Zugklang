@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -49,6 +49,7 @@ import {
 } from '@/features/chess/stores/useAnalysisStore';
 import { playSound } from '@/features/game/utils/sounds';
 import { DicePanel } from './DicePanel';
+import { DiceChessSetupDialog } from './DiceChessSetupDialog';
 import { useDiceChessStore } from '../stores/useDiceChessStore';
 
 interface DiceChessSidebarProps {
@@ -67,14 +68,12 @@ export function DiceChessSidebar({ mode }: DiceChessSidebarProps) {
     gameOver,
     gameResult,
     gameStarted,
-    hasHydrated,
     turn,
     goToStart,
     goToEnd,
     goToPrev,
     goToNext,
     goToMove,
-    startNewGame,
     setGameOver,
     setGameResult
   } = diceStore;
@@ -87,7 +86,7 @@ export function DiceChessSidebar({ mode }: DiceChessSidebarProps) {
   const { startAnalysis, endAnalysis } = useAnalysisActions();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const hasAutoStarted = useRef(false);
+  const [newGameOpen, setNewGameOpen] = useState(false);
 
   const isPlayMode = mode === 'play';
 
@@ -101,30 +100,6 @@ export function DiceChessSidebar({ mode }: DiceChessSidebarProps) {
     totalItems: positionHistory.length,
     onNext: goToNext
   });
-
-  // Auto-start dice chess game on mount
-  useEffect(() => {
-    if (
-      hasHydrated &&
-      isPlayMode &&
-      !gameStarted &&
-      !gameOver &&
-      moves.length === 0 &&
-      !hasAutoStarted.current
-    ) {
-      hasAutoStarted.current = true;
-      if (soundEnabled) playSound('game-start');
-      startNewGame();
-    }
-  }, [
-    hasHydrated,
-    isPlayMode,
-    gameStarted,
-    gameOver,
-    moves.length,
-    soundEnabled,
-    startNewGame
-  ]);
 
   const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
   const handleCopyPGN = () =>
@@ -156,8 +131,7 @@ export function DiceChessSidebar({ mode }: DiceChessSidebarProps) {
   };
 
   const handleNewGame = () => {
-    if (soundEnabled) playSound('game-start');
-    startNewGame();
+    setNewGameOpen(true);
   };
 
   const handleToggleAnalysis = () => {
@@ -391,6 +365,7 @@ export function DiceChessSidebar({ mode }: DiceChessSidebarProps) {
         )}
       </div>
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <DiceChessSetupDialog open={newGameOpen} onOpenChange={setNewGameOpen} />
     </>
   );
 }

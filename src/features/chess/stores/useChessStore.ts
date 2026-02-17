@@ -17,6 +17,7 @@ import {
   saveToModeStorage,
   loadFromModeStorage
 } from './gameStorage';
+import { GAME_STORAGE_KEY } from '@/lib/storage/keys';
 import {
   type ChessVariant,
   variantToRules,
@@ -651,7 +652,7 @@ export const useChessStore = create<ChessStore>()(
       stopPlayingFromPosition: () => set({ playingAgainstStockfish: false })
     }),
     {
-      name: 'zugklang-play-storage',
+      name: GAME_STORAGE_KEY,
       storage: createMultiModeStorage((state) => {
         const s = state as {
           gameType?: PlayMode;

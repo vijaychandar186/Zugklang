@@ -1,5 +1,7 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
+import { GAME_FOUR_PLAYER_KEY } from '@/lib/storage/keys';
+import { createLazyStorage, hasGameStarted } from '@/lib/storage/lazyStorage';
 import {
   FourPlayerGame,
   type Team,
@@ -490,8 +492,14 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
       };
     },
     {
-      name: 'zugklang-game-four-player',
-      storage: createJSONStorage(() => localStorage),
+      name: GAME_FOUR_PLAYER_KEY,
+      storage: createLazyStorage((state: unknown) => {
+        const s = state as { moves?: unknown[]; gameStarted?: boolean };
+        return hasGameStarted({
+          moves: s.moves,
+          gameStarted: s.gameStarted
+        });
+      }),
       partialize: (state) => ({
         moves: state.moves,
         viewingMoveIndex: state.viewingMoveIndex,

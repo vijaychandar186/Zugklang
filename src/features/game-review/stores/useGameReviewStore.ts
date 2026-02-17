@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { useShallow } from 'zustand/shallow';
+import { FEATURE_GAME_REVIEW_KEY } from '@/lib/storage/keys';
 import type {
   Position,
   GameReport,
@@ -149,7 +150,7 @@ export const useGameReviewStore = create<GameReviewStore>()(
       }
     }),
     {
-      name: 'zugklang-game-review',
+      name: FEATURE_GAME_REVIEW_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         pgn: state.pgn,

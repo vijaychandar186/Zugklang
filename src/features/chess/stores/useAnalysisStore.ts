@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { useShallow } from 'zustand/shallow';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import { ANALYSIS_DEFAULTS } from '@/features/analysis/config/defaults';
+import { FEATURE_ANALYSIS_SETTINGS_KEY } from '@/lib/storage/keys';
 
 export type Advantage = 'white' | 'black' | 'equal';
 
@@ -445,7 +446,7 @@ export const useAnalysisStore = create<AnalysisStore>()(
       }
     }),
     {
-      name: 'zugklang-analysis-settings',
+      name: FEATURE_ANALYSIS_SETTINGS_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         multiPV: state.multiPV,

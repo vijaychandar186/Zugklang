@@ -35,6 +35,8 @@ import { usePlayback } from '@/features/chess/hooks/usePlayback';
 import { useFourPlayerStore, TEAM_ROTATIONS } from '../store';
 import { useFourPlayerTimer } from '../hooks/useFourPlayerTimer';
 import { formatTime } from '@/features/game/utils/formatting';
+import { playSound } from '@/features/game/utils/sounds';
+import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { cn } from '@/lib/utils';
 import type { Team, MoveRecord } from '../engine';
 
@@ -230,6 +232,7 @@ export function FourPlayerSidebar() {
   } = useFourPlayerStore();
 
   const { hasTimer, teamTimes, activeTimer } = useFourPlayerTimer();
+  const soundEnabled = useChessStore((s) => s.soundEnabled);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const canGoBack = viewingMoveIndex > -1;
@@ -248,6 +251,20 @@ export function FourPlayerSidebar() {
 
   const handleAbort = () => {
     abortGame();
+  };
+
+  const handleOfferDraw = () => {
+    if (soundEnabled) playSound('draw-offer');
+  };
+
+  const handleAcceptDraw = () => {
+    if (soundEnabled) playSound('game-end');
+    // Use the store's internal method to set game result
+    useFourPlayerStore.setState({
+      isGameOver: true,
+      gameStarted: false,
+      gameResult: 'Draw by agreement'
+    });
   };
 
   const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
@@ -499,7 +516,43 @@ export function FourPlayerSidebar() {
           </div>
 
           {gameStarted && !isGameOver && (
-            <div className='flex justify-center'>
+            <div className='flex justify-center gap-1'>
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-400'
+                        onClick={handleOfferDraw}
+                      >
+                        <Icons.handshake className='h-4 w-4' />
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Declare Draw</TooltipContent>
+                </Tooltip>
+
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Declare Draw</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Do all players agree to a draw?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>No</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleAcceptDraw}
+                      className='bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                    >
+                      Yes, Draw
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               <AlertDialog>
                 <Tooltip>
                   <TooltipTrigger asChild>

@@ -18,8 +18,11 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { TimeControl, TimeControlMode } from '@/features/game/types/rules';
+import { GaussianCurveControl } from './GaussianCurveControl';
+import { EngineMode } from '@/features/chess/types/engine';
 
 type PlayAsOption = 'random' | 'white' | 'black';
 
@@ -38,6 +41,9 @@ export function GameSelectionDialog({
 
   const [depth, setDepth] = useState(stockfishLevel);
   const [playAs, setPlayAs] = useState<PlayAsOption>('random');
+  const [engineMode, setEngineMode] = useState<EngineMode>('fixed');
+  const [gaussianMean, setGaussianMean] = useState(10);
+  const [gaussianVariance, setGaussianVariance] = useState(5);
 
   const [timerMode, setTimerMode] = useState<TimeControlMode>(
     currentTimeControl.mode
@@ -55,6 +61,9 @@ export function GameSelectionDialog({
     if (open) {
       setDepth(stockfishLevel);
       setPlayAs('random');
+      setEngineMode('fixed');
+      setGaussianMean(10);
+      setGaussianVariance(5);
       setTimerMode(currentTimeControl.mode);
       setMinutes(currentTimeControl.minutes || 10);
       setIncrement(currentTimeControl.increment || 0);
@@ -100,7 +109,17 @@ export function GameSelectionDialog({
             : player1Increment
           : undefined
     };
-    startGame(depth, resolvedColor, timeControl);
+
+    const engineConfig =
+      engineMode === 'fixed'
+        ? { mode: 'fixed' as const, level: depth }
+        : {
+            mode: 'probabilistic' as const,
+            mean: gaussianMean,
+            variance: gaussianVariance
+          };
+
+    startGame(resolvedColor, timeControl, engineConfig);
     onOpenChange(false);
   };
 
@@ -123,182 +142,222 @@ export function GameSelectionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-md'>
+      <DialogContent className='sm:max-w-md'>
         <DialogHeader>
           <DialogTitle className='text-center text-xl'>
             Play vs Computer
           </DialogTitle>
         </DialogHeader>
-        <div className='space-y-6 py-4'>
-          <div className='space-y-3'>
-            <Label className='block text-center'>Engine Depth: {depth}</Label>
-            <Slider
-              value={[depth]}
-              onValueChange={(v) => setDepth(v[0])}
-              min={1}
-              max={20}
-              step={1}
-              className='w-full'
-            />
-            <div className='text-muted-foreground flex justify-between text-xs'>
-              <span>Easier</span>
-              <span>Harder</span>
+        <ScrollArea className='max-h-[calc(90vh-8rem)] pr-4'>
+          <div className='space-y-6 py-4'>
+            {/* Engine Mode Selection */}
+            <div className='space-y-3'>
+              <Label className='block text-center'>Engine Mode</Label>
+              <RadioGroup
+                value={engineMode}
+                onValueChange={(v) => setEngineMode(v as EngineMode)}
+                className='flex justify-center gap-6'
+              >
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='fixed' id='fixed' />
+                  <Label htmlFor='fixed' className='cursor-pointer'>
+                    Fixed Level
+                  </Label>
+                </div>
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='probabilistic' id='probabilistic' />
+                  <Label htmlFor='probabilistic' className='cursor-pointer'>
+                    Probabilistic
+                  </Label>
+                </div>
+              </RadioGroup>
             </div>
-          </div>
 
-          <div className='space-y-3'>
-            <Label className='block text-center'>Play as</Label>
-            <RadioGroup
-              value={playAs}
-              onValueChange={(v) => setPlayAs(v as PlayAsOption)}
-              className='flex justify-center gap-6'
-            >
-              <div className='flex items-center space-x-2'>
-                <RadioGroupItem value='random' id='random' />
-                <Label htmlFor='random' className='cursor-pointer'>
-                  Random
-                </Label>
-              </div>
-              <div className='flex items-center space-x-2'>
-                <RadioGroupItem value='white' id='white' />
-                <Label htmlFor='white' className='cursor-pointer'>
-                  White
-                </Label>
-              </div>
-              <div className='flex items-center space-x-2'>
-                <RadioGroupItem value='black' id='black' />
-                <Label htmlFor='black' className='cursor-pointer'>
-                  Black
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <div className='space-y-3'>
-            <Label className='block text-center'>Time Control</Label>
-            <Select
-              value={timerMode}
-              onValueChange={(v) => setTimerMode(v as TimeControlMode)}
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue placeholder='Select time control' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='unlimited'>Unlimited</SelectItem>
-                <SelectItem value='timed'>Time Controlled</SelectItem>
-                <SelectItem value='custom'>Custom</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {timerMode === 'timed' && (
-            <>
+            {/* Fixed Level Mode */}
+            {engineMode === 'fixed' && (
               <div className='space-y-3'>
                 <Label className='block text-center'>
-                  Time per side: {formatTimeLabel(minutes)}
+                  Engine Depth: {depth}
                 </Label>
                 <Slider
-                  value={[minutes]}
-                  onValueChange={(v) => setMinutes(v[0])}
+                  value={[depth]}
+                  onValueChange={(v) => setDepth(v[0])}
                   min={1}
-                  max={180}
+                  max={20}
                   step={1}
                   className='w-full'
                 />
                 <div className='text-muted-foreground flex justify-between text-xs'>
-                  <span>1 min</span>
-                  <span>3 hours</span>
+                  <span>Easier</span>
+                  <span>Harder</span>
                 </div>
               </div>
+            )}
 
-              <div className='space-y-3'>
-                <Label className='block text-center'>
-                  Increment: {formatIncrementLabel(increment)}
-                </Label>
-                <Slider
-                  value={[increment]}
-                  onValueChange={(v) => setIncrement(v[0])}
-                  min={0}
-                  max={180}
-                  step={1}
-                  className='w-full'
-                />
-                <div className='text-muted-foreground flex justify-between text-xs'>
-                  <span>No increment</span>
-                  <span>3 min</span>
+            {/* Probabilistic Mode */}
+            {engineMode === 'probabilistic' && (
+              <GaussianCurveControl
+                mean={gaussianMean}
+                variance={gaussianVariance}
+                onMeanChange={setGaussianMean}
+                onVarianceChange={setGaussianVariance}
+              />
+            )}
+
+            <div className='space-y-3'>
+              <Label className='block text-center'>Play as</Label>
+              <RadioGroup
+                value={playAs}
+                onValueChange={(v) => setPlayAs(v as PlayAsOption)}
+                className='flex justify-center gap-6'
+              >
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='random' id='random' />
+                  <Label htmlFor='random' className='cursor-pointer'>
+                    Random
+                  </Label>
                 </div>
-              </div>
-            </>
-          )}
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='white' id='white' />
+                  <Label htmlFor='white' className='cursor-pointer'>
+                    White
+                  </Label>
+                </div>
+                <div className='flex items-center space-x-2'>
+                  <RadioGroupItem value='black' id='black' />
+                  <Label htmlFor='black' className='cursor-pointer'>
+                    Black
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
 
-          {timerMode === 'custom' && (
-            <>
-              <div className='rounded-lg border p-4'>
-                <Label className='mb-3 block text-center font-medium'>
-                  Player 1
-                </Label>
+            <div className='space-y-3'>
+              <Label className='block text-center'>Time Control</Label>
+              <Select
+                value={timerMode}
+                onValueChange={(v) => setTimerMode(v as TimeControlMode)}
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Select time control' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='unlimited'>Unlimited</SelectItem>
+                  <SelectItem value='timed'>Time Controlled</SelectItem>
+                  <SelectItem value='custom'>Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {timerMode === 'timed' && (
+              <>
                 <div className='space-y-3'>
-                  <Label className='block text-center text-sm'>
-                    Time: {formatTimeLabel(player1Minutes)}
+                  <Label className='block text-center'>
+                    Time per side: {formatTimeLabel(minutes)}
                   </Label>
                   <Slider
-                    value={[player1Minutes]}
-                    onValueChange={(v) => setPlayer1Minutes(v[0])}
+                    value={[minutes]}
+                    onValueChange={(v) => setMinutes(v[0])}
                     min={1}
                     max={180}
                     step={1}
                     className='w-full'
                   />
-                  <Label className='block text-center text-sm'>
-                    Increment: {formatIncrementLabel(player1Increment)}
-                  </Label>
-                  <Slider
-                    value={[player1Increment]}
-                    onValueChange={(v) => setPlayer1Increment(v[0])}
-                    min={0}
-                    max={180}
-                    step={1}
-                    className='w-full'
-                  />
+                  <div className='text-muted-foreground flex justify-between text-xs'>
+                    <span>1 min</span>
+                    <span>3 hours</span>
+                  </div>
                 </div>
-              </div>
 
-              <div className='rounded-lg border p-4'>
-                <Label className='mb-3 block text-center font-medium'>
-                  Player 2
-                </Label>
                 <div className='space-y-3'>
-                  <Label className='block text-center text-sm'>
-                    Time: {formatTimeLabel(player2Minutes)}
+                  <Label className='block text-center'>
+                    Increment: {formatIncrementLabel(increment)}
                   </Label>
                   <Slider
-                    value={[player2Minutes]}
-                    onValueChange={(v) => setPlayer2Minutes(v[0])}
-                    min={1}
-                    max={180}
-                    step={1}
-                    className='w-full'
-                  />
-                  <Label className='block text-center text-sm'>
-                    Increment: {formatIncrementLabel(player2Increment)}
-                  </Label>
-                  <Slider
-                    value={[player2Increment]}
-                    onValueChange={(v) => setPlayer2Increment(v[0])}
+                    value={[increment]}
+                    onValueChange={(v) => setIncrement(v[0])}
                     min={0}
                     max={180}
                     step={1}
                     className='w-full'
                   />
+                  <div className='text-muted-foreground flex justify-between text-xs'>
+                    <span>No increment</span>
+                    <span>3 min</span>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
 
-          <Button className='w-full' size='lg' onClick={handleStart}>
-            Start Game
-          </Button>
-        </div>
+            {timerMode === 'custom' && (
+              <>
+                <div className='rounded-lg border p-4'>
+                  <Label className='mb-3 block text-center font-medium'>
+                    Player 1
+                  </Label>
+                  <div className='space-y-3'>
+                    <Label className='block text-center text-sm'>
+                      Time: {formatTimeLabel(player1Minutes)}
+                    </Label>
+                    <Slider
+                      value={[player1Minutes]}
+                      onValueChange={(v) => setPlayer1Minutes(v[0])}
+                      min={1}
+                      max={180}
+                      step={1}
+                      className='w-full'
+                    />
+                    <Label className='block text-center text-sm'>
+                      Increment: {formatIncrementLabel(player1Increment)}
+                    </Label>
+                    <Slider
+                      value={[player1Increment]}
+                      onValueChange={(v) => setPlayer1Increment(v[0])}
+                      min={0}
+                      max={180}
+                      step={1}
+                      className='w-full'
+                    />
+                  </div>
+                </div>
+
+                <div className='rounded-lg border p-4'>
+                  <Label className='mb-3 block text-center font-medium'>
+                    Player 2
+                  </Label>
+                  <div className='space-y-3'>
+                    <Label className='block text-center text-sm'>
+                      Time: {formatTimeLabel(player2Minutes)}
+                    </Label>
+                    <Slider
+                      value={[player2Minutes]}
+                      onValueChange={(v) => setPlayer2Minutes(v[0])}
+                      min={1}
+                      max={180}
+                      step={1}
+                      className='w-full'
+                    />
+                    <Label className='block text-center text-sm'>
+                      Increment: {formatIncrementLabel(player2Increment)}
+                    </Label>
+                    <Slider
+                      value={[player2Increment]}
+                      onValueChange={(v) => setPlayer2Increment(v[0])}
+                      min={0}
+                      max={180}
+                      step={1}
+                      className='w-full'
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
+            <Button className='w-full' size='lg' onClick={handleStart}>
+              Start Game
+            </Button>
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

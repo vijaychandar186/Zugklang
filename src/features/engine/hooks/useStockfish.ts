@@ -3,15 +3,20 @@ import { Chess, ChessJSSquare as Square } from '@/lib/chess';
 import { StockfishEngine } from '@/lib/engine';
 import { MOVE_DELAY } from '@/features/chess/config/animation';
 import { SoundType } from '@/features/game/utils/sounds';
+import {
+  EngineConfig,
+  sampleFromGaussian
+} from '@/features/chess/types/engine';
 
 type UseStockfishProps = {
   game: Chess;
   fen: string;
   gameId: number;
   playAs: 'white' | 'black';
-  stockfishLevel: number;
+  engineConfig: EngineConfig;
   enabled: boolean;
   onMove: (from: Square, to: Square, promotion?: string) => boolean;
+  onMoveDepthRecorded?: (depth: number) => void;
   soundEnabled: boolean;
   playSound: (type: SoundType) => void;
 };
@@ -21,9 +26,10 @@ export function useStockfish({
   fen,
   gameId,
   playAs,
-  stockfishLevel,
+  engineConfig,
   enabled,
   onMove,
+  onMoveDepthRecorded,
   soundEnabled,
   playSound
 }: UseStockfishProps) {
@@ -47,6 +53,18 @@ export function useStockfish({
     const fenToEvaluate = currentGame.fen();
     engine.stop();
 
+    // Determine the depth to use based on engine config
+    let depthToUse: number;
+    if (engineConfig.mode === 'probabilistic') {
+      // Sample from Gaussian distribution for each move
+      depthToUse = sampleFromGaussian(engineConfig.mean, engineConfig.variance);
+      console.log(
+        `Probabilistic mode: sampled depth ${depthToUse} (mean: ${engineConfig.mean}, variance: ${engineConfig.variance})`
+      );
+    } else {
+      depthToUse = engineConfig.level;
+    }
+
     engine.onMessage(({ bestMove }) => {
       if (bestMove) {
         if (gameRef.current.fen() !== fenToEvaluate) return;
@@ -56,11 +74,13 @@ export function useStockfish({
         const promotion = bestMove.substring(4, 5) || undefined;
 
         onMove(from, to, promotion);
+        // Record the depth used for this move
+        onMoveDepthRecorded?.(depthToUse);
       }
     });
 
-    await engine.evaluatePosition(fenToEvaluate, stockfishLevel);
-  }, [engine, playAs, stockfishLevel, onMove]);
+    await engine.evaluatePosition(fenToEvaluate, depthToUse);
+  }, [engine, playAs, engineConfig, onMove, onMoveDepthRecorded]);
 
   useEffect(() => {
     if (!enabled) return;

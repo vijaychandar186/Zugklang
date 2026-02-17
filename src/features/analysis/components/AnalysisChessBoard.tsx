@@ -28,13 +28,13 @@ export function AnalysisChessBoard() {
     positionHistory,
     boardOrientation,
     playingAgainstStockfish,
-    playerColor,
-    stockfishLevel
+    playerColor
   } = useAnalysisBoardState();
 
   const { makeMove, goToEnd } = useAnalysisBoardActions();
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
+  const engineConfig = useChessStore((s) => s.engineConfig);
 
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
@@ -75,7 +75,7 @@ export function AnalysisChessBoard() {
     fen: currentFEN,
     gameId: 1,
     playAs: playerColor,
-    stockfishLevel,
+    engineConfig,
     enabled: playingAgainstStockfish && !game.isGameOver(),
     onMove: executeMove,
     soundEnabled,

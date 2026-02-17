@@ -44,7 +44,7 @@ export function ChessBoard({
     positionHistory,
     boardOrientation,
     playAs,
-    stockfishLevel,
+    engineConfig,
     gameOver,
     gameStarted,
     gameId,
@@ -63,6 +63,7 @@ export function ChessBoard({
     setOnNewGame,
     makeMove,
     makeDropMove,
+    recordMoveDepth,
     goToEnd,
     flipBoard
   } = useChessActions();
@@ -93,8 +94,28 @@ export function ChessBoard({
       if (isLocalGame && autoFlipBoard) {
         flipBoard();
       }
+
+      // Record null depth for human moves in computer games
+      // (Engine moves will record their actual depth via onMoveDepthRecorded)
+      if (!isLocalGame) {
+        // The move was just made, so check the previous turn (before the move)
+        const previousTurn = game.turn() === 'w' ? 'black' : 'white';
+        const wasHumanMove = previousTurn === playAs;
+        if (wasHumanMove) {
+          recordMoveDepth(null);
+        }
+      }
     }
-  }, [isPlayMode, game, switchTimer, isLocalGame, autoFlipBoard, flipBoard]);
+  }, [
+    isPlayMode,
+    game,
+    switchTimer,
+    isLocalGame,
+    autoFlipBoard,
+    flipBoard,
+    playAs,
+    recordMoveDepth
+  ]);
 
   const onPremoveAdded = useCallback(() => {
     if (soundEnabled) playSound('premove');
@@ -141,9 +162,10 @@ export function ChessBoard({
     fen: currentFEN,
     gameId: isPlayMode ? gameId : 1,
     playAs: effectivePlayAs,
-    stockfishLevel,
+    engineConfig,
     enabled: stockfishEnabled && !gameOver && useStandardEngine,
     onMove: executeMove,
+    onMoveDepthRecorded: recordMoveDepth,
     soundEnabled,
     playSound
   });
@@ -165,11 +187,12 @@ export function ChessBoard({
     fen: currentFEN,
     gameId: isPlayMode ? gameId : 1,
     playAs: effectivePlayAs,
-    stockfishLevel,
+    engineConfig,
     enabled: stockfishEnabled && !gameOver && useFairy,
     variant,
     onMove: executeMove,
     onDropMove: executeDropMove,
+    onMoveDepthRecorded: recordMoveDepth,
     soundEnabled,
     playSound
   });

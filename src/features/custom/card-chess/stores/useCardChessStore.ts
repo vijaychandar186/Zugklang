@@ -450,16 +450,52 @@ export const useCardChessStore = create<CardChessStore>()(
 
           const newDrawCount = drawCount + 1;
 
+          // Calculate highlights for the drawn card
+          const highlightedSquares: Record<
+            string,
+            import('react').CSSProperties
+          > = {};
+          if (hasValidMoves) {
+            const mapping = CARD_TO_PIECE[drawnCardFromDeck.rank];
+            const board = game.board();
+
+            for (let r = 0; r < 8; r++) {
+              for (let c = 0; c < 8; c++) {
+                const piece = board[r][c];
+                if (!piece || piece.color !== game.turn()) continue;
+
+                const square = String.fromCharCode(97 + c) + (8 - r);
+
+                // For pawns, must match file
+                if (mapping.type === 'p' && mapping.file) {
+                  if (piece.type === 'p' && square[0] === mapping.file) {
+                    highlightedSquares[square] = {
+                      boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+                      borderRadius: '4px'
+                    };
+                  }
+                } else {
+                  // For other pieces, just match type
+                  if (piece.type === mapping.type) {
+                    highlightedSquares[square] = {
+                      boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+                      borderRadius: '4px'
+                    };
+                  }
+                }
+              }
+            }
+          }
+
           set({
             deck: remainingDeck,
             discardPile: currentDiscardPile,
             drawnCard: cardResult,
             isDrawing: false,
             needsDraw: false,
-            drawCount: newDrawCount
+            drawCount: newDrawCount,
+            highlightedSquares
           });
-
-          get().calculateHighlights();
 
           // Auto re-draw logic
           if (!hasValidMoves) {

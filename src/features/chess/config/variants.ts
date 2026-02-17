@@ -15,7 +15,8 @@ export type ChessVariant =
   | 'threeCheck'
   | 'antichess'
   | 'kingOfTheHill'
-  | 'crazyhouse';
+  | 'crazyhouse'
+  | 'checkersChess';
 
 type VariantConfig = {
   rules: Rules;
@@ -89,6 +90,13 @@ const VARIANT_CONFIG: Record<ChessVariant, VariantConfig> = {
     uciVariant: 'crazyhouse',
     useFairyEngine: true,
     engineName: 'Fairy-Stockfish',
+    getStartingFEN: () => STARTING_FEN
+  },
+  checkersChess: {
+    rules: 'chess',
+    uciVariant: 'chess',
+    useFairyEngine: false,
+    engineName: 'Stockfish',
     getStartingFEN: () => STARTING_FEN
   }
 };

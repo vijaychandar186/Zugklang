@@ -25,6 +25,7 @@ import { usesFairyEngine, getEngineName } from '../config/variants';
 import '../variants';
 import { variantRegistry } from '../variants/shared/VariantRegistry';
 import { useCrazyhousePocket } from '../variants/crazyhouse/hooks/useCrazyhousePocket';
+import { buildCheckerPieces } from '@/features/chess/variants/checkers-chess/components/CheckerPieces';
 
 export function ChessBoard({
   serverOrientation,
@@ -298,6 +299,12 @@ export function ChessBoard({
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
 
+  // Build custom checker pieces for checkersChess variant
+  const checkerPieces = useMemo(
+    () => (variant === 'checkersChess' ? buildCheckerPieces() : undefined),
+    [variant]
+  );
+
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
@@ -312,7 +319,8 @@ export function ChessBoard({
     onSquareClick: wrappedSquareClick,
     onSquareRightClick: handleSquareRightClick,
     arrows: analysisArrows,
-    loserColor
+    loserColor,
+    ...(checkerPieces ? { pieces: checkerPieces } : {})
   };
 
   const shouldShow3d =

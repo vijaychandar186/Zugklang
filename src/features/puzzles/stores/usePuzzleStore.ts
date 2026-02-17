@@ -2,7 +2,8 @@
 
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { FEATURE_PUZZLE_KEY } from '@/lib/storage/keys';
 import { ChessJSMove as Move } from '@/lib/chess';
 import {
   createNavigationSlice,
@@ -177,7 +178,8 @@ export const usePuzzleStore = create<PuzzleStore>()(
       };
     },
     {
-      name: 'puzzle-store',
+      name: FEATURE_PUZZLE_KEY,
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         difficulty: state.difficulty,
         puzzlesSolved: state.puzzlesSolved,

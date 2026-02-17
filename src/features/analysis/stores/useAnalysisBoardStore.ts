@@ -1,9 +1,9 @@
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { ChessJSMove as Move } from '@/lib/chess';
-import { createModeStorage } from '@/features/chess/stores/gameStorage';
 import { STARTING_FEN } from '@/features/chess/config/constants';
+import { FEATURE_ANALYSIS_BOARD_KEY } from '@/lib/storage/keys';
 import {
   createNavigationSlice,
   NavigationSlice,
@@ -146,8 +146,8 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
       };
     },
     {
-      name: 'zugklang-analysis-storage',
-      storage: createModeStorage('analysis'),
+      name: FEATURE_ANALYSIS_BOARD_KEY,
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         moves: state.moves,
         positionHistory: state.positionHistory,

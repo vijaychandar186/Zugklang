@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { FourPlayerView } from '@/features/four-player/components/FourPlayerView';
+import { FourPlayerView } from '@/features/custom/four-player/components/FourPlayerView';
 
 export const metadata: Metadata = {
   title: '4-Player Chess | Zugklang',

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { PageContainer } from '@/components/layout/PageContainer';
-import { DiceChessView } from '@/features/dice-chess/components/DiceChessView';
+import { DiceChessView } from '@/features/custom/dice-chess/components/DiceChessView';
 
 export const metadata: Metadata = {
   title: 'Dice Chess | Zugklang',

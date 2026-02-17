@@ -455,80 +455,49 @@ export function FourPlayerSidebar() {
                   ))}
                 </p>
               )}
-
-              <div className='flex justify-center gap-2'>
-                {TEAMS.map((team) => {
-                  const info = TEAM_INFO[team];
-                  const isEliminated = loseOrder.includes(team);
-                  const isCurrent = team === currentTeam;
-                  const time = teamTimes[team];
-                  const isActive = activeTimer === team;
-                  const isLow = time !== null && time <= 30;
-                  const isCritical = time !== null && time <= 10;
-                  return (
-                    <div
-                      key={team}
-                      className='flex flex-col items-center gap-0.5 text-xs'
-                    >
-                      <div className='flex items-center gap-1'>
-                        <div
-                          className='h-2 w-2 rounded-full'
-                          style={{
-                            backgroundColor: isEliminated
-                              ? 'var(--four-player-eliminated)'
-                              : info.cssVar
-                          }}
-                        />
-                        <span
-                          className={`${
-                            isEliminated
-                              ? 'text-muted-foreground line-through opacity-50'
-                              : isCurrent
-                                ? 'font-bold'
-                                : 'text-muted-foreground'
-                          }`}
-                        >
-                          {info.short}
-                        </span>
-                      </div>
-                      <span className='text-muted-foreground text-[10px]'>
-                        {points[team]}pts
-                      </span>
-                      {hasTimer && time !== null && (
-                        <div
-                          className={cn(
-                            'rounded px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums transition-colors',
-                            isActive
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-muted',
-                            !isActive && 'opacity-70',
-                            isLow &&
-                              isActive &&
-                              'text-background bg-[color:var(--classification-inaccuracy)]',
-                            isCritical &&
-                              isActive &&
-                              'bg-destructive text-destructive-foreground animate-pulse'
-                          )}
-                        >
-                          {formatTime(time)}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
             </div>
           )}
 
           <div className='flex flex-wrap items-center justify-center gap-1'>
-            {TEAMS.map((team) => (
-              <PlayerButton
-                key={team}
-                team={team}
-                isActive={orientation === TEAM_ROTATIONS[team]}
-                onClick={() => setOrientation(TEAM_ROTATIONS[team])}
-              />
-            ))}
+            {TEAMS.map((team) => {
+              const info = TEAM_INFO[team];
+              const isEliminated = loseOrder.includes(team);
+              const time = teamTimes[team];
+              const isActive = activeTimer === team;
+              const isLow = time !== null && time <= 30;
+              const isCritical = time !== null && time <= 10;
+              return (
+                <div key={team} className='flex flex-col items-center gap-0.5'>
+                  <span className='text-muted-foreground text-[10px]'>
+                    {points[team]}pts
+                  </span>
+                  {hasTimer && time !== null && (
+                    <div
+                      className={cn(
+                        'rounded px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums transition-colors',
+                        isActive
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted',
+                        !isActive && 'opacity-70',
+                        isLow &&
+                          isActive &&
+                          'text-background bg-[color:var(--classification-inaccuracy)]',
+                        isCritical &&
+                          isActive &&
+                          'bg-destructive text-destructive-foreground animate-pulse'
+                      )}
+                    >
+                      {formatTime(time)}
+                    </div>
+                  )}
+                  <PlayerButton
+                    team={team}
+                    isActive={orientation === TEAM_ROTATIONS[team]}
+                    onClick={() => setOrientation(TEAM_ROTATIONS[team])}
+                  />
+                </div>
+              );
+            })}
           </div>
 
           {gameStarted && !isGameOver && (
@@ -572,11 +541,7 @@ export function FourPlayerSidebar() {
           )}
         </div>
       </div>
-      <SettingsDialog
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-        show3dToggle={false}
-      />
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </>
   );
 }

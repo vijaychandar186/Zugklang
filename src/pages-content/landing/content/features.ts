@@ -37,7 +37,7 @@ export const features: FeatureProps[] = [
     title: '4-Player Chess',
     description:
       'Experience chess with four players on an extended board. A whole new dimension of strategy with alliances, multi-front battles, and chaotic fun.',
-    href: '/play/four-player'
+    href: '/play/custom/four-player'
   },
   {
     title: 'Puzzles & Training',

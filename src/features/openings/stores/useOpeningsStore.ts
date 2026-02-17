@@ -1,7 +1,8 @@
 'use client';
 
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import { FEATURE_OPENINGS_KEY } from '@/lib/storage/keys';
 import type { Opening, SortOption, TabOption } from '../types';
 import {
   createBoardOrientationSlice,
@@ -92,7 +93,8 @@ export const useOpeningsStore = create<OpeningsStore>()(
       getFavoriteKey: (opening) => getFavoriteKey(opening)
     }),
     {
-      name: 'zugklang-openings',
+      name: FEATURE_OPENINGS_KEY,
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         favorites: state.favorites,
         sortOption: state.sortOption

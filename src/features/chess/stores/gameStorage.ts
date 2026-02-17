@@ -2,6 +2,16 @@ import { createJSONStorage } from 'zustand/middleware';
 
 const STORAGE_PREFIX = 'zugklang-game';
 
+/**
+ * Helper to check if game state should be persisted (has moves or is started)
+ */
+function shouldPersistGameState(state: unknown): boolean {
+  const s = state as { moves?: unknown[]; gameStarted?: boolean };
+  return (
+    (Array.isArray(s.moves) && s.moves.length > 0) || s.gameStarted === true
+  );
+}
+
 export function getStorageKey(mode: string): string {
   return `${STORAGE_PREFIX}-${mode}`;
 }
@@ -50,13 +60,23 @@ export function createMultiModeStorage<T extends string>(
       if (typeof localStorage === 'undefined') return;
       try {
         const parsed = JSON.parse(value);
-        const mode = getModeFromState(parsed?.state) || defaultMode;
+        const state = parsed?.state;
+
+        // Only persist if game has actual data
+        if (!shouldPersistGameState(state)) {
+          // Remove key if it exists but shouldn't be persisted
+          const mode = getModeFromState(state) || defaultMode;
+          const key = getStorageKey(mode);
+          localStorage.removeItem(key);
+          return;
+        }
+
+        const mode = getModeFromState(state) || defaultMode;
         const key = getStorageKey(mode);
         localStorage.setItem(key, value);
         localStorage.setItem(`${STORAGE_PREFIX}-last-active`, mode);
       } catch {
-        const key = getStorageKey(defaultMode);
-        localStorage.setItem(key, value);
+        // If parsing fails, don't persist
       }
     },
     removeItem: (): void => {}

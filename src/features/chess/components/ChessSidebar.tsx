@@ -176,6 +176,16 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     setGameOver(true);
   };
 
+  const handleOfferDraw = () => {
+    if (soundEnabled) playSound('draw-offer');
+  };
+
+  const handleAcceptDraw = () => {
+    if (soundEnabled) playSound('game-end');
+    setGameResult('Draw by agreement');
+    setGameOver(true);
+  };
+
   const handleNewGame = () => setNewGameOpen(true);
 
   const handleToggleAnalysis = () => {
@@ -524,6 +534,47 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
               </Tooltip>
 
               <div className='ml-auto flex items-center gap-1'>
+                <AlertDialog>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant='ghost'
+                          size='icon'
+                          className='bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-400'
+                          disabled={gameOver || !gameStarted}
+                          onClick={handleOfferDraw}
+                        >
+                          <Icons.handshake className='h-4 w-4' />
+                        </Button>
+                      </AlertDialogTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Offer Draw</TooltipContent>
+                  </Tooltip>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Draw Offer</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {isLocalGame
+                          ? 'Do both players agree to a draw?'
+                          : 'Do you want to offer a draw to your opponent?'}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>
+                        {isLocalGame ? 'No' : 'Cancel'}
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={handleAcceptDraw}
+                        className='bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                      >
+                        {isLocalGame ? 'Yes, Draw' : 'Offer Draw'}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
                 <AlertDialog>
                   <Tooltip>
                     <TooltipTrigger asChild>

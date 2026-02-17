@@ -10,7 +10,8 @@ export type SoundType =
   | 'premove'
   | 'notify'
   | 'illegal'
-  | 'tenseconds';
+  | 'tenseconds'
+  | 'draw-offer';
 
 const SOUND_FILES: Record<SoundType, string> = {
   'game-start': '/audio/sounds/game-start.mp3',
@@ -24,7 +25,8 @@ const SOUND_FILES: Record<SoundType, string> = {
   premove: '/audio/sounds/pre-move.mp3',
   notify: '/audio/sounds/notify.mp3',
   illegal: '/audio/sounds/illegal.mp3',
-  tenseconds: '/audio/sounds/ten-seconds.mp3'
+  tenseconds: '/audio/sounds/ten-seconds.mp3',
+  'draw-offer': '/audio/sounds/draw-offer.mp3'
 };
 
 const audioCache: Partial<Record<SoundType, HTMLAudioElement>> = {};

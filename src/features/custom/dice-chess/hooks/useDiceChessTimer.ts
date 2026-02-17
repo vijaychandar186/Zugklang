@@ -7,7 +7,6 @@ export function useDiceChessTimer() {
     whiteTime,
     blackTime,
     activeTimer,
-    lastActiveTimestamp,
     gameOver,
     setGameOver,
     setGameResult

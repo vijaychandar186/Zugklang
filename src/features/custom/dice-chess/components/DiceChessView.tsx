@@ -32,8 +32,7 @@ export function DiceChessView() {
     timeControl,
     whiteTime,
     blackTime,
-    activeTimer,
-    turn
+    activeTimer
   } = useDiceChessStore();
 
   const boardFlipped = useChessStore((s) => s.boardFlipped);

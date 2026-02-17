@@ -460,8 +460,6 @@ export function FourPlayerSidebar() {
 
           <div className='flex flex-wrap items-center justify-center gap-1'>
             {TEAMS.map((team) => {
-              const info = TEAM_INFO[team];
-              const isEliminated = loseOrder.includes(team);
               const time = teamTimes[team];
               const isActive = activeTimer === team;
               const isLow = time !== null && time <= 30;

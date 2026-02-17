@@ -51,6 +51,12 @@ export const GAME_FOUR_PLAYER_KEY =
  */
 export const GAME_DICE_CHESS_KEY = `${PREFIX}-game-custom-dice-chess` as const;
 
+/**
+ * Card chess game state
+ * Category: Custom Game
+ */
+export const GAME_CARD_CHESS_KEY = `${PREFIX}-game-custom-card-chess` as const;
+
 // ============================================================================
 // Feature Storage Keys
 // ============================================================================
@@ -103,6 +109,7 @@ export function getAllStorageKeys(): string[] {
     GAME_LAST_ACTIVE_KEY,
     GAME_FOUR_PLAYER_KEY,
     GAME_DICE_CHESS_KEY,
+    GAME_CARD_CHESS_KEY,
     FEATURE_PUZZLE_KEY,
     FEATURE_OPENINGS_KEY,
     FEATURE_GAME_REVIEW_KEY,
@@ -144,6 +151,7 @@ export function clearGameCategoryStorage(
   if (category === 'custom') {
     localStorage.removeItem(GAME_FOUR_PLAYER_KEY);
     localStorage.removeItem(GAME_DICE_CHESS_KEY);
+    localStorage.removeItem(GAME_CARD_CHESS_KEY);
     return;
   }
 

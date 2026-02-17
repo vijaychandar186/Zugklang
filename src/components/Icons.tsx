@@ -77,6 +77,7 @@ import {
   Dices,
   Sparkles,
   Circle,
+  Spade,
   type LucideIcon
 } from 'lucide-react';
 
@@ -167,7 +168,8 @@ export const Icons = {
   home: Home,
   dices: Dices,
   sparkles: Sparkles,
-  circle: Circle
+  circle: Circle,
+  spade: Spade
 } as const;
 
 export type { LucideIcon };

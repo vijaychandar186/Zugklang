@@ -17,5 +17,13 @@ export const customModes: MenuCardItem[] = [
     description:
       'Roll 3 dice to determine which pieces you can move each turn. Capture the enemy King to win!',
     actionText: 'Start Game'
+  },
+  {
+    href: '/play/custom/card-chess',
+    icon: Icons.spade,
+    title: 'Card Chess',
+    description:
+      'Draw cards to determine which pieces you can move. Each card rank corresponds to a specific piece!',
+    actionText: 'Start Game'
   }
 ];

@@ -1,8 +1,23 @@
 'use client';
 
 import { useMemo } from 'react';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ReferenceLine,
+  ResponsiveContainer,
+  XAxis,
+  YAxis
+} from 'recharts';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig
+} from '@/components/ui/chart';
 
 type GaussianCurveControlProps = {
   mean: number;
@@ -11,7 +26,6 @@ type GaussianCurveControlProps = {
   onVarianceChange: (variance: number) => void;
 };
 
-// Calculate Gaussian probability density function
 function gaussianPDF(x: number, mean: number, variance: number): number {
   const stdDev = Math.sqrt(variance);
   const coefficient = 1 / (stdDev * Math.sqrt(2 * Math.PI));
@@ -19,45 +33,25 @@ function gaussianPDF(x: number, mean: number, variance: number): number {
   return coefficient * Math.exp(exponent);
 }
 
+const chartConfig = {
+  probability: {
+    label: 'Probability',
+    color: 'var(--chart-1)'
+  }
+} satisfies ChartConfig;
+
 export function GaussianCurveControl({
   mean,
   variance,
   onMeanChange,
   onVarianceChange
 }: GaussianCurveControlProps) {
-  const curvePoints = useMemo(() => {
-    const points: { x: number; y: number }[] = [];
-    const numPoints = 200;
-
-    for (let i = 0; i <= numPoints; i++) {
-      const x = 1 + (i / numPoints) * 19; // Range from 1 to 20
-      const y = gaussianPDF(x, mean, variance);
-      points.push({ x, y });
-    }
-
-    // Normalize to fit in our SVG viewBox
-    const maxY = Math.max(...points.map((p) => p.y));
-    return points.map((p) => ({
-      x: ((p.x - 1) / 19) * 380 + 10, // Map 1-20 to 10-390 (SVG coordinates)
-      y: 150 - (p.y / maxY) * 130 // Map to 20-150 (inverted for SVG, leave space at top)
-    }));
-  }, [mean, variance]);
-
-  const pathD = useMemo(() => {
-    if (curvePoints.length === 0) return '';
-
-    const commands = curvePoints.map((point, i) => {
-      const command = i === 0 ? 'M' : 'L';
-      return `${command} ${point.x},${point.y}`;
+  const chartData = useMemo(() => {
+    return Array.from({ length: 20 }, (_, i) => {
+      const level = i + 1;
+      return { level, probability: gaussianPDF(level, mean, variance) };
     });
-
-    // Close the path at the bottom
-    commands.push(`L 390,150`);
-    commands.push(`L 10,150`);
-    commands.push('Z');
-
-    return commands.join(' ');
-  }, [curvePoints]);
+  }, [mean, variance]);
 
   return (
     <div className='space-y-4'>
@@ -66,66 +60,75 @@ export function GaussianCurveControl({
         <Label className='mb-3 block text-center text-sm font-medium'>
           Difficulty Distribution
         </Label>
-        <svg
-          viewBox='0 0 400 160'
-          className='h-40 w-full'
-          style={{ backgroundColor: 'transparent' }}
-        >
-          {/* Grid lines */}
-          {[1, 5, 10, 15, 20].map((level) => (
-            <g key={level}>
-              <line
-                x1={((level - 1) / 19) * 380 + 10}
-                y1={20}
-                x2={((level - 1) / 19) * 380 + 10}
-                y2={150}
-                stroke='currentColor'
-                strokeOpacity={0.1}
-                strokeWidth={1}
-              />
-              <text
-                x={((level - 1) / 19) * 380 + 10}
-                y={158}
-                textAnchor='middle'
-                fontSize={10}
-                fill='currentColor'
-                opacity={0.5}
+        <ChartContainer config={chartConfig} className='w-full'>
+          <div className='h-[160px] w-full'>
+            <ResponsiveContainer width='100%' height='100%'>
+              <AreaChart
+                data={chartData}
+                margin={{ left: -30, right: 0, top: 5, bottom: 0 }}
               >
-                {level}
-              </text>
-            </g>
-          ))}
-
-          {/* Gaussian curve */}
-          <path d={pathD} fill='currentColor' fillOpacity={0.2} />
-          <path
-            d={pathD.split('L 390,150')[0]}
-            fill='none'
-            stroke='currentColor'
-            strokeWidth={2}
-          />
-
-          {/* Mean indicator */}
-          <line
-            x1={((mean - 1) / 19) * 380 + 10}
-            y1={20}
-            x2={((mean - 1) / 19) * 380 + 10}
-            y2={150}
-            stroke='hsl(var(--primary))'
-            strokeWidth={2}
-            strokeDasharray='4 2'
-          />
-          <circle
-            cx={((mean - 1) / 19) * 380 + 10}
-            cy={
-              curvePoints.find(
-                (p) => Math.abs(p.x - (((mean - 1) / 19) * 380 + 10)) < 2
-              )?.y || 85
-            }
-            r={4}
-            fill='hsl(var(--primary))'
-          />
-        </svg>
+                <defs>
+                  <linearGradient
+                    id='gaussianGradient'
+                    x1='0'
+                    y1='0'
+                    x2='0'
+                    y2='1'
+                  >
+                    <stop
+                      offset='5%'
+                      stopColor='var(--color-probability)'
+                      stopOpacity={0.8}
+                    />
+                    <stop
+                      offset='95%'
+                      stopColor='var(--color-probability)'
+                      stopOpacity={0.1}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} />
+                <XAxis
+                  dataKey='level'
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={6}
+                  interval={4}
+                  tick={{ fontSize: 10 }}
+                />
+                <YAxis hide />
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent
+                      labelFormatter={(value) => `Level ${value}`}
+                      formatter={(value) => [
+                        (value as number).toFixed(4),
+                        'Probability'
+                      ]}
+                      indicator='dot'
+                    />
+                  }
+                />
+                <ReferenceLine
+                  x={mean}
+                  stroke='var(--color-probability)'
+                  strokeWidth={2}
+                  strokeDasharray='4 2'
+                  label={{ value: `μ=${mean}`, position: 'top', fontSize: 10 }}
+                />
+                <Area
+                  type='natural'
+                  dataKey='probability'
+                  stroke='var(--color-probability)'
+                  strokeWidth={2}
+                  fill='url(#gaussianGradient)'
+                  dot={false}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </ChartContainer>
         <div className='text-muted-foreground mt-2 flex justify-between text-xs'>
           <span>Easier</span>
           <span className='text-primary font-medium'>Mean: {mean}</span>

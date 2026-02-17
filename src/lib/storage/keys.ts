@@ -50,6 +50,12 @@ export const GAME_FOUR_PLAYER_KEY = `${PREFIX}-game-four-player` as const;
  */
 export const GAME_DICE_CHESS_KEY = `${PREFIX}-game-dice-chess` as const;
 
+/**
+ * Chess with Checkers game state
+ * Category: Custom Game
+ */
+export const GAME_CHECKERS_CHESS_KEY = `${PREFIX}-game-checkers-chess` as const;
+
 // ============================================================================
 // Feature Storage Keys
 // ============================================================================
@@ -102,6 +108,7 @@ export function getAllStorageKeys(): string[] {
     GAME_LAST_ACTIVE_KEY,
     GAME_FOUR_PLAYER_KEY,
     GAME_DICE_CHESS_KEY,
+    GAME_CHECKERS_CHESS_KEY,
     FEATURE_PUZZLE_KEY,
     FEATURE_OPENINGS_KEY,
     FEATURE_GAME_REVIEW_KEY,
@@ -143,6 +150,7 @@ export function clearGameCategoryStorage(
   if (category === 'custom') {
     localStorage.removeItem(GAME_FOUR_PLAYER_KEY);
     localStorage.removeItem(GAME_DICE_CHESS_KEY);
+    localStorage.removeItem(GAME_CHECKERS_CHESS_KEY);
     return;
   }
 

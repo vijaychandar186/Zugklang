@@ -39,7 +39,7 @@ const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
 const PLAY_AS_COOKIE = 'playAs';
 
-type PlayMode = 'computer' | 'local';
+type PlayMode = 'computer' | 'local' | 'multiplayer';
 
 type PersistedPlayState = {
   mode: ChessMode;
@@ -66,7 +66,7 @@ type PersistedPlayState = {
 };
 
 export type ChessMode = 'play' | 'analysis';
-export type GameType = 'computer' | 'local';
+export type GameType = 'computer' | 'local' | 'multiplayer';
 
 function getInitialSoundEnabled(): boolean {
   return getBooleanCookie(SOUND_ENABLED_COOKIE, true);
@@ -130,6 +130,11 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
     engineConfig?: EngineConfig
   ) => void;
   startLocalGame: (timeControl?: TimeControl) => void;
+  startMultiplayerGame: (
+    color: 'white' | 'black',
+    timeControl?: TimeControl,
+    startingFen?: string
+  ) => void;
   resetGame: () => void;
   setGameType: (gameType: GameType) => void;
   setAutoFlipBoard: (enabled: boolean) => void;
@@ -375,6 +380,41 @@ export const useChessStore = create<ChessStore>()(
           whiteTime: timers.whiteTime,
           blackTime: timers.blackTime,
           activeTimer: hasTimer(timeControl) ? 'white' : null,
+          lastActiveTimestamp: hasTimer(timeControl) ? Date.now() : null,
+          playingAgainstStockfish: false
+        });
+      },
+
+      startMultiplayerGame: (
+        color,
+        timeControl = DEFAULT_TIME_CONTROL,
+        startingFen
+      ) => {
+        const timers = initializeTimers(timeControl);
+        const state = get();
+        const startingFEN = startingFen || getStartingFEN(state.variant);
+        const newGame = new Chess(startingFEN, variantToRules(state.variant));
+
+        set({
+          mode: 'play',
+          gameType: 'multiplayer',
+          game: newGame,
+          playAs: color,
+          boardFlipped: false,
+          boardOrientation: color,
+          gameStarted: true,
+          gameOver: false,
+          moves: [],
+          moveDepths: [],
+          positionHistory: [startingFEN],
+          viewingIndex: 0,
+          gameResult: null,
+          currentFEN: startingFEN,
+          gameId: state.gameId + 1,
+          timeControl,
+          whiteTime: timers.whiteTime,
+          blackTime: timers.blackTime,
+          activeTimer: hasTimer(timeControl) ? color : null,
           lastActiveTimestamp: hasTimer(timeControl) ? Date.now() : null,
           playingAgainstStockfish: false
         });
@@ -841,6 +881,7 @@ export const useChessActions = () =>
       setOnNewGame: s.setOnNewGame,
       startGame: s.startGame,
       startLocalGame: s.startLocalGame,
+      startMultiplayerGame: s.startMultiplayerGame,
       resetGame: s.resetGame,
       setGameOver: s.setGameOver,
       setGameResult: s.setGameResult,

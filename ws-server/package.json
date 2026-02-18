@@ -1,0 +1,12 @@
+{
+  "name": "zugklang-ws-server",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun --watch server.ts",
+    "start": "bun server.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.9"
+  }
+}

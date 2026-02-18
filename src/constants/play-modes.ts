@@ -28,6 +28,14 @@ export const playModes: MenuCardItem[] = [
     actionText: 'Choose Mode'
   },
   {
+    href: '/play/multiplayer',
+    icon: Icons.usersRound,
+    title: 'Online Multiplayer',
+    description:
+      'Get matched with a random online opponent instantly. All variants available — no account needed.',
+    actionText: 'Choose Mode'
+  },
+  {
     href: '/play/custom',
     icon: Icons.sparkles,
     title: 'Custom',

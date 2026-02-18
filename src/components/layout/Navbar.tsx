@@ -55,8 +55,8 @@ export function Navbar() {
 
         <div className='hidden items-center gap-3 md:flex'>
           <ThemeToggle />
-          <Link href='/play'>
-            <Button className='font-medium'>Play Now</Button>
+          <Link href='/signin'>
+            <Button className='font-medium'>Get Started</Button>
           </Link>
         </div>
 

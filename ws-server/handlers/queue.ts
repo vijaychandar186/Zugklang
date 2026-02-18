@@ -1,7 +1,8 @@
 import type { BunWS, TimeControl, Room } from '../types';
-import { queues, rooms, issueRejoinToken } from '../state';
+import { queues, rooms, issueRejoinToken, revokeRoomTokens } from '../state';
 import { send, removeFromQueues } from '../utils/socket';
 import { getStartingFen } from '../utils/fen';
+import { buildPosition } from '../utils/chess';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
 
@@ -31,12 +32,35 @@ export function createRoom(
     timeControl,
     startingFen,
     moves: [],
+    position: buildPosition(variant, startingFen),
     drawOfferedBy: null,
+    rematchOfferedBy: null,
     status: 'active',
-    createdAt: Date.now()
+    createdAt: Date.now(),
+    abortTimer: null
   };
 
   rooms.set(roomId, room);
+
+  // Auto-abort if white hasn't moved within 1 minute
+  room.abortTimer = setTimeout(() => {
+    const r = rooms.get(roomId);
+    if (!r || r.status === 'ended') return;
+    r.abortTimer = null;
+    r.status = 'ended';
+    revokeRoomTokens(r);
+    const payload = {
+      type: 'game_over',
+      result: 'Game Aborted',
+      reason: 'abort'
+    };
+    send(r.white, payload);
+    send(r.black, payload);
+    logger.info('game_auto_aborted', {
+      roomId: roomId.slice(0, 8),
+      moves: r.moves.length
+    });
+  }, 60_000);
 
   const whiteToken = issueRejoinToken(white.data.id);
   const blackToken = issueRejoinToken(black.data.id);
@@ -81,14 +105,9 @@ function matchPlayers(
 
 export function handleJoinQueue(
   ws: BunWS,
-  msg: { variant?: string; timeControl?: TimeControl }
+  msg: { variant: string; timeControl: TimeControl }
 ): void {
-  const variant = msg.variant ?? 'standard';
-  const timeControl: TimeControl = msg.timeControl ?? {
-    mode: 'unlimited',
-    minutes: 0,
-    increment: 0
-  };
+  const { variant, timeControl } = msg;
 
   removeFromQueues(ws);
 

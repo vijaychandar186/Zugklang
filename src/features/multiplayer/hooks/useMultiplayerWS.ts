@@ -13,11 +13,16 @@ import type {
 
 const SESSION_KEY = 'zugklang_mp_session';
 
-function saveSession(roomId: string, playerId: string, variant: string): void {
+function saveSession(
+  roomId: string,
+  playerId: string,
+  variant: string,
+  rejoinToken: string
+): void {
   try {
     sessionStorage.setItem(
       SESSION_KEY,
-      JSON.stringify({ roomId, playerId, variant })
+      JSON.stringify({ roomId, playerId, variant, rejoinToken })
     );
   } catch {
     /* ignore */
@@ -36,6 +41,7 @@ export function loadSession(): {
   roomId: string;
   playerId: string;
   variant: string;
+  rejoinToken: string;
 } | null {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
@@ -57,15 +63,22 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     playerId: null,
     variant: null,
     startingFen: null,
+    timeControl: null,
     drawOffered: false,
     opponentDisconnected: false,
+    opponentDisconnectedAt: null,
     errorMessage: null,
     pendingChallengeId: null,
-    movesToReplay: null
+    movesToReplay: null,
+    latencyMs: null,
+    opponentLatencyMs: null,
+    rematchOffered: false,
+    rematchDeclined: false
   });
 
   const wsRef = useRef<WebSocket | null>(null);
   const pingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pingTimestampRef = useRef<number | null>(null);
   const onOpponentMoveRef = useRef<OnOpponentMoveFn | null>(null);
   const onServerGameOverRef = useRef<OnServerGameOverFn | null>(null);
 
@@ -88,24 +101,37 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     }
   }, []);
 
+  const sendPing = useCallback(() => {
+    pingTimestampRef.current = Date.now();
+    sendRaw({ type: 'ping' });
+  }, [sendRaw]);
+
   const startPing = useCallback(() => {
     stopPing();
-    pingTimerRef.current = setInterval(() => {
-      sendRaw({ type: 'ping' });
-    }, PING_INTERVAL_MS);
-  }, [sendRaw, stopPing]);
+    sendPing(); // immediate reading on connect
+    pingTimerRef.current = setInterval(sendPing, PING_INTERVAL_MS);
+  }, [sendPing, stopPing]);
 
   // ─── Connect & listen ───────────────────────────────────────────────────────
 
   const connect = useCallback((): Promise<void> => {
     return new Promise((resolve, reject) => {
-      if (
-        wsRef.current &&
-        (wsRef.current.readyState === WebSocket.OPEN ||
-          wsRef.current.readyState === WebSocket.CONNECTING)
-      ) {
-        resolve();
-        return;
+      if (wsRef.current) {
+        if (wsRef.current.readyState === WebSocket.OPEN) {
+          resolve();
+          return;
+        }
+        if (wsRef.current.readyState === WebSocket.CONNECTING) {
+          wsRef.current.addEventListener('open', () => resolve(), {
+            once: true
+          });
+          wsRef.current.addEventListener(
+            'error',
+            () => reject(new Error('WebSocket error')),
+            { once: true }
+          );
+          return;
+        }
       }
 
       setState((s) => ({ ...s, status: 'connecting', errorMessage: null }));
@@ -203,7 +229,12 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
 
       case 'matched':
         roomIdRef.current = msg.roomId;
-        saveSession(msg.roomId, state.playerId ?? '', msg.variant);
+        saveSession(
+          msg.roomId,
+          state.playerId ?? '',
+          msg.variant,
+          msg.rejoinToken
+        );
         setState((s) => ({
           ...s,
           status: 'matched',
@@ -211,27 +242,43 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           roomId: msg.roomId,
           variant: msg.variant,
           startingFen: msg.startingFen,
+          timeControl: msg.timeControl,
           drawOffered: false,
           opponentDisconnected: false,
+          opponentDisconnectedAt: null,
           pendingChallengeId: null,
-          movesToReplay: null
+          movesToReplay: null,
+          rematchOffered: false,
+          rematchDeclined: false
         }));
+        // Restart the ping cycle so latency_update fires immediately with the
+        // now-valid roomId — the initial ping fired before the room existed.
+        startPing();
         break;
 
       case 'rejoined':
         roomIdRef.current = msg.roomId;
+        saveSession(
+          msg.roomId,
+          state.playerId ?? '',
+          msg.variant,
+          msg.rejoinToken
+        );
         setState((s) => ({
           ...s,
-          status: 'matched',
+          status: 'rejoined',
           myColor: msg.color,
           roomId: msg.roomId,
           variant: msg.variant,
           startingFen: msg.startingFen,
+          timeControl: msg.timeControl,
           drawOffered: false,
           opponentDisconnected: false,
+          opponentDisconnectedAt: null,
           pendingChallengeId: null,
           movesToReplay: msg.moves.length > 0 ? msg.moves : null
         }));
+        startPing();
         break;
 
       case 'rejoin_failed':
@@ -266,14 +313,48 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
         break;
 
       case 'opponent_disconnected':
-        setState((s) => ({ ...s, opponentDisconnected: true }));
+        setState((s) => ({
+          ...s,
+          opponentDisconnected: true,
+          opponentDisconnectedAt: Date.now()
+        }));
         break;
 
       case 'opponent_reconnected':
-        setState((s) => ({ ...s, opponentDisconnected: false }));
+        setState((s) => ({
+          ...s,
+          opponentDisconnected: false,
+          opponentDisconnectedAt: null
+        }));
         break;
 
       case 'pong':
+        if (pingTimestampRef.current !== null) {
+          const rtt = Date.now() - pingTimestampRef.current;
+          pingTimestampRef.current = null;
+          setState((s) => ({ ...s, latencyMs: rtt }));
+          sendRaw({ type: 'latency_update', latencyMs: rtt });
+        }
+        break;
+
+      case 'opponent_latency':
+        setState((s) => ({ ...s, opponentLatencyMs: msg.latencyMs }));
+        break;
+
+      case 'rematch_offered':
+        setState((s) => ({
+          ...s,
+          rematchOffered: true,
+          rematchDeclined: false
+        }));
+        break;
+
+      case 'rematch_declined':
+        setState((s) => ({
+          ...s,
+          rematchDeclined: true,
+          rematchOffered: false
+        }));
         break;
 
       case 'error':
@@ -285,15 +366,13 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   // ─── Public API ──────────────────────────────────────────────────────────
 
   const rejoin = useCallback(
-    async (roomId: string, playerId: string) => {
+    async (roomId: string, rejoinToken: string) => {
       try {
         await connect();
       } catch {
         return;
       }
-      setTimeout(() => {
-        sendRaw({ type: 'rejoin_room', roomId, playerId });
-      }, 100);
+      sendRaw({ type: 'rejoin_room', roomId, rejoinToken });
     },
     [connect, sendRaw]
   );
@@ -309,10 +388,8 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       } catch {
         return;
       }
-      setTimeout(() => {
-        sendRaw({ type: 'join_queue', variant, timeControl });
-        setState((s) => ({ ...s, status: 'waiting', variant }));
-      }, 100);
+      sendRaw({ type: 'join_queue', variant, timeControl });
+      setState((s) => ({ ...s, status: 'waiting', variant }));
     },
     [connect, sendRaw]
   );
@@ -333,9 +410,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       } catch {
         return;
       }
-      setTimeout(() => {
-        sendRaw({ type: 'create_challenge', variant, timeControl, color });
-      }, 100);
+      sendRaw({ type: 'create_challenge', variant, timeControl, color });
     },
     [connect, sendRaw]
   );
@@ -347,9 +422,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       } catch {
         return;
       }
-      setTimeout(() => {
-        sendRaw({ type: 'join_challenge', challengeId });
-      }, 100);
+      sendRaw({ type: 'join_challenge', challengeId });
     },
     [connect, sendRaw]
   );
@@ -399,6 +472,19 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     setState((s) => ({ ...s, drawOffered: false }));
   }, [sendRaw]);
 
+  const offerRematch = useCallback(() => {
+    sendRaw({ type: 'offer_rematch' });
+  }, [sendRaw]);
+
+  const acceptRematch = useCallback(() => {
+    sendRaw({ type: 'accept_rematch' });
+  }, [sendRaw]);
+
+  const declineRematch = useCallback(() => {
+    sendRaw({ type: 'decline_rematch' });
+    setState((s) => ({ ...s, rematchOffered: false }));
+  }, [sendRaw]);
+
   const notifyGameOver = useCallback(
     (result: string, reason: string) => {
       const roomId = roomIdRef.current;
@@ -433,11 +519,17 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       playerId: null,
       variant: null,
       startingFen: null,
+      timeControl: null,
       drawOffered: false,
       opponentDisconnected: false,
+      opponentDisconnectedAt: null,
       errorMessage: null,
       pendingChallengeId: null,
-      movesToReplay: null
+      movesToReplay: null,
+      latencyMs: null,
+      opponentLatencyMs: null,
+      rematchOffered: false,
+      rematchDeclined: false
     });
   }, [stopPing]);
 
@@ -453,8 +545,13 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     };
   }, [stopPing]);
 
+  const preConnect = useCallback(() => {
+    connect().catch(() => {});
+  }, [connect]);
+
   return {
     ...state,
+    preConnect,
     rejoin,
     clearMovesToReplay,
     joinQueue,
@@ -468,6 +565,9 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     offerDraw,
     acceptDraw,
     declineDraw,
+    offerRematch,
+    acceptRematch,
+    declineRematch,
     notifyGameOver,
     setOnOpponentMove,
     setOnServerGameOver,

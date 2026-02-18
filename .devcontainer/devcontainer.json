@@ -7,17 +7,33 @@
   "features": {
     "ghcr.io/devcontainers-extra/features/pnpm:2": {},
     "ghcr.io/devcontainers-extra/features/prettier:1": {},
-    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+    "ghcr.io/devcontainers-extra/features/bun:1": {}
   },
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
 
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
-  // "forwardPorts": [],
+  "forwardPorts": [3000, 8080],
+  "portsAttributes": {
+    "8080": {
+      "label": "WS Server",
+      "onAutoForward": "silent",
+      "visibility": "public"
+    },
+    "3000": {
+      "label": "Next.js",
+      "onAutoForward": "openBrowser"
+    }
+  },
+
+  "containerEnv": {
+    "DOCKER_API_VERSION": "1.43"
+  },
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "pnpm install",
+  "postCreateCommand": "pnpm install && cd ws-server && bun install",
 
   // Configure tool-specific properties.
   "customizations": {

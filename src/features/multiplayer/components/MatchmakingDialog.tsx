@@ -245,28 +245,18 @@ export function MatchmakingDialog({
               {variantLabel} · {timeControlSummary}
             </p>
 
-            <div className='w-full space-y-2'>
-              <Label className='block text-center text-sm'>
-                Share this link
-              </Label>
-              <div className='flex items-center gap-2'>
-                <code className='bg-muted flex-1 truncate rounded px-3 py-2 text-xs'>
-                  {shareLink}
-                </code>
-                <Button
-                  size='icon'
-                  variant='outline'
-                  className='shrink-0'
-                  onClick={handleCopyLink}
-                >
-                  {linkCopied ? (
-                    <Icons.check className='h-4 w-4 text-green-500' />
-                  ) : (
-                    <Icons.copy className='h-4 w-4' />
-                  )}
-                </Button>
-              </div>
-            </div>
+            <Button
+              variant='outline'
+              className='w-full gap-2'
+              onClick={handleCopyLink}
+            >
+              {linkCopied ? (
+                <Icons.check className='h-4 w-4 text-green-500' />
+              ) : (
+                <Icons.copy className='h-4 w-4' />
+              )}
+              {linkCopied ? 'Copied!' : 'Copy invite link'}
+            </Button>
 
             <Button
               variant='outline'

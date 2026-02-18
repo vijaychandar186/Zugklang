@@ -6,15 +6,10 @@ import { createRoom } from './queue';
 
 export function handleCreateChallenge(
   ws: BunWS,
-  msg: { variant?: string; timeControl?: TimeControl; color?: CreatorColor }
+  msg: { variant: string; timeControl: TimeControl; color: CreatorColor }
 ): void {
-  const variant = msg.variant ?? 'standard';
-  const timeControl: TimeControl = msg.timeControl ?? {
-    mode: 'unlimited',
-    minutes: 0,
-    increment: 0
-  };
-  const creatorColor = msg.color ?? 'random';
+  const { variant, timeControl } = msg;
+  const creatorColor = msg.color;
 
   if (ws.data.challengeId) {
     challenges.delete(ws.data.challengeId);
@@ -42,10 +37,9 @@ export function handleCreateChallenge(
 
 export function handleJoinChallenge(
   ws: BunWS,
-  msg: { challengeId?: string }
+  msg: { challengeId: string }
 ): void {
   const { challengeId } = msg;
-  if (!challengeId) return;
 
   const challenge = challenges.get(challengeId);
   if (!challenge) {

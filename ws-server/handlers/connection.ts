@@ -14,10 +14,9 @@ import { handleResign } from './game';
 
 export function handleRejoinRoom(
   ws: BunWS,
-  msg: { roomId?: string; rejoinToken?: string }
+  msg: { roomId: string; rejoinToken: string }
 ): void {
   const { roomId, rejoinToken } = msg;
-  if (!roomId || !rejoinToken) return;
 
   const playerId = rejoinTokens.get(rejoinToken);
   if (!playerId) {
@@ -40,6 +39,10 @@ export function handleRejoinRoom(
 
   // Consume the token immediately — prevents replay
   rejoinTokens.delete(rejoinToken);
+
+  // Adopt the canonical player ID so room slot checks and reconnect-timeout
+  // lookups remain consistent across multiple refresh cycles.
+  ws.data.id = playerId;
 
   const timer = reconnectTimeouts.get(playerId);
   if (timer) {
@@ -94,6 +97,10 @@ export function handleDisconnect(ws: BunWS): void {
         reconnectTimeouts.delete(playerId);
         const r = rooms.get(roomId);
         if (r?.status === 'active') {
+          if (r.abortTimer !== null) {
+            clearTimeout(r.abortTimer);
+            r.abortTimer = null;
+          }
           r.status = 'ended';
           revokeRoomTokens(r);
           const isWhite = color === 'white';

@@ -17,6 +17,7 @@ import {
   useAnalysisActions
 } from '@/features/chess/stores/useAnalysisStore';
 import { useMultiplayerWS, loadSession } from '../hooks/useMultiplayerWS';
+import { Icons } from '@/components/Icons';
 import type { ChessVariant } from '@/features/chess/config/variants';
 import type { TimeControl } from '@/features/game/types/rules';
 import type { ChallengeColor } from '../types';
@@ -34,39 +35,73 @@ const VARIANT_LABELS: Record<string, string> = {
   checkersChess: 'Chess with Checkers'
 };
 
-/** Small colored dot showing connection status */
-function ConnectionDot({
-  isOpponent,
-  isDisconnected,
-  wsStatus
+/** Signal-strength icon based on connection latency */
+function SignalIndicator({
+  wsStatus,
+  latencyMs
 }: {
-  isOpponent: boolean;
-  isDisconnected: boolean;
   wsStatus: string;
+  latencyMs: number | null;
 }) {
-  let color = 'bg-green-500';
-  let title = 'Connected';
+  if (wsStatus === 'error' || wsStatus === 'idle' || latencyMs === null)
+    return null;
 
-  if (isOpponent) {
-    if (isDisconnected) {
-      color = 'bg-yellow-500 animate-pulse';
-      title = 'Reconnecting…';
-    }
-  } else {
-    if (wsStatus === 'error') {
-      color = 'bg-red-500';
-      title = 'Disconnected';
-    } else if (wsStatus === 'connecting') {
-      color = 'bg-yellow-500 animate-pulse';
-      title = 'Connecting…';
-    }
-  }
+  if (latencyMs <= 80)
+    return (
+      <Icons.signal
+        className='h-4 w-4 text-green-500'
+        aria-label={`${latencyMs}ms`}
+      />
+    );
+  if (latencyMs <= 150)
+    return (
+      <Icons.signalHigh
+        className='h-4 w-4 text-green-400'
+        aria-label={`${latencyMs}ms`}
+      />
+    );
+  if (latencyMs <= 300)
+    return (
+      <Icons.signalMedium
+        className='h-4 w-4 text-yellow-500'
+        aria-label={`${latencyMs}ms`}
+      />
+    );
+  return (
+    <Icons.signalLow
+      className='h-4 w-4 text-red-500'
+      aria-label={`${latencyMs}ms`}
+    />
+  );
+}
+
+const ABANDON_TIMEOUT_MS = 60_000;
+
+/** Counts down from 60 to 0 starting from the given timestamp. */
+function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
+  const [secsLeft, setSecsLeft] = useState(() =>
+    Math.max(
+      0,
+      Math.ceil((ABANDON_TIMEOUT_MS - (Date.now() - disconnectedAt)) / 1000)
+    )
+  );
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSecsLeft(
+        Math.max(
+          0,
+          Math.ceil((ABANDON_TIMEOUT_MS - (Date.now() - disconnectedAt)) / 1000)
+        )
+      );
+    }, 500);
+    return () => clearInterval(id);
+  }, [disconnectedAt]);
 
   return (
-    <span
-      className={`inline-block h-2 w-2 rounded-full ${color}`}
-      title={title}
-    />
+    <span className='animate-pulse text-xs text-yellow-500'>
+      Reconnecting… Auto-abort in {secsLeft}s
+    </span>
   );
 }
 
@@ -81,9 +116,16 @@ export function MultiplayerGameView({
   initialBoard3dEnabled,
   challengeId
 }: MultiplayerGameViewProps) {
-  const [matchmakingOpen, setMatchmakingOpen] = useState(true);
+  // Start the dialog closed if we have a session to rejoin — avoids flashing
+  // the matchmaking UI. If rejoin fails the dialog will be opened then.
+  const [matchmakingOpen, setMatchmakingOpen] = useState(
+    () => loadSession() === null
+  );
   // Moves to replay after reconnection — set after game starts, cleared by board
   const [pendingMoves, setPendingMoves] = useState<string[] | null>(null);
+  // Track challenge ID locally so we can clear it once it's been consumed,
+  // preventing stale ?challenge= URL params from being re-used after game ends.
+  const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
 
   const {
     gameId,
@@ -110,7 +152,8 @@ export function MultiplayerGameView({
   const gameOver = useChessStore((s) => s.gameOver);
 
   const { isAnalysisOn } = useAnalysisState();
-  const { initializeEngine, setPosition, cleanup } = useAnalysisActions();
+  const { initializeEngine, setPosition, cleanup, endAnalysis } =
+    useAnalysisActions();
   const currentFEN = useChessStore((s) => s.currentFEN);
 
   const ws = useMultiplayerWS();
@@ -133,30 +176,50 @@ export function MultiplayerGameView({
 
   useGameTimer();
 
-  // Auto-rejoin session on mount (page refresh case)
+  // Pre-connect the WebSocket as soon as the dialog is visible so any subsequent
+  // action (Create Game Link, Find Game) fires instantly with no connection delay.
   useEffect(() => {
-    if (challengeId) {
-      ws.joinChallenge(challengeId);
-      return;
+    if (matchmakingOpen) {
+      ws.preConnect();
     }
+  }, [matchmakingOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-rejoin session on mount (page refresh case)
+  // Active session takes priority over challenge link — the challenge is consumed
+  // once the game starts, so reloading mid-game must use the rejoin token.
+  useEffect(() => {
     const session = loadSession();
     if (session && session.variant === variant) {
-      ws.rejoin(session.roomId, session.playerId);
+      ws.rejoin(session.roomId, session.rejoinToken);
+      return;
+    }
+    if (challengeId) {
+      ws.joinChallenge(challengeId);
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When matched/rejoined, start the chess game
+  // Fresh match: show "Opponent found!" animation then start
   useEffect(() => {
     if (ws.status === 'matched' && ws.myColor) {
+      // Put the room ID in the URL so the address bar reflects the active game.
+      // Also clear any stale ?challenge= param at the same time.
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('challenge');
+        if (ws.roomId) url.searchParams.set('room', ws.roomId);
+        window.history.replaceState({}, '', url.toString());
+      }
+      setActiveChallengeId(undefined);
       const moves = ws.movesToReplay;
+      const tc = ws.timeControl ?? {
+        mode: 'unlimited' as const,
+        minutes: 0,
+        increment: 0
+      };
       const t = setTimeout(() => {
-        startMultiplayerGame(
-          ws.myColor!,
-          { mode: 'unlimited', minutes: 0, increment: 0 },
-          ws.startingFen || undefined
-        );
+        endAnalysis();
+        startMultiplayerGame(ws.myColor!, tc, ws.startingFen || undefined);
         setMatchmakingOpen(false);
-        // Schedule move replay after game starts
         if (moves && moves.length > 0) {
           setPendingMoves(moves);
           ws.clearMovesToReplay();
@@ -171,6 +234,44 @@ export function MultiplayerGameView({
     ws.movesToReplay,
     startMultiplayerGame
   ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Rejoin: restore immediately with no dialog, no animation delay
+  useEffect(() => {
+    if (ws.status === 'rejoined' && ws.myColor) {
+      if (typeof window !== 'undefined' && ws.roomId) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('room', ws.roomId);
+        window.history.replaceState({}, '', url.toString());
+      }
+      const moves = ws.movesToReplay;
+      endAnalysis();
+      startMultiplayerGame(
+        ws.myColor,
+        ws.timeControl ?? { mode: 'unlimited', minutes: 0, increment: 0 },
+        ws.startingFen || undefined
+      );
+      setMatchmakingOpen(false);
+      if (moves && moves.length > 0) {
+        setPendingMoves(moves);
+        ws.clearMovesToReplay();
+      }
+    }
+  }, [
+    ws.status,
+    ws.myColor,
+    ws.startingFen,
+    ws.movesToReplay,
+    startMultiplayerGame
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Open the matchmaking dialog only when there is no active session to rejoin.
+  // Checking loadSession() here prevents the dialog from flashing open on mount
+  // while a rejoin is still in progress (status is 'idle' before the WS responds).
+  useEffect(() => {
+    if (ws.status === 'idle' && !matchmakingOpen && loadSession() === null) {
+      setMatchmakingOpen(true);
+    }
+  }, [ws.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle server-initiated game over
   useEffect(() => {
@@ -202,6 +303,12 @@ export function MultiplayerGameView({
   const handleFindNewGame = useCallback(() => {
     ws.disconnect();
     setPendingMoves(null);
+    setActiveChallengeId(undefined);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('room');
+      window.history.replaceState({}, '', url.toString());
+    }
     setMatchmakingOpen(true);
   }, [ws.disconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -222,14 +329,21 @@ export function MultiplayerGameView({
           <div className='flex w-full items-center justify-between py-2'>
             <div className='flex items-center gap-2'>
               <PlayerInfo name={getPlayerName(topColor)} />
-              {showIndicator && (
-                <ConnectionDot
-                  isOpponent={topColor !== playAs}
-                  isDisconnected={
-                    topColor !== playAs && ws.opponentDisconnected
-                  }
-                  wsStatus={ws.status}
+              {showIndicator &&
+              topColor !== playAs &&
+              ws.opponentDisconnected ? (
+                <AbandonCountdown
+                  disconnectedAt={ws.opponentDisconnectedAt ?? Date.now()}
                 />
+              ) : (
+                showIndicator && (
+                  <SignalIndicator
+                    wsStatus={ws.status}
+                    latencyMs={
+                      topColor !== playAs ? ws.opponentLatencyMs : ws.latencyMs
+                    }
+                  />
+                )
               )}
               {hasTimer && (
                 <PlayerClock
@@ -262,14 +376,23 @@ export function MultiplayerGameView({
           <div className='flex w-full items-center justify-between py-2'>
             <div className='flex items-center gap-2'>
               <PlayerInfo name={getPlayerName(bottomColor)} />
-              {showIndicator && (
-                <ConnectionDot
-                  isOpponent={bottomColor !== playAs}
-                  isDisconnected={
-                    bottomColor !== playAs && ws.opponentDisconnected
-                  }
-                  wsStatus={ws.status}
+              {showIndicator &&
+              bottomColor !== playAs &&
+              ws.opponentDisconnected ? (
+                <AbandonCountdown
+                  disconnectedAt={ws.opponentDisconnectedAt ?? Date.now()}
                 />
+              ) : (
+                showIndicator && (
+                  <SignalIndicator
+                    wsStatus={ws.status}
+                    latencyMs={
+                      bottomColor !== playAs
+                        ? ws.opponentLatencyMs
+                        : ws.latencyMs
+                    }
+                  />
+                )
               )}
               {hasTimer && (
                 <PlayerClock
@@ -298,12 +421,16 @@ export function MultiplayerGameView({
             <MultiplayerSidebar
               status={ws.status}
               drawOffered={ws.drawOffered}
-              opponentDisconnected={ws.opponentDisconnected}
+              rematchOffered={ws.rematchOffered}
+              rematchDeclined={ws.rematchDeclined}
               onAbort={ws.abort}
               onResign={ws.resign}
               onOfferDraw={ws.offerDraw}
               onAcceptDraw={ws.acceptDraw}
               onDeclineDraw={ws.declineDraw}
+              onOfferRematch={ws.offerRematch}
+              onAcceptRematch={ws.acceptRematch}
+              onDeclineRematch={ws.declineRematch}
               onFindNewGame={handleFindNewGame}
             />
           </div>
@@ -321,7 +448,7 @@ export function MultiplayerGameView({
         variantLabel={VARIANT_LABELS[variant] || variant}
         errorMessage={ws.errorMessage}
         pendingChallengeId={ws.pendingChallengeId}
-        initialChallengeId={challengeId}
+        initialChallengeId={activeChallengeId}
         onFindGame={handleFindGame}
         onCancel={handleCancelSearch}
         onCreateChallenge={handleCreateChallenge}

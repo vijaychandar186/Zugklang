@@ -1,5 +1,6 @@
-import type { SocketData, TimeControl, CreatorColor } from './types';
+import type { SocketData } from './types';
 import type { BunWS } from './types';
+import { ClientMessageSchema } from './utils/schemas';
 import { rooms, challenges } from './state';
 import { send } from './utils/socket';
 import { isRateLimited } from './utils/rateLimit';
@@ -18,7 +19,10 @@ import {
   handleAcceptDraw,
   handleDeclineDraw,
   handleAbort,
-  handleGameOverNotify
+  handleGameOverNotify,
+  handleOfferRematch,
+  handleAcceptRematch,
+  handleDeclineRematch
 } from './handlers/game';
 import { handleRejoinRoom, handleDisconnect } from './handlers/connection';
 
@@ -66,77 +70,89 @@ Bun.serve<SocketData>({
         return;
       }
 
+      let parsed: unknown;
       try {
-        const msg = JSON.parse(raw.toString()) as {
-          type: string;
-          [key: string]: unknown;
-        };
-
-        switch (msg.type) {
-          case 'join_queue':
-            handleJoinQueue(
-              ws,
-              msg as { variant?: string; timeControl?: TimeControl }
-            );
-            break;
-          case 'leave_queue':
-            handleLeaveQueue(ws);
-            break;
-          case 'move':
-            handleMove(
-              ws,
-              msg as { from?: string; to?: string; promotion?: string }
-            );
-            break;
-          case 'abort':
-            handleAbort(ws);
-            break;
-          case 'resign':
-            handleResign(ws);
-            break;
-          case 'offer_draw':
-            handleOfferDraw(ws);
-            break;
-          case 'accept_draw':
-            handleAcceptDraw(ws);
-            break;
-          case 'decline_draw':
-            handleDeclineDraw(ws);
-            break;
-          case 'game_over_notify':
-            handleGameOverNotify(
-              ws,
-              msg as { result?: string; reason?: string }
-            );
-            break;
-          case 'rejoin_room':
-            handleRejoinRoom(
-              ws,
-              msg as { roomId?: string; rejoinToken?: string }
-            );
-            break;
-          case 'create_challenge':
-            handleCreateChallenge(
-              ws,
-              msg as {
-                variant?: string;
-                timeControl?: TimeControl;
-                color?: CreatorColor;
-              }
-            );
-            break;
-          case 'join_challenge':
-            handleJoinChallenge(ws, msg as { challengeId?: string });
-            break;
-          case 'cancel_challenge':
-            handleCancelChallenge(ws);
-            break;
-          case 'ping':
-            send(ws, { type: 'pong' });
-            break;
-        }
+        parsed = JSON.parse(raw.toString());
       } catch {
-        // ignore malformed messages
+        send(ws, { type: 'error', message: 'Malformed JSON.' });
+        return;
+      }
+
+      const result = ClientMessageSchema.safeParse(parsed);
+      if (!result.success) {
+        send(ws, { type: 'error', message: 'Invalid message.' });
+        return;
+      }
+
+      const msg = result.data;
+
+      switch (msg.type) {
+        case 'join_queue':
+          handleJoinQueue(ws, msg);
+          break;
+        case 'leave_queue':
+          handleLeaveQueue(ws);
+          break;
+        case 'move':
+          handleMove(ws, msg);
+          break;
+        case 'abort':
+          handleAbort(ws);
+          break;
+        case 'resign':
+          handleResign(ws);
+          break;
+        case 'offer_draw':
+          handleOfferDraw(ws);
+          break;
+        case 'accept_draw':
+          handleAcceptDraw(ws);
+          break;
+        case 'decline_draw':
+          handleDeclineDraw(ws);
+          break;
+        case 'game_over_notify':
+          handleGameOverNotify(ws, msg);
+          break;
+        case 'rejoin_room':
+          handleRejoinRoom(ws, msg);
+          break;
+        case 'create_challenge':
+          handleCreateChallenge(ws, msg);
+          break;
+        case 'join_challenge':
+          handleJoinChallenge(ws, msg);
+          break;
+        case 'cancel_challenge':
+          handleCancelChallenge(ws);
+          break;
+        case 'offer_rematch':
+          handleOfferRematch(ws);
+          break;
+        case 'accept_rematch':
+          handleAcceptRematch(ws);
+          break;
+        case 'decline_rematch':
+          handleDeclineRematch(ws);
+          break;
+        case 'ping':
+          send(ws, { type: 'pong' });
+          break;
+        case 'latency_update': {
+          const roomId = ws.data.roomId;
+          if (roomId) {
+            const room = rooms.get(roomId);
+            if (room?.status === 'active') {
+              const opponent =
+                room.white.data.id === ws.data.id ? room.black : room.white;
+              send(opponent, {
+                type: 'opponent_latency',
+                latencyMs: msg.latencyMs
+              });
+            }
+          }
+          break;
+        }
       }
     },
 

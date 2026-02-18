@@ -3,21 +3,21 @@ export function generateChess960Fen(): string {
 
   const darkSquares = [1, 3, 5, 7];
   const lightSquares = [0, 2, 4, 6];
-  const bishop1Pos = darkSquares[Math.floor(Math.random() * 4)];
-  const bishop2Pos = lightSquares[Math.floor(Math.random() * 4)];
+  const bishop1Pos = darkSquares[Math.floor(Math.random() * 4)]!;
+  const bishop2Pos = lightSquares[Math.floor(Math.random() * 4)]!;
   files.splice(files.indexOf(bishop1Pos), 1);
   files.splice(files.indexOf(bishop2Pos), 1);
 
   const queenIdx = Math.floor(Math.random() * files.length);
-  const queenPos = files[queenIdx];
+  const queenPos = files[queenIdx]!;
   files.splice(queenIdx, 1);
 
   const knight1Idx = Math.floor(Math.random() * files.length);
-  const knight1Pos = files[knight1Idx];
+  const knight1Pos = files[knight1Idx]!;
   files.splice(knight1Idx, 1);
 
   const knight2Idx = Math.floor(Math.random() * files.length);
-  const knight2Pos = files[knight2Idx];
+  const knight2Pos = files[knight2Idx]!;
   files.splice(knight2Idx, 1);
 
   const [rook1Pos, kingPos, rook2Pos] = files.sort((a, b) => a - b);

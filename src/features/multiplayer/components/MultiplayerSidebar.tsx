@@ -48,31 +48,39 @@ import {
 } from '@/features/chess/hooks/useClipboard';
 import { playSound } from '@/features/game/utils/sounds';
 import { CrazyhousePocket } from '@/features/chess/components/CrazyhousePocket';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { PieceSymbol } from '@/lib/chess';
 import type { MultiplayerStatus } from '../types';
 
 interface MultiplayerSidebarProps {
   status: MultiplayerStatus;
   drawOffered: boolean;
-  opponentDisconnected: boolean;
+  rematchOffered: boolean;
+  rematchDeclined: boolean;
   onAbort: () => void;
   onResign: () => void;
   onOfferDraw: () => void;
   onAcceptDraw: () => void;
   onDeclineDraw: () => void;
+  onOfferRematch: () => void;
+  onAcceptRematch: () => void;
+  onDeclineRematch: () => void;
   onFindNewGame: () => void;
 }
 
 export function MultiplayerSidebar({
   status,
   drawOffered,
-  opponentDisconnected,
+  rematchOffered,
+  rematchDeclined,
   onAbort,
   onResign,
   onOfferDraw,
   onAcceptDraw,
   onDeclineDraw,
+  onOfferRematch,
+  onAcceptRematch,
+  onDeclineRematch,
   onFindNewGame
 }: MultiplayerSidebarProps) {
   const router = useRouter();
@@ -110,6 +118,16 @@ export function MultiplayerSidebar({
   const { startAnalysis, endAnalysis } = useAnalysisActions();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [rematchSent, setRematchSent] = useState(false);
+
+  // Reset "Rematch Sent" feedback when the offer is declined or a new game starts
+  useEffect(() => {
+    if (rematchDeclined) setRematchSent(false);
+  }, [rematchDeclined]);
+
+  useEffect(() => {
+    if (!gameOver) setRematchSent(false);
+  }, [gameOver]);
 
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
@@ -265,13 +283,6 @@ export function MultiplayerSidebar({
           </div>
         </div>
 
-        {/* Opponent disconnected banner */}
-        {opponentDisconnected && !gameOver && (
-          <div className='shrink-0 border-b bg-yellow-500/10 px-4 py-2 text-center text-xs text-yellow-600 dark:text-yellow-400'>
-            Opponent disconnected — waiting for them to reconnect…
-          </div>
-        )}
-
         {/* Draw offer banner */}
         {drawOffered && !gameOver && (
           <div className='shrink-0 space-y-2 border-b bg-blue-500/10 px-4 py-3'>
@@ -374,6 +385,59 @@ export function MultiplayerSidebar({
               gameResult={gameResult || 'No active game'}
               onNewGame={onFindNewGame}
             />
+          )}
+
+          {/* Rematch offer received */}
+          {gameOver && rematchOffered && (
+            <div className='space-y-2 rounded-md border bg-purple-500/10 px-3 py-2'>
+              <p className='text-center text-sm font-medium text-purple-600 dark:text-purple-400'>
+                Opponent wants a rematch
+              </p>
+              <div className='flex gap-2'>
+                <Button
+                  size='sm'
+                  className='flex-1 bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600'
+                  onClick={onAcceptRematch}
+                >
+                  Accept
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  className='flex-1'
+                  onClick={onDeclineRematch}
+                >
+                  Decline
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* We offered rematch, waiting */}
+          {gameOver &&
+            !rematchOffered &&
+            !rematchDeclined &&
+            status !== 'matched' &&
+            status !== 'rejoined' && (
+              <Button
+                size='sm'
+                variant={rematchSent ? 'default' : 'outline'}
+                className='w-full'
+                disabled={rematchSent}
+                onClick={() => {
+                  setRematchSent(true);
+                  onOfferRematch();
+                }}
+              >
+                {rematchSent ? 'Rematch Sent ✓' : 'Rematch'}
+              </Button>
+            )}
+
+          {/* Opponent declined */}
+          {gameOver && rematchDeclined && (
+            <p className='text-muted-foreground text-center text-xs'>
+              Opponent declined the rematch
+            </p>
           )}
 
           <div className='flex items-center gap-1'>

@@ -80,6 +80,10 @@ import {
   Spade,
   Handshake,
   ChartSpline,
+  Signal,
+  SignalHigh,
+  SignalMedium,
+  SignalLow,
   type LucideIcon
 } from 'lucide-react';
 
@@ -173,7 +177,11 @@ export const Icons = {
   circle: Circle,
   spade: Spade,
   handshake: Handshake,
-  chartSpline: ChartSpline
+  chartSpline: ChartSpline,
+  signal: Signal,
+  signalHigh: SignalHigh,
+  signalMedium: SignalMedium,
+  signalLow: SignalLow
 } as const;
 
 export type { LucideIcon };

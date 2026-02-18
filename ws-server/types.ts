@@ -1,4 +1,5 @@
 import type { ServerWebSocket } from 'bun';
+import type { Position } from 'chessops/chess';
 
 export type Color = 'white' | 'black';
 export type CreatorColor = 'white' | 'black' | 'random';
@@ -36,7 +37,12 @@ export interface Room {
   timeControl: TimeControl;
   startingFen: string;
   moves: string[];
+  /** Authoritative chessops position — updated on every legal move. */
+  position: Position;
   drawOfferedBy: Color | null;
+  rematchOfferedBy: string | null;
   status: 'active' | 'ended';
   createdAt: number;
+  /** Auto-abort timer for the first two moves (1 min each) */
+  abortTimer: ReturnType<typeof setTimeout> | null;
 }

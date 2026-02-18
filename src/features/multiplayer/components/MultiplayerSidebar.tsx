@@ -95,11 +95,9 @@ export function MultiplayerSidebar({
     gameStarted,
     playAs,
     soundEnabled,
-    hasHydrated,
     game,
     variant,
-    selectedDropPiece,
-    engineConfig
+    selectedDropPiece
   } = useChessState();
 
   const {

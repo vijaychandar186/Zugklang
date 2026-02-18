@@ -1,0 +1,27 @@
+# ── Production image ──────────────────────────────────────────────────────────
+# Multi-stage build: only production dependencies land in the final image.
+#
+# Build:  docker build -f Dockerfile.prod --build-arg PORT=8080 -t zugklang-ws:prod .
+# Run:    docker run --env-file .env.production -p ${PORT:-8080}:${PORT:-8080} zugklang-ws:prod
+
+# ── Stage 1: install production dependencies ───────────────────────────────
+FROM oven/bun:1 AS install
+WORKDIR /temp
+
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile --production
+
+# ── Stage 2: lean runtime image ────────────────────────────────────────────
+FROM oven/bun:1 AS release
+WORKDIR /usr/src/app
+
+COPY --from=install /temp/node_modules node_modules
+COPY . .
+
+# PORT defaults to 8080; override via --build-arg or your env file at runtime.
+# EXPOSE is metadata — the real port comes from process.env.PORT at runtime.
+ARG PORT=8080
+EXPOSE $PORT
+
+USER bun
+ENTRYPOINT ["bun", "server.ts"]

@@ -226,7 +226,7 @@ export function MatchmakingDialog({
               <Icons.spinner className='text-primary h-8 w-8 animate-spin' />
             </div>
             <p className='text-center font-semibold'>
-              Joining your friend's game…
+              Joining your friend&apos;s game…
             </p>
             <p className='text-muted-foreground text-center text-sm'>
               {variantLabel}

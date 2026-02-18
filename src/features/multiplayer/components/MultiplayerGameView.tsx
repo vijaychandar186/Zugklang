@@ -227,13 +227,14 @@ export function MultiplayerGameView({
       }, 800);
       return () => clearTimeout(t);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     ws.status,
     ws.myColor,
     ws.startingFen,
     ws.movesToReplay,
     startMultiplayerGame
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]);
 
   // Rejoin: restore immediately with no dialog, no animation delay
   useEffect(() => {
@@ -256,13 +257,14 @@ export function MultiplayerGameView({
         ws.clearMovesToReplay();
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     ws.status,
     ws.myColor,
     ws.startingFen,
     ws.movesToReplay,
     startMultiplayerGame
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  ]);
 
   // Open the matchmaking dialog only when there is no active session to rejoin.
   // Checking loadSession() here prevents the dialog from flashing open on mount
@@ -275,7 +277,7 @@ export function MultiplayerGameView({
 
   // Handle server-initiated game over
   useEffect(() => {
-    ws.setOnServerGameOver((result, _reason) => {
+    ws.setOnServerGameOver((result) => {
       setGameResult(result);
       setGameOver(true);
     });

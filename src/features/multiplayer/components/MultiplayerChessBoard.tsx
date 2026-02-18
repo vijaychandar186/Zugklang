@@ -58,7 +58,6 @@ export function MultiplayerChessBoard({
     playAs,
     gameOver,
     gameStarted,
-    gameId,
     soundEnabled,
     board3dEnabled,
     boardFlipped,
@@ -176,7 +175,7 @@ export function MultiplayerChessBoard({
       isApplyingOpponentMoveRef.current = false;
     }
     onMovesReplayed?.();
-  }, [movesToReplay, onMovesReplayed]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [movesToReplay, onMovesReplayed]);
 
   // Crazyhouse drop moves: player's own drops
   const executeDropMove = useCallback(

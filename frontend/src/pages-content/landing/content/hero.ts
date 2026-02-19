@@ -2,7 +2,7 @@ export const HERO_TEXT = {
   title: 'ZUGKLANG',
   subtitle: 'Where Strategy Meets Symphony',
   description:
-    'Play standard chess and 9 variants against Stockfish and Fairy-Stockfish, solve puzzles, explore openings, and train your board vision — all with immersive audio and premium aesthetics.',
+    'Play standard chess and 10 variants against Stockfish and Fairy-Stockfish, challenge players online, solve puzzles, explore openings, and train your board vision — all with immersive audio and premium aesthetics.',
   buttonText: 'Start Playing'
 };
 

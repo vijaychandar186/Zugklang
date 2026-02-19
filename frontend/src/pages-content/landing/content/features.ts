@@ -14,6 +14,7 @@ export const featureList: string[] = [
   'Dice Chess',
   'Card Chess',
   'Probabilistic AI',
+  'Online Multiplayer',
   'Puzzles & Puzzle Rush',
   'Opening Explorer',
   'Move Analysis',
@@ -83,6 +84,12 @@ export const features: FeatureProps[] = [
     description:
       'Play against friends on the same device across all game modes and variants. Perfect for casual games or settling chess debates.',
     href: '/play/local'
+  },
+  {
+    title: 'Online Multiplayer',
+    description:
+      'Get matched with a random opponent instantly across all 10 variants. No account needed — just pick a variant and find a game.',
+    href: '/play/multiplayer'
   },
   {
     title: 'Checkers Chess',

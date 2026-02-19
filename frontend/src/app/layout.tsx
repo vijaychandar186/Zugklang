@@ -4,6 +4,7 @@ import { cookies } from 'next/headers';
 import './globals.css';
 import './theme.css';
 import { Providers } from '@/components/layout/Providers';
+import { auth } from '@/lib/auth/auth';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -34,7 +35,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
+  const [cookieStore, session] = await Promise.all([cookies(), auth()]);
   const theme = cookieStore.get('theme')?.value;
   const boardScheme = cookieStore.get('boardScheme')?.value;
   const playAs = cookieStore.get('playAs')?.value;
@@ -58,7 +59,11 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} overflow-hidden antialiased`}
         data-theme={theme}
       >
-        <Providers initialBoardTheme={boardScheme} initialPlayAs={playAs}>
+        <Providers
+          initialBoardTheme={boardScheme}
+          initialPlayAs={playAs}
+          initialSession={session}
+        >
           <main>{children}</main>
         </Providers>
       </body>

@@ -55,37 +55,39 @@ interface ProvidersProps {
   children: React.ReactNode;
   initialBoardTheme?: string;
   initialPlayAs?: string;
+  initialSession?: React.ComponentProps<typeof SessionProvider>['session'];
 }
 
 export function Providers({
   children,
   initialBoardTheme,
-  initialPlayAs
+  initialPlayAs,
+  initialSession
 }: ProvidersProps) {
   return (
-    <SessionProvider>
-    <ThemeProvider
-      attribute='class'
-      defaultTheme='dark'
-      enableSystem
-      disableTransitionOnChange
-      enableColorScheme
-    >
-      <StoreInitializer
-        initialBoardTheme={
-          (initialBoardTheme as BoardThemeName) || DEFAULT_BOARD_THEME
-        }
-        initialPlayAs={
-          initialPlayAs === 'white' || initialPlayAs === 'black'
-            ? initialPlayAs
-            : undefined
-        }
-      />
-      <ThemeCookieSync />
-      <BoardSchemeSync />
-      <Toaster position='bottom-right' richColors duration={2000} />
-      {children}
-    </ThemeProvider>
+    <SessionProvider session={initialSession}>
+      <ThemeProvider
+        attribute='class'
+        defaultTheme='dark'
+        enableSystem
+        disableTransitionOnChange
+        enableColorScheme
+      >
+        <StoreInitializer
+          initialBoardTheme={
+            (initialBoardTheme as BoardThemeName) || DEFAULT_BOARD_THEME
+          }
+          initialPlayAs={
+            initialPlayAs === 'white' || initialPlayAs === 'black'
+              ? initialPlayAs
+              : undefined
+          }
+        />
+        <ThemeCookieSync />
+        <BoardSchemeSync />
+        <Toaster position='bottom-right' richColors duration={2000} />
+        {children}
+      </ThemeProvider>
     </SessionProvider>
   );
 }

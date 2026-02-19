@@ -17,13 +17,13 @@ export const FAQList: FAQProps[] = [
   {
     question: 'What chess variants are available?',
     answer:
-      'Zugklang supports 9 variants: Standard, Fischer Random (Chess960), Atomic, Racing Kings, Horde, Three-Check, Antichess, King of the Hill, and Crazyhouse. You can play all of them against the AI or locally with a friend. There is also a 4-Player Chess mode.',
+      'Zugklang supports 10 variants: Standard, Fischer Random (Chess960), Atomic, Racing Kings, Horde, Three-Check, Antichess, King of the Hill, Crazyhouse, and Chess with Checkers. You can play all of them against the AI, locally with a friend, or online against a random opponent. There is also a 4-Player Chess mode.',
     value: 'item-2'
   },
   {
     question: 'Can I play against a friend?',
     answer:
-      'Yes! Zugklang supports local multiplayer across all game modes and variants. You and a friend can play on the same device. There is also a 4-Player Chess mode for even more players.',
+      'Yes! You can challenge a friend locally on the same device across all variants, or play online and get matched with a random opponent instantly — no account needed. There is also a 4-Player Chess mode for even more players.',
     value: 'item-3'
   },
   {

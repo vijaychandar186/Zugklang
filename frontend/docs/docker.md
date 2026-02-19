@@ -6,19 +6,29 @@ This project includes separate Docker configurations for development and product
 
 ## Files Overview
 
-### Dockerfiles
+### Dockerfiles (in `frontend/`)
 
 - **`Dockerfile.dev`** - Development environment with hot reload
 - **`Dockerfile.prod`** - Production-optimized multi-stage build
-- **`docker-entrypoint.dev.sh`** - Development entrypoint (runs migrations on startup)
-- **`docker-entrypoint.prod.sh`** - Production entrypoint (applies migrations on startup)
-- **`.dockerignore`** - Files excluded from Docker build context
 
-### Docker Compose Files
+### Docker Compose Files (at project root)
 
-- **`docker-compose.yml`** - Default production configuration
-- **`docker-compose.dev.yml`** - Development with volume mounts for hot reload
-- **`docker-compose.prod.yml`** - Production configuration (same as default)
+- **`docker-compose.dev.yaml`** - Development with volume mounts for hot reload
+- **`docker-compose.prod.yaml`** - Production configuration with Nginx reverse proxy
+
+---
+
+## Services
+
+| Service      | Description                        | Dev container name        | Prod container name        |
+|--------------|------------------------------------|---------------------------|----------------------------|
+| `postgres`   | PostgreSQL 16 database             | `zugklang-postgres-dev`   | `zugklang-postgres-prod`   |
+| `pgadmin`    | pgAdmin 4 web UI for the database  | `zugklang-pgadmin-dev`    | `zugklang-pgadmin-prod`    |
+| `ws-server`  | WebSocket backend server           | `zugklang-ws-dev`         | `zugklang-ws-prod`         |
+| `frontend`   | Next.js application                | `zugklang-frontend-dev`   | `zugklang-frontend-prod`   |
+| `nginx`      | Reverse proxy (prod only)          | —                         | `zugklang-nginx-prod`      |
+
+All services are connected via the `zugklang-net` bridge network.
 
 ---
 
@@ -27,21 +37,21 @@ This project includes separate Docker configurations for development and product
 ### Start Development Containers
 
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+docker-compose -f docker-compose.dev.yaml up --build
 ```
 
 ### Features
 
-- ✅ **Hot Reload** - Source code changes reflect immediately
-- ✅ **Volume Mounts** - `src/`, `public/`, `prisma/` directories mounted
-- ✅ **Fast Iterations** - No rebuild needed for code changes
-- ✅ **Isolated Database** - Separate PostgreSQL volume (`postgres-data-dev`)
-- ✅ **Auto Migrations** - Prisma migrations run automatically on container startup
+- **Hot Reload** - Source code changes reflect immediately
+- **Volume Mounts** - `src/`, `public/`, `prisma/` directories mounted
+- **Fast Iterations** - No rebuild needed for code changes
+- **Isolated Database** - Separate PostgreSQL volume (`postgres_dev_data`)
 
 ### Access Points
 
-- **Next.js App**: http://localhost:3000
-- **PostgreSQL**: localhost:5433
+- **Frontend (Next.js)**: http://localhost:3000
+- **WebSocket Server**: ws://localhost:8080
+- **PostgreSQL**: localhost:5432
 - **pgAdmin**: http://localhost:5050
   - Email: `admin@admin.com`
   - Password: `admin`
@@ -53,27 +63,24 @@ docker-compose -f docker-compose.dev.yml up --build
 ### Build and Run Production Containers
 
 ```bash
-# Using default docker-compose.yml
-docker-compose up --build
-
-# Or explicitly using prod file
-docker-compose -f docker-compose.prod.yml up --build
+docker-compose -f docker-compose.prod.yaml up --build
 ```
 
 ### Features
 
-- ✅ **Multi-Stage Build** - Optimized image size
-- ✅ **Standalone Output** - Next.js standalone mode
-- ✅ **No Source Mounts** - Code baked into image
-- ✅ **Nginx Reverse Proxy** - Production-ready routing
-- ✅ **Optimized Performance** - Production build with telemetry disabled
-- ✅ **Auto Migrations** - Prisma migrations applied automatically on container startup
+- **Multi-Stage Build** - Optimized image size
+- **Standalone Output** - Next.js standalone mode
+- **No Source Mounts** - Code baked into image
+- **Nginx Reverse Proxy** - Routes traffic on port 80 to the frontend
 
 ### Access Points
 
-- **Nginx (Reverse Proxy)**: http://localhost:8000
-- **PostgreSQL**: localhost:5433 (external)
+- **Nginx (Reverse Proxy)**: http://localhost:80
+- **WebSocket Server**: ws://localhost:8080
+- **PostgreSQL**: localhost:5432 (external)
 - **pgAdmin**: http://localhost:5050
+  - Email: `admin@admin.com`
+  - Password: `admin`
 
 ---
 
@@ -83,82 +90,68 @@ docker-compose -f docker-compose.prod.yml up --build
 
 ```bash
 # Development
-docker-compose -f docker-compose.dev.yml down
+docker-compose -f docker-compose.dev.yaml down
 
 # Production
-docker-compose down
+docker-compose -f docker-compose.prod.yaml down
 ```
 
 ### Stop and Remove Volumes
 
 ```bash
 # Development (removes database data)
-docker-compose -f docker-compose.dev.yml down -v
+docker-compose -f docker-compose.dev.yaml down -v
 
 # Production
-docker-compose down -v
+docker-compose -f docker-compose.prod.yaml down -v
 ```
 
 ### View Logs
 
 ```bash
 # All services
-docker-compose -f docker-compose.dev.yml logs -f
+docker-compose -f docker-compose.dev.yaml logs -f
 
 # Specific service
-docker-compose -f docker-compose.dev.yml logs -f nextjs-app
+docker-compose -f docker-compose.dev.yaml logs -f frontend
+docker-compose -f docker-compose.dev.yaml logs -f ws-server
 ```
 
 ### Rebuild Without Cache
 
 ```bash
 # Development
-docker-compose -f docker-compose.dev.yml build --no-cache
+docker-compose -f docker-compose.dev.yaml build --no-cache
 
 # Production
-docker-compose build --no-cache
+docker-compose -f docker-compose.prod.yaml build --no-cache
 ```
 
 ---
 
 ## Database Management
 
-### Automatic Migrations
-
-**Migrations run automatically when containers start!** Both development and production environments include entrypoint scripts that:
-
-- **Development**: Runs `prisma migrate deploy` on startup
-- **Production**: Runs `prisma migrate deploy` on startup
-
-No manual intervention needed! 🎉
-
-### Manual Migration (if needed)
-
-If you need to run migrations manually or create new ones:
-
-```bash
-# Create a new migration (development only)
-docker-compose -f docker-compose.dev.yml exec nextjs-app bunx prisma migrate dev --name your_migration_name
-
-# Apply migrations manually
-docker-compose -f docker-compose.dev.yml exec nextjs-app bunx prisma migrate deploy
-```
-
 ### Access PostgreSQL CLI
 
 ```bash
 # Development
-docker exec -it postgres-db-dev psql -U admin -d mydatabase
+docker exec -it zugklang-postgres-dev psql -U admin -d mydatabase
 
 # Production
-docker exec -it postgres-db psql -U admin -d mydatabase
+docker exec -it zugklang-postgres-prod psql -U admin -d mydatabase
 ```
 
-### Prisma Studio in Container
+### Run Prisma Commands
 
 ```bash
-# Development
-docker-compose -f docker-compose.dev.yml exec nextjs-app bunx prisma studio
+# Generate Prisma client
+docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma generate
+
+# Push schema changes (dev)
+docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma db push
+
+# Open Prisma Studio
+docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma studio
 ```
 
 ---
@@ -167,89 +160,85 @@ docker-compose -f docker-compose.dev.yml exec nextjs-app bunx prisma studio
 
 ### Port Already in Use
 
-If you get a "port already allocated" error:
-
 ```bash
 # Check what's using the port
 lsof -i :3000
-# or
-netstat -tlnp | grep 3000
+lsof -i :8080
 
-# Stop the conflicting process or change the port in docker-compose
+# Stop the conflicting process or change the port in the compose file
 ```
 
 ### Database Connection Issues
 
-1. Ensure PostgreSQL container is running:
+1. Ensure the PostgreSQL container is healthy:
    ```bash
    docker ps | grep postgres
    ```
 
-2. Check DATABASE_URL in container:
+2. Check `DATABASE_URL` inside the frontend container:
    ```bash
-   docker-compose -f docker-compose.dev.yml exec nextjs-app env | grep DATABASE_URL
+   docker-compose -f docker-compose.dev.yaml exec frontend env | grep DATABASE_URL
    ```
 
-3. Verify database credentials match across:
-   - `.env`
-   - `docker-compose.dev.yml` or `docker-compose.yml`
-
-### Prisma Client Not Found
-
-If you get "Cannot find module" errors for Prisma:
-
-```bash
-# Rebuild the image
-docker-compose -f docker-compose.dev.yml build --no-cache nextjs-app
-
-# Or regenerate Prisma client inside container
-docker-compose -f docker-compose.dev.yml exec nextjs-app bunx prisma generate
-```
+3. Verify credentials match across:
+   - `frontend/.env.local` (dev) or `frontend/.env.production` (prod)
+   - The `environment` block in the compose file
 
 ### Hot Reload Not Working
 
 Volume mounts should handle this, but if changes aren't reflected:
 
-1. Check volume mounts in `docker-compose.dev.yml`
+1. Check volume mounts in `docker-compose.dev.yaml`
 2. Restart the dev container:
    ```bash
-   docker-compose -f docker-compose.dev.yml restart nextjs-app
+   docker-compose -f docker-compose.dev.yaml restart frontend
    ```
 
 ---
 
 ## Environment Variables
 
-### Required Variables
-
-Ensure these are set in `.env`:
+### Development (`frontend/.env.local`)
 
 ```env
-DATABASE_URL="postgresql://admin:mysecretpassword@localhost:5432/mydatabase?schema=public"
+DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
 NEXTAUTH_URL="http://localhost:3000"
 AUTH_SECRET="your-secret-key"
 AUTH_GITHUB_ID="your-github-oauth-id"
 AUTH_GITHUB_SECRET="your-github-oauth-secret"
-PGADMIN_DEFAULT_EMAIL="admin@admin.com"
-PGADMIN_DEFAULT_PASSWORD="admin"
+```
+
+### Production (`frontend/.env.production`)
+
+```env
+DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
+NEXT_PUBLIC_WS_URL="wss://your-domain.com"
+AUTH_SECRET="your-secret-key"
+AUTH_GITHUB_ID="your-github-oauth-id"
+AUTH_GITHUB_SECRET="your-github-oauth-secret"
+```
+
+### WebSocket Server (`backend/ws-server/.env.local` / `.env.production`)
+
+```env
+ADMIN_KEY="your-admin-key"
 ```
 
 ### Container vs Host URLs
 
-- **In containers**: Use service names (e.g., `postgres:5432`)
-- **On host machine**: Use `localhost` with exposed port (e.g., `localhost:5433`)
-
-The `DATABASE_URL` in `docker-compose.yml` overrides `.env` for containerized apps.
+- **In containers**: Use service names (e.g., `postgres:5432`, `frontend:3000`)
+- **On host machine**: Use `localhost` with the exposed port (e.g., `localhost:5432`)
 
 ---
 
 ## Best Practices
 
-1. **Development**: Use `docker-compose.dev.yml` for active development
-2. **Production Testing**: Test with `docker-compose.prod.yml` before deployment
-3. **Keep .env Updated**: Ensure credentials match across all configurations
-4. **Clean Builds**: Use `--no-cache` when dependencies or Prisma schema changes
+1. **Development**: Use `docker-compose.dev.yaml` for active development
+2. **Production Testing**: Test with `docker-compose.prod.yaml` before deploying
+3. **Keep env files updated**: Ensure credentials match across all configurations
+4. **Clean Builds**: Use `--no-cache` when dependencies or the Prisma schema change
 5. **Monitor Logs**: Use `docker-compose logs -f` to debug issues
+6. **pgAdmin in production**: Change the default pgAdmin credentials before exposing to a public server
 
 ---
 

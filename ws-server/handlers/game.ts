@@ -169,8 +169,12 @@ export function handleOfferRematch(ws: BunWS): void {
   if (!room || room.status !== 'ended') return;
   if (!isInRoom(room, ws)) return;
 
+  const opponent = getOpponent(room, ws);
+  // Opponent has already left for a new game — silently drop the offer.
+  if (opponent.data.roomId !== roomId) return;
+
   room.rematchOfferedBy = ws.data.id;
-  send(getOpponent(room, ws), { type: 'rematch_offered' });
+  send(opponent, { type: 'rematch_offered' });
 }
 
 export function handleAcceptRematch(ws: BunWS): void {

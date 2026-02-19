@@ -37,7 +37,9 @@ export function createRoom(
     rematchOfferedBy: null,
     status: 'active',
     createdAt: Date.now(),
-    abortTimer: null
+    abortTimer: null,
+    whiteLatencyMs: null,
+    blackLatencyMs: null
   };
 
   rooms.set(roomId, room);

@@ -143,6 +143,9 @@ Bun.serve<SocketData>({
           if (roomId) {
             const room = rooms.get(roomId);
             if (room?.status === 'active') {
+              if (ws.data.color === 'white')
+                room.whiteLatencyMs = msg.latencyMs;
+              else room.blackLatencyMs = msg.latencyMs;
               const opponent =
                 room.white.data.id === ws.data.id ? room.black : room.white;
               send(opponent, {

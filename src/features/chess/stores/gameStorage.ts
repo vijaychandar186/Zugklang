@@ -72,6 +72,14 @@ export function createMultiModeStorage<T extends string>(
         }
 
         const mode = getModeFromState(state) || defaultMode;
+
+        // Never persist multiplayer state — server replays moves on rejoin,
+        // and localStorage is shared across tabs which breaks two-tab testing.
+        if (mode.startsWith('multiplayer')) {
+          localStorage.removeItem(getStorageKey(mode));
+          return;
+        }
+
         const key = getStorageKey(mode);
         localStorage.setItem(key, value);
         localStorage.setItem(`${STORAGE_PREFIX}-last-active`, mode);

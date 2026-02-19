@@ -38,6 +38,7 @@ export type ServerMessage =
       startingFen: string;
       moves: string[];
       rejoinToken: string;
+      opponentLatencyMs: number | null;
     }
   | { type: 'rejoin_failed'; reason: string }
   | { type: 'opponent_move'; from: string; to: string; promotion?: string }
@@ -157,6 +158,8 @@ export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   acceptDraw: () => void;
   /** Decline the opponent's draw offer */
   declineDraw: () => void;
+  /** Transition status to 'playing' once the board is live */
+  setPlaying: () => void;
   /** Notify server that the game ended locally (checkmate, stalemate, etc.) */
   notifyGameOver: (result: string, reason: string) => void;
   /** Register a callback for when the opponent makes a move */

@@ -180,7 +180,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
               errorMessage: 'Connection lost. Please try again.'
             };
           }
-          return { ...s, status: 'idle' };
+          return { ...s, status: 'idle', errorMessage: null };
         });
       };
 
@@ -276,7 +276,8 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           opponentDisconnected: false,
           opponentDisconnectedAt: null,
           pendingChallengeId: null,
-          movesToReplay: msg.moves.length > 0 ? msg.moves : null
+          movesToReplay: msg.moves.length > 0 ? msg.moves : null,
+          opponentLatencyMs: msg.opponentLatencyMs
         }));
         startPing();
         break;
@@ -495,6 +496,9 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       const roomId = roomIdRef.current;
       if (!roomId) return;
       sendRaw({ type: 'game_over_notify', roomId, result, reason });
+      // Transition locally so the detecting client also leaves 'playing' state.
+      // The server only sends game_over to the opponent, never back to us.
+      setState((s) => ({ ...s, status: 'game_over' }));
     },
     [sendRaw]
   );
@@ -550,8 +554,18 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     };
   }, [stopPing]);
 
+  const setPlaying = useCallback(() => {
+    setState((s) => ({ ...s, status: 'playing' }));
+  }, []);
+
   const preConnect = useCallback(() => {
-    connect().catch(() => {});
+    connect().catch(() => {
+      // Background pre-connect failed — reset to idle silently so the dialog
+      // never shows a spurious error from a transient connection attempt.
+      setState((s) =>
+        s.status === 'error' ? { ...s, status: 'idle', errorMessage: null } : s
+      );
+    });
   }, [connect]);
 
   return {
@@ -573,6 +587,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     offerRematch,
     acceptRematch,
     declineRematch,
+    setPlaying,
     notifyGameOver,
     setOnOpponentMove,
     setOnServerGameOver,

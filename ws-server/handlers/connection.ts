@@ -70,7 +70,8 @@ export function handleRejoinRoom(
     timeControl: room.timeControl,
     startingFen: room.startingFen,
     moves: room.moves,
-    rejoinToken: newToken
+    rejoinToken: newToken,
+    opponentLatencyMs: isWhite ? room.blackLatencyMs : room.whiteLatencyMs
   });
 
   logger.info('player_rejoined', { roomId: roomId.slice(0, 8), color });

@@ -45,4 +45,7 @@ export interface Room {
   createdAt: number;
   /** Auto-abort timer for the first two moves (1 min each) */
   abortTimer: ReturnType<typeof setTimeout> | null;
+  /** Last known latency for each player — used to restore the signal icon on rejoin */
+  whiteLatencyMs: number | null;
+  blackLatencyMs: number | null;
 }

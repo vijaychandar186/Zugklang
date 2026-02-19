@@ -76,6 +76,7 @@ function SignalIndicator({
 }
 
 const ABANDON_TIMEOUT_MS = 30_000;
+const ABORT_TIMEOUT_MS = 60_000;
 
 /** Counts down from 30 to 0 starting from the given timestamp. */
 function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
@@ -101,6 +102,31 @@ function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
   return (
     <span className='animate-pulse text-xs text-yellow-500'>
       Reconnecting… Auto-abandon in {secsLeft}s
+    </span>
+  );
+}
+
+/** Counts down from 60 to 0 for the first-move auto-abort window. */
+function AbortCountdown({ startedAt }: { startedAt: number }) {
+  const [secsLeft, setSecsLeft] = useState(() =>
+    Math.max(0, Math.ceil((ABORT_TIMEOUT_MS - (Date.now() - startedAt)) / 1000))
+  );
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSecsLeft(
+        Math.max(
+          0,
+          Math.ceil((ABORT_TIMEOUT_MS - (Date.now() - startedAt)) / 1000)
+        )
+      );
+    }, 500);
+    return () => clearInterval(id);
+  }, [startedAt]);
+
+  return (
+    <span className='animate-pulse text-xs text-yellow-500'>
+      Auto-abort in {secsLeft}s
     </span>
   );
 }
@@ -150,6 +176,7 @@ export function MultiplayerGameView({
   const playAs = useChessStore((s) => s.playAs);
   const gameStarted = useChessStore((s) => s.gameStarted);
   const gameOver = useChessStore((s) => s.gameOver);
+  const movesCount = useChessStore((s) => s.moves.length);
 
   const { isAnalysisOn } = useAnalysisState();
   const { initializeEngine, setPosition, cleanup, endAnalysis } =
@@ -201,12 +228,10 @@ export function MultiplayerGameView({
   // Fresh match: show "Opponent found!" animation then start
   useEffect(() => {
     if (ws.status === 'matched' && ws.myColor) {
-      // Put the room ID in the URL so the address bar reflects the active game.
-      // Also clear any stale ?challenge= param at the same time.
+      // Clear any stale ?challenge= param.
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('challenge');
-        if (ws.roomId) url.searchParams.set('room', ws.roomId);
         window.history.replaceState({}, '', url.toString());
       }
       setActiveChallengeId(undefined);
@@ -219,6 +244,7 @@ export function MultiplayerGameView({
       const t = setTimeout(() => {
         endAnalysis();
         startMultiplayerGame(ws.myColor!, tc, ws.startingFen || undefined);
+        ws.setPlaying();
         setMatchmakingOpen(false);
         if (moves && moves.length > 0) {
           setPendingMoves(moves);
@@ -239,13 +265,9 @@ export function MultiplayerGameView({
   // Rejoin: restore immediately with no dialog, no animation delay
   useEffect(() => {
     if (ws.status === 'rejoined' && ws.myColor) {
-      if (typeof window !== 'undefined' && ws.roomId) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('room', ws.roomId);
-        window.history.replaceState({}, '', url.toString());
-      }
       const moves = ws.movesToReplay;
       endAnalysis();
+      ws.setPlaying();
       startMultiplayerGame(
         ws.myColor,
         ws.timeControl ?? { mode: 'unlimited', minutes: 0, increment: 0 },
@@ -275,14 +297,26 @@ export function MultiplayerGameView({
     }
   }, [ws.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Handle server-initiated game over
+  // Handle server-initiated game over (resign, draw, abandon)
   useEffect(() => {
-    ws.setOnServerGameOver((result) => {
-      setGameResult(result);
+    ws.setOnServerGameOver((result, reason) => {
+      // For checkmate/stalemate the board already set the correct result locally
+      // ('You win!' / 'Opponent wins!' / 'Draw!'). Don't overwrite it.
+      if (reason !== 'checkmate') {
+        setGameResult(result);
+      }
       setGameOver(true);
     });
     return () => ws.setOnServerGameOver(null);
   }, [ws.setOnServerGameOver, setGameResult, setGameOver]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Handle locally-detected game over (checkmate, stalemate) — the server never
+  // sends game_over back to the detecting client, so we transition WS status here.
+  useEffect(() => {
+    if (gameOver && ws.status === 'playing') {
+      ws.notifyGameOver('Game over', 'checkmate');
+    }
+  }, [gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFindGame = useCallback(
     (timeControl: TimeControl) => {
@@ -306,17 +340,41 @@ export function MultiplayerGameView({
     ws.disconnect();
     setPendingMoves(null);
     setActiveChallengeId(undefined);
-    if (typeof window !== 'undefined') {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('room');
-      window.history.replaceState({}, '', url.toString());
-    }
     setMatchmakingOpen(true);
   }, [ws.disconnect]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMovesReplayed = useCallback(() => {
     setPendingMoves(null);
   }, []);
+
+  // Track the start of each first-move abort window so the waiting player sees
+  // a live countdown. Resets when white moves (movesCount 0→1); clears at 2+.
+  const [abortWindowStart, setAbortWindowStart] = useState<number | null>(null);
+  // Only show the countdown after a 20-second buffer — no need to alarm players
+  // who are about to move imminently.
+  const [abortVisible, setAbortVisible] = useState(false);
+
+  useEffect(() => {
+    if (!gameStarted || gameOver || movesCount >= 2) {
+      setAbortWindowStart(null);
+      setAbortVisible(false);
+      return;
+    }
+    const start = Date.now();
+    setAbortWindowStart(start);
+    setAbortVisible(false);
+    const t = setTimeout(() => setAbortVisible(true), 20_000);
+    return () => clearTimeout(t);
+  }, [gameStarted, gameOver, movesCount]);
+
+  // Show to the waiting player only (the opponent is the one who needs to move)
+  // moves=0 → white must move  → black is waiting
+  // moves=1 → black must move  → white is waiting
+  const showOpponentAbortCountdown =
+    abortVisible &&
+    abortWindowStart !== null &&
+    ((movesCount === 0 && playAs === 'black') ||
+      (movesCount === 1 && playAs === 'white'));
 
   const getPlayerName = (color: 'white' | 'black') =>
     color === playAs ? 'You' : 'Opponent';
@@ -339,12 +397,21 @@ export function MultiplayerGameView({
                 />
               ) : (
                 showIndicator && (
-                  <SignalIndicator
-                    wsStatus={ws.status}
-                    latencyMs={
-                      topColor !== playAs ? ws.opponentLatencyMs : ws.latencyMs
-                    }
-                  />
+                  <>
+                    <SignalIndicator
+                      wsStatus={ws.status}
+                      latencyMs={
+                        topColor !== playAs
+                          ? ws.opponentLatencyMs
+                          : ws.latencyMs
+                      }
+                    />
+                    {topColor !== playAs &&
+                      showOpponentAbortCountdown &&
+                      abortWindowStart !== null && (
+                        <AbortCountdown startedAt={abortWindowStart} />
+                      )}
+                  </>
                 )
               )}
               {hasTimer && (
@@ -386,14 +453,21 @@ export function MultiplayerGameView({
                 />
               ) : (
                 showIndicator && (
-                  <SignalIndicator
-                    wsStatus={ws.status}
-                    latencyMs={
-                      bottomColor !== playAs
-                        ? ws.opponentLatencyMs
-                        : ws.latencyMs
-                    }
-                  />
+                  <>
+                    <SignalIndicator
+                      wsStatus={ws.status}
+                      latencyMs={
+                        bottomColor !== playAs
+                          ? ws.opponentLatencyMs
+                          : ws.latencyMs
+                      }
+                    />
+                    {bottomColor !== playAs &&
+                      showOpponentAbortCountdown &&
+                      abortWindowStart !== null && (
+                        <AbortCountdown startedAt={abortWindowStart} />
+                      )}
+                  </>
                 )
               )}
               {hasTimer && (

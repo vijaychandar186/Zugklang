@@ -10,7 +10,7 @@
     "lint:strict": "eslint --max-warnings=0 .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": ""
   },
   "lint-staged": {
     "**/*.{js,ts}": [

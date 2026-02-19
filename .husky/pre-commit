@@ -1,0 +1,2 @@
+(cd frontend && sh .husky/pre-commit)
+(cd backend/ws-server && sh .husky/pre-commit)

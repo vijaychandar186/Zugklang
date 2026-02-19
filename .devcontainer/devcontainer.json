@@ -32,7 +32,7 @@
   },
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "pnpm install && cd ws-server && bun install",
+  "postCreateCommand": "bun add -g husky && pnpm install && cd ws-server && bun install",
 
   // Configure tool-specific properties.
   "customizations": {

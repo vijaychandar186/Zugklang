@@ -302,7 +302,7 @@ export function GameReviewView({
 
       setStatus('evaluating');
 
-      const { evaluatePositions } = await import('@/lib/evaluation');
+      const { evaluatePositions } = await import('@/lib/engine/evaluation');
       positions = await evaluatePositions(
         positions,
         depth,

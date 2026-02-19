@@ -9,8 +9,10 @@ WORKDIR /app
 
 COPY prisma ./prisma
 
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm i --frozen-lockfile
+COPY package.json pnpm-lock.yaml* .npmrc* ./
+RUN pnpm i --frozen-lockfile --ignore-scripts
+
+RUN pnpm prisma generate
 
 COPY . .
 

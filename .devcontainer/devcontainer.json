@@ -3,7 +3,7 @@
 {
   "name": "Node.js & TypeScript",
   // Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bullseye",
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
   "features": {
     "ghcr.io/devcontainers-extra/features/pnpm:2": {},
     "ghcr.io/devcontainers-extra/features/prettier:1": {},
@@ -19,8 +19,7 @@
   "portsAttributes": {
     "8080": {
       "label": "WS Server",
-      "onAutoForward": "silent",
-      "visibility": "public"
+      "onAutoForward": "silent"
     },
     "3000": {
       "label": "Next.js",

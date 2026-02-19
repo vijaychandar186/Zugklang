@@ -62,7 +62,7 @@ export function MatchmakingDialog({
   const [linkCopied, setLinkCopied] = useState(false);
 
   const isMatched = status === 'matched';
-  const isSearching = status === 'waiting' || status === 'connecting';
+  const isSearching = status === 'waiting';
   const isWaitingForFriend =
     status === 'waiting' && pendingChallengeId !== null;
   const isRandomSearching = status === 'waiting' && pendingChallengeId === null;

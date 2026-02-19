@@ -75,9 +75,9 @@ function SignalIndicator({
   );
 }
 
-const ABANDON_TIMEOUT_MS = 60_000;
+const ABANDON_TIMEOUT_MS = 30_000;
 
-/** Counts down from 60 to 0 starting from the given timestamp. */
+/** Counts down from 30 to 0 starting from the given timestamp. */
 function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
   const [secsLeft, setSecsLeft] = useState(() =>
     Math.max(
@@ -100,7 +100,7 @@ function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
 
   return (
     <span className='animate-pulse text-xs text-yellow-500'>
-      Reconnecting… Auto-abort in {secsLeft}s
+      Reconnecting… Auto-abandon in {secsLeft}s
     </span>
   );
 }
@@ -442,7 +442,12 @@ export function MultiplayerGameView({
       <MatchmakingDialog
         open={matchmakingOpen}
         onOpenChange={(v) => {
-          if (!v && (ws.status === 'idle' || ws.status === 'error')) {
+          if (
+            !v &&
+            (ws.status === 'idle' ||
+              ws.status === 'connecting' ||
+              ws.status === 'error')
+          ) {
             setMatchmakingOpen(false);
           }
         }}

@@ -88,6 +88,14 @@ export function handleDisconnect(ws: BunWS): void {
   if (ws.data.roomId) {
     const room = rooms.get(ws.data.roomId);
     if (room?.status === 'active') {
+      // Clear auto-abort timer immediately — the reconnect window takes over;
+      // if the player doesn't return in time, the result is "abandoned" (win),
+      // not "aborted".
+      if (room.abortTimer !== null) {
+        clearTimeout(room.abortTimer);
+        room.abortTimer = null;
+      }
+
       send(getOpponent(room, ws), { type: 'opponent_disconnected' });
 
       const playerId = ws.data.id;
@@ -97,10 +105,6 @@ export function handleDisconnect(ws: BunWS): void {
         reconnectTimeouts.delete(playerId);
         const r = rooms.get(roomId);
         if (r?.status === 'active') {
-          if (r.abortTimer !== null) {
-            clearTimeout(r.abortTimer);
-            r.abortTimer = null;
-          }
           r.status = 'ended';
           revokeRoomTokens(r);
           const isWhite = color === 'white';
@@ -117,7 +121,7 @@ export function handleDisconnect(ws: BunWS): void {
             winner
           });
         }
-      }, 60_000);
+      }, 30_000);
       reconnectTimeouts.set(playerId, timeout);
     }
   }

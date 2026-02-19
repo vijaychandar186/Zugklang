@@ -389,7 +389,12 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
         return;
       }
       sendRaw({ type: 'join_queue', variant, timeControl });
-      setState((s) => ({ ...s, status: 'waiting', variant }));
+      setState((s) => ({
+        ...s,
+        status: 'waiting',
+        variant,
+        errorMessage: null
+      }));
     },
     [connect, sendRaw]
   );

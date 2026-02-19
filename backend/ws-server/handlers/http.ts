@@ -9,7 +9,16 @@ function handleHealth(): Response {
   });
 }
 
-function handleStats(): Response {
+function handleStats(req: Request): Response {
+  const adminKey = process.env['ADMIN_KEY'];
+  if (!adminKey) {
+    return new Response('Admin endpoint not configured', { status: 503 });
+  }
+
+  if (req.headers.get('authorization') !== `Bearer ${adminKey}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   let activeRooms = 0;
   let endedRooms = 0;
   for (const room of rooms.values()) {
@@ -67,8 +76,8 @@ export function handleHttpRequest(req: Request): Response | undefined {
   switch (pathname) {
     case '/health':
       return handleHealth();
-    case '/stats':
-      return handleStats();
+    case '/admin/stats':
+      return handleStats(req);
     case '/admin':
       return handleAdmin(req);
     default:

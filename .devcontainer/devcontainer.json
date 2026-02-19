@@ -19,8 +19,9 @@
   "portsAttributes": {
     "8080": {
       "label": "WS Server",
-      "onAutoForward": "silent"
-    },
+      "onAutoForward": "silent",
+      "visibility": "public"
+        },
     "3000": {
       "label": "Next.js",
       "onAutoForward": "openBrowser"

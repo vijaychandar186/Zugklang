@@ -1,0 +1,76 @@
+
+FROM oven/bun AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+
+WORKDIR /app
+
+# Install dependencies (skip postinstall since Prisma files aren't available yet)
+COPY package.json bun.lock* ./
+RUN bun install --ignore-scripts
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Generate Prisma Client
+RUN bunx prisma generate
+
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Disable telemetry during the build
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN bun run build
+
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+# Disable telemetry
+ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN echo "nextjs:x:1001:1001::/home/nextjs:/bin/sh" >> /etc/passwd
+
+COPY --from=builder /app/public ./public
+
+# Copy package files for module resolution
+COPY --from=builder /app/package.json ./package.json
+
+# Copy Prisma files for runtime
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+
+# Copy dependencies needed for migrations and runtime
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/src/generated ./src/generated
+
+# Copy entrypoint script
+COPY docker-entrypoint.prod.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.prod.sh
+
+# Set the correct permission for prerender cache
+RUN mkdir .next
+RUN chown nextjs:bun .next
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:bun /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:bun /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+
+# Set hostname to localhost
+ENV HOSTNAME "0.0.0.0"
+
+# Run migrations and start production server
+CMD ["/usr/local/bin/docker-entrypoint.prod.sh"]

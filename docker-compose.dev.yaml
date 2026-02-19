@@ -1,0 +1,69 @@
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: zugklang-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: mydatabase
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d mydatabase"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ws-server:
+    build:
+      context: ./backend/ws-server
+      dockerfile: Dockerfile.dev
+      args:
+        PORT: 8080
+    container_name: zugklang-ws-dev
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      ALLOWED_ORIGINS: "http://localhost:3000"
+      # ADMIN_KEY: set in .env or override here
+    env_file:
+      - path: ./backend/ws-server/.env.local
+        required: false
+    volumes:
+      - ./backend/ws-server:/usr/src/app
+      - ws_node_modules:/usr/src/app/node_modules
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: zugklang-frontend-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
+      NEXT_PUBLIC_WS_URL: "ws://localhost:8080"
+      NEXTAUTH_URL: "http://localhost:3000"
+      # AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET: set in .env.local
+    env_file:
+      - path: ./frontend/.env.local
+        required: false
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/prisma:/app/prisma
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_dev_data:
+  ws_node_modules:

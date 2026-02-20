@@ -49,6 +49,9 @@ services:
       - "8080:8080"
     environment:
       PORT: 8080
+      # Token introspection: ws-server calls frontend to verify WS auth tokens.
+      # No shared secret needed — tokens are one-time UUIDs issued by the frontend.
+      NEXT_APP_URL: http://frontend:3000
       # ALLOWED_ORIGINS: leave unset to allow all origins in dev.
       # Set in ./backend/ws-server/.env.local to restrict (e.g. for Codespaces).
       # ADMIN_KEY: set in .env or override here
@@ -58,6 +61,8 @@ services:
     volumes:
       - ./backend/ws-server:/usr/src/app
       - ws_node_modules:/usr/src/app/node_modules
+    depends_on:
+      - frontend
     networks:
       - zugklang-net
 

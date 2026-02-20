@@ -12,6 +12,9 @@ export interface TimeControl {
 
 export interface SocketData {
   id: string;
+  userId?: string;
+  displayName?: string;
+  userImage?: string | null;
   color?: Color;
   roomId?: string;
   variant?: string;
@@ -48,4 +51,9 @@ export interface Room {
   /** Last known latency for each player — used to restore the signal icon on rejoin */
   whiteLatencyMs: number | null;
   blackLatencyMs: number | null;
+  /** Display names and avatars — persisted so they survive reconnects */
+  whiteDisplayName: string | null;
+  blackDisplayName: string | null;
+  whiteImage: string | null;
+  blackImage: string | null;
 }

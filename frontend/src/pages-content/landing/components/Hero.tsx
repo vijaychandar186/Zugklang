@@ -21,7 +21,7 @@ export function Hero() {
         />
       </div>
 
-      <div className='mx-auto flex max-w-7xl flex-col items-center gap-8 px-4 text-center'>
+      <div className='flex w-full flex-col items-center gap-8 px-4 text-center lg:px-6'>
         <div className='border-primary/20 bg-primary/5 text-primary/80 inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium backdrop-blur-md'>
           <span className='mr-2 flex h-2 w-2'>
             <span className='bg-primary absolute inline-flex h-2 w-2 animate-ping rounded-full opacity-75'></span>

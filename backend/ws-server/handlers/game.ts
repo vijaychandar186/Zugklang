@@ -46,7 +46,9 @@ export function handleMove(
       const payload = {
         type: 'game_over',
         result: 'Game Aborted',
-        reason: 'abort'
+        reason: 'abort',
+        whiteUserId: r.white.data.userId ?? null,
+        blackUserId: r.black.data.userId ?? null
       };
       send(r.white, payload);
       send(r.black, payload);
@@ -83,7 +85,9 @@ export function handleResign(ws: BunWS): void {
     type: 'game_over',
     result: `${winner} wins by resignation`,
     reason: 'resign',
-    winner: winner.toLowerCase()
+    winner: winner.toLowerCase(),
+    whiteUserId: room.white.data.userId ?? null,
+    blackUserId: room.black.data.userId ?? null
   };
   send(room.white, payload);
   send(room.black, payload);
@@ -121,7 +125,9 @@ export function handleAcceptDraw(ws: BunWS): void {
   const payload = {
     type: 'game_over',
     result: 'Draw by agreement',
-    reason: 'draw_agreement'
+    reason: 'draw_agreement',
+    whiteUserId: room.white.data.userId ?? null,
+    blackUserId: room.black.data.userId ?? null
   };
   send(room.white, payload);
   send(room.black, payload);
@@ -154,7 +160,9 @@ export function handleAbort(ws: BunWS): void {
   const payload = {
     type: 'game_over',
     result: 'Game Aborted',
-    reason: 'abort'
+    reason: 'abort',
+    whiteUserId: room.white.data.userId ?? null,
+    blackUserId: room.black.data.userId ?? null
   };
   send(room.white, payload);
   send(room.black, payload);
@@ -221,7 +229,9 @@ export function handleGameOverNotify(
   send(getOpponent(room, ws), {
     type: 'game_over',
     result: msg.result,
-    reason: msg.reason
+    reason: msg.reason,
+    whiteUserId: room.white.data.userId ?? null,
+    blackUserId: room.black.data.userId ?? null
   });
 
   logger.info('game_over', {

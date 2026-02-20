@@ -6,10 +6,19 @@ import { createRoom } from './queue';
 
 export function handleCreateChallenge(
   ws: BunWS,
-  msg: { variant: string; timeControl: TimeControl; color: CreatorColor }
+  msg: {
+    variant: string;
+    timeControl: TimeControl;
+    color: CreatorColor;
+    displayName?: string | undefined;
+    userImage?: string | null | undefined;
+  }
 ): void {
   const { variant, timeControl } = msg;
   const creatorColor = msg.color;
+
+  if (msg.displayName !== undefined) ws.data.displayName = msg.displayName;
+  if (msg.userImage !== undefined) ws.data.userImage = msg.userImage;
 
   if (ws.data.challengeId) {
     challenges.delete(ws.data.challengeId);
@@ -37,8 +46,14 @@ export function handleCreateChallenge(
 
 export function handleJoinChallenge(
   ws: BunWS,
-  msg: { challengeId: string }
+  msg: {
+    challengeId: string;
+    displayName?: string | undefined;
+    userImage?: string | null | undefined;
+  }
 ): void {
+  if (msg.displayName !== undefined) ws.data.displayName = msg.displayName;
+  if (msg.userImage !== undefined) ws.data.userImage = msg.userImage;
   const { challengeId } = msg;
 
   const challenge = challenges.get(challengeId);

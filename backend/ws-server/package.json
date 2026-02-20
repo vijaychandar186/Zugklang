@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "bun --watch server.ts",
     "start": "bun server.ts",
+    "test": "bun test",
+    "test:coverage": "./scripts/check-coverage.sh 85",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix && bun format",
     "lint:strict": "eslint --max-warnings=0 .",

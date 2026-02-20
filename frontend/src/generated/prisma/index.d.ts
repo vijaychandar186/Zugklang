@@ -38,6 +38,22 @@ export type VerificationToken =
  */
 export type Authenticator =
   $Result.DefaultSelection<Prisma.$AuthenticatorPayload>;
+/**
+ * Model Game
+ *
+ */
+export type Game = $Result.DefaultSelection<Prisma.$GamePayload>;
+/**
+ * Model GameAnalysis
+ *
+ */
+export type GameAnalysis =
+  $Result.DefaultSelection<Prisma.$GameAnalysisPayload>;
+/**
+ * Model Rating
+ *
+ */
+export type Rating = $Result.DefaultSelection<Prisma.$RatingPayload>;
 
 /**
  * ##  Prisma Client ʲˢ
@@ -250,6 +266,36 @@ export class PrismaClient<
    * ```
    */
   get authenticator(): Prisma.AuthenticatorDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.game`: Exposes CRUD operations for the **Game** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Games
+   * const games = await prisma.game.findMany()
+   * ```
+   */
+  get game(): Prisma.GameDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.gameAnalysis`: Exposes CRUD operations for the **GameAnalysis** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more GameAnalyses
+   * const gameAnalyses = await prisma.gameAnalysis.findMany()
+   * ```
+   */
+  get gameAnalysis(): Prisma.GameAnalysisDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.rating`: Exposes CRUD operations for the **Rating** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Ratings
+   * const ratings = await prisma.rating.findMany()
+   * ```
+   */
+  get rating(): Prisma.RatingDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -707,6 +753,9 @@ export namespace Prisma {
     Session: 'Session';
     VerificationToken: 'VerificationToken';
     Authenticator: 'Authenticator';
+    Game: 'Game';
+    GameAnalysis: 'GameAnalysis';
+    Rating: 'Rating';
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName];
@@ -735,7 +784,10 @@ export namespace Prisma {
         | 'account'
         | 'session'
         | 'verificationToken'
-        | 'authenticator';
+        | 'authenticator'
+        | 'game'
+        | 'gameAnalysis'
+        | 'rating';
       txIsolationLevel: Prisma.TransactionIsolationLevel;
     };
     model: {
@@ -1113,6 +1165,230 @@ export namespace Prisma {
           };
         };
       };
+      Game: {
+        payload: Prisma.$GamePayload<ExtArgs>;
+        fields: Prisma.GameFieldRefs;
+        operations: {
+          findUnique: {
+            args: Prisma.GameFindUniqueArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload> | null;
+          };
+          findUniqueOrThrow: {
+            args: Prisma.GameFindUniqueOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>;
+          };
+          findFirst: {
+            args: Prisma.GameFindFirstArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload> | null;
+          };
+          findFirstOrThrow: {
+            args: Prisma.GameFindFirstOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>;
+          };
+          findMany: {
+            args: Prisma.GameFindManyArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>[];
+          };
+          create: {
+            args: Prisma.GameCreateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>;
+          };
+          createMany: {
+            args: Prisma.GameCreateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          createManyAndReturn: {
+            args: Prisma.GameCreateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>[];
+          };
+          delete: {
+            args: Prisma.GameDeleteArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>;
+          };
+          update: {
+            args: Prisma.GameUpdateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>;
+          };
+          deleteMany: {
+            args: Prisma.GameDeleteManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateMany: {
+            args: Prisma.GameUpdateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateManyAndReturn: {
+            args: Prisma.GameUpdateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>[];
+          };
+          upsert: {
+            args: Prisma.GameUpsertArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GamePayload>;
+          };
+          aggregate: {
+            args: Prisma.GameAggregateArgs<ExtArgs>;
+            result: $Utils.Optional<AggregateGame>;
+          };
+          groupBy: {
+            args: Prisma.GameGroupByArgs<ExtArgs>;
+            result: $Utils.Optional<GameGroupByOutputType>[];
+          };
+          count: {
+            args: Prisma.GameCountArgs<ExtArgs>;
+            result: $Utils.Optional<GameCountAggregateOutputType> | number;
+          };
+        };
+      };
+      GameAnalysis: {
+        payload: Prisma.$GameAnalysisPayload<ExtArgs>;
+        fields: Prisma.GameAnalysisFieldRefs;
+        operations: {
+          findUnique: {
+            args: Prisma.GameAnalysisFindUniqueArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload> | null;
+          };
+          findUniqueOrThrow: {
+            args: Prisma.GameAnalysisFindUniqueOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>;
+          };
+          findFirst: {
+            args: Prisma.GameAnalysisFindFirstArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload> | null;
+          };
+          findFirstOrThrow: {
+            args: Prisma.GameAnalysisFindFirstOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>;
+          };
+          findMany: {
+            args: Prisma.GameAnalysisFindManyArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>[];
+          };
+          create: {
+            args: Prisma.GameAnalysisCreateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>;
+          };
+          createMany: {
+            args: Prisma.GameAnalysisCreateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          createManyAndReturn: {
+            args: Prisma.GameAnalysisCreateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>[];
+          };
+          delete: {
+            args: Prisma.GameAnalysisDeleteArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>;
+          };
+          update: {
+            args: Prisma.GameAnalysisUpdateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>;
+          };
+          deleteMany: {
+            args: Prisma.GameAnalysisDeleteManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateMany: {
+            args: Prisma.GameAnalysisUpdateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateManyAndReturn: {
+            args: Prisma.GameAnalysisUpdateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>[];
+          };
+          upsert: {
+            args: Prisma.GameAnalysisUpsertArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$GameAnalysisPayload>;
+          };
+          aggregate: {
+            args: Prisma.GameAnalysisAggregateArgs<ExtArgs>;
+            result: $Utils.Optional<AggregateGameAnalysis>;
+          };
+          groupBy: {
+            args: Prisma.GameAnalysisGroupByArgs<ExtArgs>;
+            result: $Utils.Optional<GameAnalysisGroupByOutputType>[];
+          };
+          count: {
+            args: Prisma.GameAnalysisCountArgs<ExtArgs>;
+            result:
+              | $Utils.Optional<GameAnalysisCountAggregateOutputType>
+              | number;
+          };
+        };
+      };
+      Rating: {
+        payload: Prisma.$RatingPayload<ExtArgs>;
+        fields: Prisma.RatingFieldRefs;
+        operations: {
+          findUnique: {
+            args: Prisma.RatingFindUniqueArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload> | null;
+          };
+          findUniqueOrThrow: {
+            args: Prisma.RatingFindUniqueOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>;
+          };
+          findFirst: {
+            args: Prisma.RatingFindFirstArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload> | null;
+          };
+          findFirstOrThrow: {
+            args: Prisma.RatingFindFirstOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>;
+          };
+          findMany: {
+            args: Prisma.RatingFindManyArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>[];
+          };
+          create: {
+            args: Prisma.RatingCreateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>;
+          };
+          createMany: {
+            args: Prisma.RatingCreateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          createManyAndReturn: {
+            args: Prisma.RatingCreateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>[];
+          };
+          delete: {
+            args: Prisma.RatingDeleteArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>;
+          };
+          update: {
+            args: Prisma.RatingUpdateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>;
+          };
+          deleteMany: {
+            args: Prisma.RatingDeleteManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateMany: {
+            args: Prisma.RatingUpdateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateManyAndReturn: {
+            args: Prisma.RatingUpdateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>[];
+          };
+          upsert: {
+            args: Prisma.RatingUpsertArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$RatingPayload>;
+          };
+          aggregate: {
+            args: Prisma.RatingAggregateArgs<ExtArgs>;
+            result: $Utils.Optional<AggregateRating>;
+          };
+          groupBy: {
+            args: Prisma.RatingGroupByArgs<ExtArgs>;
+            result: $Utils.Optional<RatingGroupByOutputType>[];
+          };
+          count: {
+            args: Prisma.RatingCountArgs<ExtArgs>;
+            result: $Utils.Optional<RatingCountAggregateOutputType> | number;
+          };
+        };
+      };
     };
   } & {
     other: {
@@ -1230,6 +1506,9 @@ export namespace Prisma {
     session?: SessionOmit;
     verificationToken?: VerificationTokenOmit;
     authenticator?: AuthenticatorOmit;
+    game?: GameOmit;
+    gameAnalysis?: GameAnalysisOmit;
+    rating?: RatingOmit;
   };
 
   /* Types for Logging */
@@ -1315,6 +1594,10 @@ export namespace Prisma {
     accounts: number;
     sessions: number;
     Authenticator: number;
+    whiteGames: number;
+    blackGames: number;
+    ratings: number;
+    analyses: number;
   };
 
   export type UserCountOutputTypeSelect<
@@ -1323,6 +1606,10 @@ export namespace Prisma {
     accounts?: boolean | UserCountOutputTypeCountAccountsArgs;
     sessions?: boolean | UserCountOutputTypeCountSessionsArgs;
     Authenticator?: boolean | UserCountOutputTypeCountAuthenticatorArgs;
+    whiteGames?: boolean | UserCountOutputTypeCountWhiteGamesArgs;
+    blackGames?: boolean | UserCountOutputTypeCountBlackGamesArgs;
+    ratings?: boolean | UserCountOutputTypeCountRatingsArgs;
+    analyses?: boolean | UserCountOutputTypeCountAnalysesArgs;
   };
 
   // Custom InputTypes
@@ -1363,6 +1650,42 @@ export namespace Prisma {
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: AuthenticatorWhereInput;
+  };
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountWhiteGamesArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: GameWhereInput;
+  };
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountBlackGamesArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: GameWhereInput;
+  };
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountRatingsArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: RatingWhereInput;
+  };
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountAnalysesArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: GameAnalysisWhereInput;
   };
 
   /**
@@ -1555,6 +1878,10 @@ export namespace Prisma {
       accounts?: boolean | User$accountsArgs<ExtArgs>;
       sessions?: boolean | User$sessionsArgs<ExtArgs>;
       Authenticator?: boolean | User$AuthenticatorArgs<ExtArgs>;
+      whiteGames?: boolean | User$whiteGamesArgs<ExtArgs>;
+      blackGames?: boolean | User$blackGamesArgs<ExtArgs>;
+      ratings?: boolean | User$ratingsArgs<ExtArgs>;
+      analyses?: boolean | User$analysesArgs<ExtArgs>;
       _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
     },
     ExtArgs['result']['user']
@@ -1618,6 +1945,10 @@ export namespace Prisma {
     accounts?: boolean | User$accountsArgs<ExtArgs>;
     sessions?: boolean | User$sessionsArgs<ExtArgs>;
     Authenticator?: boolean | User$AuthenticatorArgs<ExtArgs>;
+    whiteGames?: boolean | User$whiteGamesArgs<ExtArgs>;
+    blackGames?: boolean | User$blackGamesArgs<ExtArgs>;
+    ratings?: boolean | User$ratingsArgs<ExtArgs>;
+    analyses?: boolean | User$analysesArgs<ExtArgs>;
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
   };
   export type UserIncludeCreateManyAndReturn<
@@ -1635,6 +1966,10 @@ export namespace Prisma {
       accounts: Prisma.$AccountPayload<ExtArgs>[];
       sessions: Prisma.$SessionPayload<ExtArgs>[];
       Authenticator: Prisma.$AuthenticatorPayload<ExtArgs>[];
+      whiteGames: Prisma.$GamePayload<ExtArgs>[];
+      blackGames: Prisma.$GamePayload<ExtArgs>[];
+      ratings: Prisma.$RatingPayload<ExtArgs>[];
+      analyses: Prisma.$GameAnalysisPayload<ExtArgs>[];
     };
     scalars: $Extensions.GetPayloadResult<
       {
@@ -2223,6 +2558,50 @@ export namespace Prisma {
         >
       | Null
     >;
+    whiteGames<T extends User$whiteGamesArgs<ExtArgs> = {}>(
+      args?: Subset<T, User$whiteGamesArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      | $Result.GetResult<
+          Prisma.$GamePayload<ExtArgs>,
+          T,
+          'findMany',
+          GlobalOmitOptions
+        >
+      | Null
+    >;
+    blackGames<T extends User$blackGamesArgs<ExtArgs> = {}>(
+      args?: Subset<T, User$blackGamesArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      | $Result.GetResult<
+          Prisma.$GamePayload<ExtArgs>,
+          T,
+          'findMany',
+          GlobalOmitOptions
+        >
+      | Null
+    >;
+    ratings<T extends User$ratingsArgs<ExtArgs> = {}>(
+      args?: Subset<T, User$ratingsArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      | $Result.GetResult<
+          Prisma.$RatingPayload<ExtArgs>,
+          T,
+          'findMany',
+          GlobalOmitOptions
+        >
+      | Null
+    >;
+    analyses<T extends User$analysesArgs<ExtArgs> = {}>(
+      args?: Subset<T, User$analysesArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      | $Result.GetResult<
+          Prisma.$GameAnalysisPayload<ExtArgs>,
+          T,
+          'findMany',
+          GlobalOmitOptions
+        >
+      | Null
+    >;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2766,6 +3145,112 @@ export namespace Prisma {
     take?: number;
     skip?: number;
     distinct?: AuthenticatorScalarFieldEnum | AuthenticatorScalarFieldEnum[];
+  };
+
+  /**
+   * User.whiteGames
+   */
+  export type User$whiteGamesArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    where?: GameWhereInput;
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    cursor?: GameWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
+  };
+
+  /**
+   * User.blackGames
+   */
+  export type User$blackGamesArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    where?: GameWhereInput;
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    cursor?: GameWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
+  };
+
+  /**
+   * User.ratings
+   */
+  export type User$ratingsArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    where?: RatingWhereInput;
+    orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    cursor?: RatingWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[];
+  };
+
+  /**
+   * User.analyses
+   */
+  export type User$analysesArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    where?: GameAnalysisWhereInput;
+    orderBy?:
+      | GameAnalysisOrderByWithRelationInput
+      | GameAnalysisOrderByWithRelationInput[];
+    cursor?: GameAnalysisWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: GameAnalysisScalarFieldEnum | GameAnalysisScalarFieldEnum[];
   };
 
   /**
@@ -8161,6 +8646,4336 @@ export namespace Prisma {
   };
 
   /**
+   * Model Game
+   */
+
+  export type AggregateGame = {
+    _count: GameCountAggregateOutputType | null;
+    _avg: GameAvgAggregateOutputType | null;
+    _sum: GameSumAggregateOutputType | null;
+    _min: GameMinAggregateOutputType | null;
+    _max: GameMaxAggregateOutputType | null;
+  };
+
+  export type GameAvgAggregateOutputType = {
+    whitePregameRating: number | null;
+    blackPregameRating: number | null;
+    whiteRatingDelta: number | null;
+    blackRatingDelta: number | null;
+    moveCount: number | null;
+  };
+
+  export type GameSumAggregateOutputType = {
+    whitePregameRating: number | null;
+    blackPregameRating: number | null;
+    whiteRatingDelta: number | null;
+    blackRatingDelta: number | null;
+    moveCount: number | null;
+  };
+
+  export type GameMinAggregateOutputType = {
+    id: string | null;
+    roomId: string | null;
+    whiteUserId: string | null;
+    blackUserId: string | null;
+    variant: string | null;
+    gameType: string | null;
+    result: string | null;
+    resultReason: string | null;
+    startingFen: string | null;
+    whitePregameRating: number | null;
+    blackPregameRating: number | null;
+    whiteRatingDelta: number | null;
+    blackRatingDelta: number | null;
+    moveCount: number | null;
+    createdAt: Date | null;
+  };
+
+  export type GameMaxAggregateOutputType = {
+    id: string | null;
+    roomId: string | null;
+    whiteUserId: string | null;
+    blackUserId: string | null;
+    variant: string | null;
+    gameType: string | null;
+    result: string | null;
+    resultReason: string | null;
+    startingFen: string | null;
+    whitePregameRating: number | null;
+    blackPregameRating: number | null;
+    whiteRatingDelta: number | null;
+    blackRatingDelta: number | null;
+    moveCount: number | null;
+    createdAt: Date | null;
+  };
+
+  export type GameCountAggregateOutputType = {
+    id: number;
+    roomId: number;
+    whiteUserId: number;
+    blackUserId: number;
+    variant: number;
+    gameType: number;
+    result: number;
+    resultReason: number;
+    moves: number;
+    startingFen: number;
+    timeControl: number;
+    whitePregameRating: number;
+    blackPregameRating: number;
+    whiteRatingDelta: number;
+    blackRatingDelta: number;
+    moveCount: number;
+    createdAt: number;
+    _all: number;
+  };
+
+  export type GameAvgAggregateInputType = {
+    whitePregameRating?: true;
+    blackPregameRating?: true;
+    whiteRatingDelta?: true;
+    blackRatingDelta?: true;
+    moveCount?: true;
+  };
+
+  export type GameSumAggregateInputType = {
+    whitePregameRating?: true;
+    blackPregameRating?: true;
+    whiteRatingDelta?: true;
+    blackRatingDelta?: true;
+    moveCount?: true;
+  };
+
+  export type GameMinAggregateInputType = {
+    id?: true;
+    roomId?: true;
+    whiteUserId?: true;
+    blackUserId?: true;
+    variant?: true;
+    gameType?: true;
+    result?: true;
+    resultReason?: true;
+    startingFen?: true;
+    whitePregameRating?: true;
+    blackPregameRating?: true;
+    whiteRatingDelta?: true;
+    blackRatingDelta?: true;
+    moveCount?: true;
+    createdAt?: true;
+  };
+
+  export type GameMaxAggregateInputType = {
+    id?: true;
+    roomId?: true;
+    whiteUserId?: true;
+    blackUserId?: true;
+    variant?: true;
+    gameType?: true;
+    result?: true;
+    resultReason?: true;
+    startingFen?: true;
+    whitePregameRating?: true;
+    blackPregameRating?: true;
+    whiteRatingDelta?: true;
+    blackRatingDelta?: true;
+    moveCount?: true;
+    createdAt?: true;
+  };
+
+  export type GameCountAggregateInputType = {
+    id?: true;
+    roomId?: true;
+    whiteUserId?: true;
+    blackUserId?: true;
+    variant?: true;
+    gameType?: true;
+    result?: true;
+    resultReason?: true;
+    moves?: true;
+    startingFen?: true;
+    timeControl?: true;
+    whitePregameRating?: true;
+    blackPregameRating?: true;
+    whiteRatingDelta?: true;
+    blackRatingDelta?: true;
+    moveCount?: true;
+    createdAt?: true;
+    _all?: true;
+  };
+
+  export type GameAggregateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Filter which Game to aggregate.
+     */
+    where?: GameWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Games to fetch.
+     */
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: GameWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Games from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Games.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Games
+     **/
+    _count?: true | GameCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
+    _avg?: GameAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
+    _sum?: GameSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
+    _min?: GameMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
+    _max?: GameMaxAggregateInputType;
+  };
+
+  export type GetGameAggregateType<T extends GameAggregateArgs> = {
+    [P in keyof T & keyof AggregateGame]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGame[P]>
+      : GetScalarType<T[P], AggregateGame[P]>;
+  };
+
+  export type GameGroupByArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: GameWhereInput;
+    orderBy?:
+      | GameOrderByWithAggregationInput
+      | GameOrderByWithAggregationInput[];
+    by: GameScalarFieldEnum[] | GameScalarFieldEnum;
+    having?: GameScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: GameCountAggregateInputType | true;
+    _avg?: GameAvgAggregateInputType;
+    _sum?: GameSumAggregateInputType;
+    _min?: GameMinAggregateInputType;
+    _max?: GameMaxAggregateInputType;
+  };
+
+  export type GameGroupByOutputType = {
+    id: string;
+    roomId: string | null;
+    whiteUserId: string | null;
+    blackUserId: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves: string[];
+    startingFen: string;
+    timeControl: JsonValue;
+    whitePregameRating: number | null;
+    blackPregameRating: number | null;
+    whiteRatingDelta: number | null;
+    blackRatingDelta: number | null;
+    moveCount: number;
+    createdAt: Date;
+    _count: GameCountAggregateOutputType | null;
+    _avg: GameAvgAggregateOutputType | null;
+    _sum: GameSumAggregateOutputType | null;
+    _min: GameMinAggregateOutputType | null;
+    _max: GameMaxAggregateOutputType | null;
+  };
+
+  type GetGameGroupByPayload<T extends GameGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GameGroupByOutputType, T['by']> & {
+        [P in keyof T & keyof GameGroupByOutputType]: P extends '_count'
+          ? T[P] extends boolean
+            ? number
+            : GetScalarType<T[P], GameGroupByOutputType[P]>
+          : GetScalarType<T[P], GameGroupByOutputType[P]>;
+      }
+    >
+  >;
+
+  export type GameSelect<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      roomId?: boolean;
+      whiteUserId?: boolean;
+      blackUserId?: boolean;
+      variant?: boolean;
+      gameType?: boolean;
+      result?: boolean;
+      resultReason?: boolean;
+      moves?: boolean;
+      startingFen?: boolean;
+      timeControl?: boolean;
+      whitePregameRating?: boolean;
+      blackPregameRating?: boolean;
+      whiteRatingDelta?: boolean;
+      blackRatingDelta?: boolean;
+      moveCount?: boolean;
+      createdAt?: boolean;
+      white?: boolean | Game$whiteArgs<ExtArgs>;
+      black?: boolean | Game$blackArgs<ExtArgs>;
+      analysis?: boolean | Game$analysisArgs<ExtArgs>;
+    },
+    ExtArgs['result']['game']
+  >;
+
+  export type GameSelectCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      roomId?: boolean;
+      whiteUserId?: boolean;
+      blackUserId?: boolean;
+      variant?: boolean;
+      gameType?: boolean;
+      result?: boolean;
+      resultReason?: boolean;
+      moves?: boolean;
+      startingFen?: boolean;
+      timeControl?: boolean;
+      whitePregameRating?: boolean;
+      blackPregameRating?: boolean;
+      whiteRatingDelta?: boolean;
+      blackRatingDelta?: boolean;
+      moveCount?: boolean;
+      createdAt?: boolean;
+      white?: boolean | Game$whiteArgs<ExtArgs>;
+      black?: boolean | Game$blackArgs<ExtArgs>;
+    },
+    ExtArgs['result']['game']
+  >;
+
+  export type GameSelectUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      roomId?: boolean;
+      whiteUserId?: boolean;
+      blackUserId?: boolean;
+      variant?: boolean;
+      gameType?: boolean;
+      result?: boolean;
+      resultReason?: boolean;
+      moves?: boolean;
+      startingFen?: boolean;
+      timeControl?: boolean;
+      whitePregameRating?: boolean;
+      blackPregameRating?: boolean;
+      whiteRatingDelta?: boolean;
+      blackRatingDelta?: boolean;
+      moveCount?: boolean;
+      createdAt?: boolean;
+      white?: boolean | Game$whiteArgs<ExtArgs>;
+      black?: boolean | Game$blackArgs<ExtArgs>;
+    },
+    ExtArgs['result']['game']
+  >;
+
+  export type GameSelectScalar = {
+    id?: boolean;
+    roomId?: boolean;
+    whiteUserId?: boolean;
+    blackUserId?: boolean;
+    variant?: boolean;
+    gameType?: boolean;
+    result?: boolean;
+    resultReason?: boolean;
+    moves?: boolean;
+    startingFen?: boolean;
+    timeControl?: boolean;
+    whitePregameRating?: boolean;
+    blackPregameRating?: boolean;
+    whiteRatingDelta?: boolean;
+    blackRatingDelta?: boolean;
+    moveCount?: boolean;
+    createdAt?: boolean;
+  };
+
+  export type GameOmit<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetOmit<
+    | 'id'
+    | 'roomId'
+    | 'whiteUserId'
+    | 'blackUserId'
+    | 'variant'
+    | 'gameType'
+    | 'result'
+    | 'resultReason'
+    | 'moves'
+    | 'startingFen'
+    | 'timeControl'
+    | 'whitePregameRating'
+    | 'blackPregameRating'
+    | 'whiteRatingDelta'
+    | 'blackRatingDelta'
+    | 'moveCount'
+    | 'createdAt',
+    ExtArgs['result']['game']
+  >;
+  export type GameInclude<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    white?: boolean | Game$whiteArgs<ExtArgs>;
+    black?: boolean | Game$blackArgs<ExtArgs>;
+    analysis?: boolean | Game$analysisArgs<ExtArgs>;
+  };
+  export type GameIncludeCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    white?: boolean | Game$whiteArgs<ExtArgs>;
+    black?: boolean | Game$blackArgs<ExtArgs>;
+  };
+  export type GameIncludeUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    white?: boolean | Game$whiteArgs<ExtArgs>;
+    black?: boolean | Game$blackArgs<ExtArgs>;
+  };
+
+  export type $GamePayload<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    name: 'Game';
+    objects: {
+      white: Prisma.$UserPayload<ExtArgs> | null;
+      black: Prisma.$UserPayload<ExtArgs> | null;
+      analysis: Prisma.$GameAnalysisPayload<ExtArgs> | null;
+    };
+    scalars: $Extensions.GetPayloadResult<
+      {
+        id: string;
+        roomId: string | null;
+        whiteUserId: string | null;
+        blackUserId: string | null;
+        variant: string;
+        gameType: string;
+        result: string;
+        resultReason: string;
+        moves: string[];
+        startingFen: string;
+        timeControl: Prisma.JsonValue;
+        whitePregameRating: number | null;
+        blackPregameRating: number | null;
+        whiteRatingDelta: number | null;
+        blackRatingDelta: number | null;
+        moveCount: number;
+        createdAt: Date;
+      },
+      ExtArgs['result']['game']
+    >;
+    composites: {};
+  };
+
+  type GameGetPayload<S extends boolean | null | undefined | GameDefaultArgs> =
+    $Result.GetResult<Prisma.$GamePayload, S>;
+
+  type GameCountArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = Omit<GameFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+    select?: GameCountAggregateInputType | true;
+  };
+
+  export interface GameDelegate<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {}
+  > {
+    [K: symbol]: {
+      types: Prisma.TypeMap<ExtArgs>['model']['Game'];
+      meta: { name: 'Game' };
+    };
+    /**
+     * Find zero or one Game that matches the filter.
+     * @param {GameFindUniqueArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GameFindUniqueArgs>(
+      args: SelectSubset<T, GameFindUniqueArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'findUnique',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find one Game that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GameFindUniqueOrThrowArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GameFindUniqueOrThrowArgs>(
+      args: SelectSubset<T, GameFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first Game that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindFirstArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GameFindFirstArgs>(
+      args?: SelectSubset<T, GameFindFirstArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'findFirst',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first Game that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindFirstOrThrowArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GameFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, GameFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'findFirstOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find zero or more Games that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Games
+     * const games = await prisma.game.findMany()
+     *
+     * // Get first 10 Games
+     * const games = await prisma.game.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const gameWithIdOnly = await prisma.game.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends GameFindManyArgs>(
+      args?: SelectSubset<T, GameFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create a Game.
+     * @param {GameCreateArgs} args - Arguments to create a Game.
+     * @example
+     * // Create one Game
+     * const Game = await prisma.game.create({
+     *   data: {
+     *     // ... data to create a Game
+     *   }
+     * })
+     *
+     */
+    create<T extends GameCreateArgs>(
+      args: SelectSubset<T, GameCreateArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'create',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Create many Games.
+     * @param {GameCreateManyArgs} args - Arguments to create many Games.
+     * @example
+     * // Create many Games
+     * const game = await prisma.game.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends GameCreateManyArgs>(
+      args?: SelectSubset<T, GameCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many Games and returns the data saved in the database.
+     * @param {GameCreateManyAndReturnArgs} args - Arguments to create many Games.
+     * @example
+     * // Create many Games
+     * const game = await prisma.game.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Games and only return the `id`
+     * const gameWithIdOnly = await prisma.game.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends GameCreateManyAndReturnArgs>(
+      args?: SelectSubset<T, GameCreateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'createManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Delete a Game.
+     * @param {GameDeleteArgs} args - Arguments to delete one Game.
+     * @example
+     * // Delete one Game
+     * const Game = await prisma.game.delete({
+     *   where: {
+     *     // ... filter to delete one Game
+     *   }
+     * })
+     *
+     */
+    delete<T extends GameDeleteArgs>(
+      args: SelectSubset<T, GameDeleteArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'delete',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Update one Game.
+     * @param {GameUpdateArgs} args - Arguments to update one Game.
+     * @example
+     * // Update one Game
+     * const game = await prisma.game.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends GameUpdateArgs>(
+      args: SelectSubset<T, GameUpdateArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'update',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Delete zero or more Games.
+     * @param {GameDeleteManyArgs} args - Arguments to filter Games to delete.
+     * @example
+     * // Delete a few Games
+     * const { count } = await prisma.game.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends GameDeleteManyArgs>(
+      args?: SelectSubset<T, GameDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Games.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Games
+     * const game = await prisma.game.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends GameUpdateManyArgs>(
+      args: SelectSubset<T, GameUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Games and returns the data updated in the database.
+     * @param {GameUpdateManyAndReturnArgs} args - Arguments to update many Games.
+     * @example
+     * // Update many Games
+     * const game = await prisma.game.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Games and only return the `id`
+     * const gameWithIdOnly = await prisma.game.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends GameUpdateManyAndReturnArgs>(
+      args: SelectSubset<T, GameUpdateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'updateManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create or update one Game.
+     * @param {GameUpsertArgs} args - Arguments to update or create a Game.
+     * @example
+     * // Update or create a Game
+     * const game = await prisma.game.upsert({
+     *   create: {
+     *     // ... data to create a Game
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Game we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GameUpsertArgs>(
+      args: SelectSubset<T, GameUpsertArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      $Result.GetResult<
+        Prisma.$GamePayload<ExtArgs>,
+        T,
+        'upsert',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Count the number of Games.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameCountArgs} args - Arguments to filter Games to count.
+     * @example
+     * // Count the number of Games
+     * const count = await prisma.game.count({
+     *   where: {
+     *     // ... the filter for the Games we want to count
+     *   }
+     * })
+     **/
+    count<T extends GameCountArgs>(
+      args?: Subset<T, GameCountArgs>
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GameCountAggregateOutputType>
+        : number
+    >;
+
+    /**
+     * Allows you to perform aggregations operations on a Game.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
+    aggregate<T extends GameAggregateArgs>(
+      args: Subset<T, GameAggregateArgs>
+    ): Prisma.PrismaPromise<GetGameAggregateType<T>>;
+
+    /**
+     * Group by Game.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
+    groupBy<
+      T extends GameGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GameGroupByArgs['orderBy'] }
+        : { orderBy?: GameGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<
+        Keys<MaybeTupleToUnion<T['orderBy']>>
+      >,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+        ? `Error: "by" must not be empty.`
+        : HavingValid extends False
+          ? {
+              [P in HavingFields]: P extends ByFields
+                ? never
+                : P extends string
+                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+                  : [
+                      Error,
+                      'Field ',
+                      P,
+                      ` in "having" needs to be provided in "by"`
+                    ];
+            }[HavingFields]
+          : 'take' extends Keys<T>
+            ? 'orderBy' extends Keys<T>
+              ? ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+              : 'Error: If you provide "take", you also need to provide "orderBy"'
+            : 'skip' extends Keys<T>
+              ? 'orderBy' extends Keys<T>
+                ? ByValid extends True
+                  ? {}
+                  : {
+                      [P in OrderFields]: P extends ByFields
+                        ? never
+                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                    }[OrderFields]
+                : 'Error: If you provide "skip", you also need to provide "orderBy"'
+              : ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+    >(
+      args: SubsetIntersection<T, GameGroupByArgs, OrderByArg> & InputErrors
+    ): {} extends InputErrors
+      ? GetGameGroupByPayload<T>
+      : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the Game model
+     */
+    readonly fields: GameFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Game.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GameClient<
+    T,
+    Null = never,
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {}
+  > extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    white<T extends Game$whiteArgs<ExtArgs> = {}>(
+      args?: Subset<T, Game$whiteArgs<ExtArgs>>
+    ): Prisma__UserClient<
+      $Result.GetResult<
+        Prisma.$UserPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    black<T extends Game$blackArgs<ExtArgs> = {}>(
+      args?: Subset<T, Game$blackArgs<ExtArgs>>
+    ): Prisma__UserClient<
+      $Result.GetResult<
+        Prisma.$UserPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    analysis<T extends Game$analysisArgs<ExtArgs> = {}>(
+      args?: Subset<T, Game$analysisArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?:
+        | ((value: T) => TResult1 | PromiseLike<TResult1>)
+        | undefined
+        | null,
+      onrejected?:
+        | ((reason: any) => TResult2 | PromiseLike<TResult2>)
+        | undefined
+        | null
+    ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(
+      onrejected?:
+        | ((reason: any) => TResult | PromiseLike<TResult>)
+        | undefined
+        | null
+    ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+  /**
+   * Fields of the Game model
+   */
+  interface GameFieldRefs {
+    readonly id: FieldRef<'Game', 'String'>;
+    readonly roomId: FieldRef<'Game', 'String'>;
+    readonly whiteUserId: FieldRef<'Game', 'String'>;
+    readonly blackUserId: FieldRef<'Game', 'String'>;
+    readonly variant: FieldRef<'Game', 'String'>;
+    readonly gameType: FieldRef<'Game', 'String'>;
+    readonly result: FieldRef<'Game', 'String'>;
+    readonly resultReason: FieldRef<'Game', 'String'>;
+    readonly moves: FieldRef<'Game', 'String[]'>;
+    readonly startingFen: FieldRef<'Game', 'String'>;
+    readonly timeControl: FieldRef<'Game', 'Json'>;
+    readonly whitePregameRating: FieldRef<'Game', 'Int'>;
+    readonly blackPregameRating: FieldRef<'Game', 'Int'>;
+    readonly whiteRatingDelta: FieldRef<'Game', 'Int'>;
+    readonly blackRatingDelta: FieldRef<'Game', 'Int'>;
+    readonly moveCount: FieldRef<'Game', 'Int'>;
+    readonly createdAt: FieldRef<'Game', 'DateTime'>;
+  }
+
+  // Custom InputTypes
+  /**
+   * Game findUnique
+   */
+  export type GameFindUniqueArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Game to fetch.
+     */
+    where: GameWhereUniqueInput;
+  };
+
+  /**
+   * Game findUniqueOrThrow
+   */
+  export type GameFindUniqueOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Game to fetch.
+     */
+    where: GameWhereUniqueInput;
+  };
+
+  /**
+   * Game findFirst
+   */
+  export type GameFindFirstArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Game to fetch.
+     */
+    where?: GameWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Games to fetch.
+     */
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Games.
+     */
+    cursor?: GameWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Games from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Games.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Games.
+     */
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
+  };
+
+  /**
+   * Game findFirstOrThrow
+   */
+  export type GameFindFirstOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Game to fetch.
+     */
+    where?: GameWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Games to fetch.
+     */
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Games.
+     */
+    cursor?: GameWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Games from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Games.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Games.
+     */
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
+  };
+
+  /**
+   * Game findMany
+   */
+  export type GameFindManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Games to fetch.
+     */
+    where?: GameWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Games to fetch.
+     */
+    orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Games.
+     */
+    cursor?: GameWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Games from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Games.
+     */
+    skip?: number;
+    distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
+  };
+
+  /**
+   * Game create
+   */
+  export type GameCreateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a Game.
+     */
+    data: XOR<GameCreateInput, GameUncheckedCreateInput>;
+  };
+
+  /**
+   * Game createMany
+   */
+  export type GameCreateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * The data used to create many Games.
+     */
+    data: GameCreateManyInput | GameCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * Game createManyAndReturn
+   */
+  export type GameCreateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * The data used to create many Games.
+     */
+    data: GameCreateManyInput | GameCreateManyInput[];
+    skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameIncludeCreateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * Game update
+   */
+  export type GameUpdateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a Game.
+     */
+    data: XOR<GameUpdateInput, GameUncheckedUpdateInput>;
+    /**
+     * Choose, which Game to update.
+     */
+    where: GameWhereUniqueInput;
+  };
+
+  /**
+   * Game updateMany
+   */
+  export type GameUpdateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * The data used to update Games.
+     */
+    data: XOR<GameUpdateManyMutationInput, GameUncheckedUpdateManyInput>;
+    /**
+     * Filter which Games to update
+     */
+    where?: GameWhereInput;
+    /**
+     * Limit how many Games to update.
+     */
+    limit?: number;
+  };
+
+  /**
+   * Game updateManyAndReturn
+   */
+  export type GameUpdateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * The data used to update Games.
+     */
+    data: XOR<GameUpdateManyMutationInput, GameUncheckedUpdateManyInput>;
+    /**
+     * Filter which Games to update
+     */
+    where?: GameWhereInput;
+    /**
+     * Limit how many Games to update.
+     */
+    limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameIncludeUpdateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * Game upsert
+   */
+  export type GameUpsertArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the Game to update in case it exists.
+     */
+    where: GameWhereUniqueInput;
+    /**
+     * In case the Game found by the `where` argument doesn't exist, create a new Game with this data.
+     */
+    create: XOR<GameCreateInput, GameUncheckedCreateInput>;
+    /**
+     * In case the Game was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GameUpdateInput, GameUncheckedUpdateInput>;
+  };
+
+  /**
+   * Game delete
+   */
+  export type GameDeleteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter which Game to delete.
+     */
+    where: GameWhereUniqueInput;
+  };
+
+  /**
+   * Game deleteMany
+   */
+  export type GameDeleteManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Filter which Games to delete
+     */
+    where?: GameWhereInput;
+    /**
+     * Limit how many Games to delete.
+     */
+    limit?: number;
+  };
+
+  /**
+   * Game.white
+   */
+  export type Game$whiteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null;
+    where?: UserWhereInput;
+  };
+
+  /**
+   * Game.black
+   */
+  export type Game$blackArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null;
+    where?: UserWhereInput;
+  };
+
+  /**
+   * Game.analysis
+   */
+  export type Game$analysisArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    where?: GameAnalysisWhereInput;
+  };
+
+  /**
+   * Game without action
+   */
+  export type GameDefaultArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
+    select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
+    omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameInclude<ExtArgs> | null;
+  };
+
+  /**
+   * Model GameAnalysis
+   */
+
+  export type AggregateGameAnalysis = {
+    _count: GameAnalysisCountAggregateOutputType | null;
+    _min: GameAnalysisMinAggregateOutputType | null;
+    _max: GameAnalysisMaxAggregateOutputType | null;
+  };
+
+  export type GameAnalysisMinAggregateOutputType = {
+    id: string | null;
+    gameId: string | null;
+    userId: string | null;
+    createdAt: Date | null;
+  };
+
+  export type GameAnalysisMaxAggregateOutputType = {
+    id: string | null;
+    gameId: string | null;
+    userId: string | null;
+    createdAt: Date | null;
+  };
+
+  export type GameAnalysisCountAggregateOutputType = {
+    id: number;
+    gameId: number;
+    userId: number;
+    results: number;
+    createdAt: number;
+    _all: number;
+  };
+
+  export type GameAnalysisMinAggregateInputType = {
+    id?: true;
+    gameId?: true;
+    userId?: true;
+    createdAt?: true;
+  };
+
+  export type GameAnalysisMaxAggregateInputType = {
+    id?: true;
+    gameId?: true;
+    userId?: true;
+    createdAt?: true;
+  };
+
+  export type GameAnalysisCountAggregateInputType = {
+    id?: true;
+    gameId?: true;
+    userId?: true;
+    results?: true;
+    createdAt?: true;
+    _all?: true;
+  };
+
+  export type GameAnalysisAggregateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Filter which GameAnalysis to aggregate.
+     */
+    where?: GameAnalysisWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GameAnalyses to fetch.
+     */
+    orderBy?:
+      | GameAnalysisOrderByWithRelationInput
+      | GameAnalysisOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: GameAnalysisWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GameAnalyses from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GameAnalyses.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned GameAnalyses
+     **/
+    _count?: true | GameAnalysisCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
+    _min?: GameAnalysisMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
+    _max?: GameAnalysisMaxAggregateInputType;
+  };
+
+  export type GetGameAnalysisAggregateType<
+    T extends GameAnalysisAggregateArgs
+  > = {
+    [P in keyof T & keyof AggregateGameAnalysis]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGameAnalysis[P]>
+      : GetScalarType<T[P], AggregateGameAnalysis[P]>;
+  };
+
+  export type GameAnalysisGroupByArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: GameAnalysisWhereInput;
+    orderBy?:
+      | GameAnalysisOrderByWithAggregationInput
+      | GameAnalysisOrderByWithAggregationInput[];
+    by: GameAnalysisScalarFieldEnum[] | GameAnalysisScalarFieldEnum;
+    having?: GameAnalysisScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: GameAnalysisCountAggregateInputType | true;
+    _min?: GameAnalysisMinAggregateInputType;
+    _max?: GameAnalysisMaxAggregateInputType;
+  };
+
+  export type GameAnalysisGroupByOutputType = {
+    id: string;
+    gameId: string;
+    userId: string;
+    results: JsonValue;
+    createdAt: Date;
+    _count: GameAnalysisCountAggregateOutputType | null;
+    _min: GameAnalysisMinAggregateOutputType | null;
+    _max: GameAnalysisMaxAggregateOutputType | null;
+  };
+
+  type GetGameAnalysisGroupByPayload<T extends GameAnalysisGroupByArgs> =
+    Prisma.PrismaPromise<
+      Array<
+        PickEnumerable<GameAnalysisGroupByOutputType, T['by']> & {
+          [P in keyof T &
+            keyof GameAnalysisGroupByOutputType]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GameAnalysisGroupByOutputType[P]>
+            : GetScalarType<T[P], GameAnalysisGroupByOutputType[P]>;
+        }
+      >
+    >;
+
+  export type GameAnalysisSelect<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      gameId?: boolean;
+      userId?: boolean;
+      results?: boolean;
+      createdAt?: boolean;
+      game?: boolean | GameDefaultArgs<ExtArgs>;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['gameAnalysis']
+  >;
+
+  export type GameAnalysisSelectCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      gameId?: boolean;
+      userId?: boolean;
+      results?: boolean;
+      createdAt?: boolean;
+      game?: boolean | GameDefaultArgs<ExtArgs>;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['gameAnalysis']
+  >;
+
+  export type GameAnalysisSelectUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      gameId?: boolean;
+      userId?: boolean;
+      results?: boolean;
+      createdAt?: boolean;
+      game?: boolean | GameDefaultArgs<ExtArgs>;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['gameAnalysis']
+  >;
+
+  export type GameAnalysisSelectScalar = {
+    id?: boolean;
+    gameId?: boolean;
+    userId?: boolean;
+    results?: boolean;
+    createdAt?: boolean;
+  };
+
+  export type GameAnalysisOmit<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetOmit<
+    'id' | 'gameId' | 'userId' | 'results' | 'createdAt',
+    ExtArgs['result']['gameAnalysis']
+  >;
+  export type GameAnalysisInclude<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    game?: boolean | GameDefaultArgs<ExtArgs>;
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type GameAnalysisIncludeCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    game?: boolean | GameDefaultArgs<ExtArgs>;
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type GameAnalysisIncludeUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    game?: boolean | GameDefaultArgs<ExtArgs>;
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+
+  export type $GameAnalysisPayload<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    name: 'GameAnalysis';
+    objects: {
+      game: Prisma.$GamePayload<ExtArgs>;
+      user: Prisma.$UserPayload<ExtArgs>;
+    };
+    scalars: $Extensions.GetPayloadResult<
+      {
+        id: string;
+        gameId: string;
+        userId: string;
+        results: Prisma.JsonValue;
+        createdAt: Date;
+      },
+      ExtArgs['result']['gameAnalysis']
+    >;
+    composites: {};
+  };
+
+  type GameAnalysisGetPayload<
+    S extends boolean | null | undefined | GameAnalysisDefaultArgs
+  > = $Result.GetResult<Prisma.$GameAnalysisPayload, S>;
+
+  type GameAnalysisCountArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = Omit<
+    GameAnalysisFindManyArgs,
+    'select' | 'include' | 'distinct' | 'omit'
+  > & {
+    select?: GameAnalysisCountAggregateInputType | true;
+  };
+
+  export interface GameAnalysisDelegate<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {}
+  > {
+    [K: symbol]: {
+      types: Prisma.TypeMap<ExtArgs>['model']['GameAnalysis'];
+      meta: { name: 'GameAnalysis' };
+    };
+    /**
+     * Find zero or one GameAnalysis that matches the filter.
+     * @param {GameAnalysisFindUniqueArgs} args - Arguments to find a GameAnalysis
+     * @example
+     * // Get one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GameAnalysisFindUniqueArgs>(
+      args: SelectSubset<T, GameAnalysisFindUniqueArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'findUnique',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find one GameAnalysis that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GameAnalysisFindUniqueOrThrowArgs} args - Arguments to find a GameAnalysis
+     * @example
+     * // Get one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GameAnalysisFindUniqueOrThrowArgs>(
+      args: SelectSubset<T, GameAnalysisFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first GameAnalysis that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisFindFirstArgs} args - Arguments to find a GameAnalysis
+     * @example
+     * // Get one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GameAnalysisFindFirstArgs>(
+      args?: SelectSubset<T, GameAnalysisFindFirstArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'findFirst',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first GameAnalysis that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisFindFirstOrThrowArgs} args - Arguments to find a GameAnalysis
+     * @example
+     * // Get one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GameAnalysisFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, GameAnalysisFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'findFirstOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find zero or more GameAnalyses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GameAnalyses
+     * const gameAnalyses = await prisma.gameAnalysis.findMany()
+     *
+     * // Get first 10 GameAnalyses
+     * const gameAnalyses = await prisma.gameAnalysis.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const gameAnalysisWithIdOnly = await prisma.gameAnalysis.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends GameAnalysisFindManyArgs>(
+      args?: SelectSubset<T, GameAnalysisFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create a GameAnalysis.
+     * @param {GameAnalysisCreateArgs} args - Arguments to create a GameAnalysis.
+     * @example
+     * // Create one GameAnalysis
+     * const GameAnalysis = await prisma.gameAnalysis.create({
+     *   data: {
+     *     // ... data to create a GameAnalysis
+     *   }
+     * })
+     *
+     */
+    create<T extends GameAnalysisCreateArgs>(
+      args: SelectSubset<T, GameAnalysisCreateArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'create',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Create many GameAnalyses.
+     * @param {GameAnalysisCreateManyArgs} args - Arguments to create many GameAnalyses.
+     * @example
+     * // Create many GameAnalyses
+     * const gameAnalysis = await prisma.gameAnalysis.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends GameAnalysisCreateManyArgs>(
+      args?: SelectSubset<T, GameAnalysisCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many GameAnalyses and returns the data saved in the database.
+     * @param {GameAnalysisCreateManyAndReturnArgs} args - Arguments to create many GameAnalyses.
+     * @example
+     * // Create many GameAnalyses
+     * const gameAnalysis = await prisma.gameAnalysis.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many GameAnalyses and only return the `id`
+     * const gameAnalysisWithIdOnly = await prisma.gameAnalysis.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends GameAnalysisCreateManyAndReturnArgs>(
+      args?: SelectSubset<T, GameAnalysisCreateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'createManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Delete a GameAnalysis.
+     * @param {GameAnalysisDeleteArgs} args - Arguments to delete one GameAnalysis.
+     * @example
+     * // Delete one GameAnalysis
+     * const GameAnalysis = await prisma.gameAnalysis.delete({
+     *   where: {
+     *     // ... filter to delete one GameAnalysis
+     *   }
+     * })
+     *
+     */
+    delete<T extends GameAnalysisDeleteArgs>(
+      args: SelectSubset<T, GameAnalysisDeleteArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'delete',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Update one GameAnalysis.
+     * @param {GameAnalysisUpdateArgs} args - Arguments to update one GameAnalysis.
+     * @example
+     * // Update one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends GameAnalysisUpdateArgs>(
+      args: SelectSubset<T, GameAnalysisUpdateArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'update',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Delete zero or more GameAnalyses.
+     * @param {GameAnalysisDeleteManyArgs} args - Arguments to filter GameAnalyses to delete.
+     * @example
+     * // Delete a few GameAnalyses
+     * const { count } = await prisma.gameAnalysis.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends GameAnalysisDeleteManyArgs>(
+      args?: SelectSubset<T, GameAnalysisDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more GameAnalyses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GameAnalyses
+     * const gameAnalysis = await prisma.gameAnalysis.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends GameAnalysisUpdateManyArgs>(
+      args: SelectSubset<T, GameAnalysisUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more GameAnalyses and returns the data updated in the database.
+     * @param {GameAnalysisUpdateManyAndReturnArgs} args - Arguments to update many GameAnalyses.
+     * @example
+     * // Update many GameAnalyses
+     * const gameAnalysis = await prisma.gameAnalysis.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more GameAnalyses and only return the `id`
+     * const gameAnalysisWithIdOnly = await prisma.gameAnalysis.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends GameAnalysisUpdateManyAndReturnArgs>(
+      args: SelectSubset<T, GameAnalysisUpdateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'updateManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create or update one GameAnalysis.
+     * @param {GameAnalysisUpsertArgs} args - Arguments to update or create a GameAnalysis.
+     * @example
+     * // Update or create a GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.upsert({
+     *   create: {
+     *     // ... data to create a GameAnalysis
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GameAnalysis we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GameAnalysisUpsertArgs>(
+      args: SelectSubset<T, GameAnalysisUpsertArgs<ExtArgs>>
+    ): Prisma__GameAnalysisClient<
+      $Result.GetResult<
+        Prisma.$GameAnalysisPayload<ExtArgs>,
+        T,
+        'upsert',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Count the number of GameAnalyses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisCountArgs} args - Arguments to filter GameAnalyses to count.
+     * @example
+     * // Count the number of GameAnalyses
+     * const count = await prisma.gameAnalysis.count({
+     *   where: {
+     *     // ... the filter for the GameAnalyses we want to count
+     *   }
+     * })
+     **/
+    count<T extends GameAnalysisCountArgs>(
+      args?: Subset<T, GameAnalysisCountArgs>
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GameAnalysisCountAggregateOutputType>
+        : number
+    >;
+
+    /**
+     * Allows you to perform aggregations operations on a GameAnalysis.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
+    aggregate<T extends GameAnalysisAggregateArgs>(
+      args: Subset<T, GameAnalysisAggregateArgs>
+    ): Prisma.PrismaPromise<GetGameAnalysisAggregateType<T>>;
+
+    /**
+     * Group by GameAnalysis.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
+    groupBy<
+      T extends GameAnalysisGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GameAnalysisGroupByArgs['orderBy'] }
+        : { orderBy?: GameAnalysisGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<
+        Keys<MaybeTupleToUnion<T['orderBy']>>
+      >,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+        ? `Error: "by" must not be empty.`
+        : HavingValid extends False
+          ? {
+              [P in HavingFields]: P extends ByFields
+                ? never
+                : P extends string
+                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+                  : [
+                      Error,
+                      'Field ',
+                      P,
+                      ` in "having" needs to be provided in "by"`
+                    ];
+            }[HavingFields]
+          : 'take' extends Keys<T>
+            ? 'orderBy' extends Keys<T>
+              ? ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+              : 'Error: If you provide "take", you also need to provide "orderBy"'
+            : 'skip' extends Keys<T>
+              ? 'orderBy' extends Keys<T>
+                ? ByValid extends True
+                  ? {}
+                  : {
+                      [P in OrderFields]: P extends ByFields
+                        ? never
+                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                    }[OrderFields]
+                : 'Error: If you provide "skip", you also need to provide "orderBy"'
+              : ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+    >(
+      args: SubsetIntersection<T, GameAnalysisGroupByArgs, OrderByArg> &
+        InputErrors
+    ): {} extends InputErrors
+      ? GetGameAnalysisGroupByPayload<T>
+      : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the GameAnalysis model
+     */
+    readonly fields: GameAnalysisFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GameAnalysis.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GameAnalysisClient<
+    T,
+    Null = never,
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {}
+  > extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    game<T extends GameDefaultArgs<ExtArgs> = {}>(
+      args?: Subset<T, GameDefaultArgs<ExtArgs>>
+    ): Prisma__GameClient<
+      | $Result.GetResult<
+          Prisma.$GamePayload<ExtArgs>,
+          T,
+          'findUniqueOrThrow',
+          GlobalOmitOptions
+        >
+      | Null,
+      Null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(
+      args?: Subset<T, UserDefaultArgs<ExtArgs>>
+    ): Prisma__UserClient<
+      | $Result.GetResult<
+          Prisma.$UserPayload<ExtArgs>,
+          T,
+          'findUniqueOrThrow',
+          GlobalOmitOptions
+        >
+      | Null,
+      Null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?:
+        | ((value: T) => TResult1 | PromiseLike<TResult1>)
+        | undefined
+        | null,
+      onrejected?:
+        | ((reason: any) => TResult2 | PromiseLike<TResult2>)
+        | undefined
+        | null
+    ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(
+      onrejected?:
+        | ((reason: any) => TResult | PromiseLike<TResult>)
+        | undefined
+        | null
+    ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+  /**
+   * Fields of the GameAnalysis model
+   */
+  interface GameAnalysisFieldRefs {
+    readonly id: FieldRef<'GameAnalysis', 'String'>;
+    readonly gameId: FieldRef<'GameAnalysis', 'String'>;
+    readonly userId: FieldRef<'GameAnalysis', 'String'>;
+    readonly results: FieldRef<'GameAnalysis', 'Json'>;
+    readonly createdAt: FieldRef<'GameAnalysis', 'DateTime'>;
+  }
+
+  // Custom InputTypes
+  /**
+   * GameAnalysis findUnique
+   */
+  export type GameAnalysisFindUniqueArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalysis to fetch.
+     */
+    where: GameAnalysisWhereUniqueInput;
+  };
+
+  /**
+   * GameAnalysis findUniqueOrThrow
+   */
+  export type GameAnalysisFindUniqueOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalysis to fetch.
+     */
+    where: GameAnalysisWhereUniqueInput;
+  };
+
+  /**
+   * GameAnalysis findFirst
+   */
+  export type GameAnalysisFindFirstArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalysis to fetch.
+     */
+    where?: GameAnalysisWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GameAnalyses to fetch.
+     */
+    orderBy?:
+      | GameAnalysisOrderByWithRelationInput
+      | GameAnalysisOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for GameAnalyses.
+     */
+    cursor?: GameAnalysisWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GameAnalyses from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GameAnalyses.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of GameAnalyses.
+     */
+    distinct?: GameAnalysisScalarFieldEnum | GameAnalysisScalarFieldEnum[];
+  };
+
+  /**
+   * GameAnalysis findFirstOrThrow
+   */
+  export type GameAnalysisFindFirstOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalysis to fetch.
+     */
+    where?: GameAnalysisWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GameAnalyses to fetch.
+     */
+    orderBy?:
+      | GameAnalysisOrderByWithRelationInput
+      | GameAnalysisOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for GameAnalyses.
+     */
+    cursor?: GameAnalysisWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GameAnalyses from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GameAnalyses.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of GameAnalyses.
+     */
+    distinct?: GameAnalysisScalarFieldEnum | GameAnalysisScalarFieldEnum[];
+  };
+
+  /**
+   * GameAnalysis findMany
+   */
+  export type GameAnalysisFindManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalyses to fetch.
+     */
+    where?: GameAnalysisWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GameAnalyses to fetch.
+     */
+    orderBy?:
+      | GameAnalysisOrderByWithRelationInput
+      | GameAnalysisOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing GameAnalyses.
+     */
+    cursor?: GameAnalysisWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GameAnalyses from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GameAnalyses.
+     */
+    skip?: number;
+    distinct?: GameAnalysisScalarFieldEnum | GameAnalysisScalarFieldEnum[];
+  };
+
+  /**
+   * GameAnalysis create
+   */
+  export type GameAnalysisCreateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a GameAnalysis.
+     */
+    data: XOR<GameAnalysisCreateInput, GameAnalysisUncheckedCreateInput>;
+  };
+
+  /**
+   * GameAnalysis createMany
+   */
+  export type GameAnalysisCreateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * The data used to create many GameAnalyses.
+     */
+    data: GameAnalysisCreateManyInput | GameAnalysisCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * GameAnalysis createManyAndReturn
+   */
+  export type GameAnalysisCreateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * The data used to create many GameAnalyses.
+     */
+    data: GameAnalysisCreateManyInput | GameAnalysisCreateManyInput[];
+    skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisIncludeCreateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * GameAnalysis update
+   */
+  export type GameAnalysisUpdateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a GameAnalysis.
+     */
+    data: XOR<GameAnalysisUpdateInput, GameAnalysisUncheckedUpdateInput>;
+    /**
+     * Choose, which GameAnalysis to update.
+     */
+    where: GameAnalysisWhereUniqueInput;
+  };
+
+  /**
+   * GameAnalysis updateMany
+   */
+  export type GameAnalysisUpdateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * The data used to update GameAnalyses.
+     */
+    data: XOR<
+      GameAnalysisUpdateManyMutationInput,
+      GameAnalysisUncheckedUpdateManyInput
+    >;
+    /**
+     * Filter which GameAnalyses to update
+     */
+    where?: GameAnalysisWhereInput;
+    /**
+     * Limit how many GameAnalyses to update.
+     */
+    limit?: number;
+  };
+
+  /**
+   * GameAnalysis updateManyAndReturn
+   */
+  export type GameAnalysisUpdateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * The data used to update GameAnalyses.
+     */
+    data: XOR<
+      GameAnalysisUpdateManyMutationInput,
+      GameAnalysisUncheckedUpdateManyInput
+    >;
+    /**
+     * Filter which GameAnalyses to update
+     */
+    where?: GameAnalysisWhereInput;
+    /**
+     * Limit how many GameAnalyses to update.
+     */
+    limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisIncludeUpdateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * GameAnalysis upsert
+   */
+  export type GameAnalysisUpsertArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the GameAnalysis to update in case it exists.
+     */
+    where: GameAnalysisWhereUniqueInput;
+    /**
+     * In case the GameAnalysis found by the `where` argument doesn't exist, create a new GameAnalysis with this data.
+     */
+    create: XOR<GameAnalysisCreateInput, GameAnalysisUncheckedCreateInput>;
+    /**
+     * In case the GameAnalysis was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GameAnalysisUpdateInput, GameAnalysisUncheckedUpdateInput>;
+  };
+
+  /**
+   * GameAnalysis delete
+   */
+  export type GameAnalysisDeleteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter which GameAnalysis to delete.
+     */
+    where: GameAnalysisWhereUniqueInput;
+  };
+
+  /**
+   * GameAnalysis deleteMany
+   */
+  export type GameAnalysisDeleteManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Filter which GameAnalyses to delete
+     */
+    where?: GameAnalysisWhereInput;
+    /**
+     * Limit how many GameAnalyses to delete.
+     */
+    limit?: number;
+  };
+
+  /**
+   * GameAnalysis without action
+   */
+  export type GameAnalysisDefaultArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
+    select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
+    omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: GameAnalysisInclude<ExtArgs> | null;
+  };
+
+  /**
+   * Model Rating
+   */
+
+  export type AggregateRating = {
+    _count: RatingCountAggregateOutputType | null;
+    _avg: RatingAvgAggregateOutputType | null;
+    _sum: RatingSumAggregateOutputType | null;
+    _min: RatingMinAggregateOutputType | null;
+    _max: RatingMaxAggregateOutputType | null;
+  };
+
+  export type RatingAvgAggregateOutputType = {
+    rating: number | null;
+    rd: number | null;
+    sigma: number | null;
+    gameCount: number | null;
+  };
+
+  export type RatingSumAggregateOutputType = {
+    rating: number | null;
+    rd: number | null;
+    sigma: number | null;
+    gameCount: number | null;
+  };
+
+  export type RatingMinAggregateOutputType = {
+    id: string | null;
+    userId: string | null;
+    variant: string | null;
+    rating: number | null;
+    rd: number | null;
+    sigma: number | null;
+    gameCount: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+  };
+
+  export type RatingMaxAggregateOutputType = {
+    id: string | null;
+    userId: string | null;
+    variant: string | null;
+    rating: number | null;
+    rd: number | null;
+    sigma: number | null;
+    gameCount: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+  };
+
+  export type RatingCountAggregateOutputType = {
+    id: number;
+    userId: number;
+    variant: number;
+    rating: number;
+    rd: number;
+    sigma: number;
+    gameCount: number;
+    createdAt: number;
+    updatedAt: number;
+    _all: number;
+  };
+
+  export type RatingAvgAggregateInputType = {
+    rating?: true;
+    rd?: true;
+    sigma?: true;
+    gameCount?: true;
+  };
+
+  export type RatingSumAggregateInputType = {
+    rating?: true;
+    rd?: true;
+    sigma?: true;
+    gameCount?: true;
+  };
+
+  export type RatingMinAggregateInputType = {
+    id?: true;
+    userId?: true;
+    variant?: true;
+    rating?: true;
+    rd?: true;
+    sigma?: true;
+    gameCount?: true;
+    createdAt?: true;
+    updatedAt?: true;
+  };
+
+  export type RatingMaxAggregateInputType = {
+    id?: true;
+    userId?: true;
+    variant?: true;
+    rating?: true;
+    rd?: true;
+    sigma?: true;
+    gameCount?: true;
+    createdAt?: true;
+    updatedAt?: true;
+  };
+
+  export type RatingCountAggregateInputType = {
+    id?: true;
+    userId?: true;
+    variant?: true;
+    rating?: true;
+    rd?: true;
+    sigma?: true;
+    gameCount?: true;
+    createdAt?: true;
+    updatedAt?: true;
+    _all?: true;
+  };
+
+  export type RatingAggregateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Filter which Rating to aggregate.
+     */
+    where?: RatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Ratings to fetch.
+     */
+    orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: RatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Ratings from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Ratings.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Ratings
+     **/
+    _count?: true | RatingCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
+    _avg?: RatingAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
+    _sum?: RatingSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
+    _min?: RatingMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
+    _max?: RatingMaxAggregateInputType;
+  };
+
+  export type GetRatingAggregateType<T extends RatingAggregateArgs> = {
+    [P in keyof T & keyof AggregateRating]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRating[P]>
+      : GetScalarType<T[P], AggregateRating[P]>;
+  };
+
+  export type RatingGroupByArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: RatingWhereInput;
+    orderBy?:
+      | RatingOrderByWithAggregationInput
+      | RatingOrderByWithAggregationInput[];
+    by: RatingScalarFieldEnum[] | RatingScalarFieldEnum;
+    having?: RatingScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: RatingCountAggregateInputType | true;
+    _avg?: RatingAvgAggregateInputType;
+    _sum?: RatingSumAggregateInputType;
+    _min?: RatingMinAggregateInputType;
+    _max?: RatingMaxAggregateInputType;
+  };
+
+  export type RatingGroupByOutputType = {
+    id: string;
+    userId: string;
+    variant: string;
+    rating: number;
+    rd: number;
+    sigma: number;
+    gameCount: number;
+    createdAt: Date;
+    updatedAt: Date;
+    _count: RatingCountAggregateOutputType | null;
+    _avg: RatingAvgAggregateOutputType | null;
+    _sum: RatingSumAggregateOutputType | null;
+    _min: RatingMinAggregateOutputType | null;
+    _max: RatingMaxAggregateOutputType | null;
+  };
+
+  type GetRatingGroupByPayload<T extends RatingGroupByArgs> =
+    Prisma.PrismaPromise<
+      Array<
+        PickEnumerable<RatingGroupByOutputType, T['by']> & {
+          [P in keyof T & keyof RatingGroupByOutputType]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RatingGroupByOutputType[P]>
+            : GetScalarType<T[P], RatingGroupByOutputType[P]>;
+        }
+      >
+    >;
+
+  export type RatingSelect<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      userId?: boolean;
+      variant?: boolean;
+      rating?: boolean;
+      rd?: boolean;
+      sigma?: boolean;
+      gameCount?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['rating']
+  >;
+
+  export type RatingSelectCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      userId?: boolean;
+      variant?: boolean;
+      rating?: boolean;
+      rd?: boolean;
+      sigma?: boolean;
+      gameCount?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['rating']
+  >;
+
+  export type RatingSelectUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      userId?: boolean;
+      variant?: boolean;
+      rating?: boolean;
+      rd?: boolean;
+      sigma?: boolean;
+      gameCount?: boolean;
+      createdAt?: boolean;
+      updatedAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['rating']
+  >;
+
+  export type RatingSelectScalar = {
+    id?: boolean;
+    userId?: boolean;
+    variant?: boolean;
+    rating?: boolean;
+    rd?: boolean;
+    sigma?: boolean;
+    gameCount?: boolean;
+    createdAt?: boolean;
+    updatedAt?: boolean;
+  };
+
+  export type RatingOmit<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetOmit<
+    | 'id'
+    | 'userId'
+    | 'variant'
+    | 'rating'
+    | 'rd'
+    | 'sigma'
+    | 'gameCount'
+    | 'createdAt'
+    | 'updatedAt',
+    ExtArgs['result']['rating']
+  >;
+  export type RatingInclude<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type RatingIncludeCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type RatingIncludeUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+
+  export type $RatingPayload<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    name: 'Rating';
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>;
+    };
+    scalars: $Extensions.GetPayloadResult<
+      {
+        id: string;
+        userId: string;
+        variant: string;
+        rating: number;
+        rd: number;
+        sigma: number;
+        gameCount: number;
+        createdAt: Date;
+        updatedAt: Date;
+      },
+      ExtArgs['result']['rating']
+    >;
+    composites: {};
+  };
+
+  type RatingGetPayload<
+    S extends boolean | null | undefined | RatingDefaultArgs
+  > = $Result.GetResult<Prisma.$RatingPayload, S>;
+
+  type RatingCountArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = Omit<RatingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+    select?: RatingCountAggregateInputType | true;
+  };
+
+  export interface RatingDelegate<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {}
+  > {
+    [K: symbol]: {
+      types: Prisma.TypeMap<ExtArgs>['model']['Rating'];
+      meta: { name: 'Rating' };
+    };
+    /**
+     * Find zero or one Rating that matches the filter.
+     * @param {RatingFindUniqueArgs} args - Arguments to find a Rating
+     * @example
+     * // Get one Rating
+     * const rating = await prisma.rating.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RatingFindUniqueArgs>(
+      args: SelectSubset<T, RatingFindUniqueArgs<ExtArgs>>
+    ): Prisma__RatingClient<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'findUnique',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find one Rating that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RatingFindUniqueOrThrowArgs} args - Arguments to find a Rating
+     * @example
+     * // Get one Rating
+     * const rating = await prisma.rating.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RatingFindUniqueOrThrowArgs>(
+      args: SelectSubset<T, RatingFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__RatingClient<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first Rating that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingFindFirstArgs} args - Arguments to find a Rating
+     * @example
+     * // Get one Rating
+     * const rating = await prisma.rating.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RatingFindFirstArgs>(
+      args?: SelectSubset<T, RatingFindFirstArgs<ExtArgs>>
+    ): Prisma__RatingClient<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'findFirst',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first Rating that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingFindFirstOrThrowArgs} args - Arguments to find a Rating
+     * @example
+     * // Get one Rating
+     * const rating = await prisma.rating.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RatingFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, RatingFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__RatingClient<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'findFirstOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find zero or more Ratings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Ratings
+     * const ratings = await prisma.rating.findMany()
+     *
+     * // Get first 10 Ratings
+     * const ratings = await prisma.rating.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const ratingWithIdOnly = await prisma.rating.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends RatingFindManyArgs>(
+      args?: SelectSubset<T, RatingFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create a Rating.
+     * @param {RatingCreateArgs} args - Arguments to create a Rating.
+     * @example
+     * // Create one Rating
+     * const Rating = await prisma.rating.create({
+     *   data: {
+     *     // ... data to create a Rating
+     *   }
+     * })
+     *
+     */
+    create<T extends RatingCreateArgs>(
+      args: SelectSubset<T, RatingCreateArgs<ExtArgs>>
+    ): Prisma__RatingClient<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'create',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Create many Ratings.
+     * @param {RatingCreateManyArgs} args - Arguments to create many Ratings.
+     * @example
+     * // Create many Ratings
+     * const rating = await prisma.rating.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends RatingCreateManyArgs>(
+      args?: SelectSubset<T, RatingCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many Ratings and returns the data saved in the database.
+     * @param {RatingCreateManyAndReturnArgs} args - Arguments to create many Ratings.
+     * @example
+     * // Create many Ratings
+     * const rating = await prisma.rating.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Ratings and only return the `id`
+     * const ratingWithIdOnly = await prisma.rating.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends RatingCreateManyAndReturnArgs>(
+      args?: SelectSubset<T, RatingCreateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'createManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Delete a Rating.
+     * @param {RatingDeleteArgs} args - Arguments to delete one Rating.
+     * @example
+     * // Delete one Rating
+     * const Rating = await prisma.rating.delete({
+     *   where: {
+     *     // ... filter to delete one Rating
+     *   }
+     * })
+     *
+     */
+    delete<T extends RatingDeleteArgs>(
+      args: SelectSubset<T, RatingDeleteArgs<ExtArgs>>
+    ): Prisma__RatingClient<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'delete',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Update one Rating.
+     * @param {RatingUpdateArgs} args - Arguments to update one Rating.
+     * @example
+     * // Update one Rating
+     * const rating = await prisma.rating.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends RatingUpdateArgs>(
+      args: SelectSubset<T, RatingUpdateArgs<ExtArgs>>
+    ): Prisma__RatingClient<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'update',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Delete zero or more Ratings.
+     * @param {RatingDeleteManyArgs} args - Arguments to filter Ratings to delete.
+     * @example
+     * // Delete a few Ratings
+     * const { count } = await prisma.rating.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends RatingDeleteManyArgs>(
+      args?: SelectSubset<T, RatingDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Ratings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Ratings
+     * const rating = await prisma.rating.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends RatingUpdateManyArgs>(
+      args: SelectSubset<T, RatingUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Ratings and returns the data updated in the database.
+     * @param {RatingUpdateManyAndReturnArgs} args - Arguments to update many Ratings.
+     * @example
+     * // Update many Ratings
+     * const rating = await prisma.rating.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Ratings and only return the `id`
+     * const ratingWithIdOnly = await prisma.rating.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends RatingUpdateManyAndReturnArgs>(
+      args: SelectSubset<T, RatingUpdateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'updateManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create or update one Rating.
+     * @param {RatingUpsertArgs} args - Arguments to update or create a Rating.
+     * @example
+     * // Update or create a Rating
+     * const rating = await prisma.rating.upsert({
+     *   create: {
+     *     // ... data to create a Rating
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Rating we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RatingUpsertArgs>(
+      args: SelectSubset<T, RatingUpsertArgs<ExtArgs>>
+    ): Prisma__RatingClient<
+      $Result.GetResult<
+        Prisma.$RatingPayload<ExtArgs>,
+        T,
+        'upsert',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Count the number of Ratings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingCountArgs} args - Arguments to filter Ratings to count.
+     * @example
+     * // Count the number of Ratings
+     * const count = await prisma.rating.count({
+     *   where: {
+     *     // ... the filter for the Ratings we want to count
+     *   }
+     * })
+     **/
+    count<T extends RatingCountArgs>(
+      args?: Subset<T, RatingCountArgs>
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RatingCountAggregateOutputType>
+        : number
+    >;
+
+    /**
+     * Allows you to perform aggregations operations on a Rating.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
+    aggregate<T extends RatingAggregateArgs>(
+      args: Subset<T, RatingAggregateArgs>
+    ): Prisma.PrismaPromise<GetRatingAggregateType<T>>;
+
+    /**
+     * Group by Rating.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
+    groupBy<
+      T extends RatingGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RatingGroupByArgs['orderBy'] }
+        : { orderBy?: RatingGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<
+        Keys<MaybeTupleToUnion<T['orderBy']>>
+      >,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+        ? `Error: "by" must not be empty.`
+        : HavingValid extends False
+          ? {
+              [P in HavingFields]: P extends ByFields
+                ? never
+                : P extends string
+                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+                  : [
+                      Error,
+                      'Field ',
+                      P,
+                      ` in "having" needs to be provided in "by"`
+                    ];
+            }[HavingFields]
+          : 'take' extends Keys<T>
+            ? 'orderBy' extends Keys<T>
+              ? ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+              : 'Error: If you provide "take", you also need to provide "orderBy"'
+            : 'skip' extends Keys<T>
+              ? 'orderBy' extends Keys<T>
+                ? ByValid extends True
+                  ? {}
+                  : {
+                      [P in OrderFields]: P extends ByFields
+                        ? never
+                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                    }[OrderFields]
+                : 'Error: If you provide "skip", you also need to provide "orderBy"'
+              : ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+    >(
+      args: SubsetIntersection<T, RatingGroupByArgs, OrderByArg> & InputErrors
+    ): {} extends InputErrors
+      ? GetRatingGroupByPayload<T>
+      : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the Rating model
+     */
+    readonly fields: RatingFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Rating.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RatingClient<
+    T,
+    Null = never,
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {}
+  > extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(
+      args?: Subset<T, UserDefaultArgs<ExtArgs>>
+    ): Prisma__UserClient<
+      | $Result.GetResult<
+          Prisma.$UserPayload<ExtArgs>,
+          T,
+          'findUniqueOrThrow',
+          GlobalOmitOptions
+        >
+      | Null,
+      Null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?:
+        | ((value: T) => TResult1 | PromiseLike<TResult1>)
+        | undefined
+        | null,
+      onrejected?:
+        | ((reason: any) => TResult2 | PromiseLike<TResult2>)
+        | undefined
+        | null
+    ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(
+      onrejected?:
+        | ((reason: any) => TResult | PromiseLike<TResult>)
+        | undefined
+        | null
+    ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+  /**
+   * Fields of the Rating model
+   */
+  interface RatingFieldRefs {
+    readonly id: FieldRef<'Rating', 'String'>;
+    readonly userId: FieldRef<'Rating', 'String'>;
+    readonly variant: FieldRef<'Rating', 'String'>;
+    readonly rating: FieldRef<'Rating', 'Int'>;
+    readonly rd: FieldRef<'Rating', 'Float'>;
+    readonly sigma: FieldRef<'Rating', 'Float'>;
+    readonly gameCount: FieldRef<'Rating', 'Int'>;
+    readonly createdAt: FieldRef<'Rating', 'DateTime'>;
+    readonly updatedAt: FieldRef<'Rating', 'DateTime'>;
+  }
+
+  // Custom InputTypes
+  /**
+   * Rating findUnique
+   */
+  export type RatingFindUniqueArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Rating to fetch.
+     */
+    where: RatingWhereUniqueInput;
+  };
+
+  /**
+   * Rating findUniqueOrThrow
+   */
+  export type RatingFindUniqueOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Rating to fetch.
+     */
+    where: RatingWhereUniqueInput;
+  };
+
+  /**
+   * Rating findFirst
+   */
+  export type RatingFindFirstArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Rating to fetch.
+     */
+    where?: RatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Ratings to fetch.
+     */
+    orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Ratings.
+     */
+    cursor?: RatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Ratings from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Ratings.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Ratings.
+     */
+    distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[];
+  };
+
+  /**
+   * Rating findFirstOrThrow
+   */
+  export type RatingFindFirstOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Rating to fetch.
+     */
+    where?: RatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Ratings to fetch.
+     */
+    orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Ratings.
+     */
+    cursor?: RatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Ratings from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Ratings.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Ratings.
+     */
+    distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[];
+  };
+
+  /**
+   * Rating findMany
+   */
+  export type RatingFindManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Ratings to fetch.
+     */
+    where?: RatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Ratings to fetch.
+     */
+    orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Ratings.
+     */
+    cursor?: RatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Ratings from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Ratings.
+     */
+    skip?: number;
+    distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[];
+  };
+
+  /**
+   * Rating create
+   */
+  export type RatingCreateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a Rating.
+     */
+    data: XOR<RatingCreateInput, RatingUncheckedCreateInput>;
+  };
+
+  /**
+   * Rating createMany
+   */
+  export type RatingCreateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * The data used to create many Ratings.
+     */
+    data: RatingCreateManyInput | RatingCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * Rating createManyAndReturn
+   */
+  export type RatingCreateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * The data used to create many Ratings.
+     */
+    data: RatingCreateManyInput | RatingCreateManyInput[];
+    skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingIncludeCreateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * Rating update
+   */
+  export type RatingUpdateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a Rating.
+     */
+    data: XOR<RatingUpdateInput, RatingUncheckedUpdateInput>;
+    /**
+     * Choose, which Rating to update.
+     */
+    where: RatingWhereUniqueInput;
+  };
+
+  /**
+   * Rating updateMany
+   */
+  export type RatingUpdateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * The data used to update Ratings.
+     */
+    data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyInput>;
+    /**
+     * Filter which Ratings to update
+     */
+    where?: RatingWhereInput;
+    /**
+     * Limit how many Ratings to update.
+     */
+    limit?: number;
+  };
+
+  /**
+   * Rating updateManyAndReturn
+   */
+  export type RatingUpdateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * The data used to update Ratings.
+     */
+    data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyInput>;
+    /**
+     * Filter which Ratings to update
+     */
+    where?: RatingWhereInput;
+    /**
+     * Limit how many Ratings to update.
+     */
+    limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingIncludeUpdateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * Rating upsert
+   */
+  export type RatingUpsertArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the Rating to update in case it exists.
+     */
+    where: RatingWhereUniqueInput;
+    /**
+     * In case the Rating found by the `where` argument doesn't exist, create a new Rating with this data.
+     */
+    create: XOR<RatingCreateInput, RatingUncheckedCreateInput>;
+    /**
+     * In case the Rating was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RatingUpdateInput, RatingUncheckedUpdateInput>;
+  };
+
+  /**
+   * Rating delete
+   */
+  export type RatingDeleteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter which Rating to delete.
+     */
+    where: RatingWhereUniqueInput;
+  };
+
+  /**
+   * Rating deleteMany
+   */
+  export type RatingDeleteManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Filter which Ratings to delete
+     */
+    where?: RatingWhereInput;
+    /**
+     * Limit how many Ratings to delete.
+     */
+    limit?: number;
+  };
+
+  /**
+   * Rating without action
+   */
+  export type RatingDefaultArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null;
+  };
+
+  /**
    * Enums
    */
 
@@ -8240,12 +13055,68 @@ export namespace Prisma {
   export type AuthenticatorScalarFieldEnum =
     (typeof AuthenticatorScalarFieldEnum)[keyof typeof AuthenticatorScalarFieldEnum];
 
+  export const GameScalarFieldEnum: {
+    id: 'id';
+    roomId: 'roomId';
+    whiteUserId: 'whiteUserId';
+    blackUserId: 'blackUserId';
+    variant: 'variant';
+    gameType: 'gameType';
+    result: 'result';
+    resultReason: 'resultReason';
+    moves: 'moves';
+    startingFen: 'startingFen';
+    timeControl: 'timeControl';
+    whitePregameRating: 'whitePregameRating';
+    blackPregameRating: 'blackPregameRating';
+    whiteRatingDelta: 'whiteRatingDelta';
+    blackRatingDelta: 'blackRatingDelta';
+    moveCount: 'moveCount';
+    createdAt: 'createdAt';
+  };
+
+  export type GameScalarFieldEnum =
+    (typeof GameScalarFieldEnum)[keyof typeof GameScalarFieldEnum];
+
+  export const GameAnalysisScalarFieldEnum: {
+    id: 'id';
+    gameId: 'gameId';
+    userId: 'userId';
+    results: 'results';
+    createdAt: 'createdAt';
+  };
+
+  export type GameAnalysisScalarFieldEnum =
+    (typeof GameAnalysisScalarFieldEnum)[keyof typeof GameAnalysisScalarFieldEnum];
+
+  export const RatingScalarFieldEnum: {
+    id: 'id';
+    userId: 'userId';
+    variant: 'variant';
+    rating: 'rating';
+    rd: 'rd';
+    sigma: 'sigma';
+    gameCount: 'gameCount';
+    createdAt: 'createdAt';
+    updatedAt: 'updatedAt';
+  };
+
+  export type RatingScalarFieldEnum =
+    (typeof RatingScalarFieldEnum)[keyof typeof RatingScalarFieldEnum];
+
   export const SortOrder: {
     asc: 'asc';
     desc: 'desc';
   };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+
+  export const JsonNullValueInput: {
+    JsonNull: typeof JsonNull;
+  };
+
+  export type JsonNullValueInput =
+    (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
 
   export const QueryMode: {
     default: 'default';
@@ -8260,6 +13131,15 @@ export namespace Prisma {
   };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
+
+  export const JsonNullValueFilter: {
+    DbNull: typeof DbNull;
+    JsonNull: typeof JsonNull;
+    AnyNull: typeof AnyNull;
+  };
+
+  export type JsonNullValueFilter =
+    (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];
 
   /**
    * Field references
@@ -8322,6 +13202,22 @@ export namespace Prisma {
   >;
 
   /**
+   * Reference to a field of type 'Json'
+   */
+  export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'Json'
+  >;
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
+  export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<
+    $PrismaModel,
+    'QueryMode'
+  >;
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
@@ -8355,6 +13251,10 @@ export namespace Prisma {
     accounts?: AccountListRelationFilter;
     sessions?: SessionListRelationFilter;
     Authenticator?: AuthenticatorListRelationFilter;
+    whiteGames?: GameListRelationFilter;
+    blackGames?: GameListRelationFilter;
+    ratings?: RatingListRelationFilter;
+    analyses?: GameAnalysisListRelationFilter;
   };
 
   export type UserOrderByWithRelationInput = {
@@ -8368,6 +13268,10 @@ export namespace Prisma {
     accounts?: AccountOrderByRelationAggregateInput;
     sessions?: SessionOrderByRelationAggregateInput;
     Authenticator?: AuthenticatorOrderByRelationAggregateInput;
+    whiteGames?: GameOrderByRelationAggregateInput;
+    blackGames?: GameOrderByRelationAggregateInput;
+    ratings?: RatingOrderByRelationAggregateInput;
+    analyses?: GameAnalysisOrderByRelationAggregateInput;
   };
 
   export type UserWhereUniqueInput = Prisma.AtLeast<
@@ -8385,6 +13289,10 @@ export namespace Prisma {
       accounts?: AccountListRelationFilter;
       sessions?: SessionListRelationFilter;
       Authenticator?: AuthenticatorListRelationFilter;
+      whiteGames?: GameListRelationFilter;
+      blackGames?: GameListRelationFilter;
+      ratings?: RatingListRelationFilter;
+      analyses?: GameAnalysisListRelationFilter;
     },
     'id' | 'email'
   >;
@@ -8732,6 +13640,298 @@ export namespace Prisma {
       | null;
   };
 
+  export type GameWhereInput = {
+    AND?: GameWhereInput | GameWhereInput[];
+    OR?: GameWhereInput[];
+    NOT?: GameWhereInput | GameWhereInput[];
+    id?: StringFilter<'Game'> | string;
+    roomId?: StringNullableFilter<'Game'> | string | null;
+    whiteUserId?: StringNullableFilter<'Game'> | string | null;
+    blackUserId?: StringNullableFilter<'Game'> | string | null;
+    variant?: StringFilter<'Game'> | string;
+    gameType?: StringFilter<'Game'> | string;
+    result?: StringFilter<'Game'> | string;
+    resultReason?: StringFilter<'Game'> | string;
+    moves?: StringNullableListFilter<'Game'>;
+    startingFen?: StringFilter<'Game'> | string;
+    timeControl?: JsonFilter<'Game'>;
+    whitePregameRating?: IntNullableFilter<'Game'> | number | null;
+    blackPregameRating?: IntNullableFilter<'Game'> | number | null;
+    whiteRatingDelta?: IntNullableFilter<'Game'> | number | null;
+    blackRatingDelta?: IntNullableFilter<'Game'> | number | null;
+    moveCount?: IntFilter<'Game'> | number;
+    createdAt?: DateTimeFilter<'Game'> | Date | string;
+    white?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null;
+    black?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null;
+    analysis?: XOR<
+      GameAnalysisNullableScalarRelationFilter,
+      GameAnalysisWhereInput
+    > | null;
+  };
+
+  export type GameOrderByWithRelationInput = {
+    id?: SortOrder;
+    roomId?: SortOrderInput | SortOrder;
+    whiteUserId?: SortOrderInput | SortOrder;
+    blackUserId?: SortOrderInput | SortOrder;
+    variant?: SortOrder;
+    gameType?: SortOrder;
+    result?: SortOrder;
+    resultReason?: SortOrder;
+    moves?: SortOrder;
+    startingFen?: SortOrder;
+    timeControl?: SortOrder;
+    whitePregameRating?: SortOrderInput | SortOrder;
+    blackPregameRating?: SortOrderInput | SortOrder;
+    whiteRatingDelta?: SortOrderInput | SortOrder;
+    blackRatingDelta?: SortOrderInput | SortOrder;
+    moveCount?: SortOrder;
+    createdAt?: SortOrder;
+    white?: UserOrderByWithRelationInput;
+    black?: UserOrderByWithRelationInput;
+    analysis?: GameAnalysisOrderByWithRelationInput;
+  };
+
+  export type GameWhereUniqueInput = Prisma.AtLeast<
+    {
+      id?: string;
+      roomId?: string;
+      AND?: GameWhereInput | GameWhereInput[];
+      OR?: GameWhereInput[];
+      NOT?: GameWhereInput | GameWhereInput[];
+      whiteUserId?: StringNullableFilter<'Game'> | string | null;
+      blackUserId?: StringNullableFilter<'Game'> | string | null;
+      variant?: StringFilter<'Game'> | string;
+      gameType?: StringFilter<'Game'> | string;
+      result?: StringFilter<'Game'> | string;
+      resultReason?: StringFilter<'Game'> | string;
+      moves?: StringNullableListFilter<'Game'>;
+      startingFen?: StringFilter<'Game'> | string;
+      timeControl?: JsonFilter<'Game'>;
+      whitePregameRating?: IntNullableFilter<'Game'> | number | null;
+      blackPregameRating?: IntNullableFilter<'Game'> | number | null;
+      whiteRatingDelta?: IntNullableFilter<'Game'> | number | null;
+      blackRatingDelta?: IntNullableFilter<'Game'> | number | null;
+      moveCount?: IntFilter<'Game'> | number;
+      createdAt?: DateTimeFilter<'Game'> | Date | string;
+      white?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null;
+      black?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null;
+      analysis?: XOR<
+        GameAnalysisNullableScalarRelationFilter,
+        GameAnalysisWhereInput
+      > | null;
+    },
+    'id' | 'roomId'
+  >;
+
+  export type GameOrderByWithAggregationInput = {
+    id?: SortOrder;
+    roomId?: SortOrderInput | SortOrder;
+    whiteUserId?: SortOrderInput | SortOrder;
+    blackUserId?: SortOrderInput | SortOrder;
+    variant?: SortOrder;
+    gameType?: SortOrder;
+    result?: SortOrder;
+    resultReason?: SortOrder;
+    moves?: SortOrder;
+    startingFen?: SortOrder;
+    timeControl?: SortOrder;
+    whitePregameRating?: SortOrderInput | SortOrder;
+    blackPregameRating?: SortOrderInput | SortOrder;
+    whiteRatingDelta?: SortOrderInput | SortOrder;
+    blackRatingDelta?: SortOrderInput | SortOrder;
+    moveCount?: SortOrder;
+    createdAt?: SortOrder;
+    _count?: GameCountOrderByAggregateInput;
+    _avg?: GameAvgOrderByAggregateInput;
+    _max?: GameMaxOrderByAggregateInput;
+    _min?: GameMinOrderByAggregateInput;
+    _sum?: GameSumOrderByAggregateInput;
+  };
+
+  export type GameScalarWhereWithAggregatesInput = {
+    AND?:
+      | GameScalarWhereWithAggregatesInput
+      | GameScalarWhereWithAggregatesInput[];
+    OR?: GameScalarWhereWithAggregatesInput[];
+    NOT?:
+      | GameScalarWhereWithAggregatesInput
+      | GameScalarWhereWithAggregatesInput[];
+    id?: StringWithAggregatesFilter<'Game'> | string;
+    roomId?: StringNullableWithAggregatesFilter<'Game'> | string | null;
+    whiteUserId?: StringNullableWithAggregatesFilter<'Game'> | string | null;
+    blackUserId?: StringNullableWithAggregatesFilter<'Game'> | string | null;
+    variant?: StringWithAggregatesFilter<'Game'> | string;
+    gameType?: StringWithAggregatesFilter<'Game'> | string;
+    result?: StringWithAggregatesFilter<'Game'> | string;
+    resultReason?: StringWithAggregatesFilter<'Game'> | string;
+    moves?: StringNullableListFilter<'Game'>;
+    startingFen?: StringWithAggregatesFilter<'Game'> | string;
+    timeControl?: JsonWithAggregatesFilter<'Game'>;
+    whitePregameRating?:
+      | IntNullableWithAggregatesFilter<'Game'>
+      | number
+      | null;
+    blackPregameRating?:
+      | IntNullableWithAggregatesFilter<'Game'>
+      | number
+      | null;
+    whiteRatingDelta?: IntNullableWithAggregatesFilter<'Game'> | number | null;
+    blackRatingDelta?: IntNullableWithAggregatesFilter<'Game'> | number | null;
+    moveCount?: IntWithAggregatesFilter<'Game'> | number;
+    createdAt?: DateTimeWithAggregatesFilter<'Game'> | Date | string;
+  };
+
+  export type GameAnalysisWhereInput = {
+    AND?: GameAnalysisWhereInput | GameAnalysisWhereInput[];
+    OR?: GameAnalysisWhereInput[];
+    NOT?: GameAnalysisWhereInput | GameAnalysisWhereInput[];
+    id?: StringFilter<'GameAnalysis'> | string;
+    gameId?: StringFilter<'GameAnalysis'> | string;
+    userId?: StringFilter<'GameAnalysis'> | string;
+    results?: JsonFilter<'GameAnalysis'>;
+    createdAt?: DateTimeFilter<'GameAnalysis'> | Date | string;
+    game?: XOR<GameScalarRelationFilter, GameWhereInput>;
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>;
+  };
+
+  export type GameAnalysisOrderByWithRelationInput = {
+    id?: SortOrder;
+    gameId?: SortOrder;
+    userId?: SortOrder;
+    results?: SortOrder;
+    createdAt?: SortOrder;
+    game?: GameOrderByWithRelationInput;
+    user?: UserOrderByWithRelationInput;
+  };
+
+  export type GameAnalysisWhereUniqueInput = Prisma.AtLeast<
+    {
+      id?: string;
+      gameId?: string;
+      AND?: GameAnalysisWhereInput | GameAnalysisWhereInput[];
+      OR?: GameAnalysisWhereInput[];
+      NOT?: GameAnalysisWhereInput | GameAnalysisWhereInput[];
+      userId?: StringFilter<'GameAnalysis'> | string;
+      results?: JsonFilter<'GameAnalysis'>;
+      createdAt?: DateTimeFilter<'GameAnalysis'> | Date | string;
+      game?: XOR<GameScalarRelationFilter, GameWhereInput>;
+      user?: XOR<UserScalarRelationFilter, UserWhereInput>;
+    },
+    'id' | 'gameId'
+  >;
+
+  export type GameAnalysisOrderByWithAggregationInput = {
+    id?: SortOrder;
+    gameId?: SortOrder;
+    userId?: SortOrder;
+    results?: SortOrder;
+    createdAt?: SortOrder;
+    _count?: GameAnalysisCountOrderByAggregateInput;
+    _max?: GameAnalysisMaxOrderByAggregateInput;
+    _min?: GameAnalysisMinOrderByAggregateInput;
+  };
+
+  export type GameAnalysisScalarWhereWithAggregatesInput = {
+    AND?:
+      | GameAnalysisScalarWhereWithAggregatesInput
+      | GameAnalysisScalarWhereWithAggregatesInput[];
+    OR?: GameAnalysisScalarWhereWithAggregatesInput[];
+    NOT?:
+      | GameAnalysisScalarWhereWithAggregatesInput
+      | GameAnalysisScalarWhereWithAggregatesInput[];
+    id?: StringWithAggregatesFilter<'GameAnalysis'> | string;
+    gameId?: StringWithAggregatesFilter<'GameAnalysis'> | string;
+    userId?: StringWithAggregatesFilter<'GameAnalysis'> | string;
+    results?: JsonWithAggregatesFilter<'GameAnalysis'>;
+    createdAt?: DateTimeWithAggregatesFilter<'GameAnalysis'> | Date | string;
+  };
+
+  export type RatingWhereInput = {
+    AND?: RatingWhereInput | RatingWhereInput[];
+    OR?: RatingWhereInput[];
+    NOT?: RatingWhereInput | RatingWhereInput[];
+    id?: StringFilter<'Rating'> | string;
+    userId?: StringFilter<'Rating'> | string;
+    variant?: StringFilter<'Rating'> | string;
+    rating?: IntFilter<'Rating'> | number;
+    rd?: FloatFilter<'Rating'> | number;
+    sigma?: FloatFilter<'Rating'> | number;
+    gameCount?: IntFilter<'Rating'> | number;
+    createdAt?: DateTimeFilter<'Rating'> | Date | string;
+    updatedAt?: DateTimeFilter<'Rating'> | Date | string;
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>;
+  };
+
+  export type RatingOrderByWithRelationInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    variant?: SortOrder;
+    rating?: SortOrder;
+    rd?: SortOrder;
+    sigma?: SortOrder;
+    gameCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    user?: UserOrderByWithRelationInput;
+  };
+
+  export type RatingWhereUniqueInput = Prisma.AtLeast<
+    {
+      id?: string;
+      userId_variant?: RatingUserIdVariantCompoundUniqueInput;
+      AND?: RatingWhereInput | RatingWhereInput[];
+      OR?: RatingWhereInput[];
+      NOT?: RatingWhereInput | RatingWhereInput[];
+      userId?: StringFilter<'Rating'> | string;
+      variant?: StringFilter<'Rating'> | string;
+      rating?: IntFilter<'Rating'> | number;
+      rd?: FloatFilter<'Rating'> | number;
+      sigma?: FloatFilter<'Rating'> | number;
+      gameCount?: IntFilter<'Rating'> | number;
+      createdAt?: DateTimeFilter<'Rating'> | Date | string;
+      updatedAt?: DateTimeFilter<'Rating'> | Date | string;
+      user?: XOR<UserScalarRelationFilter, UserWhereInput>;
+    },
+    'id' | 'userId_variant'
+  >;
+
+  export type RatingOrderByWithAggregationInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    variant?: SortOrder;
+    rating?: SortOrder;
+    rd?: SortOrder;
+    sigma?: SortOrder;
+    gameCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+    _count?: RatingCountOrderByAggregateInput;
+    _avg?: RatingAvgOrderByAggregateInput;
+    _max?: RatingMaxOrderByAggregateInput;
+    _min?: RatingMinOrderByAggregateInput;
+    _sum?: RatingSumOrderByAggregateInput;
+  };
+
+  export type RatingScalarWhereWithAggregatesInput = {
+    AND?:
+      | RatingScalarWhereWithAggregatesInput
+      | RatingScalarWhereWithAggregatesInput[];
+    OR?: RatingScalarWhereWithAggregatesInput[];
+    NOT?:
+      | RatingScalarWhereWithAggregatesInput
+      | RatingScalarWhereWithAggregatesInput[];
+    id?: StringWithAggregatesFilter<'Rating'> | string;
+    userId?: StringWithAggregatesFilter<'Rating'> | string;
+    variant?: StringWithAggregatesFilter<'Rating'> | string;
+    rating?: IntWithAggregatesFilter<'Rating'> | number;
+    rd?: FloatWithAggregatesFilter<'Rating'> | number;
+    sigma?: FloatWithAggregatesFilter<'Rating'> | number;
+    gameCount?: IntWithAggregatesFilter<'Rating'> | number;
+    createdAt?: DateTimeWithAggregatesFilter<'Rating'> | Date | string;
+    updatedAt?: DateTimeWithAggregatesFilter<'Rating'> | Date | string;
+  };
+
   export type UserCreateInput = {
     id?: string;
     name?: string | null;
@@ -8743,6 +13943,10 @@ export namespace Prisma {
     accounts?: AccountCreateNestedManyWithoutUserInput;
     sessions?: SessionCreateNestedManyWithoutUserInput;
     Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
+    whiteGames?: GameCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameCreateNestedManyWithoutBlackInput;
+    ratings?: RatingCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateInput = {
@@ -8756,6 +13960,10 @@ export namespace Prisma {
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
     Authenticator?: AuthenticatorUncheckedCreateNestedManyWithoutUserInput;
+    whiteGames?: GameUncheckedCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameUncheckedCreateNestedManyWithoutBlackInput;
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserUpdateInput = {
@@ -8773,6 +13981,10 @@ export namespace Prisma {
     accounts?: AccountUpdateManyWithoutUserNestedInput;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
     Authenticator?: AuthenticatorUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateInput = {
@@ -8790,6 +14002,10 @@ export namespace Prisma {
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
     Authenticator?: AuthenticatorUncheckedUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUncheckedUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUncheckedUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateManyInput = {
@@ -9114,6 +14330,285 @@ export namespace Prisma {
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
   };
 
+  export type GameCreateInput = {
+    id?: string;
+    roomId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+    white?: UserCreateNestedOneWithoutWhiteGamesInput;
+    black?: UserCreateNestedOneWithoutBlackGamesInput;
+    analysis?: GameAnalysisCreateNestedOneWithoutGameInput;
+  };
+
+  export type GameUncheckedCreateInput = {
+    id?: string;
+    roomId?: string | null;
+    whiteUserId?: string | null;
+    blackUserId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+    analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
+  };
+
+  export type GameUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    white?: UserUpdateOneWithoutWhiteGamesNestedInput;
+    black?: UserUpdateOneWithoutBlackGamesNestedInput;
+    analysis?: GameAnalysisUpdateOneWithoutGameNestedInput;
+  };
+
+  export type GameUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    whiteUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    blackUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
+  };
+
+  export type GameCreateManyInput = {
+    id?: string;
+    roomId?: string | null;
+    whiteUserId?: string | null;
+    blackUserId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+  };
+
+  export type GameUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type GameUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    whiteUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    blackUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type GameAnalysisCreateInput = {
+    id?: string;
+    results: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+    game: GameCreateNestedOneWithoutAnalysisInput;
+    user: UserCreateNestedOneWithoutAnalysesInput;
+  };
+
+  export type GameAnalysisUncheckedCreateInput = {
+    id?: string;
+    gameId: string;
+    userId: string;
+    results: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+  };
+
+  export type GameAnalysisUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    game?: GameUpdateOneRequiredWithoutAnalysisNestedInput;
+    user?: UserUpdateOneRequiredWithoutAnalysesNestedInput;
+  };
+
+  export type GameAnalysisUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    gameId?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type GameAnalysisCreateManyInput = {
+    id?: string;
+    gameId: string;
+    userId: string;
+    results: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+  };
+
+  export type GameAnalysisUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type GameAnalysisUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    gameId?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type RatingCreateInput = {
+    id?: string;
+    variant: string;
+    rating?: number;
+    rd?: number;
+    sigma?: number;
+    gameCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    user: UserCreateNestedOneWithoutRatingsInput;
+  };
+
+  export type RatingUncheckedCreateInput = {
+    id?: string;
+    userId: string;
+    variant: string;
+    rating?: number;
+    rd?: number;
+    sigma?: number;
+    gameCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type RatingUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
+    rating?: IntFieldUpdateOperationsInput | number;
+    rd?: FloatFieldUpdateOperationsInput | number;
+    sigma?: FloatFieldUpdateOperationsInput | number;
+    gameCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    user?: UserUpdateOneRequiredWithoutRatingsNestedInput;
+  };
+
+  export type RatingUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
+    rating?: IntFieldUpdateOperationsInput | number;
+    rd?: FloatFieldUpdateOperationsInput | number;
+    sigma?: FloatFieldUpdateOperationsInput | number;
+    gameCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type RatingCreateManyInput = {
+    id?: string;
+    userId: string;
+    variant: string;
+    rating?: number;
+    rd?: number;
+    sigma?: number;
+    gameCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type RatingUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
+    rating?: IntFieldUpdateOperationsInput | number;
+    rd?: FloatFieldUpdateOperationsInput | number;
+    sigma?: FloatFieldUpdateOperationsInput | number;
+    gameCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type RatingUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
+    rating?: IntFieldUpdateOperationsInput | number;
+    rd?: FloatFieldUpdateOperationsInput | number;
+    sigma?: FloatFieldUpdateOperationsInput | number;
+    gameCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -9184,6 +14679,24 @@ export namespace Prisma {
     none?: AuthenticatorWhereInput;
   };
 
+  export type GameListRelationFilter = {
+    every?: GameWhereInput;
+    some?: GameWhereInput;
+    none?: GameWhereInput;
+  };
+
+  export type RatingListRelationFilter = {
+    every?: RatingWhereInput;
+    some?: RatingWhereInput;
+    none?: RatingWhereInput;
+  };
+
+  export type GameAnalysisListRelationFilter = {
+    every?: GameAnalysisWhereInput;
+    some?: GameAnalysisWhereInput;
+    none?: GameAnalysisWhereInput;
+  };
+
   export type SortOrderInput = {
     sort: SortOrder;
     nulls?: NullsOrder;
@@ -9198,6 +14711,18 @@ export namespace Prisma {
   };
 
   export type AuthenticatorOrderByRelationAggregateInput = {
+    _count?: SortOrder;
+  };
+
+  export type GameOrderByRelationAggregateInput = {
+    _count?: SortOrder;
+  };
+
+  export type RatingOrderByRelationAggregateInput = {
+    _count?: SortOrder;
+  };
+
+  export type GameAnalysisOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
 
@@ -9528,6 +15053,277 @@ export namespace Prisma {
     _max?: NestedBoolFilter<$PrismaModel>;
   };
 
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
+    has?: string | StringFieldRefInput<$PrismaModel> | null;
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>;
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>;
+    isEmpty?: boolean;
+  };
+  export type JsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<JsonFilterBase<$PrismaModel>>,
+          Exclude<keyof Required<JsonFilterBase<$PrismaModel>>, 'path'>
+        >,
+        Required<JsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>;
+
+  export type JsonFilterBase<$PrismaModel = never> = {
+    equals?:
+      | InputJsonValue
+      | JsonFieldRefInput<$PrismaModel>
+      | JsonNullValueFilter;
+    path?: string[];
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>;
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?:
+      | InputJsonValue
+      | JsonFieldRefInput<$PrismaModel>
+      | JsonNullValueFilter;
+  };
+
+  export type UserNullableScalarRelationFilter = {
+    is?: UserWhereInput | null;
+    isNot?: UserWhereInput | null;
+  };
+
+  export type GameAnalysisNullableScalarRelationFilter = {
+    is?: GameAnalysisWhereInput | null;
+    isNot?: GameAnalysisWhereInput | null;
+  };
+
+  export type GameCountOrderByAggregateInput = {
+    id?: SortOrder;
+    roomId?: SortOrder;
+    whiteUserId?: SortOrder;
+    blackUserId?: SortOrder;
+    variant?: SortOrder;
+    gameType?: SortOrder;
+    result?: SortOrder;
+    resultReason?: SortOrder;
+    moves?: SortOrder;
+    startingFen?: SortOrder;
+    timeControl?: SortOrder;
+    whitePregameRating?: SortOrder;
+    blackPregameRating?: SortOrder;
+    whiteRatingDelta?: SortOrder;
+    blackRatingDelta?: SortOrder;
+    moveCount?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type GameAvgOrderByAggregateInput = {
+    whitePregameRating?: SortOrder;
+    blackPregameRating?: SortOrder;
+    whiteRatingDelta?: SortOrder;
+    blackRatingDelta?: SortOrder;
+    moveCount?: SortOrder;
+  };
+
+  export type GameMaxOrderByAggregateInput = {
+    id?: SortOrder;
+    roomId?: SortOrder;
+    whiteUserId?: SortOrder;
+    blackUserId?: SortOrder;
+    variant?: SortOrder;
+    gameType?: SortOrder;
+    result?: SortOrder;
+    resultReason?: SortOrder;
+    startingFen?: SortOrder;
+    whitePregameRating?: SortOrder;
+    blackPregameRating?: SortOrder;
+    whiteRatingDelta?: SortOrder;
+    blackRatingDelta?: SortOrder;
+    moveCount?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type GameMinOrderByAggregateInput = {
+    id?: SortOrder;
+    roomId?: SortOrder;
+    whiteUserId?: SortOrder;
+    blackUserId?: SortOrder;
+    variant?: SortOrder;
+    gameType?: SortOrder;
+    result?: SortOrder;
+    resultReason?: SortOrder;
+    startingFen?: SortOrder;
+    whitePregameRating?: SortOrder;
+    blackPregameRating?: SortOrder;
+    whiteRatingDelta?: SortOrder;
+    blackRatingDelta?: SortOrder;
+    moveCount?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type GameSumOrderByAggregateInput = {
+    whitePregameRating?: SortOrder;
+    blackPregameRating?: SortOrder;
+    whiteRatingDelta?: SortOrder;
+    blackRatingDelta?: SortOrder;
+    moveCount?: SortOrder;
+  };
+  export type JsonWithAggregatesFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<JsonWithAggregatesFilterBase<$PrismaModel>>,
+          Exclude<
+            keyof Required<JsonWithAggregatesFilterBase<$PrismaModel>>,
+            'path'
+          >
+        >,
+        Required<JsonWithAggregatesFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<
+        Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>
+      >;
+
+  export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
+    equals?:
+      | InputJsonValue
+      | JsonFieldRefInput<$PrismaModel>
+      | JsonNullValueFilter;
+    path?: string[];
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>;
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?:
+      | InputJsonValue
+      | JsonFieldRefInput<$PrismaModel>
+      | JsonNullValueFilter;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _min?: NestedJsonFilter<$PrismaModel>;
+    _max?: NestedJsonFilter<$PrismaModel>;
+  };
+
+  export type GameScalarRelationFilter = {
+    is?: GameWhereInput;
+    isNot?: GameWhereInput;
+  };
+
+  export type GameAnalysisCountOrderByAggregateInput = {
+    id?: SortOrder;
+    gameId?: SortOrder;
+    userId?: SortOrder;
+    results?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type GameAnalysisMaxOrderByAggregateInput = {
+    id?: SortOrder;
+    gameId?: SortOrder;
+    userId?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type GameAnalysisMinOrderByAggregateInput = {
+    id?: SortOrder;
+    gameId?: SortOrder;
+    userId?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>;
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>;
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>;
+    lt?: number | FloatFieldRefInput<$PrismaModel>;
+    lte?: number | FloatFieldRefInput<$PrismaModel>;
+    gt?: number | FloatFieldRefInput<$PrismaModel>;
+    gte?: number | FloatFieldRefInput<$PrismaModel>;
+    not?: NestedFloatFilter<$PrismaModel> | number;
+  };
+
+  export type RatingUserIdVariantCompoundUniqueInput = {
+    userId: string;
+    variant: string;
+  };
+
+  export type RatingCountOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    variant?: SortOrder;
+    rating?: SortOrder;
+    rd?: SortOrder;
+    sigma?: SortOrder;
+    gameCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+  };
+
+  export type RatingAvgOrderByAggregateInput = {
+    rating?: SortOrder;
+    rd?: SortOrder;
+    sigma?: SortOrder;
+    gameCount?: SortOrder;
+  };
+
+  export type RatingMaxOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    variant?: SortOrder;
+    rating?: SortOrder;
+    rd?: SortOrder;
+    sigma?: SortOrder;
+    gameCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+  };
+
+  export type RatingMinOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    variant?: SortOrder;
+    rating?: SortOrder;
+    rd?: SortOrder;
+    sigma?: SortOrder;
+    gameCount?: SortOrder;
+    createdAt?: SortOrder;
+    updatedAt?: SortOrder;
+  };
+
+  export type RatingSumOrderByAggregateInput = {
+    rating?: SortOrder;
+    rd?: SortOrder;
+    sigma?: SortOrder;
+    gameCount?: SortOrder;
+  };
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>;
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>;
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>;
+    lt?: number | FloatFieldRefInput<$PrismaModel>;
+    lte?: number | FloatFieldRefInput<$PrismaModel>;
+    gt?: number | FloatFieldRefInput<$PrismaModel>;
+    gte?: number | FloatFieldRefInput<$PrismaModel>;
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _avg?: NestedFloatFilter<$PrismaModel>;
+    _sum?: NestedFloatFilter<$PrismaModel>;
+    _min?: NestedFloatFilter<$PrismaModel>;
+    _max?: NestedFloatFilter<$PrismaModel>;
+  };
+
   export type AccountCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -9573,6 +15369,57 @@ export namespace Prisma {
     connect?: AuthenticatorWhereUniqueInput | AuthenticatorWhereUniqueInput[];
   };
 
+  export type GameCreateNestedManyWithoutWhiteInput = {
+    create?:
+      | XOR<GameCreateWithoutWhiteInput, GameUncheckedCreateWithoutWhiteInput>
+      | GameCreateWithoutWhiteInput[]
+      | GameUncheckedCreateWithoutWhiteInput[];
+    connectOrCreate?:
+      | GameCreateOrConnectWithoutWhiteInput
+      | GameCreateOrConnectWithoutWhiteInput[];
+    createMany?: GameCreateManyWhiteInputEnvelope;
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+  };
+
+  export type GameCreateNestedManyWithoutBlackInput = {
+    create?:
+      | XOR<GameCreateWithoutBlackInput, GameUncheckedCreateWithoutBlackInput>
+      | GameCreateWithoutBlackInput[]
+      | GameUncheckedCreateWithoutBlackInput[];
+    connectOrCreate?:
+      | GameCreateOrConnectWithoutBlackInput
+      | GameCreateOrConnectWithoutBlackInput[];
+    createMany?: GameCreateManyBlackInputEnvelope;
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+  };
+
+  export type RatingCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
+      | RatingCreateWithoutUserInput[]
+      | RatingUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | RatingCreateOrConnectWithoutUserInput
+      | RatingCreateOrConnectWithoutUserInput[];
+    createMany?: RatingCreateManyUserInputEnvelope;
+    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+  };
+
+  export type GameAnalysisCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<
+          GameAnalysisCreateWithoutUserInput,
+          GameAnalysisUncheckedCreateWithoutUserInput
+        >
+      | GameAnalysisCreateWithoutUserInput[]
+      | GameAnalysisUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | GameAnalysisCreateOrConnectWithoutUserInput
+      | GameAnalysisCreateOrConnectWithoutUserInput[];
+    createMany?: GameAnalysisCreateManyUserInputEnvelope;
+    connect?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+  };
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -9616,6 +15463,57 @@ export namespace Prisma {
       | AuthenticatorCreateOrConnectWithoutUserInput[];
     createMany?: AuthenticatorCreateManyUserInputEnvelope;
     connect?: AuthenticatorWhereUniqueInput | AuthenticatorWhereUniqueInput[];
+  };
+
+  export type GameUncheckedCreateNestedManyWithoutWhiteInput = {
+    create?:
+      | XOR<GameCreateWithoutWhiteInput, GameUncheckedCreateWithoutWhiteInput>
+      | GameCreateWithoutWhiteInput[]
+      | GameUncheckedCreateWithoutWhiteInput[];
+    connectOrCreate?:
+      | GameCreateOrConnectWithoutWhiteInput
+      | GameCreateOrConnectWithoutWhiteInput[];
+    createMany?: GameCreateManyWhiteInputEnvelope;
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+  };
+
+  export type GameUncheckedCreateNestedManyWithoutBlackInput = {
+    create?:
+      | XOR<GameCreateWithoutBlackInput, GameUncheckedCreateWithoutBlackInput>
+      | GameCreateWithoutBlackInput[]
+      | GameUncheckedCreateWithoutBlackInput[];
+    connectOrCreate?:
+      | GameCreateOrConnectWithoutBlackInput
+      | GameCreateOrConnectWithoutBlackInput[];
+    createMany?: GameCreateManyBlackInputEnvelope;
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+  };
+
+  export type RatingUncheckedCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
+      | RatingCreateWithoutUserInput[]
+      | RatingUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | RatingCreateOrConnectWithoutUserInput
+      | RatingCreateOrConnectWithoutUserInput[];
+    createMany?: RatingCreateManyUserInputEnvelope;
+    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+  };
+
+  export type GameAnalysisUncheckedCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<
+          GameAnalysisCreateWithoutUserInput,
+          GameAnalysisUncheckedCreateWithoutUserInput
+        >
+      | GameAnalysisCreateWithoutUserInput[]
+      | GameAnalysisUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | GameAnalysisCreateOrConnectWithoutUserInput
+      | GameAnalysisCreateOrConnectWithoutUserInput[];
+    createMany?: GameAnalysisCreateManyUserInputEnvelope;
+    connect?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
   };
 
   export type StringFieldUpdateOperationsInput = {
@@ -9722,6 +15620,109 @@ export namespace Prisma {
       | AuthenticatorScalarWhereInput[];
   };
 
+  export type GameUpdateManyWithoutWhiteNestedInput = {
+    create?:
+      | XOR<GameCreateWithoutWhiteInput, GameUncheckedCreateWithoutWhiteInput>
+      | GameCreateWithoutWhiteInput[]
+      | GameUncheckedCreateWithoutWhiteInput[];
+    connectOrCreate?:
+      | GameCreateOrConnectWithoutWhiteInput
+      | GameCreateOrConnectWithoutWhiteInput[];
+    upsert?:
+      | GameUpsertWithWhereUniqueWithoutWhiteInput
+      | GameUpsertWithWhereUniqueWithoutWhiteInput[];
+    createMany?: GameCreateManyWhiteInputEnvelope;
+    set?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    disconnect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    delete?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    update?:
+      | GameUpdateWithWhereUniqueWithoutWhiteInput
+      | GameUpdateWithWhereUniqueWithoutWhiteInput[];
+    updateMany?:
+      | GameUpdateManyWithWhereWithoutWhiteInput
+      | GameUpdateManyWithWhereWithoutWhiteInput[];
+    deleteMany?: GameScalarWhereInput | GameScalarWhereInput[];
+  };
+
+  export type GameUpdateManyWithoutBlackNestedInput = {
+    create?:
+      | XOR<GameCreateWithoutBlackInput, GameUncheckedCreateWithoutBlackInput>
+      | GameCreateWithoutBlackInput[]
+      | GameUncheckedCreateWithoutBlackInput[];
+    connectOrCreate?:
+      | GameCreateOrConnectWithoutBlackInput
+      | GameCreateOrConnectWithoutBlackInput[];
+    upsert?:
+      | GameUpsertWithWhereUniqueWithoutBlackInput
+      | GameUpsertWithWhereUniqueWithoutBlackInput[];
+    createMany?: GameCreateManyBlackInputEnvelope;
+    set?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    disconnect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    delete?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    update?:
+      | GameUpdateWithWhereUniqueWithoutBlackInput
+      | GameUpdateWithWhereUniqueWithoutBlackInput[];
+    updateMany?:
+      | GameUpdateManyWithWhereWithoutBlackInput
+      | GameUpdateManyWithWhereWithoutBlackInput[];
+    deleteMany?: GameScalarWhereInput | GameScalarWhereInput[];
+  };
+
+  export type RatingUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
+      | RatingCreateWithoutUserInput[]
+      | RatingUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | RatingCreateOrConnectWithoutUserInput
+      | RatingCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | RatingUpsertWithWhereUniqueWithoutUserInput
+      | RatingUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: RatingCreateManyUserInputEnvelope;
+    set?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+    disconnect?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+    delete?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+    update?:
+      | RatingUpdateWithWhereUniqueWithoutUserInput
+      | RatingUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | RatingUpdateManyWithWhereWithoutUserInput
+      | RatingUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[];
+  };
+
+  export type GameAnalysisUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<
+          GameAnalysisCreateWithoutUserInput,
+          GameAnalysisUncheckedCreateWithoutUserInput
+        >
+      | GameAnalysisCreateWithoutUserInput[]
+      | GameAnalysisUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | GameAnalysisCreateOrConnectWithoutUserInput
+      | GameAnalysisCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | GameAnalysisUpsertWithWhereUniqueWithoutUserInput
+      | GameAnalysisUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: GameAnalysisCreateManyUserInputEnvelope;
+    set?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+    disconnect?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+    delete?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+    connect?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+    update?:
+      | GameAnalysisUpdateWithWhereUniqueWithoutUserInput
+      | GameAnalysisUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | GameAnalysisUpdateManyWithWhereWithoutUserInput
+      | GameAnalysisUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: GameAnalysisScalarWhereInput | GameAnalysisScalarWhereInput[];
+  };
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -9808,6 +15809,109 @@ export namespace Prisma {
     deleteMany?:
       | AuthenticatorScalarWhereInput
       | AuthenticatorScalarWhereInput[];
+  };
+
+  export type GameUncheckedUpdateManyWithoutWhiteNestedInput = {
+    create?:
+      | XOR<GameCreateWithoutWhiteInput, GameUncheckedCreateWithoutWhiteInput>
+      | GameCreateWithoutWhiteInput[]
+      | GameUncheckedCreateWithoutWhiteInput[];
+    connectOrCreate?:
+      | GameCreateOrConnectWithoutWhiteInput
+      | GameCreateOrConnectWithoutWhiteInput[];
+    upsert?:
+      | GameUpsertWithWhereUniqueWithoutWhiteInput
+      | GameUpsertWithWhereUniqueWithoutWhiteInput[];
+    createMany?: GameCreateManyWhiteInputEnvelope;
+    set?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    disconnect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    delete?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    update?:
+      | GameUpdateWithWhereUniqueWithoutWhiteInput
+      | GameUpdateWithWhereUniqueWithoutWhiteInput[];
+    updateMany?:
+      | GameUpdateManyWithWhereWithoutWhiteInput
+      | GameUpdateManyWithWhereWithoutWhiteInput[];
+    deleteMany?: GameScalarWhereInput | GameScalarWhereInput[];
+  };
+
+  export type GameUncheckedUpdateManyWithoutBlackNestedInput = {
+    create?:
+      | XOR<GameCreateWithoutBlackInput, GameUncheckedCreateWithoutBlackInput>
+      | GameCreateWithoutBlackInput[]
+      | GameUncheckedCreateWithoutBlackInput[];
+    connectOrCreate?:
+      | GameCreateOrConnectWithoutBlackInput
+      | GameCreateOrConnectWithoutBlackInput[];
+    upsert?:
+      | GameUpsertWithWhereUniqueWithoutBlackInput
+      | GameUpsertWithWhereUniqueWithoutBlackInput[];
+    createMany?: GameCreateManyBlackInputEnvelope;
+    set?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    disconnect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    delete?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
+    update?:
+      | GameUpdateWithWhereUniqueWithoutBlackInput
+      | GameUpdateWithWhereUniqueWithoutBlackInput[];
+    updateMany?:
+      | GameUpdateManyWithWhereWithoutBlackInput
+      | GameUpdateManyWithWhereWithoutBlackInput[];
+    deleteMany?: GameScalarWhereInput | GameScalarWhereInput[];
+  };
+
+  export type RatingUncheckedUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
+      | RatingCreateWithoutUserInput[]
+      | RatingUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | RatingCreateOrConnectWithoutUserInput
+      | RatingCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | RatingUpsertWithWhereUniqueWithoutUserInput
+      | RatingUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: RatingCreateManyUserInputEnvelope;
+    set?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+    disconnect?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+    delete?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
+    update?:
+      | RatingUpdateWithWhereUniqueWithoutUserInput
+      | RatingUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | RatingUpdateManyWithWhereWithoutUserInput
+      | RatingUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[];
+  };
+
+  export type GameAnalysisUncheckedUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<
+          GameAnalysisCreateWithoutUserInput,
+          GameAnalysisUncheckedCreateWithoutUserInput
+        >
+      | GameAnalysisCreateWithoutUserInput[]
+      | GameAnalysisUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | GameAnalysisCreateOrConnectWithoutUserInput
+      | GameAnalysisCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | GameAnalysisUpsertWithWhereUniqueWithoutUserInput
+      | GameAnalysisUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: GameAnalysisCreateManyUserInputEnvelope;
+    set?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+    disconnect?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+    delete?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+    connect?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
+    update?:
+      | GameAnalysisUpdateWithWhereUniqueWithoutUserInput
+      | GameAnalysisUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | GameAnalysisUpdateManyWithWhereWithoutUserInput
+      | GameAnalysisUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: GameAnalysisScalarWhereInput | GameAnalysisScalarWhereInput[];
   };
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -9905,6 +16009,213 @@ export namespace Prisma {
         UserUpdateWithoutAuthenticatorInput
       >,
       UserUncheckedUpdateWithoutAuthenticatorInput
+    >;
+  };
+
+  export type GameCreatemovesInput = {
+    set: string[];
+  };
+
+  export type UserCreateNestedOneWithoutWhiteGamesInput = {
+    create?: XOR<
+      UserCreateWithoutWhiteGamesInput,
+      UserUncheckedCreateWithoutWhiteGamesInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutWhiteGamesInput;
+    connect?: UserWhereUniqueInput;
+  };
+
+  export type UserCreateNestedOneWithoutBlackGamesInput = {
+    create?: XOR<
+      UserCreateWithoutBlackGamesInput,
+      UserUncheckedCreateWithoutBlackGamesInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutBlackGamesInput;
+    connect?: UserWhereUniqueInput;
+  };
+
+  export type GameAnalysisCreateNestedOneWithoutGameInput = {
+    create?: XOR<
+      GameAnalysisCreateWithoutGameInput,
+      GameAnalysisUncheckedCreateWithoutGameInput
+    >;
+    connectOrCreate?: GameAnalysisCreateOrConnectWithoutGameInput;
+    connect?: GameAnalysisWhereUniqueInput;
+  };
+
+  export type GameAnalysisUncheckedCreateNestedOneWithoutGameInput = {
+    create?: XOR<
+      GameAnalysisCreateWithoutGameInput,
+      GameAnalysisUncheckedCreateWithoutGameInput
+    >;
+    connectOrCreate?: GameAnalysisCreateOrConnectWithoutGameInput;
+    connect?: GameAnalysisWhereUniqueInput;
+  };
+
+  export type GameUpdatemovesInput = {
+    set?: string[];
+    push?: string | string[];
+  };
+
+  export type UserUpdateOneWithoutWhiteGamesNestedInput = {
+    create?: XOR<
+      UserCreateWithoutWhiteGamesInput,
+      UserUncheckedCreateWithoutWhiteGamesInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutWhiteGamesInput;
+    upsert?: UserUpsertWithoutWhiteGamesInput;
+    disconnect?: UserWhereInput | boolean;
+    delete?: UserWhereInput | boolean;
+    connect?: UserWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        UserUpdateToOneWithWhereWithoutWhiteGamesInput,
+        UserUpdateWithoutWhiteGamesInput
+      >,
+      UserUncheckedUpdateWithoutWhiteGamesInput
+    >;
+  };
+
+  export type UserUpdateOneWithoutBlackGamesNestedInput = {
+    create?: XOR<
+      UserCreateWithoutBlackGamesInput,
+      UserUncheckedCreateWithoutBlackGamesInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutBlackGamesInput;
+    upsert?: UserUpsertWithoutBlackGamesInput;
+    disconnect?: UserWhereInput | boolean;
+    delete?: UserWhereInput | boolean;
+    connect?: UserWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        UserUpdateToOneWithWhereWithoutBlackGamesInput,
+        UserUpdateWithoutBlackGamesInput
+      >,
+      UserUncheckedUpdateWithoutBlackGamesInput
+    >;
+  };
+
+  export type GameAnalysisUpdateOneWithoutGameNestedInput = {
+    create?: XOR<
+      GameAnalysisCreateWithoutGameInput,
+      GameAnalysisUncheckedCreateWithoutGameInput
+    >;
+    connectOrCreate?: GameAnalysisCreateOrConnectWithoutGameInput;
+    upsert?: GameAnalysisUpsertWithoutGameInput;
+    disconnect?: GameAnalysisWhereInput | boolean;
+    delete?: GameAnalysisWhereInput | boolean;
+    connect?: GameAnalysisWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        GameAnalysisUpdateToOneWithWhereWithoutGameInput,
+        GameAnalysisUpdateWithoutGameInput
+      >,
+      GameAnalysisUncheckedUpdateWithoutGameInput
+    >;
+  };
+
+  export type GameAnalysisUncheckedUpdateOneWithoutGameNestedInput = {
+    create?: XOR<
+      GameAnalysisCreateWithoutGameInput,
+      GameAnalysisUncheckedCreateWithoutGameInput
+    >;
+    connectOrCreate?: GameAnalysisCreateOrConnectWithoutGameInput;
+    upsert?: GameAnalysisUpsertWithoutGameInput;
+    disconnect?: GameAnalysisWhereInput | boolean;
+    delete?: GameAnalysisWhereInput | boolean;
+    connect?: GameAnalysisWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        GameAnalysisUpdateToOneWithWhereWithoutGameInput,
+        GameAnalysisUpdateWithoutGameInput
+      >,
+      GameAnalysisUncheckedUpdateWithoutGameInput
+    >;
+  };
+
+  export type GameCreateNestedOneWithoutAnalysisInput = {
+    create?: XOR<
+      GameCreateWithoutAnalysisInput,
+      GameUncheckedCreateWithoutAnalysisInput
+    >;
+    connectOrCreate?: GameCreateOrConnectWithoutAnalysisInput;
+    connect?: GameWhereUniqueInput;
+  };
+
+  export type UserCreateNestedOneWithoutAnalysesInput = {
+    create?: XOR<
+      UserCreateWithoutAnalysesInput,
+      UserUncheckedCreateWithoutAnalysesInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutAnalysesInput;
+    connect?: UserWhereUniqueInput;
+  };
+
+  export type GameUpdateOneRequiredWithoutAnalysisNestedInput = {
+    create?: XOR<
+      GameCreateWithoutAnalysisInput,
+      GameUncheckedCreateWithoutAnalysisInput
+    >;
+    connectOrCreate?: GameCreateOrConnectWithoutAnalysisInput;
+    upsert?: GameUpsertWithoutAnalysisInput;
+    connect?: GameWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        GameUpdateToOneWithWhereWithoutAnalysisInput,
+        GameUpdateWithoutAnalysisInput
+      >,
+      GameUncheckedUpdateWithoutAnalysisInput
+    >;
+  };
+
+  export type UserUpdateOneRequiredWithoutAnalysesNestedInput = {
+    create?: XOR<
+      UserCreateWithoutAnalysesInput,
+      UserUncheckedCreateWithoutAnalysesInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutAnalysesInput;
+    upsert?: UserUpsertWithoutAnalysesInput;
+    connect?: UserWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        UserUpdateToOneWithWhereWithoutAnalysesInput,
+        UserUpdateWithoutAnalysesInput
+      >,
+      UserUncheckedUpdateWithoutAnalysesInput
+    >;
+  };
+
+  export type UserCreateNestedOneWithoutRatingsInput = {
+    create?: XOR<
+      UserCreateWithoutRatingsInput,
+      UserUncheckedCreateWithoutRatingsInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutRatingsInput;
+    connect?: UserWhereUniqueInput;
+  };
+
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number;
+    increment?: number;
+    decrement?: number;
+    multiply?: number;
+    divide?: number;
+  };
+
+  export type UserUpdateOneRequiredWithoutRatingsNestedInput = {
+    create?: XOR<
+      UserCreateWithoutRatingsInput,
+      UserUncheckedCreateWithoutRatingsInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutRatingsInput;
+    upsert?: UserUpsertWithoutRatingsInput;
+    connect?: UserWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        UserUpdateToOneWithWhereWithoutRatingsInput,
+        UserUpdateWithoutRatingsInput
+      >,
+      UserUncheckedUpdateWithoutRatingsInput
     >;
   };
 
@@ -10120,6 +16431,54 @@ export namespace Prisma {
     _min?: NestedBoolFilter<$PrismaModel>;
     _max?: NestedBoolFilter<$PrismaModel>;
   };
+  export type NestedJsonFilter<$PrismaModel = never> =
+    | PatchUndefined<
+        Either<
+          Required<NestedJsonFilterBase<$PrismaModel>>,
+          Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>
+        >,
+        Required<NestedJsonFilterBase<$PrismaModel>>
+      >
+    | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>;
+
+  export type NestedJsonFilterBase<$PrismaModel = never> = {
+    equals?:
+      | InputJsonValue
+      | JsonFieldRefInput<$PrismaModel>
+      | JsonNullValueFilter;
+    path?: string[];
+    mode?: QueryMode | EnumQueryModeFieldRefInput<$PrismaModel>;
+    string_contains?: string | StringFieldRefInput<$PrismaModel>;
+    string_starts_with?: string | StringFieldRefInput<$PrismaModel>;
+    string_ends_with?: string | StringFieldRefInput<$PrismaModel>;
+    array_starts_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_ends_with?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    array_contains?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | null;
+    lt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    lte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gt?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    gte?: InputJsonValue | JsonFieldRefInput<$PrismaModel>;
+    not?:
+      | InputJsonValue
+      | JsonFieldRefInput<$PrismaModel>
+      | JsonNullValueFilter;
+  };
+
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>;
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>;
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>;
+    lt?: number | FloatFieldRefInput<$PrismaModel>;
+    lte?: number | FloatFieldRefInput<$PrismaModel>;
+    gt?: number | FloatFieldRefInput<$PrismaModel>;
+    gte?: number | FloatFieldRefInput<$PrismaModel>;
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number;
+    _count?: NestedIntFilter<$PrismaModel>;
+    _avg?: NestedFloatFilter<$PrismaModel>;
+    _sum?: NestedFloatFilter<$PrismaModel>;
+    _min?: NestedFloatFilter<$PrismaModel>;
+    _max?: NestedFloatFilter<$PrismaModel>;
+  };
 
   export type AccountCreateWithoutUserInput = {
     type: string;
@@ -10221,6 +16580,174 @@ export namespace Prisma {
 
   export type AuthenticatorCreateManyUserInputEnvelope = {
     data: AuthenticatorCreateManyUserInput | AuthenticatorCreateManyUserInput[];
+    skipDuplicates?: boolean;
+  };
+
+  export type GameCreateWithoutWhiteInput = {
+    id?: string;
+    roomId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+    black?: UserCreateNestedOneWithoutBlackGamesInput;
+    analysis?: GameAnalysisCreateNestedOneWithoutGameInput;
+  };
+
+  export type GameUncheckedCreateWithoutWhiteInput = {
+    id?: string;
+    roomId?: string | null;
+    blackUserId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+    analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
+  };
+
+  export type GameCreateOrConnectWithoutWhiteInput = {
+    where: GameWhereUniqueInput;
+    create: XOR<
+      GameCreateWithoutWhiteInput,
+      GameUncheckedCreateWithoutWhiteInput
+    >;
+  };
+
+  export type GameCreateManyWhiteInputEnvelope = {
+    data: GameCreateManyWhiteInput | GameCreateManyWhiteInput[];
+    skipDuplicates?: boolean;
+  };
+
+  export type GameCreateWithoutBlackInput = {
+    id?: string;
+    roomId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+    white?: UserCreateNestedOneWithoutWhiteGamesInput;
+    analysis?: GameAnalysisCreateNestedOneWithoutGameInput;
+  };
+
+  export type GameUncheckedCreateWithoutBlackInput = {
+    id?: string;
+    roomId?: string | null;
+    whiteUserId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+    analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
+  };
+
+  export type GameCreateOrConnectWithoutBlackInput = {
+    where: GameWhereUniqueInput;
+    create: XOR<
+      GameCreateWithoutBlackInput,
+      GameUncheckedCreateWithoutBlackInput
+    >;
+  };
+
+  export type GameCreateManyBlackInputEnvelope = {
+    data: GameCreateManyBlackInput | GameCreateManyBlackInput[];
+    skipDuplicates?: boolean;
+  };
+
+  export type RatingCreateWithoutUserInput = {
+    id?: string;
+    variant: string;
+    rating?: number;
+    rd?: number;
+    sigma?: number;
+    gameCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type RatingUncheckedCreateWithoutUserInput = {
+    id?: string;
+    variant: string;
+    rating?: number;
+    rd?: number;
+    sigma?: number;
+    gameCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type RatingCreateOrConnectWithoutUserInput = {
+    where: RatingWhereUniqueInput;
+    create: XOR<
+      RatingCreateWithoutUserInput,
+      RatingUncheckedCreateWithoutUserInput
+    >;
+  };
+
+  export type RatingCreateManyUserInputEnvelope = {
+    data: RatingCreateManyUserInput | RatingCreateManyUserInput[];
+    skipDuplicates?: boolean;
+  };
+
+  export type GameAnalysisCreateWithoutUserInput = {
+    id?: string;
+    results: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+    game: GameCreateNestedOneWithoutAnalysisInput;
+  };
+
+  export type GameAnalysisUncheckedCreateWithoutUserInput = {
+    id?: string;
+    gameId: string;
+    results: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+  };
+
+  export type GameAnalysisCreateOrConnectWithoutUserInput = {
+    where: GameAnalysisWhereUniqueInput;
+    create: XOR<
+      GameAnalysisCreateWithoutUserInput,
+      GameAnalysisUncheckedCreateWithoutUserInput
+    >;
+  };
+
+  export type GameAnalysisCreateManyUserInputEnvelope = {
+    data: GameAnalysisCreateManyUserInput | GameAnalysisCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
 
@@ -10352,6 +16879,167 @@ export namespace Prisma {
     transports?: StringNullableFilter<'Authenticator'> | string | null;
   };
 
+  export type GameUpsertWithWhereUniqueWithoutWhiteInput = {
+    where: GameWhereUniqueInput;
+    update: XOR<
+      GameUpdateWithoutWhiteInput,
+      GameUncheckedUpdateWithoutWhiteInput
+    >;
+    create: XOR<
+      GameCreateWithoutWhiteInput,
+      GameUncheckedCreateWithoutWhiteInput
+    >;
+  };
+
+  export type GameUpdateWithWhereUniqueWithoutWhiteInput = {
+    where: GameWhereUniqueInput;
+    data: XOR<
+      GameUpdateWithoutWhiteInput,
+      GameUncheckedUpdateWithoutWhiteInput
+    >;
+  };
+
+  export type GameUpdateManyWithWhereWithoutWhiteInput = {
+    where: GameScalarWhereInput;
+    data: XOR<
+      GameUpdateManyMutationInput,
+      GameUncheckedUpdateManyWithoutWhiteInput
+    >;
+  };
+
+  export type GameScalarWhereInput = {
+    AND?: GameScalarWhereInput | GameScalarWhereInput[];
+    OR?: GameScalarWhereInput[];
+    NOT?: GameScalarWhereInput | GameScalarWhereInput[];
+    id?: StringFilter<'Game'> | string;
+    roomId?: StringNullableFilter<'Game'> | string | null;
+    whiteUserId?: StringNullableFilter<'Game'> | string | null;
+    blackUserId?: StringNullableFilter<'Game'> | string | null;
+    variant?: StringFilter<'Game'> | string;
+    gameType?: StringFilter<'Game'> | string;
+    result?: StringFilter<'Game'> | string;
+    resultReason?: StringFilter<'Game'> | string;
+    moves?: StringNullableListFilter<'Game'>;
+    startingFen?: StringFilter<'Game'> | string;
+    timeControl?: JsonFilter<'Game'>;
+    whitePregameRating?: IntNullableFilter<'Game'> | number | null;
+    blackPregameRating?: IntNullableFilter<'Game'> | number | null;
+    whiteRatingDelta?: IntNullableFilter<'Game'> | number | null;
+    blackRatingDelta?: IntNullableFilter<'Game'> | number | null;
+    moveCount?: IntFilter<'Game'> | number;
+    createdAt?: DateTimeFilter<'Game'> | Date | string;
+  };
+
+  export type GameUpsertWithWhereUniqueWithoutBlackInput = {
+    where: GameWhereUniqueInput;
+    update: XOR<
+      GameUpdateWithoutBlackInput,
+      GameUncheckedUpdateWithoutBlackInput
+    >;
+    create: XOR<
+      GameCreateWithoutBlackInput,
+      GameUncheckedCreateWithoutBlackInput
+    >;
+  };
+
+  export type GameUpdateWithWhereUniqueWithoutBlackInput = {
+    where: GameWhereUniqueInput;
+    data: XOR<
+      GameUpdateWithoutBlackInput,
+      GameUncheckedUpdateWithoutBlackInput
+    >;
+  };
+
+  export type GameUpdateManyWithWhereWithoutBlackInput = {
+    where: GameScalarWhereInput;
+    data: XOR<
+      GameUpdateManyMutationInput,
+      GameUncheckedUpdateManyWithoutBlackInput
+    >;
+  };
+
+  export type RatingUpsertWithWhereUniqueWithoutUserInput = {
+    where: RatingWhereUniqueInput;
+    update: XOR<
+      RatingUpdateWithoutUserInput,
+      RatingUncheckedUpdateWithoutUserInput
+    >;
+    create: XOR<
+      RatingCreateWithoutUserInput,
+      RatingUncheckedCreateWithoutUserInput
+    >;
+  };
+
+  export type RatingUpdateWithWhereUniqueWithoutUserInput = {
+    where: RatingWhereUniqueInput;
+    data: XOR<
+      RatingUpdateWithoutUserInput,
+      RatingUncheckedUpdateWithoutUserInput
+    >;
+  };
+
+  export type RatingUpdateManyWithWhereWithoutUserInput = {
+    where: RatingScalarWhereInput;
+    data: XOR<
+      RatingUpdateManyMutationInput,
+      RatingUncheckedUpdateManyWithoutUserInput
+    >;
+  };
+
+  export type RatingScalarWhereInput = {
+    AND?: RatingScalarWhereInput | RatingScalarWhereInput[];
+    OR?: RatingScalarWhereInput[];
+    NOT?: RatingScalarWhereInput | RatingScalarWhereInput[];
+    id?: StringFilter<'Rating'> | string;
+    userId?: StringFilter<'Rating'> | string;
+    variant?: StringFilter<'Rating'> | string;
+    rating?: IntFilter<'Rating'> | number;
+    rd?: FloatFilter<'Rating'> | number;
+    sigma?: FloatFilter<'Rating'> | number;
+    gameCount?: IntFilter<'Rating'> | number;
+    createdAt?: DateTimeFilter<'Rating'> | Date | string;
+    updatedAt?: DateTimeFilter<'Rating'> | Date | string;
+  };
+
+  export type GameAnalysisUpsertWithWhereUniqueWithoutUserInput = {
+    where: GameAnalysisWhereUniqueInput;
+    update: XOR<
+      GameAnalysisUpdateWithoutUserInput,
+      GameAnalysisUncheckedUpdateWithoutUserInput
+    >;
+    create: XOR<
+      GameAnalysisCreateWithoutUserInput,
+      GameAnalysisUncheckedCreateWithoutUserInput
+    >;
+  };
+
+  export type GameAnalysisUpdateWithWhereUniqueWithoutUserInput = {
+    where: GameAnalysisWhereUniqueInput;
+    data: XOR<
+      GameAnalysisUpdateWithoutUserInput,
+      GameAnalysisUncheckedUpdateWithoutUserInput
+    >;
+  };
+
+  export type GameAnalysisUpdateManyWithWhereWithoutUserInput = {
+    where: GameAnalysisScalarWhereInput;
+    data: XOR<
+      GameAnalysisUpdateManyMutationInput,
+      GameAnalysisUncheckedUpdateManyWithoutUserInput
+    >;
+  };
+
+  export type GameAnalysisScalarWhereInput = {
+    AND?: GameAnalysisScalarWhereInput | GameAnalysisScalarWhereInput[];
+    OR?: GameAnalysisScalarWhereInput[];
+    NOT?: GameAnalysisScalarWhereInput | GameAnalysisScalarWhereInput[];
+    id?: StringFilter<'GameAnalysis'> | string;
+    gameId?: StringFilter<'GameAnalysis'> | string;
+    userId?: StringFilter<'GameAnalysis'> | string;
+    results?: JsonFilter<'GameAnalysis'>;
+    createdAt?: DateTimeFilter<'GameAnalysis'> | Date | string;
+  };
+
   export type UserCreateWithoutAccountsInput = {
     id?: string;
     name?: string | null;
@@ -10362,6 +17050,10 @@ export namespace Prisma {
     updatedAt?: Date | string;
     sessions?: SessionCreateNestedManyWithoutUserInput;
     Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
+    whiteGames?: GameCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameCreateNestedManyWithoutBlackInput;
+    ratings?: RatingCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutAccountsInput = {
@@ -10374,6 +17066,10 @@ export namespace Prisma {
     updatedAt?: Date | string;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
     Authenticator?: AuthenticatorUncheckedCreateNestedManyWithoutUserInput;
+    whiteGames?: GameUncheckedCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameUncheckedCreateNestedManyWithoutBlackInput;
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -10418,6 +17114,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
     Authenticator?: AuthenticatorUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -10434,6 +17134,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
     Authenticator?: AuthenticatorUncheckedUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUncheckedUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUncheckedUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutSessionsInput = {
@@ -10446,6 +17150,10 @@ export namespace Prisma {
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
     Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
+    whiteGames?: GameCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameCreateNestedManyWithoutBlackInput;
+    ratings?: RatingCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -10458,6 +17166,10 @@ export namespace Prisma {
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
     Authenticator?: AuthenticatorUncheckedCreateNestedManyWithoutUserInput;
+    whiteGames?: GameUncheckedCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameUncheckedCreateNestedManyWithoutBlackInput;
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -10502,6 +17214,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
     Authenticator?: AuthenticatorUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -10518,6 +17234,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
     Authenticator?: AuthenticatorUncheckedUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUncheckedUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUncheckedUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutAuthenticatorInput = {
@@ -10530,6 +17250,10 @@ export namespace Prisma {
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
     sessions?: SessionCreateNestedManyWithoutUserInput;
+    whiteGames?: GameCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameCreateNestedManyWithoutBlackInput;
+    ratings?: RatingCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutAuthenticatorInput = {
@@ -10542,6 +17266,10 @@ export namespace Prisma {
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
+    whiteGames?: GameUncheckedCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameUncheckedCreateNestedManyWithoutBlackInput;
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutAuthenticatorInput = {
@@ -10586,6 +17314,10 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutAuthenticatorInput = {
@@ -10602,6 +17334,574 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUncheckedUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUncheckedUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUncheckedUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserCreateWithoutWhiteGamesInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountCreateNestedManyWithoutUserInput;
+    sessions?: SessionCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
+    blackGames?: GameCreateNestedManyWithoutBlackInput;
+    ratings?: RatingCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserUncheckedCreateWithoutWhiteGamesInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorUncheckedCreateNestedManyWithoutUserInput;
+    blackGames?: GameUncheckedCreateNestedManyWithoutBlackInput;
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisUncheckedCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserCreateOrConnectWithoutWhiteGamesInput = {
+    where: UserWhereUniqueInput;
+    create: XOR<
+      UserCreateWithoutWhiteGamesInput,
+      UserUncheckedCreateWithoutWhiteGamesInput
+    >;
+  };
+
+  export type UserCreateWithoutBlackGamesInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountCreateNestedManyWithoutUserInput;
+    sessions?: SessionCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
+    whiteGames?: GameCreateNestedManyWithoutWhiteInput;
+    ratings?: RatingCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserUncheckedCreateWithoutBlackGamesInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorUncheckedCreateNestedManyWithoutUserInput;
+    whiteGames?: GameUncheckedCreateNestedManyWithoutWhiteInput;
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput;
+    analyses?: GameAnalysisUncheckedCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserCreateOrConnectWithoutBlackGamesInput = {
+    where: UserWhereUniqueInput;
+    create: XOR<
+      UserCreateWithoutBlackGamesInput,
+      UserUncheckedCreateWithoutBlackGamesInput
+    >;
+  };
+
+  export type GameAnalysisCreateWithoutGameInput = {
+    id?: string;
+    results: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+    user: UserCreateNestedOneWithoutAnalysesInput;
+  };
+
+  export type GameAnalysisUncheckedCreateWithoutGameInput = {
+    id?: string;
+    userId: string;
+    results: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
+  };
+
+  export type GameAnalysisCreateOrConnectWithoutGameInput = {
+    where: GameAnalysisWhereUniqueInput;
+    create: XOR<
+      GameAnalysisCreateWithoutGameInput,
+      GameAnalysisUncheckedCreateWithoutGameInput
+    >;
+  };
+
+  export type UserUpsertWithoutWhiteGamesInput = {
+    update: XOR<
+      UserUpdateWithoutWhiteGamesInput,
+      UserUncheckedUpdateWithoutWhiteGamesInput
+    >;
+    create: XOR<
+      UserCreateWithoutWhiteGamesInput,
+      UserUncheckedCreateWithoutWhiteGamesInput
+    >;
+    where?: UserWhereInput;
+  };
+
+  export type UserUpdateToOneWithWhereWithoutWhiteGamesInput = {
+    where?: UserWhereInput;
+    data: XOR<
+      UserUpdateWithoutWhiteGamesInput,
+      UserUncheckedUpdateWithoutWhiteGamesInput
+    >;
+  };
+
+  export type UserUpdateWithoutWhiteGamesInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUpdateManyWithoutUserNestedInput;
+    blackGames?: GameUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserUncheckedUpdateWithoutWhiteGamesInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUncheckedUpdateManyWithoutUserNestedInput;
+    blackGames?: GameUncheckedUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUncheckedUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserUpsertWithoutBlackGamesInput = {
+    update: XOR<
+      UserUpdateWithoutBlackGamesInput,
+      UserUncheckedUpdateWithoutBlackGamesInput
+    >;
+    create: XOR<
+      UserCreateWithoutBlackGamesInput,
+      UserUncheckedCreateWithoutBlackGamesInput
+    >;
+    where?: UserWhereInput;
+  };
+
+  export type UserUpdateToOneWithWhereWithoutBlackGamesInput = {
+    where?: UserWhereInput;
+    data: XOR<
+      UserUpdateWithoutBlackGamesInput,
+      UserUncheckedUpdateWithoutBlackGamesInput
+    >;
+  };
+
+  export type UserUpdateWithoutBlackGamesInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUpdateManyWithoutWhiteNestedInput;
+    ratings?: RatingUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserUncheckedUpdateWithoutBlackGamesInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUncheckedUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUncheckedUpdateManyWithoutWhiteNestedInput;
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput;
+    analyses?: GameAnalysisUncheckedUpdateManyWithoutUserNestedInput;
+  };
+
+  export type GameAnalysisUpsertWithoutGameInput = {
+    update: XOR<
+      GameAnalysisUpdateWithoutGameInput,
+      GameAnalysisUncheckedUpdateWithoutGameInput
+    >;
+    create: XOR<
+      GameAnalysisCreateWithoutGameInput,
+      GameAnalysisUncheckedCreateWithoutGameInput
+    >;
+    where?: GameAnalysisWhereInput;
+  };
+
+  export type GameAnalysisUpdateToOneWithWhereWithoutGameInput = {
+    where?: GameAnalysisWhereInput;
+    data: XOR<
+      GameAnalysisUpdateWithoutGameInput,
+      GameAnalysisUncheckedUpdateWithoutGameInput
+    >;
+  };
+
+  export type GameAnalysisUpdateWithoutGameInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    user?: UserUpdateOneRequiredWithoutAnalysesNestedInput;
+  };
+
+  export type GameAnalysisUncheckedUpdateWithoutGameInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type GameCreateWithoutAnalysisInput = {
+    id?: string;
+    roomId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+    white?: UserCreateNestedOneWithoutWhiteGamesInput;
+    black?: UserCreateNestedOneWithoutBlackGamesInput;
+  };
+
+  export type GameUncheckedCreateWithoutAnalysisInput = {
+    id?: string;
+    roomId?: string | null;
+    whiteUserId?: string | null;
+    blackUserId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+  };
+
+  export type GameCreateOrConnectWithoutAnalysisInput = {
+    where: GameWhereUniqueInput;
+    create: XOR<
+      GameCreateWithoutAnalysisInput,
+      GameUncheckedCreateWithoutAnalysisInput
+    >;
+  };
+
+  export type UserCreateWithoutAnalysesInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountCreateNestedManyWithoutUserInput;
+    sessions?: SessionCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
+    whiteGames?: GameCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameCreateNestedManyWithoutBlackInput;
+    ratings?: RatingCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserUncheckedCreateWithoutAnalysesInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorUncheckedCreateNestedManyWithoutUserInput;
+    whiteGames?: GameUncheckedCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameUncheckedCreateNestedManyWithoutBlackInput;
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserCreateOrConnectWithoutAnalysesInput = {
+    where: UserWhereUniqueInput;
+    create: XOR<
+      UserCreateWithoutAnalysesInput,
+      UserUncheckedCreateWithoutAnalysesInput
+    >;
+  };
+
+  export type GameUpsertWithoutAnalysisInput = {
+    update: XOR<
+      GameUpdateWithoutAnalysisInput,
+      GameUncheckedUpdateWithoutAnalysisInput
+    >;
+    create: XOR<
+      GameCreateWithoutAnalysisInput,
+      GameUncheckedCreateWithoutAnalysisInput
+    >;
+    where?: GameWhereInput;
+  };
+
+  export type GameUpdateToOneWithWhereWithoutAnalysisInput = {
+    where?: GameWhereInput;
+    data: XOR<
+      GameUpdateWithoutAnalysisInput,
+      GameUncheckedUpdateWithoutAnalysisInput
+    >;
+  };
+
+  export type GameUpdateWithoutAnalysisInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    white?: UserUpdateOneWithoutWhiteGamesNestedInput;
+    black?: UserUpdateOneWithoutBlackGamesNestedInput;
+  };
+
+  export type GameUncheckedUpdateWithoutAnalysisInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    whiteUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    blackUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type UserUpsertWithoutAnalysesInput = {
+    update: XOR<
+      UserUpdateWithoutAnalysesInput,
+      UserUncheckedUpdateWithoutAnalysesInput
+    >;
+    create: XOR<
+      UserCreateWithoutAnalysesInput,
+      UserUncheckedCreateWithoutAnalysesInput
+    >;
+    where?: UserWhereInput;
+  };
+
+  export type UserUpdateToOneWithWhereWithoutAnalysesInput = {
+    where?: UserWhereInput;
+    data: XOR<
+      UserUpdateWithoutAnalysesInput,
+      UserUncheckedUpdateWithoutAnalysesInput
+    >;
+  };
+
+  export type UserUpdateWithoutAnalysesInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserUncheckedUpdateWithoutAnalysesInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUncheckedUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUncheckedUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUncheckedUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserCreateWithoutRatingsInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountCreateNestedManyWithoutUserInput;
+    sessions?: SessionCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
+    whiteGames?: GameCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameCreateNestedManyWithoutBlackInput;
+    analyses?: GameAnalysisCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserUncheckedCreateWithoutRatingsInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorUncheckedCreateNestedManyWithoutUserInput;
+    whiteGames?: GameUncheckedCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameUncheckedCreateNestedManyWithoutBlackInput;
+    analyses?: GameAnalysisUncheckedCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserCreateOrConnectWithoutRatingsInput = {
+    where: UserWhereUniqueInput;
+    create: XOR<
+      UserCreateWithoutRatingsInput,
+      UserUncheckedCreateWithoutRatingsInput
+    >;
+  };
+
+  export type UserUpsertWithoutRatingsInput = {
+    update: XOR<
+      UserUpdateWithoutRatingsInput,
+      UserUncheckedUpdateWithoutRatingsInput
+    >;
+    create: XOR<
+      UserCreateWithoutRatingsInput,
+      UserUncheckedCreateWithoutRatingsInput
+    >;
+    where?: UserWhereInput;
+  };
+
+  export type UserUpdateToOneWithWhereWithoutRatingsInput = {
+    where?: UserWhereInput;
+    data: XOR<
+      UserUpdateWithoutRatingsInput,
+      UserUncheckedUpdateWithoutRatingsInput
+    >;
+  };
+
+  export type UserUpdateWithoutRatingsInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUpdateManyWithoutBlackNestedInput;
+    analyses?: GameAnalysisUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserUncheckedUpdateWithoutRatingsInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUncheckedUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUncheckedUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUncheckedUpdateManyWithoutBlackNestedInput;
+    analyses?: GameAnalysisUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type AccountCreateManyUserInput = {
@@ -10634,6 +17934,62 @@ export namespace Prisma {
     credentialDeviceType: string;
     credentialBackedUp: boolean;
     transports?: string | null;
+  };
+
+  export type GameCreateManyWhiteInput = {
+    id?: string;
+    roomId?: string | null;
+    blackUserId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+  };
+
+  export type GameCreateManyBlackInput = {
+    id?: string;
+    roomId?: string | null;
+    whiteUserId?: string | null;
+    variant: string;
+    gameType: string;
+    result: string;
+    resultReason: string;
+    moves?: GameCreatemovesInput | string[];
+    startingFen: string;
+    timeControl: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: number | null;
+    blackPregameRating?: number | null;
+    whiteRatingDelta?: number | null;
+    blackRatingDelta?: number | null;
+    moveCount: number;
+    createdAt?: Date | string;
+  };
+
+  export type RatingCreateManyUserInput = {
+    id?: string;
+    variant: string;
+    rating?: number;
+    rd?: number;
+    sigma?: number;
+    gameCount?: number;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+  };
+
+  export type GameAnalysisCreateManyUserInput = {
+    id?: string;
+    gameId: string;
+    results: JsonNullValueInput | InputJsonValue;
+    createdAt?: Date | string;
   };
 
   export type AccountUpdateWithoutUserInput = {
@@ -10730,6 +18086,178 @@ export namespace Prisma {
     credentialDeviceType?: StringFieldUpdateOperationsInput | string;
     credentialBackedUp?: BoolFieldUpdateOperationsInput | boolean;
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
+  };
+
+  export type GameUpdateWithoutWhiteInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    black?: UserUpdateOneWithoutBlackGamesNestedInput;
+    analysis?: GameAnalysisUpdateOneWithoutGameNestedInput;
+  };
+
+  export type GameUncheckedUpdateWithoutWhiteInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    blackUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
+  };
+
+  export type GameUncheckedUpdateManyWithoutWhiteInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    blackUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type GameUpdateWithoutBlackInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    white?: UserUpdateOneWithoutWhiteGamesNestedInput;
+    analysis?: GameAnalysisUpdateOneWithoutGameNestedInput;
+  };
+
+  export type GameUncheckedUpdateWithoutBlackInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    whiteUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
+  };
+
+  export type GameUncheckedUpdateManyWithoutBlackInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    roomId?: NullableStringFieldUpdateOperationsInput | string | null;
+    whiteUserId?: NullableStringFieldUpdateOperationsInput | string | null;
+    variant?: StringFieldUpdateOperationsInput | string;
+    gameType?: StringFieldUpdateOperationsInput | string;
+    result?: StringFieldUpdateOperationsInput | string;
+    resultReason?: StringFieldUpdateOperationsInput | string;
+    moves?: GameUpdatemovesInput | string[];
+    startingFen?: StringFieldUpdateOperationsInput | string;
+    timeControl?: JsonNullValueInput | InputJsonValue;
+    whitePregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackPregameRating?: NullableIntFieldUpdateOperationsInput | number | null;
+    whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
+    moveCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type RatingUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
+    rating?: IntFieldUpdateOperationsInput | number;
+    rd?: FloatFieldUpdateOperationsInput | number;
+    sigma?: FloatFieldUpdateOperationsInput | number;
+    gameCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type RatingUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
+    rating?: IntFieldUpdateOperationsInput | number;
+    rd?: FloatFieldUpdateOperationsInput | number;
+    sigma?: FloatFieldUpdateOperationsInput | number;
+    gameCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type RatingUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
+    rating?: IntFieldUpdateOperationsInput | number;
+    rd?: FloatFieldUpdateOperationsInput | number;
+    sigma?: FloatFieldUpdateOperationsInput | number;
+    gameCount?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type GameAnalysisUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    game?: GameUpdateOneRequiredWithoutAnalysisNestedInput;
+  };
+
+  export type GameAnalysisUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    gameId?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type GameAnalysisUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    gameId?: StringFieldUpdateOperationsInput | string;
+    results?: JsonNullValueInput | InputJsonValue;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
   /**

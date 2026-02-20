@@ -20,7 +20,7 @@ export function MenuPageLayout({
 }: MenuPageLayoutProps) {
   return (
     <div className='bg-background relative flex h-full w-full flex-col'>
-      <div className='mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-6'>
+      <div className='flex h-full w-full flex-1 flex-col px-4 py-6'>
         <div className='mb-6 space-y-3'>
           <Link
             href={backHref}

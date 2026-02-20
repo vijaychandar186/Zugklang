@@ -167,9 +167,53 @@ exports.Prisma.AuthenticatorScalarFieldEnum = {
   transports: 'transports'
 };
 
+exports.Prisma.GameScalarFieldEnum = {
+  id: 'id',
+  roomId: 'roomId',
+  whiteUserId: 'whiteUserId',
+  blackUserId: 'blackUserId',
+  variant: 'variant',
+  gameType: 'gameType',
+  result: 'result',
+  resultReason: 'resultReason',
+  moves: 'moves',
+  startingFen: 'startingFen',
+  timeControl: 'timeControl',
+  whitePregameRating: 'whitePregameRating',
+  blackPregameRating: 'blackPregameRating',
+  whiteRatingDelta: 'whiteRatingDelta',
+  blackRatingDelta: 'blackRatingDelta',
+  moveCount: 'moveCount',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.GameAnalysisScalarFieldEnum = {
+  id: 'id',
+  gameId: 'gameId',
+  userId: 'userId',
+  results: 'results',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.RatingScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  variant: 'variant',
+  rating: 'rating',
+  rd: 'rd',
+  sigma: 'sigma',
+  gameCount: 'gameCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -182,12 +226,21 @@ exports.Prisma.NullsOrder = {
   last: 'last'
 };
 
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',
-  Authenticator: 'Authenticator'
+  Authenticator: 'Authenticator',
+  Game: 'Game',
+  GameAnalysis: 'GameAnalysis',
+  Rating: 'Rating'
 };
 
 /**

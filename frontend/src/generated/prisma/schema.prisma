@@ -24,6 +24,12 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
 
+  // Chess-specific relations
+  whiteGames Game[]         @relation("WhiteGames")
+  blackGames Game[]         @relation("BlackGames")
+  ratings    Rating[]
+  analyses   GameAnalysis[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -81,4 +87,52 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, credentialID])
+}
+
+model Game {
+  id                 String        @id @default(cuid())
+  roomId             String?       @unique
+  whiteUserId        String?
+  blackUserId        String?
+  white              User?         @relation("WhiteGames", fields: [whiteUserId], references: [id])
+  black              User?         @relation("BlackGames", fields: [blackUserId], references: [id])
+  variant            String
+  gameType           String
+  result             String
+  resultReason       String
+  moves              String[]
+  startingFen        String
+  timeControl        Json
+  whitePregameRating Int?
+  blackPregameRating Int?
+  whiteRatingDelta   Int?
+  blackRatingDelta   Int?
+  moveCount          Int
+  createdAt          DateTime      @default(now())
+  analysis           GameAnalysis?
+}
+
+model GameAnalysis {
+  id        String   @id @default(cuid())
+  gameId    String   @unique
+  game      Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  results   Json
+  createdAt DateTime @default(now())
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variant   String
+  rating    Int      @default(700)
+  rd        Float    @default(350.0)
+  sigma     Float    @default(0.06)
+  gameCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, variant])
 }

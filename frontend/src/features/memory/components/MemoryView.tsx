@@ -558,7 +558,7 @@ export function MemoryView() {
           </BoardContainer>
         </div>
 
-        <div className='flex w-full flex-col gap-4 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
+        <div className='flex w-full flex-col gap-4 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>
           <div className='bg-card flex flex-col rounded-lg border p-6 text-center lg:flex-1'>
             <h2 className='mb-4 text-2xl font-bold'>Results</h2>
             <div className='mb-6 grid grid-cols-2 gap-4'>
@@ -632,7 +632,7 @@ export function MemoryView() {
           </BoardContainer>
         </div>
 
-        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
+        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>
           <div className='bg-card shrink-0 rounded-lg border p-4'>
             <div className='flex items-center justify-between'>
               <div>
@@ -702,13 +702,13 @@ export function MemoryView() {
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
         <div className='flex flex-col items-center gap-2'>
           <BoardContainer showEvaluation={false}>
-            <div className='w-[calc(100vw-0.5rem)] sm:w-[400px] lg:w-[560px]'>
+            <div className='w-[calc(100vw-0.5rem)] sm:w-[min(92vw,420px)] lg:w-[min(70vw,calc(100dvh-180px),820px)] xl:w-[min(68vw,calc(100dvh-180px),920px)] 2xl:w-[min(66vw,calc(100dvh-180px),1020px)]'>
               <Chessboard />
             </div>
           </BoardContainer>
         </div>
 
-        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[560px] lg:w-80 lg:overflow-hidden'>
+        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>
           <div className='bg-card shrink-0 rounded-lg border p-4'>
             <div className='flex items-center justify-between'>
               <div>

@@ -12,7 +12,7 @@ import {
 
 export function FAQ() {
   return (
-    <section id='faq' className='mx-auto max-w-7xl px-4 py-16 sm:py-24'>
+    <section id='faq' className='w-full px-4 py-16 sm:py-24 lg:px-6'>
       <h2 className='mb-4 text-center text-2xl font-bold md:text-3xl lg:text-4xl'>
         Frequently Asked{' '}
         <span className='from-primary/60 to-primary bg-gradient-to-b bg-clip-text text-transparent'>
@@ -21,7 +21,7 @@ export function FAQ() {
       </h2>
       <p className='text-muted-foreground mb-10 text-center'>{FAQ_SUBTITLE}</p>
 
-      <div className='mx-auto max-w-3xl'>
+      <div className='w-full'>
         <Accordion type='single' collapsible className='w-full space-y-3'>
           {FAQList.map(({ question, answer, value }: FAQProps) => (
             <AccordionItem

@@ -40,7 +40,7 @@ const footerLinks = [
 export function Footer() {
   return (
     <footer className='border-t'>
-      <div className='mx-auto max-w-7xl px-4 py-12'>
+      <div className='w-full px-4 py-12 lg:px-6'>
         <div className='grid grid-cols-2 gap-8 sm:grid-cols-4'>
           {footerLinks.map((section) => (
             <div key={section.heading} className='flex flex-col gap-3'>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { MultiplayerChessBoard } from './MultiplayerChessBoard';
 import { MultiplayerSidebar } from './MultiplayerSidebar';
 import { MatchmakingDialog } from './MatchmakingDialog';
@@ -16,6 +16,7 @@ import {
   useAnalysisState,
   useAnalysisActions
 } from '@/features/chess/stores/useAnalysisStore';
+import { useSession } from 'next-auth/react';
 import { useMultiplayerWS, loadSession } from '../hooks/useMultiplayerWS';
 import { Icons } from '@/components/Icons';
 import type { ChessVariant } from '@/features/chess/config/variants';
@@ -177,6 +178,9 @@ export function MultiplayerGameView({
   const gameStarted = useChessStore((s) => s.gameStarted);
   const gameOver = useChessStore((s) => s.gameOver);
   const movesCount = useChessStore((s) => s.moves.length);
+  const moves = useChessStore((s) => s.moves);
+  const positionHistory = useChessStore((s) => s.positionHistory);
+  const timeControl = useChessStore((s) => s.timeControl);
 
   const { isAnalysisOn } = useAnalysisState();
   const { initializeEngine, setPosition, cleanup, endAnalysis } =
@@ -184,6 +188,92 @@ export function MultiplayerGameView({
   const currentFEN = useChessStore((s) => s.currentFEN);
 
   const ws = useMultiplayerWS();
+  const { data: session } = useSession();
+
+  // Own rating fetched from API; name and image come from the session directly
+  const [myRating, setMyRating] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+    fetch(`/api/user/rating?variant=${variant}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then(
+        (data: { rating: number | null } | null) =>
+          data && setMyRating(data.rating)
+      )
+      .catch(() => {});
+  }, [session?.user?.id, variant]);
+
+  // Opponent rating fetched from API once we have their userId
+  const [opponentRating, setOpponentRating] = useState<number | null>(null);
+
+  const opponentUserId = useMemo(() => {
+    if (!ws.myColor) return null;
+    return ws.myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
+  }, [ws.myColor, ws.whiteUserId, ws.blackUserId]);
+
+  useEffect(() => {
+    if (!opponentUserId) return;
+    setOpponentRating(null); // reset for new game
+    fetch(`/api/users/${opponentUserId}?variant=${variant}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then(
+        (data: { rating: number | null } | null) =>
+          data && setOpponentRating(data.rating)
+      )
+      .catch(() => {});
+  }, [opponentUserId, variant]);
+
+  // Track the last saved roomId to avoid double-saves from the same client
+  const savedRoomIdRef = useRef<string | null>(null);
+  // Capture result/reason at game-over time for use in the save effect
+  const gameOverDataRef = useRef<{ result: string; reason: string } | null>(
+    null
+  );
+
+  const saveMultiplayerGame = useCallback(
+    (result: string, reason: string) => {
+      const roomId = ws.roomId;
+      if (!roomId || savedRoomIdRef.current === roomId) return;
+      if (!session?.user?.id) return;
+      savedRoomIdRef.current = roomId;
+
+      const myColor = ws.myColor ?? 'white';
+      const opponentUserId =
+        myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
+      const startingFen =
+        positionHistory[0] ??
+        'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+
+      fetch('/api/games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId,
+          moves,
+          variant,
+          gameType: 'multiplayer',
+          result,
+          resultReason: reason,
+          myColor,
+          opponentUserId,
+          timeControl,
+          startingFen
+        })
+      }).catch((err) => console.error('Failed to save multiplayer game:', err));
+    },
+    [
+      ws.roomId,
+      ws.myColor,
+      ws.whiteUserId,
+      ws.blackUserId,
+      moves,
+      variant,
+      timeControl,
+      positionHistory,
+      session
+    ] // eslint-disable-line react-hooks/exhaustive-deps
+  );
 
   useEffect(() => {
     setVariant(variant);
@@ -215,13 +305,17 @@ export function MultiplayerGameView({
   // Active session takes priority over challenge link — the challenge is consumed
   // once the game starts, so reloading mid-game must use the rejoin token.
   useEffect(() => {
-    const session = loadSession();
-    if (session && session.variant === variant) {
-      ws.rejoin(session.roomId, session.rejoinToken);
+    const savedSession = loadSession();
+    if (savedSession && savedSession.variant === variant) {
+      ws.rejoin(savedSession.roomId, savedSession.rejoinToken);
       return;
     }
     if (challengeId) {
-      ws.joinChallenge(challengeId);
+      ws.joinChallenge(
+        challengeId,
+        session?.user?.name ?? undefined,
+        session?.user?.image ?? undefined
+      );
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -297,7 +391,7 @@ export function MultiplayerGameView({
     }
   }, [ws.status]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Handle server-initiated game over (resign, draw, abandon)
+  // Handle server-initiated game over (resign, draw, abandon, abandon)
   useEffect(() => {
     ws.setOnServerGameOver((result, reason) => {
       // For checkmate/stalemate the board already set the correct result locally
@@ -306,30 +400,49 @@ export function MultiplayerGameView({
         setGameResult(result);
       }
       setGameOver(true);
+      // Save from the receiving side (resign, draw, abandon, etc.)
+      saveMultiplayerGame(result, reason);
     });
     return () => ws.setOnServerGameOver(null);
-  }, [ws.setOnServerGameOver, setGameResult, setGameOver]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ws.setOnServerGameOver, setGameResult, setGameOver, saveMultiplayerGame]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle locally-detected game over (checkmate, stalemate) — the server never
   // sends game_over back to the detecting client, so we transition WS status here.
   useEffect(() => {
     if (gameOver && ws.status === 'playing') {
       ws.notifyGameOver('Game over', 'checkmate');
+      // Save from the detecting client's side
+      const myColor = ws.myColor ?? 'white';
+      // Determine result: if the game is over and we called notifyGameOver,
+      // the detecting client is the one who delivered checkmate (they win).
+      const pgnResult = myColor === 'white' ? '1-0' : '0-1';
+      saveMultiplayerGame(pgnResult, 'checkmate');
     }
   }, [gameOver]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFindGame = useCallback(
     (timeControl: TimeControl) => {
-      ws.joinQueue(variant, timeControl);
+      ws.joinQueue(
+        variant,
+        timeControl,
+        session?.user?.name ?? undefined,
+        session?.user?.image ?? undefined
+      );
     },
-    [ws.joinQueue, variant] // eslint-disable-line react-hooks/exhaustive-deps
+    [ws.joinQueue, variant, session] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const handleCreateChallenge = useCallback(
     (timeControl: TimeControl, color: ChallengeColor) => {
-      ws.createChallenge(variant, timeControl, color);
+      ws.createChallenge(
+        variant,
+        timeControl,
+        color,
+        session?.user?.name ?? undefined,
+        session?.user?.image ?? undefined
+      );
     },
-    [ws.createChallenge, variant] // eslint-disable-line react-hooks/exhaustive-deps
+    [ws.createChallenge, variant, session] // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   const handleCancelSearch = useCallback(() => {
@@ -376,8 +489,23 @@ export function MultiplayerGameView({
     ((movesCount === 0 && playAs === 'black') ||
       (movesCount === 1 && playAs === 'white'));
 
-  const getPlayerName = (color: 'white' | 'black') =>
-    color === playAs ? 'You' : 'Opponent';
+  // Use ws.myColor (set immediately on match) rather than playAs (set 800ms later)
+  const isMe = (color: 'white' | 'black') => color === (ws.myColor ?? playAs);
+
+  const getPlayerName = (color: 'white' | 'black') => {
+    if (isMe(color)) return session?.user?.name ?? 'You';
+    return ws.opponentName ?? 'Opponent';
+  };
+
+  const getPlayerImage = (color: 'white' | 'black') => {
+    if (isMe(color)) return session?.user?.image ?? null;
+    return ws.opponentImage ?? null;
+  };
+
+  const getPlayerRating = (color: 'white' | 'black') => {
+    if (isMe(color)) return myRating;
+    return opponentRating;
+  };
 
   const showIndicator = gameStarted && !gameOver;
 
@@ -388,7 +516,11 @@ export function MultiplayerGameView({
           {/* Top player */}
           <div className='flex w-full items-center justify-between py-2'>
             <div className='flex items-center gap-2'>
-              <PlayerInfo name={getPlayerName(topColor)} />
+              <PlayerInfo
+                name={getPlayerName(topColor)}
+                image={getPlayerImage(topColor)}
+                rating={getPlayerRating(topColor)}
+              />
               {showIndicator &&
               topColor !== playAs &&
               ws.opponentDisconnected ? (
@@ -444,7 +576,11 @@ export function MultiplayerGameView({
           {/* Bottom player */}
           <div className='flex w-full items-center justify-between py-2'>
             <div className='flex items-center gap-2'>
-              <PlayerInfo name={getPlayerName(bottomColor)} />
+              <PlayerInfo
+                name={getPlayerName(bottomColor)}
+                image={getPlayerImage(bottomColor)}
+                rating={getPlayerRating(bottomColor)}
+              />
               {showIndicator &&
               bottomColor !== playAs &&
               ws.opponentDisconnected ? (
@@ -487,7 +623,7 @@ export function MultiplayerGameView({
         </div>
 
         {/* Sidebar */}
-        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(560px,calc(100dvh-200px))] lg:w-80 lg:overflow-hidden xl:h-[min(640px,calc(100dvh-200px))] 2xl:h-[min(720px,calc(100dvh-200px))]'>
+        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>
           {isAnalysisOn && (
             <div className='bg-card shrink-0 rounded-lg border'>
               <AnalysisLines />

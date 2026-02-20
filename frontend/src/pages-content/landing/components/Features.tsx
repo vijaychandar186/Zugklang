@@ -14,7 +14,7 @@ function FeatureCard({ title, description, href }: FeatureProps) {
     <Card
       className={`h-full transition-all ${
         href
-          ? 'hover:border-primary/30 hover:shadow-md cursor-pointer group'
+          ? 'hover:border-primary/30 group cursor-pointer hover:shadow-md'
           : 'hover:border-primary/30 hover:shadow-md'
       }`}
     >
@@ -49,7 +49,7 @@ export function Features() {
   return (
     <section
       id='features'
-      className='mx-auto max-w-7xl space-y-8 px-4 py-16 sm:py-24 lg:py-32'
+      className='w-full space-y-8 px-4 py-16 sm:py-24 lg:px-6 lg:py-32'
     >
       <h2 className='text-center text-2xl font-bold md:text-3xl lg:text-4xl'>
         {FEATURE_HEADING.split(' ')[0]}{' '}

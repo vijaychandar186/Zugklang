@@ -1,7 +1,8 @@
 import type { SocketData } from './types';
 import type { BunWS } from './types';
+import { verifyWsToken } from './utils/auth';
 import { ClientMessageSchema } from './utils/schemas';
-import { rooms, challenges } from './state';
+import { rooms, challenges, connectedUserIds } from './state';
 import { send } from './utils/socket';
 import { isRateLimited } from './utils/rateLimit';
 import { logger } from './utils/logger';
@@ -37,7 +38,7 @@ const ALLOWED_ORIGINS =
 Bun.serve<SocketData>({
   port: PORT,
 
-  fetch(req, server) {
+  async fetch(req, server) {
     // HTTP routes (health / stats / admin) — no origin check needed
     const httpResponse = handleHttpRequest(req);
     if (httpResponse) return httpResponse;
@@ -51,14 +52,43 @@ Bun.serve<SocketData>({
       }
     }
 
+    const wsUrl = new URL(req.url, 'http://localhost');
+    const token = wsUrl.searchParams.get('token');
+
+    // Require a valid auth token for every WS connection.
+    // Anonymous connections are rejected with 401 so the frontend can
+    // redirect unauthenticated users to sign in rather than silently failing.
+    const userId = token ? await verifyWsToken(token) : null;
+    if (!userId) {
+      logger.warn('ws_auth_rejected', { hasToken: !!token });
+      return new Response('Unauthorized', { status: 401 });
+    }
+
     const id = crypto.randomUUID();
-    const upgraded = server.upgrade(req, { data: { id } });
+    const upgraded = server.upgrade(req, { data: { id, userId } });
     if (upgraded) return undefined;
     return new Response('Zugklang WebSocket Server', { status: 200 });
   },
 
   websocket: {
     open(ws: BunWS) {
+      if (ws.data.userId) {
+        const existing = connectedUserIds.get(ws.data.userId);
+        if (existing && existing !== ws) {
+          // Another socket for this user is already registered (e.g. stale from a
+          // page refresh where the old TCP close hadn't arrived yet).
+          // Register the NEW socket first, then close the old one — this way
+          // the old socket's close handler sees the mismatch and won't delete
+          // the new entry.
+          connectedUserIds.set(ws.data.userId, ws);
+          existing.close(1000, 'Session superseded');
+          logger.info('session_superseded', {
+            userId: ws.data.userId.slice(0, 8)
+          });
+        } else {
+          connectedUserIds.set(ws.data.userId, ws);
+        }
+      }
       logger.info('player_connected', { playerId: ws.data.id.slice(0, 8) });
       send(ws, { type: 'connected', playerId: ws.data.id });
     },
@@ -160,6 +190,15 @@ Bun.serve<SocketData>({
     },
 
     close(ws: BunWS) {
+      // Only deregister if this is still the current socket for this user.
+      // After a supersede, connectedUserIds already points to the new socket,
+      // so the old socket's close must not remove the new registration.
+      if (ws.data.userId) {
+        const tracked = connectedUserIds.get(ws.data.userId);
+        if (tracked === ws) {
+          connectedUserIds.delete(ws.data.userId);
+        }
+      }
       handleDisconnect(ws);
     }
   }

@@ -8,6 +8,13 @@ export const reconnectTimeouts = new Map<
   ReturnType<typeof setTimeout>
 >();
 
+/**
+ * userId → active BunWS: tracks the current socket for each authenticated user.
+ * Storing the socket reference (not just ID) allows superseding stale connections
+ * on page refresh without rejecting the new connection.
+ */
+export const connectedUserIds = new Map<string, BunWS>();
+
 /** token → playerId: one token per player per active game */
 export const rejoinTokens = new Map<string, string>();
 

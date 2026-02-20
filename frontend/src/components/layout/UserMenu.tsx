@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { LogOut } from 'lucide-react';
+import { LogOut, User, History } from 'lucide-react';
 import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ export function UserMenu() {
   const { data: session, status } = useSession();
 
   if (status === 'loading') {
-    return <div className='h-8 w-8 animate-pulse rounded-full bg-muted' />;
+    return <div className='bg-muted h-8 w-8 animate-pulse rounded-full' />;
   }
 
   if (!session) {
@@ -40,7 +40,7 @@ export function UserMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <button className='flex items-center gap-2 rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'>
+        <button className='ring-offset-background focus-visible:ring-ring flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-offset-2'>
           <Avatar className='h-8 w-8'>
             <AvatarImage
               src={session.user?.image ?? ''}
@@ -57,14 +57,27 @@ export function UserMenu() {
             <span className='text-sm font-semibold'>
               {session.user?.name ?? 'User'}
             </span>
-            <span className='text-xs text-muted-foreground'>
+            <span className='text-muted-foreground text-xs'>
               {session.user?.email ?? ''}
             </span>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className='cursor-pointer'>
+          <Link href='/profile'>
+            <User className='mr-2 h-4 w-4' />
+            Profile
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className='cursor-pointer'>
+          <Link href='/games'>
+            <History className='mr-2 h-4 w-4' />
+            Game History
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
         <DropdownMenuItem
-          className='cursor-pointer text-destructive focus:text-destructive'
+          className='text-destructive focus:text-destructive cursor-pointer'
           onClick={() => signOut()}
         >
           <LogOut className='mr-2 h-4 w-4' />

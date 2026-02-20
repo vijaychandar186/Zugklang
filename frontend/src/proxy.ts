@@ -1,7 +1,7 @@
 import NextAuth from 'next-auth';
-import authConfig from './lib/auth/auth.config';
+import { authEdgeConfig } from '@/lib/auth/auth-edge.config';
 
-const { auth } = NextAuth(authConfig);
+const { auth } = NextAuth(authEdgeConfig);
 
 export default auth(async (req) => {
   const session = req.auth;
@@ -14,5 +14,11 @@ export default auth(async (req) => {
 });
 
 export const config = {
-  matcher: ['/play/:path*', '/tools/:path*', '/practice/:path*']
+  matcher: [
+    '/play/:path*',
+    '/tools/:path*',
+    '/practice/:path*',
+    '/profile/:path*',
+    '/games/:path*'
+  ]
 };

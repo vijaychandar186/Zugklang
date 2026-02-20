@@ -55,6 +55,17 @@ const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080';
 
 const PING_INTERVAL_MS = 25_000;
 
+async function fetchWsToken(): Promise<string | null> {
+  try {
+    const res = await fetch('/api/ws-token');
+    if (!res.ok) return null;
+    const data = (await res.json()) as { token: string };
+    return data.token;
+  } catch {
+    return null;
+  }
+}
+
 export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const [state, setState] = useState<MultiplayerWSState>({
     status: 'idle',
@@ -73,10 +84,18 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     latencyMs: null,
     opponentLatencyMs: null,
     rematchOffered: false,
-    rematchDeclined: false
+    rematchDeclined: false,
+    whiteUserId: null,
+    blackUserId: null,
+    opponentName: null,
+    opponentImage: null
   });
 
   const wsRef = useRef<WebSocket | null>(null);
+  // Deduplicates concurrent connect() calls — set during the token-fetch/WS-creation
+  // window (before wsRef is populated) so a second caller shares the same promise
+  // instead of racing to create a second WebSocket.
+  const connectPromiseRef = useRef<Promise<void> | null>(null);
   const pingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pingTimestampRef = useRef<number | null>(null);
   const onOpponentMoveRef = useRef<OnOpponentMoveFn | null>(null);
@@ -115,84 +134,127 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   // ─── Connect & listen ───────────────────────────────────────────────────────
 
   const connect = useCallback((): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      if (wsRef.current) {
-        if (wsRef.current.readyState === WebSocket.OPEN) {
-          resolve();
-          return;
-        }
-        if (wsRef.current.readyState === WebSocket.CONNECTING) {
-          wsRef.current.addEventListener('open', () => resolve(), {
-            once: true
-          });
-          wsRef.current.addEventListener(
-            'error',
-            () => reject(new Error('WebSocket error')),
-            { once: true }
-          );
-          return;
-        }
-      }
+    // ── Already open ──────────────────────────────────────────────────────
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      return Promise.resolve();
+    }
+    // ── Handshake in-flight ──────────────────────────────────────────────
+    if (wsRef.current?.readyState === WebSocket.CONNECTING) {
+      return new Promise((resolve, reject) => {
+        wsRef.current!.addEventListener('open', () => resolve(), {
+          once: true
+        });
+        wsRef.current!.addEventListener(
+          'error',
+          () => reject(new Error('WebSocket error')),
+          { once: true }
+        );
+      });
+    }
+    // ── Stale CLOSING socket ─────────────────────────────────────────────
+    if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.onerror = null;
+      wsRef.current = null;
+    }
+    // ── Token-fetch / WS-creation already in progress ───────────────────
+    // Return the same promise so concurrent callers don't race to create
+    // a second WebSocket (which would get superseded and trigger onclose).
+    if (connectPromiseRef.current) return connectPromiseRef.current;
 
-      setState((s) => ({ ...s, status: 'connecting', errorMessage: null }));
+    setState((s) => ({ ...s, status: 'connecting', errorMessage: null }));
 
-      let ws: WebSocket;
-      try {
-        ws = new WebSocket(WS_URL);
-      } catch {
-        setState((s) => ({
-          ...s,
-          status: 'error',
-          errorMessage: 'Failed to create WebSocket connection'
-        }));
-        reject(new Error('Failed to create WebSocket'));
-        return;
-      }
-
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        startPing();
-        resolve();
-      };
-
-      ws.onerror = () => {
-        setState((s) => ({
-          ...s,
-          status: 'error',
-          errorMessage:
-            'Connection error. Make sure the game server is running.'
-        }));
-        reject(new Error('WebSocket error'));
-      };
-
-      ws.onclose = () => {
-        stopPing();
-        setState((s) => {
-          if (
-            s.status === 'playing' ||
-            s.status === 'waiting' ||
-            s.status === 'connecting'
-          ) {
-            return {
+    const promise = new Promise<void>((resolve, reject) => {
+      // Fetch auth token — the server requires authentication
+      fetchWsToken()
+        .then((token) => {
+          if (!token) {
+            setState((s) => ({
               ...s,
               status: 'error',
-              errorMessage: 'Connection lost. Please try again.'
-            };
+              errorMessage: 'Sign in required to play multiplayer games.'
+            }));
+            reject(new Error('Unauthenticated'));
+            return;
           }
-          return { ...s, status: 'idle', errorMessage: null };
-        });
-      };
 
-      ws.onmessage = (event: MessageEvent) => {
-        try {
-          const msg = JSON.parse(event.data as string) as ServerMessage;
-          handleServerMessage(msg);
-        } catch {
-          // ignore malformed messages
-        }
-      };
+          const wsUrl = `${WS_URL}?token=${encodeURIComponent(token)}`;
+
+          let ws: WebSocket;
+          try {
+            ws = new WebSocket(wsUrl);
+          } catch {
+            setState((s) => ({
+              ...s,
+              status: 'error',
+              errorMessage: 'Failed to create WebSocket connection'
+            }));
+            reject(new Error('Failed to create WebSocket'));
+            return;
+          }
+
+          wsRef.current = ws;
+
+          ws.onopen = () => {
+            startPing();
+            resolve();
+          };
+
+          ws.onerror = () => {
+            setState((s) => ({
+              ...s,
+              status: 'error',
+              errorMessage:
+                'Connection error. Make sure the game server is running.'
+            }));
+            reject(new Error('WebSocket error'));
+          };
+
+          ws.onclose = () => {
+            stopPing();
+            setState((s) => {
+              // Preserve existing error state (auth error, connection error)
+              // so that onerror → onclose doesn't blank the message.
+              if (s.status === 'error') return s;
+              if (
+                s.status === 'playing' ||
+                s.status === 'waiting' ||
+                s.status === 'connecting'
+              ) {
+                return {
+                  ...s,
+                  status: 'error',
+                  errorMessage: 'Connection lost. Please try again.'
+                };
+              }
+              return { ...s, status: 'idle', errorMessage: null };
+            });
+          };
+
+          ws.onmessage = (event: MessageEvent) => {
+            try {
+              const msg = JSON.parse(event.data as string) as ServerMessage;
+              handleServerMessage(msg);
+            } catch {
+              // ignore malformed messages
+            }
+          };
+        })
+        .catch(() => {
+          setState((s) => ({
+            ...s,
+            status: 'error',
+            errorMessage:
+              'Connection error. Make sure the game server is running.'
+          }));
+          reject(new Error('Token fetch failed'));
+        });
+    }).finally(() => {
+      connectPromiseRef.current = null;
     });
+
+    connectPromiseRef.current = promise;
+    return promise;
   }, [startPing, stopPing]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ─── Message handler ─────────────────────────────────────────────────────
@@ -227,7 +289,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
         }));
         break;
 
-      case 'matched':
+      case 'matched': {
         roomIdRef.current = msg.roomId;
         saveSession(
           msg.roomId,
@@ -235,6 +297,11 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           msg.variant,
           msg.rejoinToken
         );
+        const isWhiteM = msg.color === 'white';
+        const opponentNameM = isWhiteM
+          ? msg.blackDisplayName
+          : msg.whiteDisplayName;
+        const opponentImageM = isWhiteM ? msg.blackImage : msg.whiteImage;
         setState((s) => ({
           ...s,
           status: 'matched',
@@ -249,14 +316,19 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           pendingChallengeId: null,
           movesToReplay: null,
           rematchOffered: false,
-          rematchDeclined: false
+          rematchDeclined: false,
+          whiteUserId: msg.whiteUserId,
+          blackUserId: msg.blackUserId,
+          opponentName: opponentNameM,
+          opponentImage: opponentImageM
         }));
         // Restart the ping cycle so latency_update fires immediately with the
         // now-valid roomId — the initial ping fired before the room existed.
         startPing();
         break;
+      }
 
-      case 'rejoined':
+      case 'rejoined': {
         roomIdRef.current = msg.roomId;
         saveSession(
           msg.roomId,
@@ -264,6 +336,11 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           msg.variant,
           msg.rejoinToken
         );
+        const isWhiteR = msg.color === 'white';
+        const opponentNameR = isWhiteR
+          ? msg.blackDisplayName
+          : msg.whiteDisplayName;
+        const opponentImageR = isWhiteR ? msg.blackImage : msg.whiteImage;
         setState((s) => ({
           ...s,
           status: 'rejoined',
@@ -277,10 +354,15 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           opponentDisconnectedAt: null,
           pendingChallengeId: null,
           movesToReplay: msg.moves.length > 0 ? msg.moves : null,
-          opponentLatencyMs: msg.opponentLatencyMs
+          opponentLatencyMs: msg.opponentLatencyMs,
+          whiteUserId: msg.whiteUserId,
+          blackUserId: msg.blackUserId,
+          opponentName: opponentNameR,
+          opponentImage: opponentImageR
         }));
         startPing();
         break;
+      }
 
       case 'rejoin_failed':
         clearSession();
@@ -300,7 +382,9 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
         setState((s) => ({
           ...s,
           status: 'game_over',
-          drawOffered: false
+          drawOffered: false,
+          whiteUserId: msg.whiteUserId,
+          blackUserId: msg.blackUserId
         }));
         onServerGameOverRef.current?.(msg.result, msg.reason);
         break;
@@ -383,13 +467,24 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   }, []);
 
   const joinQueue = useCallback(
-    async (variant: string, timeControl: TimeControl) => {
+    async (
+      variant: string,
+      timeControl: TimeControl,
+      displayName?: string,
+      userImage?: string | null
+    ) => {
       try {
         await connect();
       } catch {
         return;
       }
-      sendRaw({ type: 'join_queue', variant, timeControl });
+      sendRaw({
+        type: 'join_queue',
+        variant,
+        timeControl,
+        displayName,
+        userImage
+      });
       setState((s) => ({
         ...s,
         status: 'waiting',
@@ -409,26 +504,39 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     async (
       variant: string,
       timeControl: TimeControl,
-      color: ChallengeColor
+      color: ChallengeColor,
+      displayName?: string,
+      userImage?: string | null
     ) => {
       try {
         await connect();
       } catch {
         return;
       }
-      sendRaw({ type: 'create_challenge', variant, timeControl, color });
+      sendRaw({
+        type: 'create_challenge',
+        variant,
+        timeControl,
+        color,
+        displayName,
+        userImage
+      });
     },
     [connect, sendRaw]
   );
 
   const joinChallenge = useCallback(
-    async (challengeId: string) => {
+    async (
+      challengeId: string,
+      displayName?: string,
+      userImage?: string | null
+    ) => {
       try {
         await connect();
       } catch {
         return;
       }
-      sendRaw({ type: 'join_challenge', challengeId });
+      sendRaw({ type: 'join_challenge', challengeId, displayName, userImage });
     },
     [connect, sendRaw]
   );
@@ -514,6 +622,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const disconnect = useCallback(() => {
     clearSession();
     stopPing();
+    connectPromiseRef.current = null;
     const ws = wsRef.current;
     if (ws) {
       ws.onclose = null;
@@ -538,7 +647,11 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       latencyMs: null,
       opponentLatencyMs: null,
       rematchOffered: false,
-      rematchDeclined: false
+      rematchDeclined: false,
+      whiteUserId: null,
+      blackUserId: null,
+      opponentName: null,
+      opponentImage: null
     });
   }, [stopPing]);
 
@@ -559,11 +672,16 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   }, []);
 
   const preConnect = useCallback(() => {
+    // Don't attempt if already open or in-flight
+    const rs = wsRef.current?.readyState;
+    if (rs === WebSocket.OPEN || rs === WebSocket.CONNECTING) return;
+
+    // Silently attempt to warm up the connection. On failure (network error
+    // or user not signed in) reset to idle so no spurious error is shown —
+    // the real error will surface when the user explicitly clicks Find Game.
     connect().catch(() => {
-      // Background pre-connect failed — reset to idle silently so the dialog
-      // never shows a spurious error from a transient connection attempt.
       setState((s) =>
-        s.status === 'error' ? { ...s, status: 'idle', errorMessage: null } : s
+        s.status !== 'idle' ? { ...s, status: 'idle', errorMessage: null } : s
       );
     });
   }, [connect]);

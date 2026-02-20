@@ -39,7 +39,11 @@ export function createRoom(
     createdAt: Date.now(),
     abortTimer: null,
     whiteLatencyMs: null,
-    blackLatencyMs: null
+    blackLatencyMs: null,
+    whiteDisplayName: white.data.displayName ?? null,
+    blackDisplayName: black.data.displayName ?? null,
+    whiteImage: white.data.userImage ?? null,
+    blackImage: black.data.userImage ?? null
   };
 
   rooms.set(roomId, room);
@@ -54,7 +58,9 @@ export function createRoom(
     const payload = {
       type: 'game_over',
       result: 'Game Aborted',
-      reason: 'abort'
+      reason: 'abort',
+      whiteUserId: r.white.data.userId ?? null,
+      blackUserId: r.black.data.userId ?? null
     };
     send(r.white, payload);
     send(r.black, payload);
@@ -67,6 +73,10 @@ export function createRoom(
   const whiteToken = issueRejoinToken(white.data.id);
   const blackToken = issueRejoinToken(black.data.id);
 
+  const whiteUserId = white.data.userId ?? null;
+  const blackUserId = black.data.userId ?? null;
+  const { whiteDisplayName, blackDisplayName, whiteImage, blackImage } = room;
+
   send(white, {
     type: 'matched',
     roomId,
@@ -74,7 +84,13 @@ export function createRoom(
     variant,
     timeControl,
     startingFen,
-    rejoinToken: whiteToken
+    rejoinToken: whiteToken,
+    whiteUserId,
+    blackUserId,
+    whiteDisplayName,
+    blackDisplayName,
+    whiteImage,
+    blackImage
   });
   send(black, {
     type: 'matched',
@@ -83,7 +99,13 @@ export function createRoom(
     variant,
     timeControl,
     startingFen,
-    rejoinToken: blackToken
+    rejoinToken: blackToken,
+    whiteUserId,
+    blackUserId,
+    whiteDisplayName,
+    blackDisplayName,
+    whiteImage,
+    blackImage
   });
 
   logger.info('room_created', {
@@ -100,6 +122,25 @@ function matchPlayers(
   variant: string,
   timeControl: TimeControl
 ): void {
+  // Safety guard: never pair a player against themselves (same authenticated user)
+  if (
+    playerA.data.userId &&
+    playerB.data.userId &&
+    playerA.data.userId === playerB.data.userId
+  ) {
+    logger.warn('same_user_match_blocked', {
+      userId: playerA.data.userId.slice(0, 8)
+    });
+    // Re-queue both players so they each wait for a different opponent
+    const queueKey = `${variant}:${timeControlKey(timeControl)}`;
+    const queue = queues.get(queueKey) ?? [];
+    queues.set(queueKey, queue);
+    if (!queue.includes(playerA)) queue.push(playerA);
+    if (!queue.includes(playerB)) queue.push(playerB);
+    send(playerA, { type: 'waiting' });
+    send(playerB, { type: 'waiting' });
+    return;
+  }
   const [white, black] =
     Math.random() < 0.5 ? [playerA, playerB] : [playerB, playerA];
   createRoom(white, black, variant, timeControl);
@@ -107,9 +148,18 @@ function matchPlayers(
 
 export function handleJoinQueue(
   ws: BunWS,
-  msg: { variant: string; timeControl: TimeControl }
+  msg: {
+    variant: string;
+    timeControl: TimeControl;
+    displayName?: string | undefined;
+    userImage?: string | null | undefined;
+  }
 ): void {
   const { variant, timeControl } = msg;
+
+  // Store display info from the client
+  if (msg.displayName !== undefined) ws.data.displayName = msg.displayName;
+  if (msg.userImage !== undefined) ws.data.userImage = msg.userImage;
 
   removeFromQueues(ws);
 
@@ -129,8 +179,24 @@ export function handleJoinQueue(
     queues.set(queueKey, queue);
   }
 
-  const opponent = queue.shift();
-  if (opponent) {
+  // Scan for a suitable opponent — skip entries from the same authenticated user
+  let opponentIdx = -1;
+  for (let i = 0; i < queue.length; i++) {
+    const candidate = queue[i];
+    if (!candidate) continue;
+    if (
+      ws.data.userId &&
+      candidate.data.userId &&
+      ws.data.userId === candidate.data.userId
+    ) {
+      continue; // same user in the queue — skip
+    }
+    opponentIdx = i;
+    break;
+  }
+
+  if (opponentIdx >= 0) {
+    const opponent = queue.splice(opponentIdx, 1)[0]!;
     matchPlayers(ws, opponent, variant, timeControl);
   } else {
     queue.push(ws);

@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { ChessBoard } from '@/features/chess/components/ChessBoard';
 import { CapturedPiecesDisplay } from '@/features/chess/components/CapturedPieces';
 import { ChessSidebar } from '@/features/chess/components/ChessSidebar';
@@ -9,6 +10,7 @@ import { AnalysisLines } from '@/features/analysis/components/AnalysisLines';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { PlayerClock } from '@/features/chess/components/PlayerClock';
 import { useGameView } from '@/features/chess/hooks/useGameView';
+import { useGameSave } from '@/features/chess/hooks/useGameSave';
 import { useGameTimer } from '@/features/chess/hooks/useGameTimer';
 import {
   useChessStore,
@@ -22,6 +24,12 @@ import {
 import { GameType } from '@/features/chess/stores/useChessStore';
 import { ChessVariant } from '@/features/chess/utils/chess960';
 import { getEngineName } from '@/features/chess/config/variants';
+
+interface UserProfile {
+  name: string | null;
+  image: string | null;
+  rating: number | null;
+}
 
 interface GameViewProps {
   serverOrientation?: 'white' | 'black';
@@ -59,6 +67,19 @@ export function GameView({
   } = useGameView();
 
   const storeVariant = useChessStore((s) => s.variant);
+  const playAs = useChessStore((s) => s.playAs);
+
+  const { data: session } = useSession();
+  const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
+
+  // Fetch the current user's name, image, and rating for this variant
+  useEffect(() => {
+    if (!session?.user?.id || isLocalGame) return;
+    fetch(`/api/user/rating?variant=${storeVariant}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => data && setMyProfile(data))
+      .catch(() => {});
+  }, [session?.user?.id, storeVariant, isLocalGame]);
 
   const getPlayerName = (color: 'white' | 'black', isStockfish: boolean) => {
     if (isLocalGame) {
@@ -67,7 +88,19 @@ export function GameView({
     if (isStockfish) {
       return getEngineName(storeVariant);
     }
-    return 'Player';
+    return myProfile?.name ?? session?.user?.name ?? 'Player';
+  };
+
+  const getPlayerImage = (color: 'white' | 'black', isStockfish: boolean) => {
+    if (isLocalGame || isStockfish) return null;
+    return color === playAs
+      ? (myProfile?.image ?? session?.user?.image ?? null)
+      : null;
+  };
+
+  const getPlayerRating = (color: 'white' | 'black', isStockfish: boolean) => {
+    if (isLocalGame || isStockfish) return null;
+    return color === playAs ? (myProfile?.rating ?? null) : null;
   };
 
   const setMode = useChessStore((s) => s.setMode);
@@ -89,6 +122,7 @@ export function GameView({
   }, [initialGameType, setGameType, variant, setVariant]);
 
   useGameTimer();
+  useGameSave(initialGameType);
 
   useEffect(() => {
     initializeEngine();
@@ -113,6 +147,8 @@ export function GameView({
                   isTopStockfish ? `Level ${stockfishLevel}` : undefined
                 }
                 isStockfish={isTopStockfish}
+                image={getPlayerImage(topColor, isTopStockfish)}
+                rating={getPlayerRating(topColor, isTopStockfish)}
               />
               {hasTimer && (
                 <PlayerClock
@@ -145,6 +181,8 @@ export function GameView({
                   isBottomStockfish ? `Level ${stockfishLevel}` : undefined
                 }
                 isStockfish={isBottomStockfish}
+                image={getPlayerImage(bottomColor, isBottomStockfish)}
+                rating={getPlayerRating(bottomColor, isBottomStockfish)}
               />
               {hasTimer && (
                 <PlayerClock
@@ -162,7 +200,7 @@ export function GameView({
           />
         </div>
       </div>
-      <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(560px,calc(100dvh-200px))] lg:w-80 lg:overflow-hidden xl:h-[min(640px,calc(100dvh-200px))] 2xl:h-[min(720px,calc(100dvh-200px))]'>
+      <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>
         {isAnalysisOn && (
           <div className='bg-card shrink-0 rounded-lg border'>
             <AnalysisLines />

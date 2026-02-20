@@ -71,7 +71,13 @@ export function handleRejoinRoom(
     startingFen: room.startingFen,
     moves: room.moves,
     rejoinToken: newToken,
-    opponentLatencyMs: isWhite ? room.blackLatencyMs : room.whiteLatencyMs
+    opponentLatencyMs: isWhite ? room.blackLatencyMs : room.whiteLatencyMs,
+    whiteUserId: room.white.data.userId ?? null,
+    blackUserId: room.black.data.userId ?? null,
+    whiteDisplayName: room.whiteDisplayName,
+    blackDisplayName: room.blackDisplayName,
+    whiteImage: room.whiteImage,
+    blackImage: room.blackImage
   });
 
   logger.info('player_rejoined', { roomId: roomId.slice(0, 8), color });
@@ -114,7 +120,9 @@ export function handleDisconnect(ws: BunWS): void {
           send(remaining, {
             type: 'game_over',
             result: `${winner} wins — opponent abandoned`,
-            reason: 'abandoned'
+            reason: 'abandoned',
+            whiteUserId: r.white.data.userId ?? null,
+            blackUserId: r.black.data.userId ?? null
           });
           logger.info('player_abandoned', {
             roomId: roomId.slice(0, 8),

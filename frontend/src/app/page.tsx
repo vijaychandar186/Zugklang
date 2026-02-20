@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 };
 
 function Divider() {
-  return <hr className='border-border mx-auto w-11/12' />;
+  return <hr className='border-border w-full' />;
 }
 
 export default function Page() {
@@ -30,4 +30,3 @@ export default function Page() {
     </PageContainer>
   );
 }
-

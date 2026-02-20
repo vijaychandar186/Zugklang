@@ -18,12 +18,18 @@ export const TimeControlSchema = z.object({
 
 // ─── All valid client → server messages ──────────────────────────────────────
 
+const DisplayInfoSchema = {
+  displayName: z.string().max(100).optional(),
+  userImage: z.string().max(500).nullable().optional()
+};
+
 export const ClientMessageSchema = z.discriminatedUnion('type', [
   // Matchmaking
   z.object({
     type: z.literal('join_queue'),
     variant: z.string().min(1).max(32),
-    timeControl: TimeControlSchema
+    timeControl: TimeControlSchema,
+    ...DisplayInfoSchema
   }),
   z.object({ type: z.literal('leave_queue') }),
 
@@ -39,11 +45,13 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('create_challenge'),
     variant: z.string().min(1).max(32),
     timeControl: TimeControlSchema,
-    color: CreatorColorSchema
+    color: CreatorColorSchema,
+    ...DisplayInfoSchema
   }),
   z.object({
     type: z.literal('join_challenge'),
-    challengeId: z.string().uuid()
+    challengeId: z.string().uuid(),
+    ...DisplayInfoSchema
   }),
   z.object({ type: z.literal('cancel_challenge') }),
 

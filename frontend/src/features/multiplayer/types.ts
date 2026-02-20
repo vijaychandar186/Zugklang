@@ -26,6 +26,12 @@ export type ServerMessage =
       timeControl: TimeControl;
       startingFen: string;
       rejoinToken: string;
+      whiteUserId: string | null;
+      blackUserId: string | null;
+      whiteDisplayName: string | null;
+      blackDisplayName: string | null;
+      whiteImage: string | null;
+      blackImage: string | null;
     }
   | { type: 'challenge_created'; challengeId: string }
   | { type: 'challenge_not_found' }
@@ -39,10 +45,23 @@ export type ServerMessage =
       moves: string[];
       rejoinToken: string;
       opponentLatencyMs: number | null;
+      whiteUserId: string | null;
+      blackUserId: string | null;
+      whiteDisplayName: string | null;
+      blackDisplayName: string | null;
+      whiteImage: string | null;
+      blackImage: string | null;
     }
   | { type: 'rejoin_failed'; reason: string }
   | { type: 'opponent_move'; from: string; to: string; promotion?: string }
-  | { type: 'game_over'; result: string; reason: string; winner?: string }
+  | {
+      type: 'game_over';
+      result: string;
+      reason: string;
+      winner?: string;
+      whiteUserId: string | null;
+      blackUserId: string | null;
+    }
   | { type: 'draw_offered' }
   | { type: 'draw_declined' }
   | { type: 'opponent_disconnected' }
@@ -58,7 +77,13 @@ export type ServerMessage =
 export type ChallengeColor = 'white' | 'black' | 'random';
 
 export type ClientMessage =
-  | { type: 'join_queue'; variant: string; timeControl: TimeControl }
+  | {
+      type: 'join_queue';
+      variant: string;
+      timeControl: TimeControl;
+      displayName?: string;
+      userImage?: string | null;
+    }
   | { type: 'leave_queue' }
   | { type: 'rejoin_room'; roomId: string; rejoinToken: string }
   | {
@@ -66,8 +91,15 @@ export type ClientMessage =
       variant: string;
       timeControl: TimeControl;
       color: ChallengeColor;
+      displayName?: string;
+      userImage?: string | null;
     }
-  | { type: 'join_challenge'; challengeId: string }
+  | {
+      type: 'join_challenge';
+      challengeId: string;
+      displayName?: string;
+      userImage?: string | null;
+    }
   | { type: 'cancel_challenge' }
   | {
       type: 'move';
@@ -115,6 +147,12 @@ export interface MultiplayerWSState {
   rematchOffered: boolean;
   /** Opponent declined our rematch offer */
   rematchDeclined: boolean;
+  /** Auth user IDs for both players — set on match/rejoin, used for game save */
+  whiteUserId: string | null;
+  blackUserId: string | null;
+  /** Opponent's display name and avatar — populated from matched/rejoined messages */
+  opponentName: string | null;
+  opponentImage: string | null;
 }
 
 export type OnOpponentMoveFn = (
@@ -127,7 +165,12 @@ export type OnServerGameOverFn = (result: string, reason: string) => void;
 
 export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   /** Join the matchmaking queue for a variant */
-  joinQueue: (variant: string, timeControl: TimeControl) => void;
+  joinQueue: (
+    variant: string,
+    timeControl: TimeControl,
+    displayName?: string,
+    userImage?: string | null
+  ) => void;
   /** Leave the matchmaking queue */
   leaveQueue: () => void;
   /** Eagerly open the WebSocket connection without sending any game message */
@@ -140,10 +183,16 @@ export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   createChallenge: (
     variant: string,
     timeControl: TimeControl,
-    color: ChallengeColor
+    color: ChallengeColor,
+    displayName?: string,
+    userImage?: string | null
   ) => void;
   /** Join a challenge by ID from a shared link */
-  joinChallenge: (challengeId: string) => void;
+  joinChallenge: (
+    challengeId: string,
+    displayName?: string,
+    userImage?: string | null
+  ) => void;
   /** Cancel a pending challenge we created */
   cancelChallenge: () => void;
   /** Send a player's move to the server */

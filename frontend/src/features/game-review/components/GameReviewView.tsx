@@ -57,10 +57,12 @@ const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 
 interface GameReviewViewProps {
   initialBoard3dEnabled?: boolean;
+  initialPgn?: string;
 }
 
 export function GameReviewView({
-  initialBoard3dEnabled
+  initialBoard3dEnabled,
+  initialPgn
 }: GameReviewViewProps = {}) {
   const router = useRouter();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -233,6 +235,13 @@ export function GameReviewView({
   }, [position, currentMoveIndex, classification, boardFlipped]);
 
   useEngineInit();
+
+  // Pre-populate from URL ?pgn= param and auto-start review
+  useEffect(() => {
+    if (!initialPgn) return;
+    setPgn(initialPgn);
+    setShouldAutoReview(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!currentFen) return;
@@ -409,7 +418,7 @@ export function GameReviewView({
         {(report || isAnalysisOn) && <ReviewEvaluationBar />}
       </div>
 
-      <div className='relative shrink-0 [&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[400px] lg:[&>div]:!w-[min(560px,calc(100dvh-200px))]'>
+      <div className='relative shrink-0 [&>div]:!w-[calc(100vw-2rem)] sm:[&>div]:!w-[min(92vw,420px)] lg:[&>div]:!w-[min(70vw,calc(100dvh-180px),820px)] xl:[&>div]:!w-[min(68vw,calc(100dvh-180px),920px)] 2xl:[&>div]:!w-[min(66vw,calc(100dvh-180px),1020px)]'>
         <UnifiedBoardWithPromotion
           position={currentFen || STARTING_FEN}
           boardOrientation={boardFlipped ? 'black' : 'white'}

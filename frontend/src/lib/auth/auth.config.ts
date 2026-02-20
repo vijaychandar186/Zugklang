@@ -6,15 +6,18 @@ import { prisma } from '@/lib/db/db';
 
 export const authConfig = {
   adapter: PrismaAdapter(prisma),
+  session: { strategy: 'jwt' },
   providers: [Github, Google],
   pages: {
     signIn: '/signin'
   },
   callbacks: {
-    async signIn() {
-      return true;
+    async jwt({ token, user }) {
+      if (user) token.sub = user.id;
+      return token;
     },
-    async session({ session }) {
+    async session({ session, token }) {
+      session.user.id = token.sub!;
       return session;
     }
   }

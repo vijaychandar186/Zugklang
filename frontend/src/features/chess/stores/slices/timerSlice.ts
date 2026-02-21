@@ -1,6 +1,10 @@
 import { StateCreator } from 'zustand';
 import { TimeControl } from '@/features/game/types/rules';
-import { initializeTimers, hasTimer, getIncrement } from '@/lib/chess/timeControl';
+import {
+  initializeTimers,
+  hasTimer,
+  getIncrement
+} from '@/lib/chess/timeControl';
 import { getEngineName } from '@/features/chess/config/variants';
 
 export interface TimerSlice {

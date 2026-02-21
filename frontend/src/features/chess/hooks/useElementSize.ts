@@ -1,4 +1,3 @@
-
 import { useState, useEffect, RefObject } from 'react';
 
 export function useElementSize<T extends HTMLElement = HTMLDivElement>(
@@ -6,7 +5,7 @@ export function useElementSize<T extends HTMLElement = HTMLDivElement>(
 ): { width: number; height: number } {
   const [size, setSize] = useState<{ width: number; height: number }>({
     width: 0,
-    height: 0,
+    height: 0
   });
 
   useEffect(() => {

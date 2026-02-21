@@ -14,9 +14,7 @@ export default function GoogleSignInButton() {
       className='w-full'
       variant='outline'
       type='button'
-      onClick={() =>
-        signIn('google', { callbackUrl: callbackUrl ?? '/' })
-      }
+      onClick={() => signIn('google', { callbackUrl: callbackUrl ?? '/' })}
     >
       <Icons.google className='mr-2 h-4 w-4' />
       Continue with Google

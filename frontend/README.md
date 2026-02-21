@@ -9,6 +9,7 @@ Play standard chess and 9 variants against Stockfish and Fairy-Stockfish, solve 
 ## Features
 
 ### Chess Engines
+
 - **Stockfish 16** — One of the strongest chess engines in the world, running fully in-browser via WebAssembly
 - **Fairy-Stockfish** — Extended engine for chess variants, also WASM-powered with no server calls
 - **Probabilistic AI** — Gaussian distribution difficulty curve for human-like, unpredictable opponents; adjustable from beginner to grandmaster
@@ -16,7 +17,9 @@ Play standard chess and 9 variants against Stockfish and Fairy-Stockfish, solve 
 ### Play Modes
 
 #### vs Computer
+
 Play any of 10 variants against the engine:
+
 - Standard Chess
 - Fischer Random (Chess960)
 - Atomic Chess
@@ -29,10 +32,13 @@ Play any of 10 variants against the engine:
 - Chess with Checkers
 
 #### Local Multiplayer
+
 Same-device play across all 10 variants above.
 
 #### Online Multiplayer
+
 Real-time WebSocket-based online play:
+
 - Instant matchmaking queue
 - Challenge links (play with a friend)
 - No account required to play
@@ -44,11 +50,13 @@ Real-time WebSocket-based online play:
 - Supports all 10 standard variants
 
 #### Custom Game Modes
+
 - **4-Player Chess** — 14×14 board, four independent players, alliances and multi-front strategy
 - **Dice Chess** — Roll 3 dice each turn to determine which piece types can move
 - **Card Chess** — Draw cards to determine moveable pieces (card rank maps to piece type)
 
 ### Practice & Training
+
 - **Tactical Puzzles** — Solve puzzles at your own pace
 - **Puzzle Rush** — Timed mode: solve as many puzzles as possible before running out of time
 - **Opening Explorer** — Browse and study thousands of openings and variations interactively
@@ -56,10 +64,12 @@ Real-time WebSocket-based online play:
 - **Vision Training** — Identify coordinates and valid moves to build pattern recognition
 
 ### Analysis Tools
+
 - **Analysis Board** — Analyze any position with Stockfish; import PGNs, set up positions, and explore variations
 - **Game Review** — Review full games move-by-move with accuracy scores and best move suggestions
 
 ### UI & Experience
+
 - Immersive audio feedback for moves, captures, checks, and checkmates
 - Multiple board themes and piece sets
 - Full light / dark mode with persistent theme preference
@@ -141,16 +151,16 @@ pnpm start
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `pnpm dev` | Start development server with Turbopack |
-| `pnpm build` | Build for production |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint |
-| `pnpm lint:fix` | Fix linting issues and format |
-| `pnpm format` | Format with Prettier |
-| `pnpm exec prisma studio` | Open Prisma Studio (visual DB browser) |
-| `pnpm exec prisma db push` | Push schema changes to the database |
+| Command                    | Description                             |
+| -------------------------- | --------------------------------------- |
+| `pnpm dev`                 | Start development server with Turbopack |
+| `pnpm build`               | Build for production                    |
+| `pnpm start`               | Start production server                 |
+| `pnpm lint`                | Run ESLint                              |
+| `pnpm lint:fix`            | Fix linting issues and format           |
+| `pnpm format`              | Format with Prettier                    |
+| `pnpm exec prisma studio`  | Open Prisma Studio (visual DB browser)  |
+| `pnpm exec prisma db push` | Push schema changes to the database     |
 
 ---
 

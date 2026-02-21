@@ -31,7 +31,11 @@ import {
   BoardOrientationSlice
 } from './slices';
 import { setCookie, getBooleanCookie } from '@/lib/storage/settings';
-import { initializeTimers, hasTimer, getIncrement } from '@/lib/chess/timeControl';
+import {
+  initializeTimers,
+  hasTimer,
+  getIncrement
+} from '@/lib/chess/timeControl';
 import * as gameLoader from '@/lib/chess/gameLoader';
 import { EngineConfig } from '@/features/chess/types/engine';
 

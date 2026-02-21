@@ -12,11 +12,16 @@ export const metadata: Metadata = {
 
 export default async function FischerRandomLocalPage() {
   const cookieStore = await cookies();
-  const board3dEnabled = cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
+  const board3dEnabled =
+    cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
 
   return (
     <PageContainer scrollable={true}>
-      <GameView gameType='local' initialBoard3dEnabled={board3dEnabled} variant='fischerRandom' />
+      <GameView
+        gameType='local'
+        initialBoard3dEnabled={board3dEnabled}
+        variant='fischerRandom'
+      />
     </PageContainer>
   );
 }

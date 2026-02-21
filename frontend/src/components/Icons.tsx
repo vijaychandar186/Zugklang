@@ -184,7 +184,6 @@ export const Icons = {
   signalMedium: SignalMedium,
   signalLow: SignalLow,
 
-  
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'
@@ -219,7 +218,6 @@ export const Icons = {
       ></path>
     </svg>
   )
-
 } as const;
 
 export type { LucideIcon };

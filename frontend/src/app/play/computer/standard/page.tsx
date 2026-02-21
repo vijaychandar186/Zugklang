@@ -16,7 +16,8 @@ export default async function ComputerStandardPage() {
     | 'white'
     | 'black'
     | undefined;
-  const board3dEnabled = cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
+  const board3dEnabled =
+    cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
 
   return (
     <PageContainer scrollable={true}>

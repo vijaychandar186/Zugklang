@@ -143,10 +143,15 @@ export function MultiplayerGameView({
   initialBoard3dEnabled,
   challengeId
 }: MultiplayerGameViewProps) {
-  // Start the dialog closed if we have a session to rejoin — avoids flashing
-  // the matchmaking UI. If rejoin fails the dialog will be opened then.
+  // Declared first so its isSecondaryTab value is available to the useState
+  // initialiser for matchmakingOpen below.
+  const ws = useMultiplayerWS();
+  const { data: session } = useSession();
+
+  // Start the dialog closed if we have a session to rejoin, or if another tab
+  // already owns the active WS (secondary tab) — avoids eagerly superseding it.
   const [matchmakingOpen, setMatchmakingOpen] = useState(
-    () => loadSession() === null
+    () => loadSession() === null && !ws.isSecondaryTab
   );
   // Moves to replay after reconnection — set after game starts, cleared by board
   const [pendingMoves, setPendingMoves] = useState<string[] | null>(null);
@@ -186,9 +191,6 @@ export function MultiplayerGameView({
   const { initializeEngine, setPosition, cleanup, endAnalysis } =
     useAnalysisActions();
   const currentFEN = useChessStore((s) => s.currentFEN);
-
-  const ws = useMultiplayerWS();
-  const { data: session } = useSession();
 
   // Own rating fetched from API; name and image come from the session directly
   const [myRating, setMyRating] = useState<number | null>(null);
@@ -295,11 +297,12 @@ export function MultiplayerGameView({
 
   // Pre-connect the WebSocket as soon as the dialog is visible so any subsequent
   // action (Create Game Link, Find Game) fires instantly with no connection delay.
+  // Skip when this tab is secondary — pre-connecting would supersede the primary.
   useEffect(() => {
-    if (matchmakingOpen) {
+    if (matchmakingOpen && !ws.isSecondaryTab) {
       ws.preConnect();
     }
-  }, [matchmakingOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [matchmakingOpen, ws.isSecondaryTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-rejoin session on mount (page refresh case)
   // Active session takes priority over challenge link — the challenge is consumed
@@ -321,6 +324,7 @@ export function MultiplayerGameView({
 
   // Fresh match: show "Opponent found!" animation then start
   useEffect(() => {
+    if (ws.isSecondaryTab) return;
     if (ws.status === 'matched' && ws.myColor) {
       // Clear any stale ?challenge= param.
       if (typeof window !== 'undefined') {
@@ -358,6 +362,7 @@ export function MultiplayerGameView({
 
   // Rejoin: restore immediately with no dialog, no animation delay
   useEffect(() => {
+    if (ws.isSecondaryTab) return;
     if (ws.status === 'rejoined' && ws.myColor) {
       const moves = ws.movesToReplay;
       endAnalysis();
@@ -382,14 +387,30 @@ export function MultiplayerGameView({
     startMultiplayerGame
   ]);
 
-  // Open the matchmaking dialog only when there is no active session to rejoin.
-  // Checking loadSession() here prevents the dialog from flashing open on mount
-  // while a rejoin is still in progress (status is 'idle' before the WS responds).
+  // Open the matchmaking dialog only when there is no active session to rejoin
+  // and this is the primary tab.
   useEffect(() => {
-    if (ws.status === 'idle' && !matchmakingOpen && loadSession() === null) {
+    if (
+      ws.status === 'idle' &&
+      !matchmakingOpen &&
+      loadSession() === null &&
+      !ws.isSecondaryTab
+    ) {
       setMatchmakingOpen(true);
     }
-  }, [ws.status]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ws.status, ws.isSecondaryTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // For secondary tabs, keep the matchmaking dialog in sync with the mirrored
+  // status so the user sees the correct state (e.g. "Searching…" when waiting).
+  useEffect(() => {
+    if (!ws.isSecondaryTab) return;
+    const showDialog =
+      ws.status === 'idle' ||
+      ws.status === 'connecting' ||
+      ws.status === 'waiting' ||
+      ws.status === 'error';
+    setMatchmakingOpen(showDialog);
+  }, [ws.status, ws.isSecondaryTab]);
 
   // Handle server-initiated game over (resign, draw, abandon, abandon)
   useEffect(() => {
@@ -648,6 +669,28 @@ export function MultiplayerGameView({
           </div>
         </div>
       </div>
+
+      {/* Secondary-tab overlay: shown when this tab is mirroring another tab's
+          active game. Prevents the user from accidentally interacting with a
+          stale board and makes the situation clear. */}
+      {ws.isSecondaryTab &&
+        (ws.status === 'playing' ||
+          ws.status === 'matched' ||
+          ws.status === 'rejoined') && (
+          <div className='bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm'>
+            <div className='bg-card mx-4 flex max-w-sm flex-col items-center gap-3 rounded-xl border p-8 text-center shadow-xl'>
+              <Icons.system className='text-muted-foreground h-10 w-10' />
+              <div>
+                <p className='text-lg font-semibold'>
+                  Game in progress in another tab
+                </p>
+                <p className='text-muted-foreground mt-1 text-sm'>
+                  Switch to the other tab to continue playing.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
       <MatchmakingDialog
         open={matchmakingOpen}

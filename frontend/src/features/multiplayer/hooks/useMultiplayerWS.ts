@@ -12,6 +12,14 @@ import type {
 } from '../types';
 
 const SESSION_KEY = 'zugklang_mp_session';
+// localStorage key: '1' while this browser has an active primary WS tab
+const LS_ACTIVE_KEY = 'zugklang_mp_active';
+// BroadcastChannel name for cross-tab state synchronisation
+const BC_CHANNEL = 'zugklang_mp_state';
+
+type TabBroadcast =
+  | { type: 'state_sync'; state: MultiplayerWSState }
+  | { type: 'state_request' };
 
 function saveSession(
   roomId: string,
@@ -67,28 +75,41 @@ async function fetchWsToken(): Promise<string | null> {
 }
 
 export function useMultiplayerWS(): UseMultiplayerWSReturn {
-  const [state, setState] = useState<MultiplayerWSState>({
-    status: 'idle',
-    myColor: null,
-    roomId: null,
-    playerId: null,
-    variant: null,
-    startingFen: null,
-    timeControl: null,
-    drawOffered: false,
-    opponentDisconnected: false,
-    opponentDisconnectedAt: null,
-    errorMessage: null,
-    pendingChallengeId: null,
-    movesToReplay: null,
-    latencyMs: null,
-    opponentLatencyMs: null,
-    rematchOffered: false,
-    rematchDeclined: false,
-    whiteUserId: null,
-    blackUserId: null,
-    opponentName: null,
-    opponentImage: null
+  const [state, setState] = useState<MultiplayerWSState>(() => {
+    // If another tab already has an active WS session, mark this tab as
+    // secondary immediately so it doesn't eagerly pre-connect and supersede.
+    let isSecondaryTab = false;
+    if (typeof window !== 'undefined') {
+      try {
+        isSecondaryTab = localStorage.getItem(LS_ACTIVE_KEY) === '1';
+      } catch {
+        /* ignore */
+      }
+    }
+    return {
+      status: 'idle',
+      myColor: null,
+      roomId: null,
+      playerId: null,
+      variant: null,
+      startingFen: null,
+      timeControl: null,
+      drawOffered: false,
+      opponentDisconnected: false,
+      opponentDisconnectedAt: null,
+      errorMessage: null,
+      pendingChallengeId: null,
+      movesToReplay: null,
+      latencyMs: null,
+      opponentLatencyMs: null,
+      rematchOffered: false,
+      rematchDeclined: false,
+      whiteUserId: null,
+      blackUserId: null,
+      opponentName: null,
+      opponentImage: null,
+      isSecondaryTab
+    };
   });
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -103,6 +124,17 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
 
   // Keep latest room state accessible inside callbacks without stale closures
   const roomIdRef = useRef<string | null>(null);
+
+  // Cross-tab state sync
+  // isPrimaryRef: true while this tab owns the active WebSocket
+  const isPrimaryRef = useRef(false);
+  // latestStateRef: always reflects current state (updated on every render below)
+  // Used to respond to state_request messages without stale closure issues
+  const latestStateRef = useRef<MultiplayerWSState>(state);
+  const channelRef = useRef<BroadcastChannel | null>(null);
+
+  // Keep latestStateRef current on every render for use in BC message handler
+  latestStateRef.current = state;
 
   // ─── Internal helpers ───────────────────────────────────────────────────────
 
@@ -196,6 +228,13 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           wsRef.current = ws;
 
           ws.onopen = () => {
+            isPrimaryRef.current = true;
+            try {
+              localStorage.setItem(LS_ACTIVE_KEY, '1');
+            } catch {
+              /* ignore */
+            }
+            setState((s) => ({ ...s, isSecondaryTab: false }));
             startPing();
             resolve();
           };
@@ -210,8 +249,28 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
             reject(new Error('WebSocket error'));
           };
 
-          ws.onclose = () => {
+          ws.onclose = (event: CloseEvent) => {
+            isPrimaryRef.current = false;
             stopPing();
+            // If the server superseded this session (another tab connected with
+            // the same credentials), mark this tab as secondary so it doesn't
+            // aggressively re-connect and fight the new primary tab.
+            if (event.code === 1000 && event.reason === 'Session superseded') {
+              setState((s) => ({
+                ...s,
+                status: 'idle',
+                errorMessage: null,
+                isSecondaryTab: true
+              }));
+              return;
+            }
+            // Releasing primary — clear the active flag so other tabs know
+            // there is no longer a primary session in this browser.
+            try {
+              localStorage.removeItem(LS_ACTIVE_KEY);
+            } catch {
+              /* ignore */
+            }
             setState((s) => {
               // Preserve existing error state (auth error, connection error)
               // so that onerror → onclose doesn't blank the message.
@@ -448,6 +507,51 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     }
   }
 
+  // ─── Cross-tab state sync ────────────────────────────────────────────────
+
+  // Broadcast full state to other tabs whenever it changes (primary tab only)
+  useEffect(() => {
+    if (isPrimaryRef.current && channelRef.current) {
+      channelRef.current.postMessage({
+        type: 'state_sync',
+        state
+      } as TabBroadcast);
+    }
+  }, [state]);
+
+  // Set up the BroadcastChannel on mount; tear it down on unmount
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return;
+    const channel = new BroadcastChannel(BC_CHANNEL);
+    channelRef.current = channel;
+
+    channel.onmessage = (ev: MessageEvent<TabBroadcast>) => {
+      const msg = ev.data;
+      if (msg.type === 'state_sync') {
+        // Only accept incoming state if this tab does not own the WS
+        if (!isPrimaryRef.current) {
+          setState({ ...msg.state, isSecondaryTab: true });
+        }
+      } else if (msg.type === 'state_request') {
+        // Respond with our state if we are the primary tab
+        if (isPrimaryRef.current) {
+          channel.postMessage({
+            type: 'state_sync',
+            state: latestStateRef.current
+          } as TabBroadcast);
+        }
+      }
+    };
+
+    // Ask any already-open primary tab to share its current state
+    channel.postMessage({ type: 'state_request' } as TabBroadcast);
+
+    return () => {
+      channel.close();
+      channelRef.current = null;
+    };
+  }, []);
+
   // ─── Public API ──────────────────────────────────────────────────────────
 
   const rejoin = useCallback(
@@ -623,6 +727,12 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     clearSession();
     stopPing();
     connectPromiseRef.current = null;
+    isPrimaryRef.current = false;
+    try {
+      localStorage.removeItem(LS_ACTIVE_KEY);
+    } catch {
+      /* ignore */
+    }
     const ws = wsRef.current;
     if (ws) {
       ws.onclose = null;
@@ -651,7 +761,8 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       whiteUserId: null,
       blackUserId: null,
       opponentName: null,
-      opponentImage: null
+      opponentImage: null,
+      isSecondaryTab: false
     });
   }, [stopPing]);
 
@@ -659,6 +770,13 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   useEffect(() => {
     return () => {
       stopPing();
+      if (isPrimaryRef.current) {
+        try {
+          localStorage.removeItem(LS_ACTIVE_KEY);
+        } catch {
+          /* ignore */
+        }
+      }
       const ws = wsRef.current;
       if (ws) {
         ws.onclose = null;

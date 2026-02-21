@@ -1,3 +1,4 @@
+
 services:
 
   postgres:
@@ -52,9 +53,6 @@ services:
         required: false
     environment:
       PORT: 8080
-      NEXT_APP_URL: http://frontend:3000
-    depends_on:
-      - frontend
     networks:
       - zugklang-net
 

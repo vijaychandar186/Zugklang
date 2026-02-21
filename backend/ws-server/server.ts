@@ -2,7 +2,7 @@ import type { SocketData } from './types';
 import type { BunWS } from './types';
 import { verifyWsToken } from './utils/auth';
 import { ClientMessageSchema } from './utils/schemas';
-import { rooms, challenges, connectedUserIds } from './state';
+import { rooms, queues, challenges, connectedUserIds } from './state';
 import { send } from './utils/socket';
 import { isRateLimited } from './utils/rateLimit';
 import { logger } from './utils/logger';
@@ -72,11 +72,44 @@ Bun.serve<SocketData>({
 
   websocket: {
     open(ws: BunWS) {
+      let transferredState: 'waiting' | { challengeId: string } | null = null;
+
       if (ws.data.userId) {
         const existing = connectedUserIds.get(ws.data.userId);
         if (existing && existing !== ws) {
           // Another socket for this user is already registered (e.g. stale from a
-          // page refresh where the old TCP close hadn't arrived yet).
+          // page refresh where the old TCP close hadn't arrived yet, or a new tab).
+          // Transfer any pending matchmaking state to the new socket so the new
+          // tab picks up where the old one left off.
+
+          // Queue transfer: swap the old socket reference for the new one so the
+          // new socket gets matched instead of losing the queue position.
+          for (const queue of queues.values()) {
+            const idx = queue.findIndex((w) => w.data.id === existing.data.id);
+            if (idx !== -1) {
+              ws.data.variant = existing.data.variant;
+              ws.data.displayName = existing.data.displayName;
+              ws.data.userImage = existing.data.userImage;
+              queue[idx] = ws;
+              transferredState = 'waiting';
+              break;
+            }
+          }
+
+          // Challenge transfer: redirect the pending challenge to the new socket.
+          if (!transferredState && existing.data.challengeId) {
+            const challenge = challenges.get(existing.data.challengeId);
+            if (challenge) {
+              ws.data.challengeId = existing.data.challengeId;
+              ws.data.displayName = existing.data.displayName;
+              ws.data.userImage = existing.data.userImage;
+              challenge.creator = ws;
+              // Clear from old socket so handleDisconnect doesn't delete the challenge.
+              delete existing.data.challengeId;
+              transferredState = { challengeId: challenge.id };
+            }
+          }
+
           // Register the NEW socket first, then close the old one — this way
           // the old socket's close handler sees the mismatch and won't delete
           // the new entry.
@@ -89,8 +122,19 @@ Bun.serve<SocketData>({
           connectedUserIds.set(ws.data.userId, ws);
         }
       }
+
       logger.info('player_connected', { playerId: ws.data.id.slice(0, 8) });
       send(ws, { type: 'connected', playerId: ws.data.id });
+
+      // Restore matchmaking state on the new socket after sending 'connected'.
+      if (transferredState === 'waiting') {
+        send(ws, { type: 'waiting' });
+      } else if (transferredState && typeof transferredState === 'object') {
+        send(ws, {
+          type: 'challenge_created',
+          challengeId: transferredState.challengeId
+        });
+      }
     },
 
     message(ws: BunWS, raw: string | Buffer) {

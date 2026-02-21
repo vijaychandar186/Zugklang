@@ -153,6 +153,12 @@ export interface MultiplayerWSState {
   /** Opponent's display name and avatar — populated from matched/rejoined messages */
   opponentName: string | null;
   opponentImage: string | null;
+  /**
+   * True when this tab is displaying state mirrored from another tab that owns
+   * the active WebSocket connection. Actions that would create a new WS (and
+   * thereby supersede the primary tab) are suppressed while this is true.
+   */
+  isSecondaryTab: boolean;
 }
 
 export type OnOpponentMoveFn = (

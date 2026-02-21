@@ -31,7 +31,7 @@
   },
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "cd frontend && pnpm install && pnpm exec husky ../.husky && cd ../backend/ws-server && bun install && cd ../../ && git config core.hooksPath .husky && chmod +x .husky/*",
+  "postCreateCommand": "cd web && pnpm install && pnpm exec husky ../.husky && cd ../backend/ws-server && bun install && cd ../../ && git config core.hooksPath .husky && chmod +x .husky/*",
 
   // Configure tool-specific properties.
   "customizations": {

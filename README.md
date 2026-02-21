@@ -36,7 +36,7 @@ Zugklang combines a **Next.js frontend** with a **Bun-powered WebSocket server**
 
 ```
 Zugklang/
-├── frontend/               # Next.js application
+├── web/                    # Next.js application
 │   ├── src/
 │   │   ├── app/           # Routes and pages
 │   │   ├── features/      # Chess features (engine, multiplayer, analysis, etc.)
@@ -70,16 +70,16 @@ CREATE USER admin WITH PASSWORD 'mysecretpassword';
 CREATE DATABASE mydatabase OWNER admin;
 ```
 
-### 2. Frontend
+### 2. Next.js App
 
 ```bash
-cd frontend
+cd web
 
 # Copy and fill in environment variables
 cp .env.example .env.local   # or create .env.local manually
 ```
 
-Minimum required variables in `frontend/.env.local`:
+Minimum required variables in `web/.env.local`:
 
 ```env
 DATABASE_URL="postgresql://admin:mysecretpassword@localhost:5432/mydatabase"
@@ -162,14 +162,14 @@ docker run -d \
   zugklang-ws
 ```
 
-### 4. Frontend
+### 4. Next.js App
 
 ```bash
 # From the project root
-docker build -t zugklang-frontend ./frontend -f ./frontend/Dockerfile.dev
+docker build -t zugklang-web ./web -f ./web/Dockerfile.dev
 
 docker run -d \
-  --name zugklang-frontend \
+  --name zugklang-web \
   --network zugklang-net \
   -e DATABASE_URL=postgresql://admin:mysecretpassword@zugklang-postgres:5432/mydatabase \
   -e NEXT_PUBLIC_WS_URL=ws://localhost:8080 \
@@ -178,7 +178,7 @@ docker run -d \
   -e AUTH_GITHUB_ID=your-github-id \
   -e AUTH_GITHUB_SECRET=your-github-secret \
   -p 3000:3000 \
-  zugklang-frontend
+  zugklang-web
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
@@ -186,8 +186,8 @@ Open [http://localhost:3000](http://localhost:3000).
 ### Cleanup
 
 ```bash
-docker stop zugklang-frontend zugklang-ws zugklang-postgres
-docker rm zugklang-frontend zugklang-ws zugklang-postgres
+docker stop zugklang-web zugklang-ws zugklang-postgres
+docker rm zugklang-web zugklang-ws zugklang-postgres
 docker volume rm zugklang-pg-data
 docker network rm zugklang-net
 ```
@@ -205,7 +205,7 @@ This is the recommended approach. Both dev and prod compose files wire up all se
 | `postgres` | 5432 | 5432 | PostgreSQL database |
 | `pgadmin` | 5050 | 5050 | pgAdmin 4 web UI |
 | `ws-server` | 8080 | 8080 | WebSocket server |
-| `frontend` | 3000 | — (internal) | Next.js app |
+| `web` | 3000 | — (internal) | Next.js app |
 | `nginx` | — | 80 | Reverse proxy (prod only) |
 
 ### Development
@@ -223,7 +223,7 @@ docker-compose -f docker-compose.dev.yaml up --build
 | http://localhost:5050 | pgAdmin (`admin@admin.com` / `admin`) |
 
 Environment variables are loaded from:
-- `frontend/.env.local`
+- `web/.env.local`
 - `backend/ws-server/.env.local`
 
 ### Production
@@ -241,7 +241,7 @@ docker-compose -f docker-compose.prod.yaml up --build
 | http://localhost:5050 | pgAdmin |
 
 Environment variables are loaded from:
-- `frontend/.env.production`
+- `web/.env.production`
 - `backend/ws-server/.env.production`
 
 ### Common Compose Commands
@@ -257,15 +257,15 @@ docker-compose -f docker-compose.dev.yaml down -v
 docker-compose -f docker-compose.dev.yaml logs -f
 
 # Logs for a specific service
-docker-compose -f docker-compose.dev.yaml logs -f frontend
+docker-compose -f docker-compose.dev.yaml logs -f web
 docker-compose -f docker-compose.dev.yaml logs -f ws-server
 
 # Rebuild without cache
 docker-compose -f docker-compose.dev.yaml build --no-cache
 
-# Run a Prisma command inside the running frontend container
-docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma studio
-docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma db push
+# Run a Prisma command inside the running web container
+docker-compose -f docker-compose.dev.yaml exec web pnpm exec prisma studio
+docker-compose -f docker-compose.dev.yaml exec web pnpm exec prisma db push
 ```
 
 ---
@@ -295,7 +295,7 @@ docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma db push
 
 ## Further Reading
 
-- [Docker guide](frontend/docs/docker.md)
-- [Prisma docs](frontend/docs/prisma.md)
+- [Docker guide](web/docs/docker.md)
+- [Prisma docs](web/docs/prisma.md)
 - [Next.js docs](https://nextjs.org/docs)
 - [Bun docs](https://bun.sh/docs)

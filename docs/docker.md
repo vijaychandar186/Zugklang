@@ -6,7 +6,7 @@ This project includes separate Docker configurations for development and product
 
 ## Files Overview
 
-### Dockerfiles (in `web/`)
+### Dockerfiles (in `frontend/`)
 
 - **`Dockerfile.dev`** - Development environment with hot reload
 - **`Dockerfile.prod`** - Production-optimized multi-stage build
@@ -25,7 +25,7 @@ This project includes separate Docker configurations for development and product
 | `postgres`   | PostgreSQL 16 database             | `zugklang-postgres-dev`   | `zugklang-postgres-prod`   |
 | `pgadmin`    | pgAdmin 4 web UI for the database  | `zugklang-pgadmin-dev`    | `zugklang-pgadmin-prod`    |
 | `ws-server`  | WebSocket backend server           | `zugklang-ws-dev`         | `zugklang-ws-prod`         |
-| `web`        | Next.js application                | `zugklang-web-dev`        | `zugklang-web-prod`        |
+| `frontend`   | Next.js application                | `zugklang-frontend-dev`   | `zugklang-frontend-prod`   |
 | `nginx`      | Reverse proxy (prod only)          | —                         | `zugklang-nginx-prod`      |
 
 All services are connected via the `zugklang-net` bridge network.
@@ -113,7 +113,7 @@ docker-compose -f docker-compose.prod.yaml down -v
 docker-compose -f docker-compose.dev.yaml logs -f
 
 # Specific service
-docker-compose -f docker-compose.dev.yaml logs -f web
+docker-compose -f docker-compose.dev.yaml logs -f frontend
 docker-compose -f docker-compose.dev.yaml logs -f ws-server
 ```
 
@@ -145,13 +145,13 @@ docker exec -it zugklang-postgres-prod psql -U admin -d mydatabase
 
 ```bash
 # Generate Prisma client
-docker-compose -f docker-compose.dev.yaml exec web pnpm exec prisma generate
+docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma generate
 
 # Push schema changes (dev)
-docker-compose -f docker-compose.dev.yaml exec web pnpm exec prisma db push
+docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma db push
 
 # Open Prisma Studio
-docker-compose -f docker-compose.dev.yaml exec web pnpm exec prisma studio
+docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma studio
 ```
 
 ---
@@ -175,13 +175,13 @@ lsof -i :8080
    docker ps | grep postgres
    ```
 
-2. Check `DATABASE_URL` inside the web container:
+2. Check `DATABASE_URL` inside the frontend container:
    ```bash
-   docker-compose -f docker-compose.dev.yaml exec web env | grep DATABASE_URL
+   docker-compose -f docker-compose.dev.yaml exec frontend env | grep DATABASE_URL
    ```
 
 3. Verify credentials match across:
-   - `web/.env.local` (dev) or `web/.env.production` (prod)
+   - `frontend/.env.local` (dev) or `frontend/.env.production` (prod)
    - The `environment` block in the compose file
 
 ### Hot Reload Not Working
@@ -191,14 +191,14 @@ Volume mounts should handle this, but if changes aren't reflected:
 1. Check volume mounts in `docker-compose.dev.yaml`
 2. Restart the dev container:
    ```bash
-   docker-compose -f docker-compose.dev.yaml restart web
+   docker-compose -f docker-compose.dev.yaml restart frontend
    ```
 
 ---
 
 ## Environment Variables
 
-### Development (`web/.env.local`)
+### Development (`frontend/.env.local`)
 
 ```env
 DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
@@ -208,7 +208,7 @@ AUTH_GITHUB_ID="your-github-oauth-id"
 AUTH_GITHUB_SECRET="your-github-oauth-secret"
 ```
 
-### Production (`web/.env.production`)
+### Production (`frontend/.env.production`)
 
 ```env
 DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
@@ -226,7 +226,7 @@ ADMIN_KEY="your-admin-key"
 
 ### Container vs Host URLs
 
-- **In containers**: Use service names (e.g., `postgres:5432`, `web:3000`)
+- **In containers**: Use service names (e.g., `postgres:5432`, `frontend:3000`)
 - **On host machine**: Use `localhost` with the exposed port (e.g., `localhost:5432`)
 
 ---

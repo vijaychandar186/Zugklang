@@ -77,7 +77,7 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
-      # NEXTAUTH_URL, AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET: set in .env.local
+      # AUTH_URL, AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET: set in .env.local
     env_file:
       - path: ./frontend/.env.local
         required: false

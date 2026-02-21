@@ -16,7 +16,7 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-const entry = `\n# Auth Secret\nAUTH_SECRET=${secret}\n`;
+const entry = `\n# Auth Secret\nAUTH_SECRET="${secret}"\n`;
 fs.appendFileSync(envPath, entry);
 
 console.log('AUTH_SECRET added to .env.local');

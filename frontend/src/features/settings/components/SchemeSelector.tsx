@@ -34,7 +34,7 @@ export function SchemeSelector({
           className='justify-start *:data-[slot=select-value]:w-28'
         >
           <span className='text-muted-foreground'>
-            <Icons.sparkles className='h-4 w-4' />
+            <Icons.palette className='h-4 w-4' />
           </span>
           <SelectValue placeholder='Select a scheme' />
         </SelectTrigger>

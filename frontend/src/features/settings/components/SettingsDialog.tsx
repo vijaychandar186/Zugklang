@@ -13,6 +13,8 @@ import { SoundToggle } from './SoundToggle';
 import { Board3dToggle } from './Board3dToggle';
 import { FullscreenToggle } from './FullscreenToggle';
 import { BoardThemeName } from '@/features/chess/types/theme';
+import { SchemeSelector } from './SchemeSelector';
+import { useScheme } from '@/components/layout/Providers';
 type SettingsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -31,6 +33,7 @@ export function SettingsDialog({
   const setBoard3dEnabled = useChessStore((s) => s.setBoard3dEnabled);
   const fullscreenEnabled = useChessStore((s) => s.fullscreenEnabled);
   const setFullscreenEnabled = useChessStore((s) => s.setFullscreenEnabled);
+  const { scheme, setScheme } = useScheme();
   const { theme, setTheme } = useTheme();
   const handleBoardThemeChange = (themeName: BoardThemeName) => {
     setBoardTheme(themeName);
@@ -46,6 +49,7 @@ export function SettingsDialog({
             currentTheme={currentBoardTheme}
             onThemeChange={handleBoardThemeChange}
           />
+          <SchemeSelector currentScheme={scheme} onSchemeChange={setScheme} />
           <SoundToggle enabled={soundEnabled} onToggle={setSoundEnabled} />
           {show3dToggle && (
             <Board3dToggle

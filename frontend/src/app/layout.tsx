@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import type { CSSProperties } from 'react';
+import {
+  Architects_Daughter,
+  Geist,
+  Geist_Mono,
+  Outfit
+} from 'next/font/google';
 import { cookies } from 'next/headers';
 import './globals.css';
 import './theme.css';
@@ -12,6 +18,15 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin']
+});
+const outfit = Outfit({
+  variable: '--font-outfit',
+  subsets: ['latin']
+});
+const architectsDaughter = Architects_Daughter({
+  variable: '--font-architects-daughter',
+  subsets: ['latin'],
+  weight: '400'
 });
 const META_THEME_COLORS = {
   light: '#ffffff',
@@ -32,9 +47,24 @@ export default async function RootLayout({
   const [cookieStore, session] = await Promise.all([cookies(), auth()]);
   const theme = cookieStore.get('theme')?.value;
   const boardScheme = cookieStore.get('boardScheme')?.value;
+  const scheme = cookieStore.get('scheme')?.value;
+  const customColor = cookieStore.get('custom_color')?.value;
+  const customForeground = cookieStore.get('custom_foreground')?.value;
   const playAs = cookieStore.get('playAs')?.value;
   return (
-    <html lang='en' suppressHydrationWarning data-board-scheme={boardScheme}>
+    <html
+      lang='en'
+      suppressHydrationWarning
+      className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${architectsDaughter.variable}`}
+      data-board-scheme={boardScheme}
+      data-scheme={scheme || 'default'}
+      style={
+        {
+          '--custom-color': customColor || '#52525b',
+          '--custom-foreground': customForeground || '#ffffff'
+        } as CSSProperties
+      }
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -48,14 +78,14 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} overflow-hidden antialiased`}
-        data-theme={theme}
-      >
+      <body className='overflow-hidden antialiased' data-theme={theme}>
         <Providers
           initialBoardTheme={boardScheme}
           initialPlayAs={playAs}
           initialSession={session}
+          initialScheme={scheme}
+          initialCustomColor={customColor}
+          initialCustomForeground={customForeground}
         >
           <main>{children}</main>
         </Providers>

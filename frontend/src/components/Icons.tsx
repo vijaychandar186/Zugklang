@@ -87,6 +87,7 @@ import {
   SignalHigh,
   SignalMedium,
   SignalLow,
+  Palette,
   type LucideIcon,
   type LucideProps
 } from 'lucide-react';
@@ -181,6 +182,7 @@ export const Icons = {
   signalHigh: SignalHigh,
   signalMedium: SignalMedium,
   signalLow: SignalLow,
+  palette: Palette,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'

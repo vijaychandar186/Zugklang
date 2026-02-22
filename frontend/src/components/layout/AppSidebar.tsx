@@ -28,6 +28,7 @@ import { usePathname } from 'next/navigation';
 import * as React from 'react';
 import { Icons } from '../Icons';
 import SidebarSearchButton from './Kbar/SidebarSearchButton';
+import SidebarSchemeButton from './SidebarSchemeButton';
 import SidebarUserMenu from './SidebarUserMenu';
 
 export default function AppSidebar() {
@@ -43,6 +44,7 @@ export default function AppSidebar() {
     <Sidebar collapsible='icon'>
       <SidebarHeader>
         <SidebarSearchButton />
+        <SidebarSchemeButton />
       </SidebarHeader>
       <SidebarContent className='overflow-x-hidden'>
         <SidebarGroup>

@@ -12,6 +12,7 @@ import {
 import { Icons } from '@/components/Icons';
 import ThemeToggle from '@/components/layout/ThemeToggle/theme-toggle';
 import SearchInput from '@/components/layout/Kbar/SearchInput';
+import SchemeButton from '@/components/layout/SchemeButton';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/layout/UserMenu';
 interface RouteProps {
@@ -52,12 +53,14 @@ export function Navbar() {
 
         <div className='hidden items-center gap-3 md:flex'>
           <SearchInput />
+          <SchemeButton />
           <ThemeToggle />
           <UserMenu />
         </div>
 
         <div className='flex items-center gap-2 md:hidden'>
           <SearchInput />
+          <SchemeButton />
           <ThemeToggle />
 
           <Sheet open={isOpen} onOpenChange={setIsOpen}>

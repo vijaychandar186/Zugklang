@@ -68,6 +68,8 @@ interface TwoPlayerCustomSidebarProps {
   onEndAnalysis: () => void;
   setupDialog: ComponentType<SetupDialogProps>;
   activePanel?: ReactNode;
+  statsNode?: ReactNode;
+  statsTitle?: string;
 }
 export function TwoPlayerCustomSidebar({
   mode,
@@ -92,7 +94,9 @@ export function TwoPlayerCustomSidebar({
   onStartAnalysis,
   onEndAnalysis,
   setupDialog: SetupDialogComponent,
-  activePanel
+  activePanel,
+  statsNode,
+  statsTitle
 }: TwoPlayerCustomSidebarProps) {
   const router = useRouter();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -273,6 +277,8 @@ export function TwoPlayerCustomSidebar({
               <GameOverPanel
                 gameResult={gameResult || 'No active game'}
                 onNewGame={() => setNewGameOpen(true)}
+                statsNode={gameOver ? statsNode : undefined}
+                statsTitle={statsTitle}
               />
             )}
             <div className='flex items-center gap-1'>

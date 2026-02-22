@@ -36,7 +36,7 @@ export function PlayerInfo({
           </>
         ) : (
           <AvatarFallback className='bg-muted'>
-            <Icons.player className='h-5 w-5' />
+            <Icons.player className='text-foreground h-5 w-5' />
           </AvatarFallback>
         )}
       </Avatar>

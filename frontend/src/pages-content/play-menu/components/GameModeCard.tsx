@@ -21,7 +21,7 @@ export function GameModeCard({
       className={`bg-card border-border h-full rounded-xl border p-4 transition-all ${
         comingSoon
           ? 'cursor-not-allowed opacity-60'
-          : 'hover:border-primary/50 hover:shadow-md'
+          : 'hover:bg-accent hover:border-primary/50 hover:text-accent-foreground hover:shadow-md'
       }`}
     >
       <div className='flex h-full flex-col gap-3'>
@@ -30,7 +30,7 @@ export function GameModeCard({
             className={`w-fit rounded-lg p-2 ring-1 ${
               comingSoon
                 ? 'bg-muted text-muted-foreground ring-muted'
-                : 'bg-primary/10 text-primary ring-primary/20'
+                : 'bg-primary/10 text-primary ring-primary/20 group-hover:text-accent-foreground'
             }`}
           >
             <Icon className='h-5 w-5' />
@@ -42,20 +42,26 @@ export function GameModeCard({
               </span>
             )}
             {!comingSoon && (
-              <Icons.arrowUpRight className='text-muted-foreground h-4 w-4' />
+              <Icons.arrowUpRight className='text-muted-foreground group-hover:text-accent-foreground h-4 w-4' />
             )}
           </div>
         </div>
 
         <div className='space-y-1'>
-          <h2 className='text-base font-semibold tracking-tight'>{title}</h2>
-          <p className='text-muted-foreground text-xs leading-relaxed'>
+          <h2 className='group-hover:text-accent-foreground text-base font-semibold tracking-tight'>
+            {title}
+          </h2>
+          <p className='text-muted-foreground group-hover:text-accent-foreground text-xs leading-relaxed'>
             {description}
           </p>
         </div>
 
         <div
-          className={`mt-auto flex items-center text-xs font-medium ${comingSoon ? 'text-muted-foreground' : 'text-primary'}`}
+          className={`mt-auto flex items-center text-xs font-medium ${
+            comingSoon
+              ? 'text-muted-foreground'
+              : 'text-primary group-hover:text-accent-foreground'
+          }`}
         >
           <span className='underline-offset-4 group-hover:underline'>
             {comingSoon ? 'Coming Soon' : actionText}

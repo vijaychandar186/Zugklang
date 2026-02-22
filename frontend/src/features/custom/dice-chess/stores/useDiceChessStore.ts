@@ -55,6 +55,7 @@ interface DiceChessStore {
   dice: DiceResult[] | null;
   isRolling: boolean;
   needsRoll: boolean;
+  diceRollHistory: DicePiece[];
   highlightedSquares: Record<string, import('react').CSSProperties>;
   makeMove: (
     from: string,
@@ -96,6 +97,7 @@ export const useDiceChessStore = create<DiceChessStore>()(
       dice: null,
       isRolling: false,
       needsRoll: true,
+      diceRollHistory: [],
       highlightedSquares: {},
       makeMove: (from, to, promotion) => {
         const {
@@ -215,6 +217,7 @@ export const useDiceChessStore = create<DiceChessStore>()(
           dice: null,
           isRolling: false,
           needsRoll: true,
+          diceRollHistory: [],
           timeControl: tc,
           whiteTime,
           blackTime,
@@ -233,7 +236,7 @@ export const useDiceChessStore = create<DiceChessStore>()(
       setGameOver: (over) => set({ gameOver: over }),
       setGameResult: (result) => set({ gameResult: result }),
       rollDice: (_turnColor) => {
-        const { game } = get();
+        const { game, diceRollHistory } = get();
         set({ isRolling: true });
         setTimeout(() => {
           const rolled: DiceResult[] = [];
@@ -246,7 +249,8 @@ export const useDiceChessStore = create<DiceChessStore>()(
           set({
             dice: rolled,
             isRolling: false,
-            needsRoll: false
+            needsRoll: false,
+            diceRollHistory: [...diceRollHistory, ...rolled.map((d) => d.piece)]
           });
           get().calculateHighlights();
           if (!anyValid) {

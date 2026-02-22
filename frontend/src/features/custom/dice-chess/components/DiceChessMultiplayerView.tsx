@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { Chess } from '@/lib/chess/chess';
 import type { ChessJSMove } from '@/lib/chess/chess';
 import { STARTING_FEN } from '@/features/chess/config/constants';
@@ -25,6 +26,12 @@ import {
   getSoundType,
   playRawSound
 } from '@/features/game/utils/sounds';
+import {
+  useClipboard,
+  formatMovesText,
+  formatPGN
+} from '@/features/chess/hooks/useClipboard';
+import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -39,6 +46,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 import {
   Tooltip,
   TooltipContent,
@@ -56,6 +71,7 @@ import {
   type DiceResult,
   PIECE_NAMES
 } from '../stores/useDiceChessStore';
+import { DiceRollChart } from './DiceRollChart';
 import type { ChallengeColor } from '@/features/multiplayer/types';
 import { ABANDON_TIMEOUT_MS } from '@/features/multiplayer/config';
 
@@ -320,6 +336,8 @@ interface CustomMultiplayerSidebarProps {
   gameStarted: boolean;
   movesCount: number;
   activePanel?: React.ReactNode;
+  statsNode?: React.ReactNode;
+  statsTitle?: string;
   onResign: () => void;
   onAbort: () => void;
   onFindNewGame: () => void;
@@ -339,6 +357,8 @@ function CustomMultiplayerSidebar({
   gameStarted,
   movesCount,
   activePanel,
+  statsNode,
+  statsTitle,
   onResign,
   onAbort,
   onFindNewGame,
@@ -348,98 +368,230 @@ function CustomMultiplayerSidebar({
   onGoToNext,
   onGoToMove
 }: CustomMultiplayerSidebarProps) {
+  const router = useRouter();
+  const flipBoard = useChessStore((s) => s.flipBoard);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const { copy, isCopied } = useClipboard();
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
   const canAbort = movesCount < 4;
 
+  const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
+  const handleCopyPGN = () =>
+    copy(
+      formatPGN(moves, {
+        gameOver,
+        gameResult,
+        playAs: 'white',
+        isLocalGame: false
+      }),
+      'pgn'
+    );
+  const handleCopyFEN = () => {
+    const fen = positionHistory[viewingIndex] || positionHistory[0];
+    copy(fen!, 'fen');
+  };
+
   return (
-    <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
-      <div className='flex shrink-0 items-center border-b px-4 py-3'>
-        <h3 className='font-semibold'>Moves</h3>
-      </div>
-
-      {activePanel}
-
-      <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
-        <div className='px-4 py-2'>
-          <MoveHistory
-            moves={moves}
-            viewingIndex={viewingIndex}
-            onMoveClick={onGoToMove}
-            showDepthTooltips={false}
-          />
-        </div>
-      </ScrollArea>
-
-      <NavigationControls
-        viewingIndex={viewingIndex}
-        totalPositions={positionHistory.length}
-        canGoBack={canGoBack}
-        canGoForward={canGoForward}
-        isPlaying={false}
-        onTogglePlay={() => {}}
-        onGoToStart={onGoToStart}
-        onGoToEnd={onGoToEnd}
-        onGoToPrev={onGoToPrev}
-        onGoToNext={onGoToNext}
-      />
-
-      <div className='bg-muted/50 space-y-2 border-t p-2'>
-        {(gameOver || !gameStarted) && (
-          <GameOverPanel
-            gameResult={gameResult || 'No active game'}
-            onNewGame={onFindNewGame}
-          />
-        )}
-
-        <div className='flex items-center justify-end'>
-          <AlertDialog>
+    <>
+      <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
+        <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
+          <h3 className='font-semibold'>Moves</h3>
+          <div className='flex items-center gap-1'>
             <Tooltip>
               <TooltipTrigger asChild>
-                <AlertDialogTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='h-8 w-8'
+                  onClick={() => router.push('/')}
+                >
+                  <Icons.home className='h-4 w-4' />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Home</TooltipContent>
+            </Tooltip>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant='ghost' size='icon' className='h-8 w-8'>
+                  <Icons.share className='h-4 w-4' />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Share Game</DialogTitle>
+                  <DialogDescription>
+                    Copy moves or PGN to clipboard.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className='flex flex-col gap-3 pt-2'>
                   <Button
-                    variant='ghost'
-                    size='icon'
-                    className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive'
-                    disabled={gameOver || !gameStarted}
+                    onClick={handleCopyFEN}
+                    variant='outline'
+                    className='h-auto justify-between py-3'
                   >
-                    {canAbort ? (
-                      <Icons.abort className='h-4 w-4' />
+                    <div className='flex flex-col items-start'>
+                      <span className='font-medium'>Copy FEN</span>
+                      <span className='text-muted-foreground text-xs'>
+                        Current position
+                      </span>
+                    </div>
+                    {isCopied('fen') ? (
+                      <Icons.check className='h-4 w-4 [color:var(--success)]' />
                     ) : (
-                      <Icons.flag className='h-4 w-4' />
+                      <Icons.copy className='text-muted-foreground h-4 w-4' />
                     )}
                   </Button>
-                </AlertDialogTrigger>
-              </TooltipTrigger>
-              <TooltipContent>
-                {canAbort ? 'Abort Game' : 'Resign Game'}
-              </TooltipContent>
-            </Tooltip>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>
-                  {canAbort ? 'Abort Game?' : 'Resign Game?'}
-                </AlertDialogTitle>
-                <AlertDialogDescription>
-                  {canAbort
-                    ? 'Are you sure you want to abort?'
-                    : 'Are you sure you want to resign? Your opponent wins.'}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={canAbort ? onAbort : onResign}
-                  className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                  <Button
+                    onClick={handleCopyPGN}
+                    variant='outline'
+                    className='h-auto justify-between py-3'
+                  >
+                    <div className='flex flex-col items-start'>
+                      <span className='font-medium'>Copy PGN</span>
+                      <span className='text-muted-foreground text-xs'>
+                        Standard PGN format
+                      </span>
+                    </div>
+                    {isCopied('pgn') ? (
+                      <Icons.check className='h-4 w-4 [color:var(--success)]' />
+                    ) : (
+                      <Icons.copy className='text-muted-foreground h-4 w-4' />
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleCopyMoves}
+                    variant='outline'
+                    className='h-auto justify-between py-3'
+                  >
+                    <div className='flex flex-col items-start'>
+                      <span className='font-medium'>Copy Moves</span>
+                      <span className='text-muted-foreground text-xs'>
+                        Simple move list
+                      </span>
+                    </div>
+                    {isCopied('moves') ? (
+                      <Icons.check className='h-4 w-4 [color:var(--success)]' />
+                    ) : (
+                      <Icons.copy className='text-muted-foreground h-4 w-4' />
+                    )}
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </div>
+
+        {activePanel}
+
+        <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
+          <div className='px-4 py-2'>
+            <MoveHistory
+              moves={moves}
+              viewingIndex={viewingIndex}
+              onMoveClick={onGoToMove}
+              showDepthTooltips={false}
+            />
+          </div>
+        </ScrollArea>
+
+        <NavigationControls
+          viewingIndex={viewingIndex}
+          totalPositions={positionHistory.length}
+          canGoBack={canGoBack}
+          canGoForward={canGoForward}
+          isPlaying={false}
+          onTogglePlay={() => {}}
+          onGoToStart={onGoToStart}
+          onGoToEnd={onGoToEnd}
+          onGoToPrev={onGoToPrev}
+          onGoToNext={onGoToNext}
+        />
+
+        <div className='bg-muted/50 space-y-2 border-t p-2'>
+          {(gameOver || !gameStarted) && (
+            <GameOverPanel
+              gameResult={gameResult || 'No active game'}
+              onNewGame={onFindNewGame}
+              statsNode={gameOver ? statsNode : undefined}
+              statsTitle={statsTitle}
+            />
+          )}
+
+          <div className='flex items-center gap-1'>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  onClick={() => setSettingsOpen(true)}
                 >
-                  {canAbort ? 'Abort' : 'Resign'}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  <Icons.settings className='h-4 w-4' />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Settings</TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant='ghost' size='icon' onClick={flipBoard}>
+                  <Icons.flipBoard className='h-4 w-4' />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Flip Board</TooltipContent>
+            </Tooltip>
+
+            <div className='ml-auto flex items-center gap-1'>
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive'
+                        disabled={gameOver || !gameStarted}
+                      >
+                        {canAbort ? (
+                          <Icons.abort className='h-4 w-4' />
+                        ) : (
+                          <Icons.flag className='h-4 w-4' />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {canAbort ? 'Abort Game' : 'Resign Game'}
+                  </TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      {canAbort ? 'Abort Game?' : 'Resign Game?'}
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {canAbort
+                        ? 'Are you sure you want to abort?'
+                        : 'Are you sure you want to resign? Your opponent wins.'}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={canAbort ? onAbort : onResign}
+                      className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                    >
+                      {canAbort ? 'Abort' : 'Resign'}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </>
   );
 }
 
@@ -469,11 +621,13 @@ export function DiceChessMultiplayerView({
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [gameResult, setGameResult] = useState<string | null>(null);
+  const [loserColor, setLoserColor] = useState<'w' | 'b' | null>(null);
 
   // Dice state
   const [dice, setDice] = useState<DiceResult[] | null>(null);
   const [isRolling, setIsRolling] = useState(false);
   const [needsRoll, setNeedsRoll] = useState(true);
+  const [diceRollHistory, setDiceRollHistory] = useState<DicePiece[]>([]);
   const [highlightedSquares, setHighlightedSquares] = useState<
     Record<string, React.CSSProperties>
   >({});
@@ -541,6 +695,7 @@ export function DiceChessMultiplayerView({
       setDice(rolled);
       setIsRolling(false);
       setNeedsRoll(false);
+      setDiceRollHistory((prev) => [...prev, ...rolled.map((d) => d.piece)]);
       setHighlightedSquares(getHighlightsForDice(chess, rolled));
       sendDiceSyncRef.current([
         rolled[0]!.piece,
@@ -595,6 +750,7 @@ export function DiceChessMultiplayerView({
       if (isOver) {
         setGameOver(true);
         setGameResult(result);
+        setLoserColor(chess.isCheckmate() ? chess.turn() : null);
         if (!isOpponent) {
           const reason = chess.isCheckmate() ? 'checkmate' : 'draw';
           ws.notifyGameOver(result ?? 'Game over', reason);
@@ -769,6 +925,8 @@ export function DiceChessMultiplayerView({
     setGameResult(isOver ? getGameResult(chess) : null);
     setDice(null);
     setNeedsRoll(!isOver);
+    setDiceRollHistory([]);
+    setLoserColor(null);
     setHighlightedSquares({});
   }, []);
 
@@ -902,6 +1060,8 @@ export function DiceChessMultiplayerView({
     setTurn('w');
     setDice(null);
     setNeedsRoll(true);
+    setDiceRollHistory([]);
+    setLoserColor(null);
     setHighlightedSquares({});
     setMatchmakingOpen(true);
   }, [ws.disconnect]);
@@ -1032,6 +1192,7 @@ export function DiceChessMultiplayerView({
                 boardOrientation={boardOrientation}
                 canDrag={isMyTurn && !needsRoll && !isRolling}
                 squareStyles={highlightedSquares}
+                loserColor={loserColor}
               />
             ) : (
               <Board
@@ -1043,6 +1204,7 @@ export function DiceChessMultiplayerView({
                 canDrag={isMyTurn && !needsRoll && !isRolling}
                 animationDuration={200}
                 squareStyles={highlightedSquares}
+                loserColor={loserColor}
               />
             )}
           </BoardContainer>
@@ -1125,6 +1287,8 @@ export function DiceChessMultiplayerView({
               onGoToPrev={goToPrev}
               onGoToNext={goToNext}
               onGoToMove={goToMove}
+              statsNode={<DiceRollChart diceRolls={diceRollHistory} />}
+              statsTitle='Dice Roll Distribution'
             />
           </div>
         </div>

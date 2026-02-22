@@ -1,5 +1,6 @@
 'use client';
 import { CardPanel } from './CardPanel';
+import { CardDrawChart } from './CardDrawChart';
 import { CardChessSetupDialog } from './CardChessSetupDialog';
 import { useCardChessStore } from '../stores/useCardChessStore';
 import {
@@ -24,6 +25,7 @@ export function CardChessSidebar({ mode }: CardChessSidebarProps) {
     gameResult,
     gameStarted,
     turn,
+    cardDrawHistory,
     goToStart,
     goToEnd,
     goToPrev,
@@ -63,6 +65,8 @@ export function CardChessSidebar({ mode }: CardChessSidebarProps) {
       activePanel={
         gameStarted && !gameOver ? <CardPanel turnColor={turn} /> : null
       }
+      statsNode={<CardDrawChart cardDraws={cardDrawHistory} />}
+      statsTitle='Card Draw Distribution'
     />
   );
 }

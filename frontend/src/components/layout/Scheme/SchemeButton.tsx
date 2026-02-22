@@ -29,10 +29,12 @@ export default function SchemeButton() {
         <Button
           variant='outline'
           size='sm'
-          className='bg-background text-muted-foreground hover:text-muted-foreground active:text-muted-foreground h-9 gap-2 rounded-[0.5rem] font-normal shadow-none'
+          className='group bg-background text-muted-foreground hover:text-foreground active:text-foreground h-9 gap-2 rounded-[0.5rem] font-normal shadow-none'
         >
-          <Icons.palette className='h-4 w-4' />
-          <span className='hidden sm:inline'>Scheme</span>
+          <Icons.palette className='group-hover:text-foreground h-4 w-4' />
+          <span className='group-hover:text-foreground hidden sm:inline'>
+            Scheme
+          </span>
         </Button>
       }
     />

@@ -1,4 +1,5 @@
 'use client';
+import { useMemo } from 'react';
 import { CardChessSidebar } from './CardChessSidebar';
 import { useCardChessStore } from '../stores/useCardChessStore';
 import { useCardChessTimer } from '../hooks/useCardChessTimer';
@@ -17,6 +18,11 @@ export function CardChessView({ canMove }: { canMove?: boolean } = {}) {
     activeTimer
   } = useCardChessStore();
   useCardChessTimer();
+  const loserColor = useMemo((): 'w' | 'b' | null => {
+    if (!gameOver) return null;
+    if (!game.isCheckmate()) return null;
+    return game.turn();
+  }, [gameOver, game]);
   return (
     <TwoPlayerCustomGameView
       currentFEN={currentFEN}
@@ -31,6 +37,7 @@ export function CardChessView({ canMove }: { canMove?: boolean } = {}) {
       activeTimer={activeTimer}
       sidebar={<CardChessSidebar mode='play' />}
       canMove={canMove}
+      loserColor={loserColor}
     />
   );
 }

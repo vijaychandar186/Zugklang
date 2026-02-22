@@ -1,5 +1,6 @@
 'use client';
 import { DicePanel } from './DicePanel';
+import { DiceRollChart } from './DiceRollChart';
 import { DiceChessSetupDialog } from './DiceChessSetupDialog';
 import { useDiceChessStore } from '../stores/useDiceChessStore';
 import {
@@ -24,6 +25,7 @@ export function DiceChessSidebar({ mode }: DiceChessSidebarProps) {
     gameResult,
     gameStarted,
     turn,
+    diceRollHistory,
     goToStart,
     goToEnd,
     goToPrev,
@@ -63,6 +65,8 @@ export function DiceChessSidebar({ mode }: DiceChessSidebarProps) {
       activePanel={
         gameStarted && !gameOver ? <DicePanel turnColor={turn} /> : null
       }
+      statsNode={<DiceRollChart diceRolls={diceRollHistory} />}
+      statsTitle='Dice Roll Distribution'
     />
   );
 }

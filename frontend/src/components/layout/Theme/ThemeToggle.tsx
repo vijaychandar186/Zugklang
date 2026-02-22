@@ -53,9 +53,9 @@ export default function ThemeToggle({ trigger }: ThemeToggleProps) {
           <Button
             variant='ghost'
             size='icon'
-            className='text-muted-foreground hover:text-muted-foreground active:text-muted-foreground h-9 w-9'
+            className='group text-muted-foreground hover:text-foreground active:text-foreground h-9 w-9'
           >
-            <Contrast className='h-4 w-4' />
+            <Contrast className='group-hover:text-foreground h-4 w-4' />
             <span className='sr-only'>Select Theme</span>
           </Button>
         )

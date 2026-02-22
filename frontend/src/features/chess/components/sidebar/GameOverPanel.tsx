@@ -16,13 +16,17 @@ type GameOverPanelProps = {
   ratingDelta?: number | null;
   moveDepths?: (number | null)[];
   showDepthDistribution?: boolean;
+  statsNode?: React.ReactNode;
+  statsTitle?: string;
 };
 export function GameOverPanel({
   gameResult,
   onNewGame,
   ratingDelta,
   moveDepths,
-  showDepthDistribution = false
+  showDepthDistribution = false,
+  statsNode,
+  statsTitle = 'Game Statistics'
 }: GameOverPanelProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   return (
@@ -60,6 +64,22 @@ export function GameOverPanel({
                 <DialogTitle>Engine Performance Statistics</DialogTitle>
               </DialogHeader>
               <DepthDistributionChart moveDepths={moveDepths} />
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {statsNode && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant='outline' size='sm'>
+                <Icons.chartSpline className='h-4 w-4' />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className='sm:max-w-md'>
+              <DialogHeader>
+                <DialogTitle>{statsTitle}</DialogTitle>
+              </DialogHeader>
+              {statsNode}
             </DialogContent>
           </Dialog>
         )}

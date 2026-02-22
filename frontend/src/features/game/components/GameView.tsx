@@ -43,7 +43,6 @@ export function GameView({
 }: GameViewProps) {
   const {
     gameId,
-    isLocalGame,
     stockfishLevel,
     topColor,
     bottomColor,
@@ -64,15 +63,23 @@ export function GameView({
   const playAs = useChessStore((s) => s.playAs);
   const { data: session } = useSession();
   const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
+  const isLocalRoute = initialGameType === 'local';
+
+  const isTopStockfishForDisplay = isLocalRoute ? false : isTopStockfish;
+  const isBottomStockfishForDisplay = isLocalRoute ? false : isBottomStockfish;
+
   useEffect(() => {
-    if (!session?.user?.id || isLocalGame) return;
+    if (!session?.user?.id || isLocalRoute) return;
     fetch(`/api/user/rating?variant=${storeVariant}`)
       .then((r) => (r.ok ? r.json() : null))
       .then((data) => data && setMyProfile(data))
       .catch(() => {});
-  }, [session?.user?.id, storeVariant, isLocalGame]);
+  }, [session?.user?.id, storeVariant, isLocalRoute]);
   const getPlayerName = (color: 'white' | 'black', isStockfish: boolean) => {
-    if (isLocalGame) {
+    if (isLocalRoute) {
+      if (color === playAs) {
+        return session?.user?.name ?? (color === 'white' ? 'White' : 'Black');
+      }
       return color === 'white' ? 'White' : 'Black';
     }
     if (isStockfish) {
@@ -81,13 +88,16 @@ export function GameView({
     return myProfile?.name ?? session?.user?.name ?? 'Player';
   };
   const getPlayerImage = (color: 'white' | 'black', isStockfish: boolean) => {
-    if (isLocalGame || isStockfish) return null;
+    if (isLocalRoute) {
+      return color === playAs ? (session?.user?.image ?? null) : null;
+    }
+    if (isStockfish) return null;
     return color === playAs
       ? (myProfile?.image ?? session?.user?.image ?? null)
       : null;
   };
   const getPlayerRating = (color: 'white' | 'black', isStockfish: boolean) => {
-    if (isLocalGame || isStockfish) return null;
+    if (isLocalRoute || isStockfish) return null;
     return color === playAs ? (myProfile?.rating ?? null) : null;
   };
   const setMode = useChessStore((s) => s.setMode);
@@ -121,28 +131,32 @@ export function GameView({
           {isPlayMode && (
             <div className='flex items-center gap-3'>
               <PlayerInfo
-                name={getPlayerName(topColor, isTopStockfish)}
+                name={getPlayerName(topColor, isTopStockfishForDisplay)}
                 subtitle={
-                  isTopStockfish ? `Level ${stockfishLevel}` : undefined
+                  isTopStockfishForDisplay
+                    ? `Level ${stockfishLevel}`
+                    : undefined
                 }
-                isStockfish={isTopStockfish}
-                image={getPlayerImage(topColor, isTopStockfish)}
-                rating={getPlayerRating(topColor, isTopStockfish)}
+                isStockfish={isTopStockfishForDisplay}
+                image={getPlayerImage(topColor, isTopStockfishForDisplay)}
+                rating={getPlayerRating(topColor, isTopStockfishForDisplay)}
               />
-              {hasTimer && (
-                <PlayerClock
-                  time={topTime}
-                  isActive={topTimerActive}
-                  isPlayer={!isTopStockfish}
-                />
-              )}
             </div>
           )}
-          <CapturedPiecesDisplay
-            pieces={topCaptured}
-            pieceColor={bottomColor}
-            advantage={topAdvantage}
-          />
+          <div className='flex items-center gap-2'>
+            <CapturedPiecesDisplay
+              pieces={topCaptured}
+              pieceColor={bottomColor}
+              advantage={topAdvantage}
+            />
+            {isPlayMode && hasTimer && (
+              <PlayerClock
+                time={topTime}
+                isActive={topTimerActive}
+                isPlayer={!isTopStockfishForDisplay}
+              />
+            )}
+          </div>
         </div>
         <BoardContainer>
           <ChessBoard
@@ -155,28 +169,35 @@ export function GameView({
           {isPlayMode && (
             <div className='flex items-center gap-3'>
               <PlayerInfo
-                name={getPlayerName(bottomColor, isBottomStockfish)}
+                name={getPlayerName(bottomColor, isBottomStockfishForDisplay)}
                 subtitle={
-                  isBottomStockfish ? `Level ${stockfishLevel}` : undefined
+                  isBottomStockfishForDisplay
+                    ? `Level ${stockfishLevel}`
+                    : undefined
                 }
-                isStockfish={isBottomStockfish}
-                image={getPlayerImage(bottomColor, isBottomStockfish)}
-                rating={getPlayerRating(bottomColor, isBottomStockfish)}
+                isStockfish={isBottomStockfishForDisplay}
+                image={getPlayerImage(bottomColor, isBottomStockfishForDisplay)}
+                rating={getPlayerRating(
+                  bottomColor,
+                  isBottomStockfishForDisplay
+                )}
               />
-              {hasTimer && (
-                <PlayerClock
-                  time={bottomTime}
-                  isActive={bottomTimerActive}
-                  isPlayer={!isBottomStockfish}
-                />
-              )}
             </div>
           )}
-          <CapturedPiecesDisplay
-            pieces={bottomCaptured}
-            pieceColor={topColor}
-            advantage={bottomAdvantage}
-          />
+          <div className='flex items-center gap-2'>
+            <CapturedPiecesDisplay
+              pieces={bottomCaptured}
+              pieceColor={topColor}
+              advantage={bottomAdvantage}
+            />
+            {isPlayMode && hasTimer && (
+              <PlayerClock
+                time={bottomTime}
+                isActive={bottomTimerActive}
+                isPlayer={!isBottomStockfishForDisplay}
+              />
+            )}
+          </div>
         </div>
       </div>
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>

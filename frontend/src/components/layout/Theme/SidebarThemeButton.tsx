@@ -18,7 +18,7 @@ export default function SidebarThemeButton() {
             <SidebarMenuButton
               size='sm'
               tooltip='Select Theme'
-              className='text-sidebar-foreground hover:text-sidebar-foreground active:text-sidebar-foreground data-[active=true]:text-sidebar-foreground data-[state=open]:hover:text-sidebar-foreground'
+              className='text-sidebar-foreground hover:text-sidebar-accent-foreground active:text-sidebar-accent-foreground data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:text-sidebar-accent-foreground'
             >
               <Icons.moon className='h-4 w-4' />
               <span>Theme</span>

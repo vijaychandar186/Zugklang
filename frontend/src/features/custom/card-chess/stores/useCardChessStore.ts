@@ -140,6 +140,7 @@ interface CardChessStore {
   isDrawing: boolean;
   needsDraw: boolean;
   drawCount: number;
+  cardDrawHistory: CardRank[];
   highlightedSquares: Record<string, import('react').CSSProperties>;
   makeMove: (
     from: string,
@@ -184,6 +185,7 @@ export const useCardChessStore = create<CardChessStore>()(
       isDrawing: false,
       needsDraw: true,
       drawCount: 0,
+      cardDrawHistory: [],
       highlightedSquares: {},
       makeMove: (from, to, promotion) => {
         const {
@@ -324,6 +326,7 @@ export const useCardChessStore = create<CardChessStore>()(
           isDrawing: false,
           needsDraw: true,
           drawCount: 0,
+          cardDrawHistory: [],
           timeControl: tc,
           whiteTime,
           blackTime,
@@ -343,7 +346,7 @@ export const useCardChessStore = create<CardChessStore>()(
       setGameOver: (over) => set({ gameOver: over }),
       setGameResult: (result) => set({ gameResult: result }),
       drawCard: (_turnColor) => {
-        const { game, deck, discardPile, drawCount } = get();
+        const { game, deck, discardPile, drawCount, cardDrawHistory } = get();
         const isInCheck = game.isCheck();
         set({ isDrawing: true });
         setTimeout(() => {
@@ -400,6 +403,7 @@ export const useCardChessStore = create<CardChessStore>()(
             isDrawing: false,
             needsDraw: false,
             drawCount: newDrawCount,
+            cardDrawHistory: [...cardDrawHistory, drawnCardFromDeck.rank],
             highlightedSquares
           });
           if (!hasValidMoves) {

@@ -35,6 +35,7 @@ interface TwoPlayerCustomGameViewProps {
   activeTimer: 'white' | 'black' | null;
   sidebar: ReactNode;
   canMove?: boolean;
+  loserColor?: 'w' | 'b' | null;
 }
 export function TwoPlayerCustomGameView({
   currentFEN,
@@ -48,7 +49,8 @@ export function TwoPlayerCustomGameView({
   blackTime,
   activeTimer,
   sidebar,
-  canMove = true
+  canMove = true,
+  loserColor = null
 }: TwoPlayerCustomGameViewProps) {
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
@@ -160,6 +162,7 @@ export function TwoPlayerCustomGameView({
               boardOrientation={orientation}
               canDrag={isActive}
               squareStyles={highlightedSquares}
+              loserColor={loserColor}
             />
           ) : (
             <Board
@@ -171,6 +174,7 @@ export function TwoPlayerCustomGameView({
               canDrag={isActive}
               animationDuration={200}
               squareStyles={highlightedSquares}
+              loserColor={loserColor}
             />
           )}
         </BoardContainer>

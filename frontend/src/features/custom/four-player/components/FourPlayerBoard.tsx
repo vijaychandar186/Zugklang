@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useMemo, useCallback } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { defaultPieces, defaultDraggingPieceStyle } from 'react-chessboard';
@@ -7,14 +6,11 @@ import { useFourPlayerStore } from '../store';
 import { isCorner, toSquare } from '../engine';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import type { CSSProperties } from 'react';
-
 const BOARD_ID = 'four-player-chess';
-
 function getTeamColor(team: string, isEliminated: boolean): string {
   if (isEliminated) {
     return 'var(--four-player-eliminated)';
   }
-
   switch (team) {
     case 'r':
       return 'var(--four-player-red)';
@@ -28,7 +24,6 @@ function getTeamColor(team: string, isEliminated: boolean): string {
       return 'var(--four-player-eliminated)';
   }
 }
-
 export function FourPlayerBoard() {
   const position = useFourPlayerStore((s) => s.position);
   const orientation = useFourPlayerStore((s) => s.orientation);
@@ -38,13 +33,11 @@ export function FourPlayerBoard() {
   const selectSquare = useFourPlayerStore((s) => s.selectSquare);
   const loseOrder = useFourPlayerStore((s) => s.loseOrder);
   const theme = useBoardTheme();
-
   const fourPlayerPieces = useMemo(() => {
     const pieces: Record<
       string,
       (props?: { fill?: string; svgStyle?: CSSProperties }) => React.JSX.Element
     > = {};
-
     const teams = ['r', 'b', 'y', 'g'];
     for (const team of teams) {
       const isEliminated = loseOrder.includes(team as 'r' | 'b' | 'y' | 'g');
@@ -53,7 +46,6 @@ export function FourPlayerBoard() {
         fill: color,
         svgStyle: { transform: `rotate(${-orientation}deg)` }
       };
-
       pieces[`${team}P`] = () => defaultPieces.wP(style);
       pieces[`${team}R`] = () => defaultPieces.wR(style);
       pieces[`${team}N`] = () => defaultPieces.wN(style);
@@ -61,10 +53,8 @@ export function FourPlayerBoard() {
       pieces[`${team}Q`] = () => defaultPieces.wQ(style);
       pieces[`${team}K`] = () => defaultPieces.wK(style);
     }
-
     return pieces;
   }, [orientation, loseOrder]);
-
   useEffect(() => {
     for (let x = 0; x < 14; x++) {
       for (let y = 0; y < 14; y++) {
@@ -77,16 +67,13 @@ export function FourPlayerBoard() {
       }
     }
   }, []);
-
   const squareStyles = useMemo(() => {
     const styles: Record<string, CSSProperties> = {};
-
     if (selectedSquare) {
       styles[selectedSquare] = {
         background: 'rgba(255, 255, 0, 0.4)'
       };
     }
-
     for (const sq of validMoves) {
       const isOccupied = !!position[sq];
       styles[sq] = isOccupied
@@ -101,10 +88,8 @@ export function FourPlayerBoard() {
             borderRadius: '50%'
           };
     }
-
     return styles;
   }, [selectedSquare, validMoves, position]);
-
   const handleDrop = useCallback(
     ({
       sourceSquare,
@@ -118,12 +103,10 @@ export function FourPlayerBoard() {
     },
     [movePiece]
   );
-
   const handleSquareClick = useCallback(
     ({ square }: { square: string }) => selectSquare(square),
     [selectSquare]
   );
-
   const options = useMemo(
     () => ({
       chessboardRows: 14,
@@ -156,7 +139,6 @@ export function FourPlayerBoard() {
       handleSquareClick
     ]
   );
-
   return (
     <div className='w-full'>
       <Chessboard options={options} />

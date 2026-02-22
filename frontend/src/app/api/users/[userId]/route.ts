@@ -1,4 +1,3 @@
-import { auth } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/db';
 import { NextRequest } from 'next/server';
 import type { TimeCategory } from '@/lib/ratings/timeCategory';
@@ -7,9 +6,6 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ userId: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) return new Response('Unauthorized', { status: 401 });
-
   const { userId } = await params;
   const category = req.nextUrl.searchParams.get(
     'category'
@@ -32,7 +28,8 @@ export async function GET(
         })
   ]);
 
-  if (!user) return new Response('Not found', { status: 404 });
+  if (!user)
+    return Response.json({ name: 'Opponent', image: null, rating: 700 });
 
   return Response.json({
     name: user.name ?? 'Opponent',

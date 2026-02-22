@@ -1,14 +1,10 @@
 'use client';
-
 import { SparePiece } from 'react-chessboard';
-
 const BLACK_PIECE_TYPES = ['bK', 'bQ', 'bR', 'bB', 'bN', 'bP'];
 const WHITE_PIECE_TYPES = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP'];
-
 interface SparePiecePaletteProps {
   orientation?: 'white' | 'black';
 }
-
 export function SparePiecePalette({
   orientation = 'white'
 }: SparePiecePaletteProps) {
@@ -16,10 +12,8 @@ export function SparePiecePalette({
     orientation === 'white' ? WHITE_PIECE_TYPES : BLACK_PIECE_TYPES;
   const bottomPieces =
     orientation === 'white' ? BLACK_PIECE_TYPES : WHITE_PIECE_TYPES;
-
   const topLabel = orientation === 'white' ? 'White Pieces' : 'Black Pieces';
   const bottomLabel = orientation === 'white' ? 'Black Pieces' : 'White Pieces';
-
   return (
     <div className='space-y-4 p-4'>
       <div>

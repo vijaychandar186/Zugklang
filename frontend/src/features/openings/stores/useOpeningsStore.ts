@@ -1,5 +1,4 @@
 'use client';
-
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { FEATURE_OPENINGS_KEY } from '@/lib/storage/keys';
@@ -8,7 +7,6 @@ import {
   createBoardOrientationSlice,
   BoardOrientationSlice
 } from '@/features/chess/stores/slices';
-
 interface OpeningsState extends BoardOrientationSlice {
   selectedOpening: Opening | null;
   selectedIndex: number;
@@ -17,7 +15,6 @@ interface OpeningsState extends BoardOrientationSlice {
   activeTab: TabOption;
   favorites: string[];
 }
-
 interface OpeningsActions {
   setSelectedOpening: (opening: Opening | null, index: number) => void;
   setSearchQuery: (query: string) => void;
@@ -28,45 +25,34 @@ interface OpeningsActions {
   isFavorite: (opening: Opening) => boolean;
   getFavoriteKey: (opening: Opening) => string;
 }
-
 type OpeningsStore = OpeningsState & OpeningsActions;
-
 const getFavoriteKey = (opening: Opening): string => {
   return `${opening.eco}::${opening.name}::${opening.pgn}`;
 };
-
 export const useOpeningsStore = create<OpeningsStore>()(
   persist(
     (set, get) => ({
       selectedOpening: null,
       selectedIndex: -1,
-
       searchQuery: '',
       sortOption: 'eco',
       activeTab: 'all',
       boardOrientation: 'white',
       boardFlipped: false,
-
       favorites: [],
-
       ...createBoardOrientationSlice(set),
-
       setSelectedOpening: (opening, index) => {
         set({ selectedOpening: opening, selectedIndex: index });
       },
-
       setSearchQuery: (query) => {
         set({ searchQuery: query });
       },
-
       setSortOption: (option) => {
         set({ sortOption: option });
       },
-
       setActiveTab: (tab) => {
         set({ activeTab: tab, selectedIndex: -1, selectedOpening: null });
       },
-
       toggleFavorite: (opening) => {
         const key = getFavoriteKey(opening);
         set((state) => {
@@ -78,18 +64,15 @@ export const useOpeningsStore = create<OpeningsStore>()(
           };
         });
       },
-
       removeFavorite: (key) => {
         set((state) => ({
           favorites: state.favorites.filter((f) => f !== key)
         }));
       },
-
       isFavorite: (opening) => {
         const key = getFavoriteKey(opening);
         return get().favorites.includes(key);
       },
-
       getFavoriteKey: (opening) => getFavoriteKey(opening)
     }),
     {

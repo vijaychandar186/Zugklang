@@ -1,8 +1,6 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
-
 type NavigationControlsProps = {
   viewingIndex: number;
   totalPositions: number;
@@ -15,7 +13,6 @@ type NavigationControlsProps = {
   onGoToPrev: () => void;
   onGoToNext: () => void;
 };
-
 export function NavigationControls({
   viewingIndex,
   totalPositions,

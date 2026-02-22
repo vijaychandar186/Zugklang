@@ -1,8 +1,6 @@
 'use client';
-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Icons } from '@/components/Icons';
-
 type PlayerInfoProps = {
   name: string;
   subtitle?: string;
@@ -10,7 +8,6 @@ type PlayerInfoProps = {
   image?: string | null;
   rating?: number | null;
 };
-
 export function PlayerInfo({
   name,
   subtitle,
@@ -25,7 +22,6 @@ export function PlayerInfo({
       .join('')
       .toUpperCase()
       .slice(0, 2) ?? '?';
-
   return (
     <div className='flex items-center gap-2'>
       <Avatar className='h-10 w-10'>

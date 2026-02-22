@@ -1,6 +1,5 @@
 import { Icons } from '@/components/Icons';
 import type { MenuCardItem } from './play-modes';
-
 export const practiceModes: MenuCardItem[] = [
   {
     href: '/practice/learn',
@@ -19,19 +18,10 @@ export const practiceModes: MenuCardItem[] = [
     actionText: 'Solve Puzzles'
   },
   {
-    href: '/practice/memory',
-    icon: Icons.engine,
-    title: 'Memory',
-    description:
-      'Train your board vision by memorizing and recreating chess positions.',
-    actionText: 'Start Training'
-  },
-  {
-    href: '/practice/vision',
-    icon: Icons.target,
-    title: 'Vision',
-    description:
-      'Train your board awareness by identifying coordinates and valid moves.',
-    actionText: 'Start Training'
+    href: '/practice/cognitive',
+    icon: Icons.brainCog,
+    title: 'Cognitive',
+    description: 'Train board awareness and memory with focused exercises.',
+    actionText: 'Open Cognitive'
   }
 ];

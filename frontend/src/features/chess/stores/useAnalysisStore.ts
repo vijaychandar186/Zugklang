@@ -4,9 +4,7 @@ import { useShallow } from 'zustand/shallow';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import { ANALYSIS_DEFAULTS } from '@/features/analysis/config/defaults';
 import { FEATURE_ANALYSIS_SETTINGS_KEY } from '@/lib/storage/keys';
-
 export type Advantage = 'white' | 'black' | 'equal';
-
 export type AnalysisLine = {
   multiPvIndex: number;
   cp: number;
@@ -15,14 +13,12 @@ export type AnalysisLine = {
   pvMoves: string[];
   depth: number;
 };
-
 export type LineEvaluation = {
   advantage: Advantage;
   cp: number;
   mate: number | null;
   formattedEvaluation: string;
 };
-
 type ProcessedAnalysis = {
   advantage: Advantage;
   cp: number | null;
@@ -31,23 +27,19 @@ type ProcessedAnalysis = {
   uciLines: string[][];
   lineEvaluations: LineEvaluation[];
 };
-
 const processLines = (
   currentLines: (AnalysisLine | null)[]
 ): ProcessedAnalysis => {
   const validLines = currentLines.filter(
     (line): line is AnalysisLine => line !== null
   );
-
   const processedLines = validLines.map((line) => {
     let formattedEvaluation: string;
-
     if (line.mate !== null) {
       formattedEvaluation = `#${line.mate}`;
     } else {
       formattedEvaluation = `${line.advantage === 'black' ? '-' : '+'}${(line.cp / 100).toFixed(2)}`;
     }
-
     return {
       uciMoves: line.pvMoves,
       evaluation: {
@@ -58,17 +50,14 @@ const processLines = (
       }
     };
   });
-
   const uciLines = processedLines.map((line) => line.uciMoves);
   const lineEvaluations = processedLines.map((line) => line.evaluation);
-
   const bestEval = processedLines[0]?.evaluation || {
     advantage: 'equal' as Advantage,
     cp: null,
     mate: null,
     formattedEvaluation: '0.00'
   };
-
   return {
     advantage: bestEval.advantage,
     cp: bestEval.cp,
@@ -78,26 +67,21 @@ const processLines = (
     lineEvaluations
   };
 };
-
 type AnalysisStore = {
   isInitialized: boolean;
   worker: Worker | null;
-
   multiPV: number;
   searchTime: number;
   threads: number;
   hashSize: number;
   showBestMoveArrow: boolean;
   showThreatArrow: boolean;
-
   isAnalyzing: boolean;
   isAnalysisOn: boolean;
   currentSearchDepth: number;
   currentLines: (AnalysisLine | null)[];
-
   currentFen: string;
   turn: 'w' | 'b';
-
   initializeEngine: () => Promise<void>;
   setMultiPV: (value: number) => void;
   setSearchTime: (value: number) => void;
@@ -111,65 +95,51 @@ type AnalysisStore = {
   handleEngineMessage: (message: string) => void;
   cleanup: () => void;
 };
-
 const UPDATE_INTERVAL = ANALYSIS_DEFAULTS.updateInterval;
 let lastUpdate = 0;
 let pendingTimeout: NodeJS.Timeout | null = null;
 let pendingLines: (AnalysisLine | null)[] | null = null;
 let pendingDepth: number | null = null;
-
 export const useAnalysisStore = create<AnalysisStore>()(
   persist(
     (set, get) => ({
       isInitialized: false,
       worker: null,
-
       multiPV: ANALYSIS_DEFAULTS.multiPV,
       searchTime: ANALYSIS_DEFAULTS.searchTime,
       threads: ANALYSIS_DEFAULTS.threads,
       hashSize: ANALYSIS_DEFAULTS.hashSize,
       showBestMoveArrow: true,
       showThreatArrow: false,
-
       isAnalyzing: false,
       isAnalysisOn: false,
       currentSearchDepth: 0,
       currentLines: Array(ANALYSIS_DEFAULTS.multiPV).fill(null),
-
       currentFen: STARTING_FEN,
       turn: 'w',
-
       initializeEngine: async () => {
         const { worker: existingWorker } = get();
         if (existingWorker) return;
-
         if (typeof Worker === 'undefined') {
           console.error('Web Workers not supported');
           return;
         }
-
         try {
           const stockfishPath =
             typeof WebAssembly === 'object'
               ? '/stockfish/stockfish.wasm.js'
               : '/stockfish/stockfish.js';
           const worker = new Worker(stockfishPath);
-
           worker.onerror = (e) => {
             console.error('Stockfish Worker Error:', e);
           };
-
           const handleMessage = (e: MessageEvent) => {
             const message = String(e.data || '');
             get().handleEngineMessage(message);
           };
-
           worker.addEventListener('message', handleMessage);
-
           set({ worker });
-
           worker.postMessage('uci');
-
           await new Promise<void>((resolve) => {
             const initHandler = (e: MessageEvent) => {
               const data = String(e.data || '');
@@ -180,13 +150,11 @@ export const useAnalysisStore = create<AnalysisStore>()(
             };
             worker.addEventListener('message', initHandler);
           });
-
           const { multiPV, threads, hashSize } = get();
           worker.postMessage(`setoption name MultiPV value ${multiPV}`);
           worker.postMessage(`setoption name Threads value ${threads}`);
           worker.postMessage(`setoption name Hash value ${hashSize}`);
           worker.postMessage('isready');
-
           await new Promise<void>((resolve) => {
             const readyHandler = (e: MessageEvent) => {
               const data = String(e.data || '');
@@ -197,16 +165,13 @@ export const useAnalysisStore = create<AnalysisStore>()(
             };
             worker.addEventListener('message', readyHandler);
           });
-
           set({ isInitialized: true });
         } catch (e) {
           console.error('Failed to create Stockfish worker:', e);
         }
       },
-
       setMultiPV: (value) => {
         const { worker } = get();
-
         set((state) => {
           const newLines =
             value > state.multiPV
@@ -215,43 +180,34 @@ export const useAnalysisStore = create<AnalysisStore>()(
                   ...Array(value - state.multiPV).fill(null)
                 ]
               : state.currentLines.slice(0, value);
-
           return {
             multiPV: value,
             currentLines: newLines
           };
         });
-
         if (worker) {
           worker.postMessage(`setoption name MultiPV value ${value}`);
         }
       },
-
       setSearchTime: (value) => {
         set({ searchTime: value });
       },
-
       setThreads: (value) => {
         const { worker } = get();
         set({ threads: value });
-
         if (worker) {
           worker.postMessage(`setoption name Threads value ${value}`);
         }
       },
-
       setHashSize: (value) => {
         const { worker } = get();
         set({ hashSize: value });
-
         if (worker) {
           worker.postMessage(`setoption name Hash value ${value}`);
         }
       },
-
       setShowBestMoveArrow: (value) => set({ showBestMoveArrow: value }),
       setShowThreatArrow: (value) => set({ showThreatArrow: value }),
-
       startAnalysis: () => {
         const { worker, isInitialized, currentFen, searchTime, multiPV } =
           get();
@@ -259,51 +215,41 @@ export const useAnalysisStore = create<AnalysisStore>()(
           console.error('Engine not ready');
           return;
         }
-
         set({
           isAnalysisOn: true,
           isAnalyzing: true,
           currentSearchDepth: 0,
           currentLines: Array(multiPV).fill(null)
         });
-
         pendingLines = null;
         pendingDepth = null;
         if (pendingTimeout) clearTimeout(pendingTimeout);
-
         worker.postMessage('stop');
         worker.postMessage(`position fen ${currentFen}`);
         worker.postMessage(`go movetime ${searchTime * 1000}`);
       },
-
       endAnalysis: () => {
         const { worker, multiPV } = get();
-
         set({
           isAnalysisOn: false,
           isAnalyzing: false,
           currentLines: Array(multiPV).fill(null)
         });
-
         if (worker) {
           worker.postMessage('stop');
         }
       },
-
       setPosition: (fen, turn) => {
         const { worker, isAnalysisOn, searchTime, multiPV } = get();
-
         set({
           currentFen: fen,
           turn,
           currentSearchDepth: 0,
           currentLines: Array(multiPV).fill(null)
         });
-
         pendingLines = null;
         pendingDepth = null;
         if (pendingTimeout) clearTimeout(pendingTimeout);
-
         if (worker && isAnalysisOn) {
           set({ isAnalyzing: true });
           worker.postMessage('stop');
@@ -311,46 +257,34 @@ export const useAnalysisStore = create<AnalysisStore>()(
           worker.postMessage(`go movetime ${searchTime * 1000}`);
         }
       },
-
       handleEngineMessage: (message) => {
         const { isAnalysisOn, turn, multiPV, currentLines: stateLines } = get();
-
         if (!message || typeof message !== 'string') return;
-
         if (message.startsWith('info')) {
           if (!isAnalysisOn) return;
-
           const depthMatch = message.match(/depth (\d+)/);
           const currentDepth = depthMatch ? parseInt(depthMatch[1], 10) : 0;
-
           if (!pendingLines) {
             pendingLines = [...stateLines];
           }
-
           if (currentDepth > 0) {
             pendingDepth = currentDepth;
           }
-
           const hasPv = message.includes(' pv ');
           const hasMultiPv = message.includes(' multipv ');
           const hasScore = message.includes(' score ');
-
           if (hasPv && hasMultiPv && hasScore) {
             try {
               const multiPvMatch = message.match(/multipv (\d+)/);
               const multiPvIndex = multiPvMatch
                 ? parseInt(multiPvMatch[1], 10)
                 : 1;
-
               if (multiPvIndex > multiPV) return;
-
               let scoreValue = 0;
               let cp = 0;
               let mate: number | null = null;
-
               const mateMatch = message.match(/score mate (-?\d+)/);
               const cpMatch = message.match(/score cp (-?\d+)/);
-
               if (mateMatch) {
                 scoreValue = parseInt(mateMatch[1], 10);
                 mate = Math.abs(scoreValue);
@@ -360,7 +294,6 @@ export const useAnalysisStore = create<AnalysisStore>()(
                 cp = Math.abs(scoreValue);
                 mate = null;
               }
-
               const [selfColor, opponentColor] =
                 turn === 'w'
                   ? (['white', 'black'] as const)
@@ -373,10 +306,8 @@ export const useAnalysisStore = create<AnalysisStore>()(
                     : scoreValue < 0
                       ? opponentColor
                       : 'equal';
-
               const pvMatch = message.match(/ pv ([^$]*)/);
               const pvMoves = pvMatch ? pvMatch[1].trim().split(' ') : [];
-
               const analysisLine: AnalysisLine = {
                 multiPvIndex,
                 cp,
@@ -385,16 +316,13 @@ export const useAnalysisStore = create<AnalysisStore>()(
                 pvMoves,
                 depth: currentDepth
               };
-
               pendingLines[multiPvIndex - 1] = analysisLine;
             } catch (error) {
               console.error('Error parsing engine message:', error, message);
             }
           }
-
           const now = Date.now();
           const timeSinceLastUpdate = now - lastUpdate;
-
           const applyUpdate = () => {
             set((state) => ({
               currentLines: pendingLines
@@ -405,7 +333,6 @@ export const useAnalysisStore = create<AnalysisStore>()(
             lastUpdate = Date.now();
             pendingTimeout = null;
           };
-
           if (timeSinceLastUpdate > UPDATE_INTERVAL) {
             if (pendingTimeout) clearTimeout(pendingTimeout);
             applyUpdate();
@@ -430,7 +357,6 @@ export const useAnalysisStore = create<AnalysisStore>()(
           set({ isAnalyzing: false });
         }
       },
-
       cleanup: () => {
         const { worker } = get();
         if (worker) {
@@ -459,7 +385,6 @@ export const useAnalysisStore = create<AnalysisStore>()(
     }
   )
 );
-
 export const useAnalysisState = () =>
   useAnalysisStore(
     useShallow((state) => ({
@@ -469,7 +394,6 @@ export const useAnalysisState = () =>
       isInitialized: state.isInitialized
     }))
   );
-
 export const useAnalysisConfig = () =>
   useAnalysisStore(
     useShallow((state) => ({
@@ -481,7 +405,6 @@ export const useAnalysisConfig = () =>
       showThreatArrow: state.showThreatArrow
     }))
   );
-
 export const useAnalysisActions = () =>
   useAnalysisStore(
     useShallow((state) => ({
@@ -498,12 +421,10 @@ export const useAnalysisActions = () =>
       cleanup: state.cleanup
     }))
   );
-
 export const useEngineAnalysis = (): ProcessedAnalysis => {
   const currentLines = useAnalysisStore((state) => state.currentLines);
   return processLines(currentLines);
 };
-
 export const useAnalysisPosition = () =>
   useAnalysisStore(
     useShallow((state) => ({

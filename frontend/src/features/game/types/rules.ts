@@ -1,7 +1,5 @@
 import { PlayerColor } from '@/features/chess/types/core';
-
 export type TimeControlMode = 'unlimited' | 'timed' | 'custom';
-
 export type TimeControl = {
   mode: TimeControlMode;
   minutes: number;
@@ -11,7 +9,6 @@ export type TimeControl = {
   blackMinutes?: number;
   blackIncrement?: number;
 };
-
 export type GameResult = {
   winner: PlayerColor | 'draw' | null;
   reason: string;

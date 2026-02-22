@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import analyse from '@/lib/analysis/analysis';
-
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { positions } = body;
-
     if (!positions) {
       return NextResponse.json(
         { message: 'Missing parameters.' },
         { status: 400 }
       );
     }
-
     try {
       const results = await analyse(positions);
       return NextResponse.json({ results });

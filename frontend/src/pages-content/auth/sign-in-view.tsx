@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import UserAuthForm from './components/auth-form';
 import { Icons } from '@/components/Icons';
-
 export default function SignInViewPage() {
   return (
     <div className='relative h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0'>

@@ -1,5 +1,4 @@
 export type Advantage = 'white' | 'black' | 'equal';
-
 export type AnalysisLine = {
   multiPvIndex: number;
   cp: number;
@@ -8,14 +7,12 @@ export type AnalysisLine = {
   pvMoves: string[];
   depth: number;
 };
-
 export type LineEvaluation = {
   advantage: Advantage;
   cp: number;
   mate: number | null;
   formattedEvaluation: string;
 };
-
 export type ProcessedAnalysis = {
   advantage: Advantage;
   cp: number | null;
@@ -24,5 +21,4 @@ export type ProcessedAnalysis = {
   uciLines: string[][];
   lineEvaluations: LineEvaluation[];
 };
-
 export type AnalysisMode = 'normal' | 'position-editor' | 'play-from-position';

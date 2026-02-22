@@ -1,5 +1,4 @@
 'use client';
-
 import * as React from 'react';
 import Link from 'next/link';
 import {
@@ -32,9 +31,6 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Icons } from '@/components/Icons';
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
 export interface GameRow {
   id: string;
   variant: string;
@@ -46,12 +42,15 @@ export interface GameRow {
   createdAt: Date;
   whiteUserId: string | null;
   blackUserId: string | null;
-  white: { name: string | null } | null;
-  black: { name: string | null } | null;
+  white: {
+    name: string | null;
+  } | null;
+  black: {
+    name: string | null;
+  } | null;
   whiteRatingDelta: number | null;
   blackRatingDelta: number | null;
 }
-
 export interface PuzzleAttemptRow {
   id: string;
   puzzleId: string;
@@ -61,7 +60,6 @@ export interface PuzzleAttemptRow {
   usedHint: boolean;
   createdAt: Date;
 }
-
 export interface PuzzleRushRow {
   id: string;
   mode: string;
@@ -72,7 +70,6 @@ export interface PuzzleRushRow {
   maxMistakes: number | null;
   createdAt: Date;
 }
-
 export interface VisionSessionRow {
   id: string;
   trainingMode: string;
@@ -84,7 +81,6 @@ export interface VisionSessionRow {
   avgResponseTimeMs: number;
   createdAt: Date;
 }
-
 export interface MemorySessionRow {
   id: string;
   mode: string;
@@ -96,7 +92,6 @@ export interface MemorySessionRow {
   progressiveLevel: number | null;
   createdAt: Date;
 }
-
 export interface HistoryViewProps {
   games: GameRow[];
   gamesTotalCount: number;
@@ -108,9 +103,6 @@ export interface HistoryViewProps {
   memorySessions: MemorySessionRow[];
   visionSessions: VisionSessionRow[];
 }
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 const VARIANT_LABELS: Record<string, string> = {
   standard: 'Standard',
   fischerRandom: '960',
@@ -122,7 +114,6 @@ const VARIANT_LABELS: Record<string, string> = {
   kingOfTheHill: 'KOTH',
   crazyhouse: 'Crazyhouse'
 };
-
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -130,7 +121,6 @@ function formatDate(date: Date) {
     year: 'numeric'
   }).format(new Date(date));
 }
-
 function buildPgn(moves: string[]) {
   return moves
     .map((move, i) =>
@@ -138,16 +128,12 @@ function buildPgn(moves: string[]) {
     )
     .join(' ');
 }
-
-// ─── Shared DataTable component ───────────────────────────────────────────────
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filterColumn?: string;
   filterPlaceholder?: string;
 }
-
 function DataTable<TData, TValue>({
   columns,
   data,
@@ -158,7 +144,6 @@ function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-
   const table = useReactTable({
     data,
     columns,
@@ -171,7 +156,6 @@ function DataTable<TData, TValue>({
     initialState: { pagination: { pageSize: 25 } },
     state: { sorting, columnFilters }
   });
-
   return (
     <div className='space-y-3'>
       {filterColumn && (
@@ -296,17 +280,7 @@ function DataTable<TData, TValue>({
     </div>
   );
 }
-
-// ─── Sortable column header helper ───────────────────────────────────────────
-
-function SortHeader({
-  label,
-  column
-}: {
-  label: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  column: any;
-}) {
+function SortHeader({ label, column }: { label: string; column: any }) {
   return (
     <button
       className='flex items-center gap-1 font-medium'
@@ -323,9 +297,6 @@ function SortHeader({
     </button>
   );
 }
-
-// ─── Games columns ────────────────────────────────────────────────────────────
-
 function ResultBadge({
   result,
   isWhite
@@ -358,7 +329,6 @@ function ResultBadge({
     </Badge>
   );
 }
-
 function makeGameColumns(userId: string): ColumnDef<GameRow>[] {
   return [
     {
@@ -478,9 +448,6 @@ function makeGameColumns(userId: string): ColumnDef<GameRow>[] {
     }
   ];
 }
-
-// ─── Puzzle columns ───────────────────────────────────────────────────────────
-
 const puzzleColumns: ColumnDef<PuzzleAttemptRow>[] = [
   {
     accessorKey: 'createdAt',
@@ -528,9 +495,6 @@ const puzzleColumns: ColumnDef<PuzzleAttemptRow>[] = [
     cell: ({ row }) => (row.original.usedHint ? 'Yes' : '—')
   }
 ];
-
-// ─── Puzzle Rush columns ──────────────────────────────────────────────────────
-
 const rushColumns: ColumnDef<PuzzleRushRow>[] = [
   {
     accessorKey: 'createdAt',
@@ -582,9 +546,6 @@ const rushColumns: ColumnDef<PuzzleRushRow>[] = [
     }
   }
 ];
-
-// ─── Memory columns ───────────────────────────────────────────────────────────
-
 const memoryColumns: ColumnDef<MemorySessionRow>[] = [
   {
     accessorKey: 'createdAt',
@@ -644,9 +605,6 @@ const memoryColumns: ColumnDef<MemorySessionRow>[] = [
         : '—'
   }
 ];
-
-// ─── Vision columns ───────────────────────────────────────────────────────────
-
 const visionColumns: ColumnDef<VisionSessionRow>[] = [
   {
     accessorKey: 'createdAt',
@@ -714,13 +672,7 @@ const visionColumns: ColumnDef<VisionSessionRow>[] = [
     cell: ({ row }) => `${row.original.avgResponseTimeMs}ms`
   }
 ];
-
-// ─── Tab types ────────────────────────────────────────────────────────────────
-
 type Tab = 'games' | 'puzzles' | 'rush' | 'memory' | 'vision';
-
-// ─── Main HistoryView ─────────────────────────────────────────────────────────
-
 export function HistoryView({
   games,
   gamesTotalCount,
@@ -734,18 +686,19 @@ export function HistoryView({
 }: HistoryViewProps) {
   const [activeTab, setActiveTab] = React.useState<Tab>('games');
   const gameColumns = React.useMemo(() => makeGameColumns(userId), [userId]);
-
-  const tabs: { id: Tab; label: string; count: number }[] = [
+  const tabs: {
+    id: Tab;
+    label: string;
+    count: number;
+  }[] = [
     { id: 'games', label: 'Games', count: gamesTotalCount },
     { id: 'puzzles', label: 'Puzzles', count: puzzleAttempts.length },
     { id: 'rush', label: 'Puzzle Rush', count: puzzleRush.length },
     { id: 'memory', label: 'Memory', count: memorySessions.length },
     { id: 'vision', label: 'Vision', count: visionSessions.length }
   ];
-
   return (
     <div className='flex w-full flex-col gap-6 px-4 py-8'>
-      {/* Header */}
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-2xl font-bold'>History</h1>
@@ -760,7 +713,6 @@ export function HistoryView({
         </Link>
       </div>
 
-      {/* Tabs */}
       <div className='flex gap-1 rounded-lg border p-1'>
         {tabs.map((t) => (
           <button
@@ -786,7 +738,6 @@ export function HistoryView({
         ))}
       </div>
 
-      {/* Games tab — server-paginated */}
       {activeTab === 'games' && (
         <div className='space-y-4'>
           <DataTable
@@ -795,7 +746,7 @@ export function HistoryView({
             filterColumn='opponent'
             filterPlaceholder='Filter by opponent...'
           />
-          {/* Server-side pagination for games */}
+
           {totalPages > 1 && (
             <div className='flex items-center justify-center gap-2'>
               {page > 1 && (
@@ -820,7 +771,6 @@ export function HistoryView({
         </div>
       )}
 
-      {/* Puzzles tab */}
       {activeTab === 'puzzles' && (
         <DataTable
           columns={puzzleColumns}
@@ -830,7 +780,6 @@ export function HistoryView({
         />
       )}
 
-      {/* Puzzle Rush tab */}
       {activeTab === 'rush' && (
         <DataTable
           columns={rushColumns}
@@ -840,7 +789,6 @@ export function HistoryView({
         />
       )}
 
-      {/* Memory tab */}
       {activeTab === 'memory' && (
         <DataTable
           columns={memoryColumns}
@@ -850,7 +798,6 @@ export function HistoryView({
         />
       )}
 
-      {/* Vision tab */}
       {activeTab === 'vision' && (
         <DataTable
           columns={visionColumns}

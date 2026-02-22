@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -20,12 +19,10 @@ import {
 } from '@/components/ui/select';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { TimeControl, TimeControlMode } from '@/features/game/types/rules';
-
 type LocalGameSelectionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
-
 export function LocalGameSelectionDialog({
   open,
   onOpenChange
@@ -34,20 +31,16 @@ export function LocalGameSelectionDialog({
   const autoFlipBoard = useChessStore((s) => s.autoFlipBoard);
   const startLocalGame = useChessStore((s) => s.startLocalGame);
   const setAutoFlipBoard = useChessStore((s) => s.setAutoFlipBoard);
-
   const [timerMode, setTimerMode] = useState<TimeControlMode>(
     currentTimeControl.mode
   );
   const [flipOnMove, setFlipOnMove] = useState(autoFlipBoard);
-
   const [minutes, setMinutes] = useState(currentTimeControl.minutes || 10);
   const [increment, setIncrement] = useState(currentTimeControl.increment || 0);
-
   const [player1Minutes, setPlayer1Minutes] = useState(10);
   const [player1Increment, setPlayer1Increment] = useState(0);
   const [player2Minutes, setPlayer2Minutes] = useState(10);
   const [player2Increment, setPlayer2Increment] = useState(0);
-
   useEffect(() => {
     if (open) {
       setFlipOnMove(autoFlipBoard);
@@ -60,10 +53,8 @@ export function LocalGameSelectionDialog({
       setPlayer2Increment(0);
     }
   }, [open, autoFlipBoard, currentTimeControl]);
-
   const handleStart = () => {
     setAutoFlipBoard(flipOnMove);
-
     const timeControl: TimeControl = {
       mode: timerMode,
       minutes: timerMode === 'timed' ? minutes : 0,
@@ -76,7 +67,6 @@ export function LocalGameSelectionDialog({
     startLocalGame(timeControl);
     onOpenChange(false);
   };
-
   const formatTimeLabel = (mins: number) => {
     if (mins < 60) return `${mins} min`;
     const hours = Math.floor(mins / 60);
@@ -84,7 +74,6 @@ export function LocalGameSelectionDialog({
     if (remainingMins === 0) return `${hours} hr`;
     return `${hours} hr ${remainingMins} min`;
   };
-
   const formatIncrementLabel = (secs: number) => {
     if (secs === 0) return 'No increment';
     if (secs < 60) return `+${secs} sec`;
@@ -93,7 +82,6 @@ export function LocalGameSelectionDialog({
     if (remainingSecs === 0) return `+${mins} min`;
     return `+${mins} min ${remainingSecs} sec`;
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-md'>

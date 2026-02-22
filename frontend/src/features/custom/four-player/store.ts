@@ -11,14 +11,12 @@ import {
 import { playSound } from '@/features/game/utils/sounds';
 import type { SoundType } from '@/features/game/utils/sounds';
 import { TimeControl } from '@/features/game/types/rules';
-
 const TEAM_ROTATIONS: Record<Team, number> = {
   r: 0,
   b: 270,
   y: 180,
   g: 90
 };
-
 const PIECE_VALUES: Record<PieceType, number> = {
   P: 1,
   N: 3,
@@ -27,30 +25,31 @@ const PIECE_VALUES: Record<PieceType, number> = {
   Q: 9,
   K: 0
 };
-
 interface TeamPoints {
   r: number;
   b: number;
   y: number;
   g: number;
 }
-
 interface TeamTimes {
   r: number | null;
   b: number | null;
   y: number | null;
   g: number | null;
 }
-
 const DEFAULT_TIME_CONTROL: TimeControl = {
   mode: 'unlimited',
   minutes: 0,
   increment: 0
 };
-
 interface FourPlayerStore {
   game: FourPlayerGame;
-  position: Record<string, { pieceType: string }>;
+  position: Record<
+    string,
+    {
+      pieceType: string;
+    }
+  >;
   currentTeam: Team;
   orientation: number;
   gameId: number;
@@ -71,7 +70,6 @@ interface FourPlayerStore {
   activeTimer: Team | null;
   lastActiveTimestamp: number | null;
   autoRotateBoard: boolean;
-
   selectSquare: (square: string) => void;
   movePiece: (from: string, to: string) => boolean;
   completePromotion: (piece: PieceType) => void;
@@ -92,7 +90,6 @@ interface FourPlayerStore {
   onTimeout: (team: Team) => void;
   setAutoRotateBoard: (enabled: boolean) => void;
 }
-
 function syncFromGame(game: FourPlayerGame) {
   return {
     game,
@@ -106,7 +103,6 @@ function syncFromGame(game: FourPlayerGame) {
     loseOrder: [...game.loseOrder]
   };
 }
-
 function reconstructGameAtMove(
   moves: MoveRecord[],
   moveIndex: number
@@ -127,11 +123,9 @@ function reconstructGameAtMove(
   }
   return game;
 }
-
 function calculateInitialPoints(): TeamPoints {
   return { r: 0, b: 0, y: 0, g: 0 };
 }
-
 function initializeTeamTimers(timeControl: TimeControl): TeamTimes {
   if (timeControl.mode === 'unlimited') {
     return { r: null, b: null, y: null, g: null };
@@ -144,11 +138,9 @@ function initializeTeamTimers(timeControl: TimeControl): TeamTimes {
     g: timeInSeconds
   };
 }
-
 function hasTimer(timeControl: TimeControl): boolean {
   return timeControl.mode !== 'unlimited';
 }
-
 export const useFourPlayerStore = create<FourPlayerStore>()(
   persist(
     (set, get) => {
@@ -168,16 +160,13 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
         activeTimer: null,
         lastActiveTimestamp: null,
         autoRotateBoard: false,
-
         selectSquare: (square) => {
           const state = get();
           const { game } = state;
-
           if (state.selectedSquare && state.validMoves.includes(square)) {
             state.movePiece(state.selectedSquare, square);
             return;
           }
-
           const moves = game.getMovesForSquare(square);
           if (moves.length > 0) {
             set({ selectedSquare: square, validMoves: moves });
@@ -185,7 +174,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             set({ selectedSquare: null, validMoves: [] });
           }
         },
-
         movePiece: (from, to) => {
           const {
             game,
@@ -195,55 +183,43 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             timeControl,
             autoRotateBoard
           } = get();
-
           if (!gameStarted) return false;
-
           const lastMoveIndex = game.moveHistory.length;
           const success = game.playMove(from, to);
           if (!success) return false;
-
           const lastMove = game.moveHistory[lastMoveIndex];
           const updatedPoints = { ...points };
-
           if (lastMove && lastMove.captured) {
             const capturedTeam = lastMove.captured.charAt(0) as Team;
             const wasCapturedTeamEliminated =
               oldLoseOrder.includes(capturedTeam);
-
             if (!wasCapturedTeamEliminated) {
               const capturedType = lastMove.captured.charAt(1) as PieceType;
               let pointValue = PIECE_VALUES[capturedType] || 0;
-
               if (capturedType === 'Q' && lastMove.promotedPiece) {
                 pointValue = 1;
               }
-
               const capturingTeam = lastMove.team;
               updatedPoints[capturingTeam] =
                 (updatedPoints[capturingTeam] || 0) + pointValue;
             }
           }
-
           if (lastMove?.checkedKings && lastMove.checkedKings.length >= 2) {
             const numKings = lastMove.checkedKings.length;
             const isQueen = lastMove.checkingPieceType === 'Q';
             let bonus = 0;
-
             if (isQueen) {
               bonus = numKings === 2 ? 1 : 5;
             } else {
               bonus = numKings === 2 ? 5 : 20;
             }
-
             updatedPoints[lastMove.team] =
               (updatedPoints[lastMove.team] || 0) + bonus;
           }
-
           const newLoseOrder = [...game.loseOrder];
           const newEliminations = newLoseOrder.filter(
             (t) => !oldLoseOrder.includes(t)
           );
-
           if (newEliminations.length > 0 && lastMove) {
             if (lastMove.isCheckmate) {
               updatedPoints[lastMove.team] =
@@ -257,7 +233,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
               }
             }
           }
-
           const updatedState = {
             ...syncFromGame(game),
             selectedSquare: null,
@@ -267,33 +242,24 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
               ? { orientation: TEAM_ROTATIONS[game.currentTeam] }
               : {})
           };
-
           set(updatedState);
-
           const isCapture = !!(lastMove && lastMove.captured);
           const isCastle =
             lastMove?.notation === 'O-O' || lastMove?.notation === 'O-O-O';
           const isPromotion = lastMove?.notation.includes('=');
-
           let soundType: SoundType = 'move-self';
           if (isCastle) soundType = 'castle';
           else if (isPromotion) soundType = 'promote';
           else if (isCapture) soundType = 'capture';
-
           playSound(soundType);
-
           if (newEliminations.length > 0) {
             playSound('game-end');
           }
-
-          // Switch timer to next player if timers are enabled
           if (hasTimer(timeControl)) {
             get().switchTimer(game.currentTeam);
           }
-
           return true;
         },
-
         completePromotion: (piece) => {
           const { game } = get();
           game.completePromotion(piece);
@@ -303,7 +269,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             validMoves: []
           });
         },
-
         resetGame: () => {
           const newGame = new FourPlayerGame();
           const state = get();
@@ -321,7 +286,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             lastActiveTimestamp: null
           });
         },
-
         startGame: () => {
           const state = get();
           const shouldStartTimer = hasTimer(state.timeControl);
@@ -332,7 +296,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             lastActiveTimestamp: shouldStartTimer ? Date.now() : null
           });
         },
-
         abortGame: () => {
           set({
             isGameOver: true,
@@ -340,15 +303,12 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             gameResult: 'Game Ended'
           });
         },
-
         setOrientation: (degrees) => {
           set({ orientation: degrees });
         },
-
         goToMove: (index) => {
           const { moves } = get();
           if (index < -1 || index >= moves.length) return;
-
           if (index === -1) {
             const initialGame = new FourPlayerGame();
             set({
@@ -365,7 +325,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             });
           }
         },
-
         goToStart: () => {
           const initialGame = new FourPlayerGame();
           set({
@@ -374,7 +333,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             currentTeam: initialGame.currentTeam
           });
         },
-
         goToEnd: () => {
           const { moves, game } = get();
           set({
@@ -383,7 +341,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             currentTeam: game.currentTeam
           });
         },
-
         goToPrev: () => {
           const { viewingMoveIndex, moves } = get();
           if (viewingMoveIndex > -1) {
@@ -405,7 +362,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             }
           }
         },
-
         goToNext: () => {
           const { viewingMoveIndex, moves, game } = get();
           if (viewingMoveIndex < moves.length - 1) {
@@ -426,7 +382,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             }
           }
         },
-
         addPoints: (team, pointValue) => {
           set((state) => ({
             points: {
@@ -435,12 +390,10 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             }
           }));
         },
-
         setTimeControl: (timeControl) => {
           const timers = initializeTeamTimers(timeControl);
           set({ timeControl, teamTimes: timers });
         },
-
         tickTimer: (team) =>
           set((state) => {
             if (state.activeTimer !== team || state.isGameOver) return {};
@@ -454,19 +407,15 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
               lastActiveTimestamp: Date.now()
             };
           }),
-
         switchTimer: (toTeam) =>
           set((state) => {
             if (state.isGameOver || state.timeControl.mode === 'unlimited')
               return {};
-
-            // Add increment to the team that just moved
             const movedTeam = state.currentTeam;
             const currentTime = state.teamTimes[movedTeam];
             const increment = state.timeControl.increment || 0;
             const newTime =
               currentTime !== null ? currentTime + increment : null;
-
             return {
               activeTimer: toTeam,
               teamTimes: {
@@ -476,9 +425,7 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
               lastActiveTimestamp: Date.now()
             };
           }),
-
         stopTimer: () => set({ activeTimer: null, lastActiveTimestamp: null }),
-
         onTimeout: (team) => {
           set({
             isGameOver: true,
@@ -487,14 +434,16 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             lastActiveTimestamp: null
           });
         },
-
         setAutoRotateBoard: (enabled) => set({ autoRotateBoard: enabled })
       };
     },
     {
       name: GAME_FOUR_PLAYER_KEY,
       storage: createLazyStorage((state: unknown) => {
-        const s = state as { moves?: unknown[]; gameStarted?: boolean };
+        const s = state as {
+          moves?: unknown[];
+          gameStarted?: boolean;
+        };
         return hasGameStarted({
           moves: s.moves,
           gameStarted: s.gameStarted
@@ -537,8 +486,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             state.winner = newGame.winner;
             state.loseOrder = [...newGame.loseOrder];
           }
-
-          // Handle timer restoration with elapsed time
           if (
             state.activeTimer &&
             state.lastActiveTimestamp &&
@@ -548,7 +495,6 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
           ) {
             const elapsedMs = Date.now() - state.lastActiveTimestamp;
             const elapsedSeconds = Math.floor(elapsedMs / 1000);
-
             if (elapsedSeconds > 0 && state.teamTimes) {
               const currentTime = state.teamTimes[state.activeTimer];
               if (currentTime !== null) {
@@ -560,12 +506,10 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             }
             state.lastActiveTimestamp = Date.now();
           }
-
           state.hasHydrated = true;
         }
       }
     }
   )
 );
-
 export { TEAM_ROTATIONS, PIECE_VALUES };

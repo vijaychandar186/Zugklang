@@ -3,7 +3,6 @@ export type ChessArrow = {
   endSquare: string;
   color: string;
 };
-
 export type ArrowColorKey =
   | 'userPrimary'
   | 'userSecondary'

@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -29,23 +28,19 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { StandardActionBar } from '@/features/chess/components/sidebar';
 import { StatBox } from '@/features/chess/components/common';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
-
 type TrainingMode = 'coordinates' | 'moves';
 type ColorMode = 'white' | 'black' | 'mixed';
 type GameStatus = 'setup' | 'playing' | 'results';
-
 interface AttemptResult {
   target: string;
   correct: boolean;
   responseTime: number;
 }
-
 const ALL_SQUARES: Square[] = [
   'a8',
   'b8',
@@ -112,7 +107,6 @@ const ALL_SQUARES: Square[] = [
   'g1',
   'h1'
 ];
-
 function generateRandomPiecePosition(): {
   fen: string;
   square: Square;
@@ -121,14 +115,12 @@ function generateRandomPiecePosition(): {
   const pieces = ['q', 'r', 'b', 'n', 'k'];
   const pieceType = pieces[Math.floor(Math.random() * pieces.length)];
   const square = ALL_SQUARES[Math.floor(Math.random() * ALL_SQUARES.length)];
-
   const board: string[][] = Array(8)
     .fill(null)
     .map(() => Array(8).fill(''));
   const file = square.charCodeAt(0) - 97;
   const rank = 8 - parseInt(square[1]);
   board[rank][file] = pieceType.toUpperCase();
-
   const fenRows = board.map((row) => {
     let fenRow = '';
     let emptyCount = 0;
@@ -148,16 +140,12 @@ function generateRandomPiecePosition(): {
     }
     return fenRow;
   });
-
   const fen = fenRows.join('/') + ' w - - 0 1';
-
   const chess = new Chess(fen, { skipValidation: true });
   const moves = chess.moves({ square, verbose: true });
   const validMoves = moves.map((m) => m.to as Square);
-
   return { fen, square, validMoves };
 }
-
 export function VisionView() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -167,7 +155,6 @@ export function VisionView() {
   const [colorMode, setColorMode] = useState<ColorMode>('white');
   const [showCoordinates, setShowCoordinates] = useState(true);
   const [timeLimit, setTimeLimit] = useState(30);
-
   const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>(
     'white'
   );
@@ -175,14 +162,12 @@ export function VisionView() {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [attempts, setAttempts] = useState<AttemptResult[]>([]);
   const [lastClickTime, setLastClickTime] = useState<number>(0);
-
   const [targetSquare, setTargetSquare] = useState<Square | null>(null);
   const [lastClickedSquare, setLastClickedSquare] = useState<{
     square: Square;
     correct: boolean;
   } | null>(null);
   const feedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
   const [piecePosition, setPiecePosition] = useState<{
     fen: string;
     square: Square;
@@ -190,13 +175,10 @@ export function VisionView() {
   } | null>(null);
   const [selectedMoves, setSelectedMoves] = useState<Set<Square>>(new Set());
   const [movesSubmitted, setMovesSubmitted] = useState(false);
-
   const theme = useBoardTheme();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
     if (gameStatus !== 'playing') return;
-
     timerRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -207,19 +189,16 @@ export function VisionView() {
         return prev - 1;
       });
     }, 1000);
-
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [gameStatus]);
-
   const generateNewTarget = useCallback(() => {
     const newTarget =
       ALL_SQUARES[Math.floor(Math.random() * ALL_SQUARES.length)];
     setTargetSquare(newTarget);
     setLastClickTime(Date.now());
   }, []);
-
   const generateNewPiecePosition = useCallback(() => {
     const position = generateRandomPiecePosition();
     setPiecePosition(position);
@@ -227,20 +206,17 @@ export function VisionView() {
     setMovesSubmitted(false);
     setLastClickTime(Date.now());
   }, []);
-
   const startGame = useCallback(() => {
     if (colorMode === 'mixed') {
       setBoardOrientation(Math.random() < 0.5 ? 'white' : 'black');
     } else {
       setBoardOrientation(colorMode);
     }
-
     setScore(0);
     setTimeRemaining(timeLimit);
     setAttempts([]);
     setLastClickTime(Date.now());
     setGameStatus('playing');
-
     if (trainingMode === 'coordinates') {
       generateNewTarget();
     } else {
@@ -253,7 +229,6 @@ export function VisionView() {
     generateNewTarget,
     generateNewPiecePosition
   ]);
-
   const handleSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (
@@ -262,33 +237,26 @@ export function VisionView() {
         !targetSquare
       )
         return;
-
       const now = Date.now();
       const responseTime = now - lastClickTime;
       const isCorrect = square === targetSquare;
-
       setAttempts((prev) => [
         ...prev,
         { target: targetSquare, correct: isCorrect, responseTime }
       ]);
-
       if (isCorrect) {
         setScore((prev) => prev + 1);
       }
-
       setLastClickedSquare({ square: square as Square, correct: isCorrect });
-
       if (feedbackTimeoutRef.current) {
         clearTimeout(feedbackTimeoutRef.current);
       }
       feedbackTimeoutRef.current = setTimeout(() => {
         setLastClickedSquare(null);
       }, 300);
-
       if (colorMode === 'mixed') {
         setBoardOrientation(Math.random() < 0.5 ? 'white' : 'black');
       }
-
       generateNewTarget();
     },
     [
@@ -300,7 +268,6 @@ export function VisionView() {
       generateNewTarget
     ]
   );
-
   const handleMovesSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (
@@ -310,9 +277,7 @@ export function VisionView() {
         movesSubmitted
       )
         return;
-
       if (square === piecePosition.square) return;
-
       setSelectedMoves((prev) => {
         const newSet = new Set(prev);
         if (newSet.has(square as Square)) {
@@ -325,41 +290,32 @@ export function VisionView() {
     },
     [gameStatus, trainingMode, piecePosition, movesSubmitted]
   );
-
   const submitMoves = useCallback(() => {
     if (!piecePosition || movesSubmitted) return;
-
     const now = Date.now();
     const responseTime = now - lastClickTime;
-
     setMovesSubmitted(true);
-
     const validSet = new Set(piecePosition.validMoves);
     const selectedArray = Array.from(selectedMoves);
-
     const allValidSelected = piecePosition.validMoves.every((sq) =>
       selectedMoves.has(sq)
     );
     const noInvalidSelected = selectedArray.every((sq) => validSet.has(sq));
     const isCorrect = allValidSelected && noInvalidSelected;
-
     setAttempts((prev) => [
       ...prev,
       { target: piecePosition.square, correct: isCorrect, responseTime }
     ]);
-
     if (isCorrect) {
       setScore((prev) => prev + 1);
     }
   }, [piecePosition, selectedMoves, movesSubmitted, lastClickTime]);
-
   const nextMovesRound = useCallback(() => {
     if (colorMode === 'mixed') {
       setBoardOrientation(Math.random() < 0.5 ? 'white' : 'black');
     }
     generateNewPiecePosition();
   }, [colorMode, generateNewPiecePosition]);
-
   const averageResponseTime = useMemo(() => {
     if (attempts.length === 0) return 0;
     const correctAttempts = attempts.filter((a) => a.correct);
@@ -367,13 +323,10 @@ export function VisionView() {
     const total = correctAttempts.reduce((sum, a) => sum + a.responseTime, 0);
     return Math.round(total / correctAttempts.length);
   }, [attempts]);
-
   const accuracy = useMemo(() => {
     if (attempts.length === 0) return 0;
     return Math.round((score / attempts.length) * 100);
   }, [score, attempts.length]);
-
-  // Save vision session once when results are shown
   useEffect(() => {
     if (gameStatus !== 'results') {
       savedSessionRef.current = false;
@@ -383,7 +336,6 @@ export function VisionView() {
     if (savedSessionRef.current) return;
     if (attempts.length === 0) return;
     savedSessionRef.current = true;
-
     fetch('/api/training/vision', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -407,12 +359,9 @@ export function VisionView() {
     attempts,
     averageResponseTime
   ]);
-
   const squareStyles = useMemo(() => {
     if (gameStatus !== 'playing') return {};
-
     const styles: Record<string, React.CSSProperties> = {};
-
     if (trainingMode === 'coordinates' && lastClickedSquare) {
       styles[lastClickedSquare.square] = {
         backgroundColor: lastClickedSquare.correct
@@ -420,7 +369,6 @@ export function VisionView() {
           : 'color-mix(in srgb, var(--destructive) 60%, transparent)'
       };
     }
-
     if (trainingMode === 'moves' && piecePosition) {
       selectedMoves.forEach((sq) => {
         styles[sq] = {
@@ -431,7 +379,6 @@ export function VisionView() {
             : 'color-mix(in srgb, var(--primary) 50%, transparent)'
         };
       });
-
       if (movesSubmitted) {
         piecePosition.validMoves.forEach((sq) => {
           if (!selectedMoves.has(sq)) {
@@ -442,12 +389,10 @@ export function VisionView() {
           }
         });
       }
-
       styles[piecePosition.square] = {
         backgroundColor: 'color-mix(in srgb, var(--chart-5) 50%, transparent)'
       };
     }
-
     return styles;
   }, [
     gameStatus,
@@ -457,7 +402,6 @@ export function VisionView() {
     movesSubmitted,
     lastClickedSquare
   ]);
-
   const chessboardOptions = useMemo(
     () => ({
       position:
@@ -489,7 +433,6 @@ export function VisionView() {
       handleMovesSquareClick
     ]
   );
-
   if (gameStatus === 'setup') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -588,7 +531,6 @@ export function VisionView() {
       </div>
     );
   }
-
   if (gameStatus === 'results') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -673,7 +615,6 @@ export function VisionView() {
       </div>
     );
   }
-
   return (
     <ChessboardProvider options={chessboardOptions}>
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
@@ -701,9 +642,7 @@ export function VisionView() {
               <div className='text-right'>
                 <p className='text-muted-foreground text-xs'>Time Left</p>
                 <p
-                  className={`text-2xl font-bold tabular-nums ${
-                    timeRemaining <= 10 ? 'text-destructive' : ''
-                  }`}
+                  className={`text-2xl font-bold tabular-nums ${timeRemaining <= 10 ? 'text-destructive' : ''}`}
                 >
                   {timeRemaining}s
                 </p>

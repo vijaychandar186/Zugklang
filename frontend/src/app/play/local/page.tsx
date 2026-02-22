@@ -4,13 +4,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { localModes } from '@/constants/local-modes';
-
 export const metadata: Metadata = {
   title: 'Local Play | Zugklang',
   description:
     'Choose your local game mode. Play standard chess or try variants like Fischer Random with a friend.'
 };
-
 export default function LocalPlayMenuPage() {
   return (
     <PageContainer scrollable={true}>

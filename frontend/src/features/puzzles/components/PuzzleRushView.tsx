@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -29,7 +28,6 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { Board3D } from '@/features/chess/components/Board3D';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
@@ -39,24 +37,18 @@ import { MoveHistory } from '@/features/chess/components/sidebar/MoveHistory';
 import { StandardActionBar } from '@/features/chess/components/sidebar';
 import { StatBox } from '@/features/chess/components/common';
 import { useBoardMounting } from '@/features/chess/hooks/useBoardMounting';
-
 import { type Puzzle, type PuzzleDifficulty } from '../types';
-
 import puzzlesData from '@/resources/puzzles.json';
-
 interface PuzzleRushViewProps {
   initialBoard3dEnabled?: boolean;
 }
-
 type RushMode = 'timed' | 'survival';
 type RushStatus = 'setup' | 'playing' | 'finished';
-
 type PendingPromotion = {
   from: string;
   to: string;
   color: 'white' | 'black';
 };
-
 const DIFFICULTY_LABELS: Record<PuzzleDifficulty, string> = {
   beginner: 'Beginner',
   intermediate: 'Intermediate',
@@ -64,7 +56,6 @@ const DIFFICULTY_LABELS: Record<PuzzleDifficulty, string> = {
   master: 'Master',
   elite: 'Elite'
 };
-
 const DIFFICULTY_COLORS: Record<PuzzleDifficulty, string> = {
   beginner: 'bg-[color:var(--success)]/20 [color:var(--success)]',
   intermediate: 'bg-primary/20 text-primary',
@@ -74,7 +65,6 @@ const DIFFICULTY_COLORS: Record<PuzzleDifficulty, string> = {
     'bg-[color:var(--classification-mistake)]/20 [color:var(--classification-mistake)]',
   elite: 'bg-destructive/20 text-destructive'
 };
-
 export function PuzzleRushView({
   initialBoard3dEnabled
 }: PuzzleRushViewProps = {}) {
@@ -83,19 +73,16 @@ export function PuzzleRushView({
   const savedRushRef = useRef(false);
   const [pendingPromotion, setPendingPromotion] =
     useState<PendingPromotion | null>(null);
-
   const [rushStatus, setRushStatus] = useState<RushStatus>('setup');
   const [rushMode, setRushMode] = useState<RushMode>('timed');
   const [timeLimit, setTimeLimit] = useState(3);
   const [maxMistakes, setMaxMistakes] = useState(3);
   const [difficulty, setDifficulty] = useState<PuzzleDifficulty>('beginner');
-
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [mistakes, setMistakes] = useState(0);
   const [score, setScore] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState<Puzzle | null>(null);
   const [puzzleQueue, setPuzzleQueue] = useState<Puzzle[]>([]);
-
   const [game, setGame] = useState<Chess | null>(null);
   const [currentFEN, setCurrentFEN] = useState('');
   const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>(
@@ -106,17 +93,13 @@ export function PuzzleRushView({
   const [playerTurn, setPlayerTurn] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [moves, setMoves] = useState<string[]>([]);
-
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const { shouldShow3d, theme } = useBoardMounting({ initialBoard3dEnabled });
-
   const allPuzzles = useMemo(() => {
     return (
       (puzzlesData as Record<PuzzleDifficulty, Puzzle[]>)[difficulty] || []
     );
   }, [difficulty]);
-
-  // Save rush score once when finished
   useEffect(() => {
     if (rushStatus !== 'finished') {
       savedRushRef.current = false;
@@ -125,7 +108,6 @@ export function PuzzleRushView({
     if (!session?.user?.id) return;
     if (savedRushRef.current) return;
     savedRushRef.current = true;
-
     fetch('/api/training/puzzle-rush', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -148,10 +130,8 @@ export function PuzzleRushView({
     timeLimit,
     maxMistakes
   ]);
-
   useEffect(() => {
     if (rushStatus !== 'playing' || rushMode !== 'timed') return;
-
     timerRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -162,12 +142,10 @@ export function PuzzleRushView({
         return prev - 1;
       });
     }, 1000);
-
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [rushStatus, rushMode]);
-
   useEffect(() => {
     if (
       rushStatus === 'playing' &&
@@ -177,7 +155,6 @@ export function PuzzleRushView({
       setRushStatus('finished');
     }
   }, [rushStatus, rushMode, mistakes, maxMistakes]);
-
   const shuffleArray = <T,>(array: T[]): T[] => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -186,24 +163,19 @@ export function PuzzleRushView({
     }
     return shuffled;
   };
-
   const loadNextPuzzle = useCallback(() => {
     if (puzzleQueue.length === 0) return;
-
     const [nextPuzzle, ...rest] = puzzleQueue;
     setPuzzleQueue(rest);
     setCurrentPuzzle(nextPuzzle);
-
     const puzzleMoves = nextPuzzle.Moves.split(' ');
     const newGame = new Chess(nextPuzzle.FEN);
-
     const firstMoveUci = puzzleMoves[0];
     const firstMoveResult = newGame.move({
       from: firstMoveUci.slice(0, 2),
       to: firstMoveUci.slice(2, 4),
       promotion: firstMoveUci.length > 4 ? firstMoveUci[4] : undefined
     });
-
     setGame(newGame);
     setCurrentFEN(newGame.fen());
     setSolutionMoves(puzzleMoves.slice(1));
@@ -211,33 +183,26 @@ export function PuzzleRushView({
     setPlayerTurn(true);
     setShowHint(false);
     setMoves(firstMoveResult ? [firstMoveResult.san] : []);
-
     const turn = newGame.turn();
     setBoardOrientation(turn === 'w' ? 'white' : 'black');
   }, [puzzleQueue]);
-
   const startRush = () => {
     const shuffled = shuffleArray(allPuzzles);
     setPuzzleQueue(shuffled.slice(1));
-
     setScore(0);
     setMistakes(0);
     setTimeRemaining(timeLimit * 60);
     setRushStatus('playing');
-
     const firstPuzzle = shuffled[0];
     setCurrentPuzzle(firstPuzzle);
-
     const puzzleMoves = firstPuzzle.Moves.split(' ');
     const newGame = new Chess(firstPuzzle.FEN);
-
     const firstMoveUci = puzzleMoves[0];
     const firstMoveResult = newGame.move({
       from: firstMoveUci.slice(0, 2),
       to: firstMoveUci.slice(2, 4),
       promotion: firstMoveUci.length > 4 ? firstMoveUci[4] : undefined
     });
-
     setGame(newGame);
     setCurrentFEN(newGame.fen());
     setSolutionMoves(puzzleMoves.slice(1));
@@ -245,33 +210,26 @@ export function PuzzleRushView({
     setPlayerTurn(true);
     setShowHint(false);
     setMoves(firstMoveResult ? [firstMoveResult.san] : []);
-
     const turn = newGame.turn();
     setBoardOrientation(turn === 'w' ? 'white' : 'black');
   };
-
   const handleIncorrectMove = useCallback(() => {
     setMistakes((prev) => prev + 1);
     toast.error('Incorrect!', { duration: 1000 });
-
     setTimeout(() => {
       loadNextPuzzle();
     }, 500);
   }, [loadNextPuzzle]);
-
   const makeMove = useCallback(
     (from: string, to: string, promotion?: string): boolean => {
       if (!game || !playerTurn) return false;
       if (from === to) return false;
-
       const expectedMove = solutionMoves[currentMoveIndex];
       const playerMove = `${from}${to}${promotion || ''}`;
-
       const isCorrect =
         expectedMove === playerMove ||
         expectedMove === `${from}${to}` ||
         (expectedMove.startsWith(`${from}${to}`) && promotion);
-
       if (!isCorrect) {
         const testGame = new Chess(game.fen());
         try {
@@ -283,16 +241,13 @@ export function PuzzleRushView({
         handleIncorrectMove();
         return true;
       }
-
       const gameAfterPlayerMove = new Chess(game.fen());
       const playerMoveResult = gameAfterPlayerMove.move({
         from,
         to,
         promotion
       });
-
       const nextMoveIndex = currentMoveIndex + 1;
-
       if (nextMoveIndex >= solutionMoves.length) {
         setGame(gameAfterPlayerMove);
         setCurrentFEN(gameAfterPlayerMove.fen());
@@ -302,13 +257,11 @@ export function PuzzleRushView({
         }
         setScore((prev) => prev + 1);
         toast.success('Correct!', { duration: 1000 });
-
         setTimeout(() => {
           loadNextPuzzle();
         }, 500);
         return true;
       }
-
       const opponentMoveUci = solutionMoves[nextMoveIndex];
       const gameAfterOpponentMove = new Chess(gameAfterPlayerMove.fen());
       const opponentMoveResult = gameAfterOpponentMove.move({
@@ -316,14 +269,12 @@ export function PuzzleRushView({
         to: opponentMoveUci.slice(2, 4),
         promotion: opponentMoveUci.length > 4 ? opponentMoveUci[4] : undefined
       });
-
       setGame(gameAfterPlayerMove);
       setCurrentFEN(gameAfterPlayerMove.fen());
       setPlayerTurn(false);
       if (playerMoveResult) {
         setMoves((prev) => [...prev, playerMoveResult.san]);
       }
-
       setTimeout(() => {
         setGame(gameAfterOpponentMove);
         setCurrentFEN(gameAfterOpponentMove.fen());
@@ -333,7 +284,6 @@ export function PuzzleRushView({
           setMoves((prev) => [...prev, opponentMoveResult.san]);
         }
       }, 300);
-
       return true;
     },
     [
@@ -345,7 +295,6 @@ export function PuzzleRushView({
       loadNextPuzzle
     ]
   );
-
   const isPromotionMove = useCallback(
     (from: string, to: string): boolean => {
       if (!game) return false;
@@ -360,7 +309,6 @@ export function PuzzleRushView({
     },
     [game]
   );
-
   const completePromotion = useCallback(
     (piece: PieceSymbol) => {
       if (!pendingPromotion) return;
@@ -369,11 +317,9 @@ export function PuzzleRushView({
     },
     [pendingPromotion, makeMove]
   );
-
   const cancelPromotion = useCallback(() => {
     setPendingPromotion(null);
   }, []);
-
   const handlePieceDrop = ({
     sourceSquare,
     targetSquare
@@ -385,7 +331,6 @@ export function PuzzleRushView({
     if (sourceSquare === targetSquare) return false;
     if (rushStatus !== 'playing') return false;
     if (!playerTurn) return false;
-
     if (isPromotionMove(sourceSquare, targetSquare)) {
       if (!game) return false;
       const moves = game.moves({ square: sourceSquare as 'a1', verbose: true });
@@ -400,33 +345,25 @@ export function PuzzleRushView({
         return true;
       }
     }
-
     return makeMove(sourceSquare, targetSquare);
   };
-
   const hintArrow = useMemo(() => {
     if (!showHint || rushStatus !== 'playing' || !playerTurn) return [];
-
     const nextMove = solutionMoves[currentMoveIndex];
     if (!nextMove) return [];
-
     const from = nextMove.slice(0, 2);
     const to = nextMove.slice(2, 4);
-
     return [
       { startSquare: from, endSquare: to, color: 'rgba(0, 255, 0, 0.6)' }
     ];
   }, [showHint, rushStatus, playerTurn, solutionMoves, currentMoveIndex]);
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
-
   const playerColor = boardOrientation;
   const opponentColor = playerColor === 'white' ? 'black' : 'white';
-
   if (rushStatus === 'setup') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -530,7 +467,6 @@ export function PuzzleRushView({
       </div>
     );
   }
-
   if (rushStatus === 'finished') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -575,7 +511,6 @@ export function PuzzleRushView({
       </div>
     );
   }
-
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
       <div className='flex flex-col items-center gap-2'>

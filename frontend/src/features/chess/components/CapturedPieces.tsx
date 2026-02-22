@@ -1,8 +1,6 @@
 'use client';
-
 import { CapturablePiece } from '@/features/chess/types/core';
 import { Icons, type LucideIcon } from '@/components/Icons';
-
 const PIECE_ICONS: Record<CapturablePiece, LucideIcon> = {
   p: Icons.chessPawn,
   n: Icons.chessKnight,
@@ -10,13 +8,11 @@ const PIECE_ICONS: Record<CapturablePiece, LucideIcon> = {
   r: Icons.chessRook,
   q: Icons.chessQueen
 };
-
 type CapturedPiecesDisplayProps = {
   pieces: CapturablePiece[];
   pieceColor: 'white' | 'black';
   advantage?: number;
 };
-
 export function CapturedPiecesDisplay({
   pieces,
   pieceColor,
@@ -25,7 +21,6 @@ export function CapturedPiecesDisplay({
   if (pieces.length === 0 && (!advantage || advantage <= 0)) {
     return <div className='h-5' />;
   }
-
   return (
     <div className='flex items-center gap-1'>
       <div className='flex items-center'>

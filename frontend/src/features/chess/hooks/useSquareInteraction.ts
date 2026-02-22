@@ -1,14 +1,12 @@
 import { useState, useMemo, useCallback, CSSProperties } from 'react';
 import { SquareStyles } from '@/features/chess/types/core';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
-
 type UseSquareInteractionOptions = {
   onSquareSelect?: (square: string) => void;
   onSquareDeselect?: () => void;
   additionalStyles?: SquareStyles;
   useDefaultHighlight?: boolean;
 };
-
 type UseSquareInteractionReturn = {
   selectedSquare: string | null;
   rightClickSquares: SquareStyles;
@@ -20,15 +18,12 @@ type UseSquareInteractionReturn = {
   setSelectedSquare: (square: string | null) => void;
   setRightClickSquares: React.Dispatch<React.SetStateAction<SquareStyles>>;
 };
-
 const HIGHLIGHT_SELECTED: CSSProperties = {
   backgroundColor: 'var(--highlight-selected)'
 };
-
 const HIGHLIGHT_RIGHT_CLICK: CSSProperties = {
   backgroundColor: 'var(--highlight-right-click)'
 };
-
 export function useSquareInteraction(
   options: UseSquareInteractionOptions = {}
 ): UseSquareInteractionReturn {
@@ -38,10 +33,8 @@ export function useSquareInteraction(
     additionalStyles = {},
     useDefaultHighlight = true
   } = options;
-
   const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [rightClickSquares, setRightClickSquares] = useState<SquareStyles>({});
-
   const handleSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (selectedSquare === square) {
@@ -54,7 +47,6 @@ export function useSquareInteraction(
     },
     [selectedSquare, onSquareSelect, onSquareDeselect]
   );
-
   const handleSquareRightClick = useCallback(
     ({ square }: { square: string }) => {
       setRightClickSquares((prev) => {
@@ -70,25 +62,20 @@ export function useSquareInteraction(
     },
     []
   );
-
   const clearSelection = useCallback(() => {
     setSelectedSquare(null);
   }, []);
-
   const clearRightClicks = useCallback(() => {
     setRightClickSquares({});
   }, []);
-
   const squareStyles = useMemo<SquareStyles>(() => {
     const styles: SquareStyles = {
       ...additionalStyles,
       ...rightClickSquares
     };
-
     if (selectedSquare && useDefaultHighlight) {
       styles[selectedSquare] = HIGHLIGHT_SELECTED;
     }
-
     return styles as SquareStyles;
   }, [
     selectedSquare,
@@ -96,7 +83,6 @@ export function useSquareInteraction(
     additionalStyles,
     useDefaultHighlight
   ]);
-
   return {
     selectedSquare,
     rightClickSquares,
@@ -109,22 +95,21 @@ export function useSquareInteraction(
     setRightClickSquares
   };
 }
-
 export function getMoveOptionStyles(
-  moves: Array<{ to: string; captured?: string }>,
+  moves: Array<{
+    to: string;
+    captured?: string;
+  }>,
   selectedSquare: string
 ): SquareStyles {
   const styles: SquareStyles = {};
-
   moves.forEach((move) => {
     const isCapture = !!move.captured;
     styles[move.to] = BOARD_STYLES.getMoveOptionStyle(isCapture);
   });
-
   styles[selectedSquare] = BOARD_STYLES.selectedSquare;
   return styles as SquareStyles;
 }
-
 export function useBoardTheme() {
   return useMemo(
     () => ({

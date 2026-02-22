@@ -1,27 +1,22 @@
 import { createJSONStorage } from 'zustand/middleware';
-
 const STORAGE_PREFIX = 'zugklang-game';
-
-/**
- * Helper to check if game state should be persisted (has moves or is started)
- */
 function shouldPersistGameState(state: unknown): boolean {
-  const s = state as { moves?: unknown[]; gameStarted?: boolean };
+  const s = state as {
+    moves?: unknown[];
+    gameStarted?: boolean;
+  };
   return (
     (Array.isArray(s.moves) && s.moves.length > 0) || s.gameStarted === true
   );
 }
-
 export function getStorageKey(mode: string): string {
   return `${STORAGE_PREFIX}-${mode}`;
 }
-
 export function saveToModeStorage<T>(mode: string, state: T): void {
   if (typeof localStorage === 'undefined') return;
   const key = getStorageKey(mode);
   localStorage.setItem(key, JSON.stringify({ state }));
 }
-
 export function loadFromModeStorage<T>(mode: string): T | null {
   if (typeof localStorage === 'undefined') return null;
   const key = getStorageKey(mode);
@@ -34,7 +29,6 @@ export function loadFromModeStorage<T>(mode: string): T | null {
     return null;
   }
 }
-
 export function createModeStorage(mode: string) {
   const key = getStorageKey(mode);
   return createJSONStorage(() => ({
@@ -43,7 +37,6 @@ export function createModeStorage(mode: string) {
     removeItem: () => localStorage.removeItem(key)
   }));
 }
-
 export function createMultiModeStorage<T extends string>(
   getModeFromState: (state: unknown) => T | undefined,
   defaultMode: T
@@ -61,31 +54,21 @@ export function createMultiModeStorage<T extends string>(
       try {
         const parsed = JSON.parse(value);
         const state = parsed?.state;
-
-        // Only persist if game has actual data
         if (!shouldPersistGameState(state)) {
-          // Remove key if it exists but shouldn't be persisted
           const mode = getModeFromState(state) || defaultMode;
           const key = getStorageKey(mode);
           localStorage.removeItem(key);
           return;
         }
-
         const mode = getModeFromState(state) || defaultMode;
-
-        // Never persist multiplayer state — server replays moves on rejoin,
-        // and localStorage is shared across tabs which breaks two-tab testing.
         if (mode.startsWith('multiplayer')) {
           localStorage.removeItem(getStorageKey(mode));
           return;
         }
-
         const key = getStorageKey(mode);
         localStorage.setItem(key, value);
         localStorage.setItem(`${STORAGE_PREFIX}-last-active`, mode);
-      } catch {
-        // If parsing fails, don't persist
-      }
+      } catch {}
     },
     removeItem: (): void => {}
   }));

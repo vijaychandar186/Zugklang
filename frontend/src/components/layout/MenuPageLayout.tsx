@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Icons, type LucideIcon } from '@/components/Icons';
-
 interface MenuPageLayoutProps {
   icon: LucideIcon;
   title: string;
@@ -9,7 +8,6 @@ interface MenuPageLayoutProps {
   backLabel?: string;
   children: React.ReactNode;
 }
-
 export function MenuPageLayout({
   icon: Icon,
   title,

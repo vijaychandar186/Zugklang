@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -12,9 +11,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
 export type ImportType = 'pgn' | 'fen' | 'moves';
-
 export interface ImportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -24,7 +21,6 @@ export interface ImportDialogProps {
   acceptFEN?: boolean;
   placeholder?: string;
 }
-
 export function detectInputType(input: string): ImportType {
   const fenPattern =
     /^[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+/;
@@ -43,7 +39,6 @@ export function detectInputType(input: string): ImportType {
   }
   return 'moves';
 }
-
 export function ImportDialog({
   open,
   onOpenChange,
@@ -54,30 +49,24 @@ export function ImportDialog({
   placeholder = 'Paste PGN, FEN, or moves here...'
 }: ImportDialogProps) {
   const [input, setInput] = useState('');
-
   const handleImport = useCallback(() => {
     const trimmed = input.trim();
     if (!trimmed) {
       toast.error('Please enter content to import');
       return;
     }
-
     const type = detectInputType(trimmed);
-
     if (type === 'fen' && !acceptFEN) {
       toast.error('FEN import is not supported here');
       return;
     }
-
     onImport(trimmed, type);
     setInput('');
     onOpenChange(false);
   }, [input, acceptFEN, onImport, onOpenChange]);
-
   const handleClose = useCallback(() => {
     onOpenChange(false);
   }, [onOpenChange]);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-[600px]'>

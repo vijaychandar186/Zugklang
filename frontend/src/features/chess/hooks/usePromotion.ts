@@ -1,19 +1,15 @@
 'use client';
-
 import { useState, useCallback } from 'react';
 import { Chess, type PieceSymbol, type Square } from '@/lib/chess/chess';
-
 export interface PendingPromotion {
   from: string;
   to: string;
   color: 'white' | 'black';
 }
-
 export interface UsePromotionOptions {
   fen: string;
   onMove: (from: string, to: string, promotion?: PieceSymbol) => void;
 }
-
 export interface UsePromotionReturn {
   pendingPromotion: PendingPromotion | null;
   isPromotionMove: (from: string, to: string) => boolean;
@@ -21,14 +17,12 @@ export interface UsePromotionReturn {
   completePromotion: (piece: PieceSymbol) => void;
   cancelPromotion: () => void;
 }
-
 export function usePromotion({
   fen,
   onMove
 }: UsePromotionOptions): UsePromotionReturn {
   const [pendingPromotion, setPendingPromotion] =
     useState<PendingPromotion | null>(null);
-
   const isPromotionMove = useCallback(
     (from: string, to: string): boolean => {
       try {
@@ -43,19 +37,16 @@ export function usePromotion({
     },
     [fen]
   );
-
   const handleMoveWithPromotionCheck = useCallback(
     (from: string, to: string): boolean => {
       if (!isPromotionMove(from, to)) {
         onMove(from, to);
         return false;
       }
-
       try {
         const game = new Chess(fen);
         const moves = game.moves({ square: from as Square, verbose: true });
         const isLegal = moves.some((m) => m.to === to);
-
         if (isLegal) {
           const piece = game.get(from as Square);
           setPendingPromotion({
@@ -72,7 +63,6 @@ export function usePromotion({
     },
     [fen, isPromotionMove, onMove]
   );
-
   const completePromotion = useCallback(
     (piece: PieceSymbol) => {
       if (!pendingPromotion) return;
@@ -81,11 +71,9 @@ export function usePromotion({
     },
     [pendingPromotion, onMove]
   );
-
   const cancelPromotion = useCallback(() => {
     setPendingPromotion(null);
   }, []);
-
   return {
     pendingPromotion,
     isPromotionMove,

@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chess } from '@/lib/chess/chess';
@@ -20,7 +19,6 @@ import {
   DialogTitle
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { AnalysisLines } from '@/features/analysis/components/AnalysisLines';
 import { EditorProvider, EditorChessboard } from './SpareEditorBoard';
@@ -36,12 +34,10 @@ import {
   StandardActionBar
 } from '@/features/chess/components/sidebar';
 import { ImportDialog, ExportMenu } from '@/features/chess/components/dialogs';
-
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
 import { useNavigation } from '@/features/chess/hooks/useNavigation';
 import { usePromotion } from '@/features/chess/hooks/usePromotion';
 import { useEngineInit } from '@/features/chess/hooks/useEngineInit';
-
 import {
   useAnalysisBoardState,
   useAnalysisBoardActions
@@ -57,11 +53,9 @@ import {
   useBoardEditorState,
   useBoardEditorActions
 } from '../stores/useBoardEditorStore';
-
 interface AnalysisViewProps {
   initialBoard3dEnabled?: boolean;
 }
-
 export function AnalysisView({
   initialBoard3dEnabled
 }: AnalysisViewProps = {}) {
@@ -69,7 +63,6 @@ export function AnalysisView({
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [continueDialogOpen, setContinueDialogOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState(10);
-
   const {
     currentFEN,
     moves,
@@ -78,7 +71,6 @@ export function AnalysisView({
     boardOrientation,
     playingAgainstStockfish
   } = useAnalysisBoardState();
-
   const {
     makeMove,
     loadPGN,
@@ -89,13 +81,11 @@ export function AnalysisView({
     toggleBoardOrientation,
     goToMove
   } = useAnalysisBoardActions();
-
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { setPosition, startAnalysis, endAnalysis } = useAnalysisActions();
   const { uciLines } = useEngineAnalysis();
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
   const { turn: analysisTurn } = useAnalysisPosition();
-
   const { isEditorMode, editorPosition } = useBoardEditorState();
   const {
     setEditorMode,
@@ -104,10 +94,8 @@ export function AnalysisView({
     resetBoard,
     validatePosition
   } = useBoardEditorActions();
-
   const displayedFEN = isEditorMode ? editorPosition : currentFEN;
   const gameTurn = (displayedFEN?.split(' ')[1] || 'w') as 'w' | 'b';
-
   const analysisArrows = useChessArrows({
     isAnalysisOn: isAnalysisOn && !isEditorMode,
     uciLines,
@@ -117,33 +105,27 @@ export function AnalysisView({
     gameTurn,
     analysisTurn
   });
-
   const navigation = useNavigation({
     viewingIndex,
     totalPositions: positionHistory.length,
     onIndexChange: goToMove,
     playbackEnabled: !isEditorMode
   });
-
   const promotion = usePromotion({
     fen: currentFEN,
     onMove: makeMove
   });
-
   useEngineInit();
-
   useEffect(() => {
     if (!currentFEN || isEditorMode) return;
     const turn = currentFEN.split(' ')[1] as 'w' | 'b';
     setPosition(currentFEN, turn);
   }, [currentFEN, isEditorMode, setPosition]);
-
   useEffect(() => {
     if (!isEditorMode || !editorPosition) return;
     const turn = editorPosition.split(' ')[1] as 'w' | 'b';
     setPosition(editorPosition, turn);
   }, [isEditorMode, editorPosition, setPosition]);
-
   const handleToggleAnalysis = useCallback(() => {
     if (isAnalysisOn) {
       endAnalysis();
@@ -151,7 +133,6 @@ export function AnalysisView({
       startAnalysis();
     }
   }, [isAnalysisOn, startAnalysis, endAnalysis]);
-
   const handleToggleEditorMode = useCallback(() => {
     if (isEditorMode) {
       const validation = validatePosition();
@@ -179,7 +160,6 @@ export function AnalysisView({
     setEditorPosition,
     currentFEN
   ]);
-
   const loadMoveList = useCallback(
     (input: string): boolean => {
       try {
@@ -205,7 +185,6 @@ export function AnalysisView({
     },
     [loadPGN]
   );
-
   const handleImport = useCallback(
     (input: string, type: 'pgn' | 'fen' | 'moves') => {
       if (type === 'fen') {
@@ -243,7 +222,6 @@ export function AnalysisView({
     },
     [isEditorMode, setEditorPosition, loadFEN, loadPGN, loadMoveList]
   );
-
   const handleContinueFromPosition = useCallback(
     (color: 'white' | 'black') => {
       if (isEditorMode) {
@@ -275,12 +253,10 @@ export function AnalysisView({
       selectedLevel
     ]
   );
-
   const handleStopPlaying = useCallback(() => {
     stopPlayingFromPosition();
     toast.success('Stopped playing');
   }, [stopPlayingFromPosition]);
-
   const handleNewAnalysis = useCallback(() => {
     if (isEditorMode) {
       resetBoard();
@@ -298,7 +274,6 @@ export function AnalysisView({
     playingAgainstStockfish,
     stopPlayingFromPosition
   ]);
-
   const handlePieceDrop = useCallback(
     ({
       sourceSquare,
@@ -316,12 +291,10 @@ export function AnalysisView({
     },
     [promotion, makeMove]
   );
-
   const getFEN = useCallback(
     () => (isEditorMode ? editorPosition : currentFEN),
     [isEditorMode, editorPosition, currentFEN]
   );
-
   const getPGN = useCallback(() => {
     return moves
       .reduce((acc, move, index) => {
@@ -332,23 +305,19 @@ export function AnalysisView({
       }, '')
       .trim();
   }, [moves]);
-
   const getMoves = useCallback(() => moves.join(' '), [moves]);
-
   const topPlayer = (
     <PlayerInfo
       name={boardOrientation === 'white' ? 'Black' : 'White'}
       isStockfish={false}
     />
   );
-
   const bottomPlayer = (
     <PlayerInfo
       name={boardOrientation === 'white' ? 'White' : 'Black'}
       isStockfish={false}
     />
   );
-
   const boardContent = isEditorMode ? (
     <EditorChessboard />
   ) : (
@@ -370,7 +339,6 @@ export function AnalysisView({
       )}
     </BoardContainer>
   );
-
   const sidebar = (
     <>
       {isAnalysisOn && !isEditorMode && (
@@ -530,7 +498,6 @@ export function AnalysisView({
       </SidebarPanel>
     </>
   );
-
   const dialogs = (
     <>
       <Dialog open={continueDialogOpen} onOpenChange={setContinueDialogOpen}>
@@ -586,7 +553,6 @@ export function AnalysisView({
       />
     </>
   );
-
   const layout = (
     <GameViewLayout
       topPlayerInfo={topPlayer}
@@ -596,7 +562,6 @@ export function AnalysisView({
       sidebar={sidebar}
     />
   );
-
   return (
     <>
       {isEditorMode ? (

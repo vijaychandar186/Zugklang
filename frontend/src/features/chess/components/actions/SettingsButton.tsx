@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -9,14 +8,11 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
-
 export interface SettingsButtonProps {
   show3dToggle?: boolean;
 }
-
 export function SettingsButton({ show3dToggle = true }: SettingsButtonProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
-
   return (
     <>
       <Tooltip>

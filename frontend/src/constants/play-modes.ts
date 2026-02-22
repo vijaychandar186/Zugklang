@@ -1,6 +1,5 @@
 import { Icons } from '@/components/Icons';
 import type { LucideIcon } from '@/components/Icons';
-
 export interface MenuCardItem {
   href: string;
   icon: LucideIcon;
@@ -9,7 +8,6 @@ export interface MenuCardItem {
   actionText: string;
   comingSoon?: boolean;
 }
-
 export const playModes: MenuCardItem[] = [
   {
     href: '/play/computer',

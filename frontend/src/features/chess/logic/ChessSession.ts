@@ -5,7 +5,6 @@ import {
   generateRandomChess960FEN,
   variantToRules
 } from '@/features/chess/utils/chess960';
-
 export interface ChessSessionState {
   fen: string;
   moves: string[];
@@ -19,20 +18,17 @@ export interface ChessSessionState {
   stalemate: boolean;
   insufficientMaterial: boolean;
 }
-
 export class ChessSession {
   protected game: Chess;
   protected _moves: string[] = [];
   protected _history: string[] = [];
   protected _variant: ChessVariant = 'standard';
-
   constructor(fen: string = STARTING_FEN, variant: ChessVariant = 'standard') {
     this._variant = variant;
     this.game = new Chess(fen, variantToRules(variant));
     this._history = [fen];
     this._moves = [];
   }
-
   get state(): ChessSessionState {
     return {
       fen: this.game.fen(),
@@ -48,23 +44,18 @@ export class ChessSession {
       insufficientMaterial: this.game.isInsufficientMaterial()
     };
   }
-
   get instance(): Chess {
     return this.game;
   }
-
   get moves(): string[] {
     return this._moves;
   }
-
   get history(): string[] {
     return this._history;
   }
-
   get fen(): string {
     return this.game.fen();
   }
-
   makeMove(from: string, to: string, promotion?: string): Move | null {
     try {
       const move = this.game.move({ from, to, promotion });
@@ -78,7 +69,6 @@ export class ChessSession {
     }
     return null;
   }
-
   addMove(moveSan: string, fen: string): void {
     this._moves.push(moveSan);
     this._history.push(fen);
@@ -86,7 +76,6 @@ export class ChessSession {
       this.game.load(fen);
     } catch {}
   }
-
   reset(variant: ChessVariant = this._variant): void {
     this._variant = variant;
     let fen = STARTING_FEN;
@@ -97,7 +86,6 @@ export class ChessSession {
     this._history = [fen];
     this._moves = [];
   }
-
   loadFen(fen: string): boolean {
     const success = this.game.load(fen);
     if (success) {
@@ -106,7 +94,6 @@ export class ChessSession {
     }
     return success;
   }
-
   loadPgn(pgn: string): boolean {
     const success = this.game.loadPgn(pgn);
     if (success) {
@@ -114,7 +101,6 @@ export class ChessSession {
     }
     return success;
   }
-
   private getGameResult(): string | null {
     if (this.game.isCheckmate())
       return this.game.turn() === 'w' ? 'Black wins' : 'White wins';

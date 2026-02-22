@@ -1,5 +1,4 @@
 'use client';
-
 import { useCallback, type CSSProperties } from 'react';
 import type { PieceSymbol } from '@/lib/chess/chess';
 import { UnifiedChessBoard as Board } from '../Board';
@@ -8,7 +7,6 @@ import { PromotionDialog } from '../PromotionDialog';
 import { useBoardMounting } from '../../hooks/useBoardMounting';
 import { usePromotion, type PendingPromotion } from '../../hooks/usePromotion';
 import type { ChessArrow } from '../../types/visualization';
-
 export interface UnifiedBoardWithPromotionProps {
   position: string;
   boardOrientation: 'white' | 'black';
@@ -33,7 +31,6 @@ export interface UnifiedBoardWithPromotionProps {
   onPromotionSelect?: (piece: PieceSymbol) => void;
   onPromotionCancel?: () => void;
 }
-
 export function UnifiedBoardWithPromotion({
   position,
   boardOrientation,
@@ -52,7 +49,6 @@ export function UnifiedBoardWithPromotion({
   onPromotionCancel: externalOnPromotionCancel
 }: UnifiedBoardWithPromotionProps) {
   const { shouldShow3d, theme } = useBoardMounting({ initialBoard3dEnabled });
-
   const internalPromotion = usePromotion({
     fen: position,
     onMove: (from, to, promotion) => {
@@ -61,17 +57,14 @@ export function UnifiedBoardWithPromotion({
       }
     }
   });
-
   const pendingPromotion =
     externalPendingPromotion !== undefined
       ? externalPendingPromotion
       : internalPromotion.pendingPromotion;
-
   const handlePromotionSelect =
     externalOnPromotionSelect || internalPromotion.completePromotion;
   const handlePromotionCancel =
     externalOnPromotionCancel || internalPromotion.cancelPromotion;
-
   const handlePieceDrop = useCallback(
     (args: { sourceSquare: string; targetSquare: string | null }) => {
       if (
@@ -92,7 +85,6 @@ export function UnifiedBoardWithPromotion({
     },
     [enablePromotion, externalPendingPromotion, internalPromotion, onPieceDrop]
   );
-
   const boardProps = {
     position,
     boardOrientation,
@@ -104,7 +96,6 @@ export function UnifiedBoardWithPromotion({
     squareStyles,
     ...(animationDuration !== undefined && { animationDuration })
   };
-
   return (
     <div className='relative'>
       {shouldShow3d ? (

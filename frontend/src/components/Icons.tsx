@@ -35,6 +35,7 @@ import {
   Eye,
   EyeOff,
   Brain,
+  BrainCog,
   Edit,
   Trash2,
   Crown,
@@ -89,7 +90,6 @@ import {
   type LucideIcon,
   type LucideProps
 } from 'lucide-react';
-
 export const Icons = {
   chessPawn: ChessPawn,
   chessKnight: ChessKnight,
@@ -97,14 +97,12 @@ export const Icons = {
   chessRook: ChessRook,
   chessQueen: ChessQueen,
   chessKing: Crown,
-
   chevronsLeft: ChevronsLeft,
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   chevronsRight: ChevronsRight,
   chevronFirst: ChevronFirst,
   chevronLast: ChevronLast,
-
   copy: Copy,
   check: Check,
   settings: Settings,
@@ -129,25 +127,20 @@ export const Icons = {
   rotate: RotateCw,
   wrench: Wrench,
   practice: BicepsFlexed,
-
   player: User,
   stockfish: Bot,
-
   sun: Sun,
   moon: Moon,
   system: Monitor,
   abort: Ban,
-
   analyze: Eye,
   analyzeOff: EyeOff,
   engine: Brain,
-
+  brainCog: BrainCog,
   volumeOn: Volume2,
   volumeOff: VolumeX,
-
   fullscreen: Maximize2,
   exitFullscreen: Minimize2,
-
   arrowUpDown: ArrowUpDown,
   arrowUp: ArrowUp,
   arrowDown: ArrowDown,
@@ -188,7 +181,6 @@ export const Icons = {
   signalHigh: SignalHigh,
   signalMedium: SignalMedium,
   signalLow: SignalLow,
-
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'
@@ -224,5 +216,4 @@ export const Icons = {
     </svg>
   )
 } as const;
-
 export type { LucideIcon };

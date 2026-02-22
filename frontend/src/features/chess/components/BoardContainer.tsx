@@ -1,24 +1,19 @@
 'use client';
-
 import { ReactNode } from 'react';
 import { EvaluationBarConnected as EvaluationBar } from '@/features/analysis/components/EvaluationBarConnected';
 import { useAnalysisState } from '@/features/chess/stores/useAnalysisStore';
-
 type BoardContainerProps = {
   children: ReactNode;
   showEvaluation?: boolean;
   className?: string;
 };
-
 export function BoardContainer({
   children,
   showEvaluation = true,
   className
 }: BoardContainerProps) {
   const { isAnalysisOn } = useAnalysisState();
-
   const shouldShowEval = showEvaluation && isAnalysisOn;
-
   return (
     <div
       className={`flex w-full items-stretch justify-center gap-1 sm:gap-2 ${className ?? ''}`}

@@ -1,5 +1,4 @@
 'use client';
-
 import { memo, useCallback } from 'react';
 import Image from 'next/image';
 import type { Position } from '@/features/game-review/types';
@@ -8,13 +7,11 @@ import {
   MoveHistoryBase,
   MoveData
 } from '@/features/chess/components/sidebar/MoveHistoryBase';
-
 type ReviewMoveHistoryProps = {
   positions: Position[];
   viewingIndex: number;
   onMoveClick: (index: number) => void;
 };
-
 export const ReviewMoveHistory = memo(function ReviewMoveHistory({
   positions,
   viewingIndex,
@@ -27,7 +24,6 @@ export const ReviewMoveHistory = memo(function ReviewMoveHistory({
       classification: position.classification
     };
   }, []);
-
   const getBlackMove = useCallback(
     (items: Position[], whiteIndex: number): MoveData | null => {
       const blackPosition = items[whiteIndex + 1];
@@ -39,7 +35,6 @@ export const ReviewMoveHistory = memo(function ReviewMoveHistory({
     },
     []
   );
-
   const renderMoveContent = useCallback(
     (move: MoveData) => (
       <>
@@ -57,7 +52,6 @@ export const ReviewMoveHistory = memo(function ReviewMoveHistory({
     ),
     []
   );
-
   return (
     <MoveHistoryBase
       items={positions}

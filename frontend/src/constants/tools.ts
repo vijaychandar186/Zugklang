@@ -1,6 +1,5 @@
 import { Icons } from '@/components/Icons';
 import type { MenuCardItem } from './play-modes';
-
 export const tools: MenuCardItem[] = [
   {
     href: '/tools/analysis',

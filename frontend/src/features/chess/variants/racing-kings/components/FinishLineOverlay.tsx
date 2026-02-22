@@ -1,14 +1,11 @@
 'use client';
-
 interface FinishLineOverlayProps {
   boardOrientation: 'white' | 'black';
 }
-
 export function FinishLineOverlay({
   boardOrientation
 }: FinishLineOverlayProps) {
   const finishLineAtTop = boardOrientation === 'white';
-
   return (
     <div
       className='pointer-events-none absolute right-0 left-0'

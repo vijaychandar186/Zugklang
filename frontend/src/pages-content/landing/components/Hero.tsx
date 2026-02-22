@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { Icons } from '@/components/Icons';
@@ -7,7 +6,6 @@ import {
   HERO_TEXT,
   HERO_BACKGROUND_CLIP_PATH
 } from '@/pages-content/landing/content/hero';
-
 export function Hero() {
   return (
     <section className='relative isolate overflow-hidden py-16 md:py-32'>

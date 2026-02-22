@@ -4,7 +4,6 @@ import {
   getCapturedPiecesFromFEN,
   getMaterialAdvantage
 } from '@/features/chess/utils/fen-logic';
-
 export function useGameView() {
   const gameId = useChessStore((s) => s.gameId);
   const gameType = useChessStore((s) => s.gameType);
@@ -17,44 +16,34 @@ export function useGameView() {
   const whiteTime = useChessStore((s) => s.whiteTime);
   const blackTime = useChessStore((s) => s.blackTime);
   const activeTimer = useChessStore((s) => s.activeTimer);
-
   const isLocalGame = gameType === 'local';
-
   const hasTimer = timeControl.mode !== 'unlimited';
-
   const { captured, materialAdvantage } = useMemo(() => {
     const captured = getCapturedPiecesFromFEN(currentFEN);
     const materialAdvantage = getMaterialAdvantage(captured);
     return { captured, materialAdvantage };
   }, [currentFEN]);
-
   const boardOrientation = boardFlipped
     ? playAs === 'white'
       ? 'black'
       : 'white'
     : playAs;
-
   const topColor: 'white' | 'black' =
     boardOrientation === 'white' ? 'black' : 'white';
   const bottomColor: 'white' | 'black' = boardOrientation;
-
   const isTopStockfish = isLocalGame ? false : topColor !== playAs;
   const isBottomStockfish = isLocalGame ? false : bottomColor !== playAs;
-
   const topCaptured = topColor === 'white' ? captured.white : captured.black;
   const topAdvantage =
     topColor === 'white' ? materialAdvantage : -materialAdvantage;
-
   const bottomCaptured =
     bottomColor === 'white' ? captured.white : captured.black;
   const bottomAdvantage =
     bottomColor === 'white' ? materialAdvantage : -materialAdvantage;
-
   const topTime = topColor === 'white' ? whiteTime : blackTime;
   const bottomTime = bottomColor === 'white' ? whiteTime : blackTime;
   const topTimerActive = activeTimer === topColor;
   const bottomTimerActive = activeTimer === bottomColor;
-
   return {
     gameId,
     gameType,

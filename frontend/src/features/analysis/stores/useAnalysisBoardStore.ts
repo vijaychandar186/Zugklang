@@ -10,9 +10,7 @@ import {
   createBoardOrientationSlice,
   BoardOrientationSlice
 } from '@/features/chess/stores/slices';
-
 import { ChessSession } from '@/features/chess/logic/ChessSession';
-
 interface AnalysisBoardState extends NavigationSlice, BoardOrientationSlice {
   session: ChessSession;
   moves: string[];
@@ -20,7 +18,6 @@ interface AnalysisBoardState extends NavigationSlice, BoardOrientationSlice {
   playerColor: 'white' | 'black';
   stockfishLevel: number;
 }
-
 interface AnalysisBoardActions {
   makeMove: (from: string, to: string, promotion?: string) => Move | null;
   addMove: (move: string, fen: string) => void;
@@ -30,14 +27,11 @@ interface AnalysisBoardActions {
   startPlayingFromPosition: (color: 'white' | 'black', level?: number) => void;
   stopPlayingFromPosition: () => void;
 }
-
 type AnalysisBoardStore = AnalysisBoardState & AnalysisBoardActions;
-
 export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
   persist(
     (set, get) => {
       const session = new ChessSession();
-
       return {
         session,
         currentFEN: session.fen,
@@ -49,26 +43,20 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
         playingAgainstStockfish: false,
         playerColor: 'white',
         stockfishLevel: 10,
-
         ...createNavigationSlice(set, get),
         ...createBoardOrientationSlice(set),
-
         makeMove: (from, to, promotion = 'q') => {
           const { session } = get();
           const move = session.makeMove(from, to, promotion);
-
           if (!move) return null;
-
           set((state) => ({
             currentFEN: session.fen,
             moves: [...session.moves],
             positionHistory: [...state.positionHistory, session.fen],
             viewingIndex: state.positionHistory.length
           }));
-
           return move;
         },
-
         addMove: (move, fen) => {
           const { session } = get();
           session.addMove(move, fen);
@@ -79,11 +67,9 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
             currentFEN: fen
           }));
         },
-
         loadPGN: (pgn) => {
           const { session } = get();
           const success = session.loadPgn(pgn);
-
           if (success) {
             set({
               currentFEN: session.fen,
@@ -98,11 +84,9 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
           }
           return false;
         },
-
         loadFEN: (fen) => {
           const { session } = get();
           const success = session.loadFen(fen);
-
           if (success) {
             set({
               currentFEN: fen,
@@ -115,7 +99,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
           }
           return false;
         },
-
         resetToStarting: () => {
           const { session } = get();
           session.reset();
@@ -128,7 +111,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
             boardOrientation: 'white'
           });
         },
-
         startPlayingFromPosition: (color, level = 10) => {
           set({
             playingAgainstStockfish: true,
@@ -137,7 +119,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
             boardOrientation: color
           });
         },
-
         stopPlayingFromPosition: () => {
           set({
             playingAgainstStockfish: false
@@ -170,7 +151,6 @@ export const useAnalysisBoardStore = create<AnalysisBoardStore>()(
     }
   )
 );
-
 export const useAnalysisBoardState = () =>
   useAnalysisBoardStore(
     useShallow((s) => ({
@@ -185,7 +165,6 @@ export const useAnalysisBoardState = () =>
       stockfishLevel: s.stockfishLevel
     }))
   );
-
 export const useAnalysisBoardActions = () =>
   useAnalysisBoardStore(
     useShallow((s) => ({

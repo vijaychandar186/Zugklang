@@ -1,5 +1,4 @@
 'use client';
-
 import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -51,7 +50,6 @@ import { CrazyhousePocket } from '@/features/chess/components/CrazyhousePocket';
 import { useState, useEffect } from 'react';
 import type { PieceSymbol } from '@/lib/chess/chess';
 import type { MultiplayerStatus } from '../types';
-
 interface MultiplayerSidebarProps {
   status: MultiplayerStatus;
   drawOffered: boolean;
@@ -68,7 +66,6 @@ interface MultiplayerSidebarProps {
   onFindNewGame: () => void;
   ratingDelta?: number | null;
 }
-
 export function MultiplayerSidebar({
   status,
   drawOffered,
@@ -86,7 +83,6 @@ export function MultiplayerSidebar({
   ratingDelta
 }: MultiplayerSidebarProps) {
   const router = useRouter();
-
   const {
     moves,
     moveDepths,
@@ -101,7 +97,6 @@ export function MultiplayerSidebar({
     variant,
     selectedDropPiece
   } = useChessState();
-
   const {
     goToStart,
     goToEnd,
@@ -113,33 +108,25 @@ export function MultiplayerSidebar({
     setGameResult,
     setSelectedDropPiece
   } = useChessActions();
-
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { startAnalysis, endAnalysis } = useAnalysisActions();
-
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [rematchSent, setRematchSent] = useState(false);
-
-  // Reset "Rematch Sent" feedback when the offer is declined or a new game starts
   useEffect(() => {
     if (rematchDeclined) setRematchSent(false);
   }, [rematchDeclined]);
-
   useEffect(() => {
     if (!gameOver) setRematchSent(false);
   }, [gameOver]);
-
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
   const canAbort = moves.length < 4;
-
   const { copy, isCopied } = useClipboard();
   const { isPlaying, togglePlay } = usePlayback({
     currentIndex: viewingIndex,
     totalItems: positionHistory.length,
     onNext: goToNext
   });
-
   const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
   const handleCopyPGN = () =>
     copy(
@@ -150,51 +137,41 @@ export function MultiplayerSidebar({
     const fen = positionHistory[viewingIndex] || positionHistory[0];
     copy(fen, 'fen');
   };
-
   const handleResign = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('You resigned');
     setGameOver(true);
     onResign();
   };
-
   const handleAbort = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Game Aborted');
     setGameOver(true);
     onAbort();
   };
-
   const handleAcceptDraw = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Draw by agreement');
     setGameOver(true);
     onAcceptDraw();
   };
-
   const handleToggleAnalysis = () => {
     if (isAnalysisOn) endAnalysis();
     else startAnalysis();
   };
-
   const isCrazyhouse = variant === 'crazyhouse';
   const isGameActive = gameStarted && !gameOver;
-
   const emptyPocket = { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 };
   const whitePocket = isCrazyhouse ? game.getPocket('w') : emptyPocket;
   const blackPocket = isCrazyhouse ? game.getPocket('b') : emptyPocket;
-
   const handlePocketSelect = (role: PieceSymbol) => {
     if (!isGameActive) return;
     setSelectedDropPiece(selectedDropPiece === role ? null : role);
   };
-
   const isPlaying_ = status === 'playing' || (gameStarted && !gameOver);
-
   return (
     <>
       <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
-        {/* Header */}
         <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
           <h3 className='font-semibold'>Moves</h3>
           <div className='flex items-center gap-1'>
@@ -283,7 +260,6 @@ export function MultiplayerSidebar({
           </div>
         </div>
 
-        {/* Draw offer banner */}
         {drawOffered && !gameOver && (
           <div className='shrink-0 space-y-2 border-b bg-blue-500/10 px-4 py-3'>
             <p className='text-center text-sm font-medium text-blue-600 dark:text-blue-400'>
@@ -309,7 +285,6 @@ export function MultiplayerSidebar({
           </div>
         )}
 
-        {/* Crazyhouse pockets */}
         {isCrazyhouse && (
           <div className='flex shrink-0 flex-col gap-2 border-b px-4 py-2'>
             <div className='flex items-center justify-between'>
@@ -351,7 +326,6 @@ export function MultiplayerSidebar({
           </div>
         )}
 
-        {/* Move list */}
         <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
           <div className='px-4 py-2'>
             <MoveHistory
@@ -364,7 +338,6 @@ export function MultiplayerSidebar({
           </div>
         </ScrollArea>
 
-        {/* Navigation */}
         <NavigationControls
           viewingIndex={viewingIndex}
           totalPositions={positionHistory.length}
@@ -378,7 +351,6 @@ export function MultiplayerSidebar({
           onGoToNext={goToNext}
         />
 
-        {/* Action bar */}
         <div className='bg-muted/50 space-y-2 border-t p-2'>
           {(gameOver || !gameStarted) && (
             <GameOverPanel
@@ -388,7 +360,6 @@ export function MultiplayerSidebar({
             />
           )}
 
-          {/* Rematch offer received */}
           {gameOver && rematchOffered && (
             <div className='space-y-2 rounded-md border bg-purple-500/10 px-3 py-2'>
               <p className='text-center text-sm font-medium text-purple-600 dark:text-purple-400'>
@@ -414,7 +385,6 @@ export function MultiplayerSidebar({
             </div>
           )}
 
-          {/* We offered rematch, waiting */}
           {gameOver &&
             !rematchOffered &&
             !rematchDeclined &&
@@ -434,7 +404,6 @@ export function MultiplayerSidebar({
               </Button>
             )}
 
-          {/* Opponent declined */}
           {gameOver && rematchDeclined && (
             <p className='text-muted-foreground text-center text-xs'>
               Opponent declined the rematch
@@ -485,7 +454,6 @@ export function MultiplayerSidebar({
             </Tooltip>
 
             <div className='ml-auto flex items-center gap-1'>
-              {/* Draw offer */}
               <AlertDialog>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -521,7 +489,6 @@ export function MultiplayerSidebar({
                 </AlertDialogContent>
               </AlertDialog>
 
-              {/* Resign / Abort */}
               <AlertDialog>
                 <Tooltip>
                   <TooltipTrigger asChild>

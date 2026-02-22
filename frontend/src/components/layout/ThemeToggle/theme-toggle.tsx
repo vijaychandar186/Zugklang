@@ -1,29 +1,22 @@
 'use client';
-
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
-
 export default function ThemeToggle() {
   const { theme, setTheme } = useTheme();
-
   const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {
     const x = e.clientX;
     const y = e.clientY;
-
     if (!document.startViewTransition) {
       setTheme(theme === 'dark' ? 'light' : 'dark');
       return;
     }
-
     document.documentElement.style.setProperty('--x', `${x}px`);
     document.documentElement.style.setProperty('--y', `${y}px`);
-
     document.startViewTransition(() => {
       setTheme(theme === 'dark' ? 'light' : 'dark');
     });
   };
-
   return (
     <Button
       variant='ghost'

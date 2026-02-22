@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { ChessBoard } from '@/features/chess/components/ChessBoard';
@@ -20,17 +19,14 @@ import {
   useAnalysisState,
   useAnalysisActions
 } from '@/features/chess/stores/useAnalysisStore';
-
 import { GameType } from '@/features/chess/stores/useChessStore';
 import { ChessVariant } from '@/features/chess/utils/chess960';
 import { getEngineName } from '@/features/chess/config/variants';
-
 interface UserProfile {
   name: string | null;
   image: string | null;
   rating: number | null;
 }
-
 interface GameViewProps {
   serverOrientation?: 'white' | 'black';
   mode?: ChessMode;
@@ -38,7 +34,6 @@ interface GameViewProps {
   initialBoard3dEnabled?: boolean;
   variant?: ChessVariant;
 }
-
 export function GameView({
   serverOrientation,
   mode = 'play',
@@ -65,14 +60,10 @@ export function GameView({
     bottomTimerActive,
     currentFEN
   } = useGameView();
-
   const storeVariant = useChessStore((s) => s.variant);
   const playAs = useChessStore((s) => s.playAs);
-
   const { data: session } = useSession();
   const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
-
-  // Fetch the current user's name, image, and rating for this variant
   useEffect(() => {
     if (!session?.user?.id || isLocalGame) return;
     fetch(`/api/user/rating?variant=${storeVariant}`)
@@ -80,7 +71,6 @@ export function GameView({
       .then((data) => data && setMyProfile(data))
       .catch(() => {});
   }, [session?.user?.id, storeVariant, isLocalGame]);
-
   const getPlayerName = (color: 'white' | 'black', isStockfish: boolean) => {
     if (isLocalGame) {
       return color === 'white' ? 'White' : 'Black';
@@ -90,51 +80,40 @@ export function GameView({
     }
     return myProfile?.name ?? session?.user?.name ?? 'Player';
   };
-
   const getPlayerImage = (color: 'white' | 'black', isStockfish: boolean) => {
     if (isLocalGame || isStockfish) return null;
     return color === playAs
       ? (myProfile?.image ?? session?.user?.image ?? null)
       : null;
   };
-
   const getPlayerRating = (color: 'white' | 'black', isStockfish: boolean) => {
     if (isLocalGame || isStockfish) return null;
     return color === playAs ? (myProfile?.rating ?? null) : null;
   };
-
   const setMode = useChessStore((s) => s.setMode);
   const { isAnalysisOn } = useAnalysisState();
   const { initializeEngine, setPosition, cleanup } = useAnalysisActions();
-
   const isPlayMode = mode === 'play';
-
   const setGameType = useChessStore((s) => s.setGameType);
   const setVariant = useChessStore((s) => s.setVariant);
-
   useEffect(() => {
     setMode(mode);
   }, [mode, setMode]);
-
   useEffect(() => {
     setGameType(initialGameType);
     setVariant(variant);
   }, [initialGameType, setGameType, variant, setVariant]);
-
   useGameTimer();
   useGameSave(initialGameType);
-
   useEffect(() => {
     initializeEngine();
     return () => cleanup();
   }, [initializeEngine, cleanup]);
-
   useEffect(() => {
     if (!currentFEN) return;
     const fenTurn = currentFEN.split(' ')[1] as 'w' | 'b';
     setPosition(currentFEN, fenTurn);
   }, [currentFEN, setPosition]);
-
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
       <div className='flex flex-col items-center gap-2'>

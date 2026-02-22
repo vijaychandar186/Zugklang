@@ -1,5 +1,4 @@
 'use client';
-
 import { memo, useCallback } from 'react';
 import { MoveHistoryBase, MoveData } from './MoveHistoryBase';
 import {
@@ -8,7 +7,6 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-
 type MoveHistoryProps = {
   moves: string[];
   moveDepths?: (number | null)[];
@@ -16,7 +14,6 @@ type MoveHistoryProps = {
   onMoveClick: (index: number) => void;
   showDepthTooltips?: boolean;
 };
-
 export const MoveHistory = memo(function MoveHistory({
   moves,
   moveDepths,
@@ -28,7 +25,6 @@ export const MoveHistory = memo(function MoveHistory({
     (move: string): MoveData => ({ san: move }),
     []
   );
-
   const getBlackMove = useCallback(
     (items: string[], whiteIndex: number): MoveData | null => {
       const blackMove = items[whiteIndex + 1];
@@ -36,17 +32,13 @@ export const MoveHistory = memo(function MoveHistory({
     },
     []
   );
-
   const renderMoveContent = useCallback(
     (move: MoveData) => {
       const moveIndex = moves.indexOf(move.san);
       const depth = moveDepths?.[moveIndex];
-
-      // Only show tooltip if we have depth data and showDepthTooltips is enabled
       if (!showDepthTooltips || depth === undefined || depth === null) {
         return <span>{move.san}</span>;
       }
-
       return (
         <TooltipProvider delayDuration={300}>
           <Tooltip>
@@ -62,7 +54,6 @@ export const MoveHistory = memo(function MoveHistory({
     },
     [moves, moveDepths, showDepthTooltips]
   );
-
   return (
     <MoveHistoryBase
       items={moves}

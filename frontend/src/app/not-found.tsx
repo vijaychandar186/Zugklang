@@ -1,11 +1,8 @@
 'use client';
-
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-
 export default function NotFound() {
   const router = useRouter();
-
   return (
     <div className='absolute inset-0 flex items-center justify-center'>
       <div className='flex max-w-xl flex-col items-center justify-center text-center'>

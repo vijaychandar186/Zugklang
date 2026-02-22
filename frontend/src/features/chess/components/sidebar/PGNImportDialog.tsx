@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { Chess } from '@/lib/chess/chess';
 import { useAnalysisBoardActions } from '@/features/analysis/stores/useAnalysisBoardStore';
@@ -15,12 +14,10 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-
 export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [pgnInput, setPgnInput] = useState('');
   const { loadPGN, loadFEN } = useAnalysisBoardActions();
-
   const detectInputType = (input: string): 'pgn' | 'fen' | 'moves' => {
     const fenPattern =
       /^[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+\/[rnbqkpRNBQKP1-8]+/;
@@ -39,7 +36,6 @@ export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
     }
     return 'moves';
   };
-
   const loadMoveList = (input: string): boolean => {
     try {
       const board = new Chess();
@@ -48,34 +44,27 @@ export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
         .replace(/\s+/g, ' ')
         .replace(/1-0|0-1|1\/2-1\/2|\*/g, '')
         .trim();
-
       const moves = cleaned.split(' ').filter((m) => m.length > 0);
       let moveCount = 0;
-
       for (const moveSAN of moves) {
         try {
           const move = board.move(moveSAN);
           if (move) moveCount++;
         } catch {}
       }
-
       if (moveCount === 0) return false;
-
       return loadPGN(board.pgn());
     } catch {
       return false;
     }
   };
-
   const handleImport = () => {
     const trimmed = pgnInput.trim();
     if (!trimmed) {
       toast.error('Please enter a PGN, FEN, or moves');
       return;
     }
-
     const inputType = detectInputType(trimmed);
-
     if (inputType === 'fen') {
       const success = loadFEN(trimmed);
       if (success) {
@@ -105,7 +94,6 @@ export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
       }
     }
   };
-
   const samplePGN = `[Event "Sample Game"]
 [Site "?"]
 [Date "2024.01.01"]
@@ -115,10 +103,8 @@ export function PGNImportDialog({ children }: { children?: React.ReactNode }) {
 [Result "1-0"]
 
 1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7 1-0`;
-
   const sampleFEN =
     'rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1';
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>

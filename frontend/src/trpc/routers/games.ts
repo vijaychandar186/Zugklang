@@ -4,7 +4,6 @@ import { updateRatings, type GlickoPlayer } from '@/lib/ratings/glicko2';
 import { getTimeCategory } from '@/lib/ratings/timeCategory';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-
 const saveGameInputSchema = z.object({
   roomId: z.string().optional(),
   moves: z.array(z.string()),
@@ -21,7 +20,6 @@ const saveGameInputSchema = z.object({
   }),
   startingFen: z.string()
 });
-
 function toPgnResult(
   result: string,
   reason: string
@@ -44,11 +42,21 @@ function toPgnResult(
     return '1/2-1/2';
   return '*';
 }
-
+function isAbortedGame(result: string, reason: string): boolean {
+  const normalizedReason = reason.trim().toLowerCase();
+  if (normalizedReason === 'abort' || normalizedReason.includes('aborted'))
+    return true;
+  const normalizedResult = result.trim().toLowerCase();
+  return normalizedResult.includes('abort');
+}
 async function getOrCreateRating(
   userId: string,
   category: string
-): Promise<GlickoPlayer & { id: string }> {
+): Promise<
+  GlickoPlayer & {
+    id: string;
+  }
+> {
   const record = await prisma.rating.upsert({
     where: { userId_category: { userId, category } },
     update: {},
@@ -61,9 +69,7 @@ async function getOrCreateRating(
     sigma: record.sigma
   };
 }
-
 export const gamesRouter = router({
-  /** Save a completed game and update ratings if applicable */
   saveGame: privateProcedure
     .input(saveGameInputSchema)
     .mutation(async ({ ctx, input }) => {
@@ -80,19 +86,24 @@ export const gamesRouter = router({
         timeControl,
         startingFen
       } = input;
-
+      if (isAbortedGame(result, resultReason)) {
+        return {
+          skipped: true,
+          reason: 'abort',
+          gameId: null,
+          whiteRatingDelta: null,
+          blackRatingDelta: null
+        };
+      }
       const whiteUserId =
         myColor === 'white' ? userId : (opponentUserId ?? null);
       const blackUserId =
         myColor === 'black' ? userId : (opponentUserId ?? null);
-
       const pgnResult = toPgnResult(result, resultReason);
-
       const category =
         variant === 'standard' && timeControl.mode === 'timed'
           ? getTimeCategory(timeControl.minutes, timeControl.increment)
           : null;
-
       const isRated =
         category !== null &&
         pgnResult !== '*' &&
@@ -100,30 +111,24 @@ export const gamesRouter = router({
         gameType === 'multiplayer' &&
         whiteUserId &&
         blackUserId;
-
       let whitePregameRating: number | null = null;
       let blackPregameRating: number | null = null;
       let whiteRatingDelta: number | null = null;
       let blackRatingDelta: number | null = null;
-
       if (isRated && category) {
         const [whiteRating, blackRating] = await Promise.all([
           getOrCreateRating(whiteUserId!, category),
           getOrCreateRating(blackUserId!, category)
         ]);
-
         whitePregameRating = whiteRating.rating;
         blackPregameRating = blackRating.rating;
-
         let outcome: 1 | 0 | 0.5;
         if (pgnResult === '1-0') outcome = 1;
         else if (pgnResult === '0-1') outcome = 0;
         else outcome = 0.5;
-
         const updated = updateRatings(whiteRating, blackRating, outcome);
         whiteRatingDelta = updated.whiteDelta;
         blackRatingDelta = updated.blackDelta;
-
         await prisma.$transaction([
           prisma.rating.update({
             where: { userId_category: { userId: whiteUserId!, category } },
@@ -145,7 +150,6 @@ export const gamesRouter = router({
           })
         ]);
       }
-
       try {
         const game = await prisma.game.create({
           data: {
@@ -168,12 +172,15 @@ export const gamesRouter = router({
         });
         return { gameId: game.id, whiteRatingDelta, blackRatingDelta };
       } catch (err: unknown) {
-        // P2002 = unique constraint violation - game already saved by opponent
         if (
           typeof err === 'object' &&
           err !== null &&
           'code' in err &&
-          (err as { code: string }).code === 'P2002'
+          (
+            err as {
+              code: string;
+            }
+          ).code === 'P2002'
         ) {
           return {
             duplicate: true,
@@ -188,8 +195,6 @@ export const gamesRouter = router({
         });
       }
     }),
-
-  /** Get the signed-in user's games with pagination */
   getMyGames: privateProcedure
     .input(
       z.object({
@@ -201,11 +206,9 @@ export const gamesRouter = router({
       const { page, pageSize } = input;
       const skip = (page - 1) * pageSize;
       const userId = ctx.userId;
-
       const where = {
         OR: [{ whiteUserId: userId }, { blackUserId: userId }]
       } as const;
-
       const [games, totalCount] = await Promise.all([
         prisma.game.findMany({
           where,
@@ -232,7 +235,6 @@ export const gamesRouter = router({
         }),
         prisma.game.count({ where })
       ]);
-
       return {
         games,
         totalCount,

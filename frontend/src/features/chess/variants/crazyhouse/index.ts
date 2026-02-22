@@ -1,11 +1,8 @@
 import { variantRegistry, VariantModule } from '../shared/VariantRegistry';
 import { CrazyhousePocket } from './components/CrazyhousePocket';
 import { useCrazyhousePocket } from './hooks/useCrazyhousePocket';
-
 export { CrazyhousePocket } from './components/CrazyhousePocket';
-
 export { useCrazyhousePocket } from './hooks/useCrazyhousePocket';
-
 const crazyhouseModule: VariantModule = {
   components: {
     Pocket: CrazyhousePocket
@@ -18,7 +15,5 @@ const crazyhouseModule: VariantModule = {
     description: 'Captured pieces can be dropped back on the board'
   }
 };
-
 variantRegistry.register('crazyhouse', crazyhouseModule);
-
 export default crazyhouseModule;

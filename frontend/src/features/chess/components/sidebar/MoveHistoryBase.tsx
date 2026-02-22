@@ -1,13 +1,10 @@
 'use client';
-
 import { memo, useCallback, ReactNode } from 'react';
 import type { Classification } from '@/types/classification';
-
 export type MoveData = {
   san: string;
   classification?: Classification;
 };
-
 export type MoveHistoryBaseProps<T> = {
   items: T[];
   viewingIndex: number;
@@ -18,7 +15,6 @@ export type MoveHistoryBaseProps<T> = {
   emptyMessage?: string;
   skipFirst?: boolean;
 };
-
 type MoveButtonProps = {
   move: MoveData;
   index: number;
@@ -27,7 +23,6 @@ type MoveButtonProps = {
   onClick: (index: number) => void;
   renderContent?: (move: MoveData, isWhite: boolean) => ReactNode;
 };
-
 const MoveButton = memo(function MoveButton({
   move,
   index,
@@ -37,7 +32,6 @@ const MoveButton = memo(function MoveButton({
   renderContent
 }: MoveButtonProps) {
   const handleClick = useCallback(() => onClick(index), [onClick, index]);
-
   return (
     <button
       onClick={handleClick}
@@ -55,7 +49,6 @@ const MoveButton = memo(function MoveButton({
     </button>
   );
 });
-
 type MoveRowProps = {
   moveNumber: number;
   whiteMove: MoveData | null;
@@ -65,7 +58,6 @@ type MoveRowProps = {
   onMoveClick: (index: number) => void;
   renderContent?: (move: MoveData, isWhite: boolean) => ReactNode;
 };
-
 const MoveRow = memo(function MoveRow({
   moveNumber,
   whiteMove,
@@ -101,7 +93,6 @@ const MoveRow = memo(function MoveRow({
     </li>
   );
 });
-
 function MoveHistoryBaseComponent<T>({
   items,
   viewingIndex,
@@ -115,7 +106,6 @@ function MoveHistoryBaseComponent<T>({
   const offset = skipFirst ? 1 : 0;
   const processedItems = skipFirst ? items.slice(1) : items;
   const adjustedViewingIndex = viewingIndex - offset;
-
   if (processedItems.length === 0) {
     return (
       <p className='text-muted-foreground py-4 text-center text-sm'>
@@ -123,16 +113,16 @@ function MoveHistoryBaseComponent<T>({
       </p>
     );
   }
-
-  const movePairs: { moveNumber: number; whiteMoveIndex: number }[] = [];
+  const movePairs: {
+    moveNumber: number;
+    whiteMoveIndex: number;
+  }[] = [];
   for (let i = 0; i < processedItems.length; i += 2) {
     movePairs.push({ moveNumber: i / 2 + 1, whiteMoveIndex: i });
   }
-
   const handleMoveClick = (idx: number) => {
     onMoveClick(idx + offset);
   };
-
   return (
     <ol className='space-y-1'>
       {movePairs.map(({ moveNumber, whiteMoveIndex }) => {
@@ -141,7 +131,6 @@ function MoveHistoryBaseComponent<T>({
           whiteMoveIndex
         );
         const blackMove = getBlackMove(processedItems, whiteMoveIndex);
-
         return (
           <MoveRow
             key={moveNumber}
@@ -158,7 +147,6 @@ function MoveHistoryBaseComponent<T>({
     </ol>
   );
 }
-
 export const MoveHistoryBase = memo(
   MoveHistoryBaseComponent
 ) as typeof MoveHistoryBaseComponent;

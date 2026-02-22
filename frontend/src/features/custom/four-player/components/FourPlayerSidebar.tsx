@@ -1,5 +1,4 @@
 'use client';
-
 import { memo, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,23 +38,26 @@ import { playSound } from '@/features/game/utils/sounds';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { cn } from '@/lib/utils';
 import type { Team, MoveRecord } from '../engine';
-
 const TEAM_INFO: Record<
   Team,
-  { label: string; cssVar: string; short: string }
+  {
+    label: string;
+    cssVar: string;
+    short: string;
+  }
 > = {
   r: { label: 'Red', cssVar: 'var(--four-player-red)', short: 'R' },
   b: { label: 'Blue', cssVar: 'var(--four-player-blue)', short: 'B' },
   y: { label: 'Yellow', cssVar: 'var(--four-player-yellow)', short: 'Y' },
   g: { label: 'Green', cssVar: 'var(--four-player-green)', short: 'G' }
 };
-
 const TEAMS: Team[] = ['r', 'b', 'y', 'g'];
-
-// Clipboard hook
-function useClipboard({ resetDelay = 2000 }: { resetDelay?: number } = {}) {
+function useClipboard({
+  resetDelay = 2000
+}: {
+  resetDelay?: number;
+} = {}) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
   const copy = useCallback(
     async (text: string, key: string) => {
       try {
@@ -69,17 +71,13 @@ function useClipboard({ resetDelay = 2000 }: { resetDelay?: number } = {}) {
     },
     [resetDelay]
   );
-
   const isCopied = useCallback((key: string) => copiedKey === key, [copiedKey]);
-
   return {
     copy,
     isCopied,
     copiedKey
   };
 }
-
-// Format moves for text output
 function formatMovesText(moves: MoveRecord[]): string {
   const rounds: string[] = [];
   for (let i = 0; i < moves.length; i += 4) {
@@ -96,14 +94,12 @@ function formatMovesText(moves: MoveRecord[]): string {
   }
   return rounds.join('\n');
 }
-
 type MoveItemProps = {
   move: MoveRecord;
   index: number;
   isActive: boolean;
   onClick: (index: number) => void;
 };
-
 const MoveItem = memo(function MoveItem({
   move,
   index,
@@ -112,13 +108,10 @@ const MoveItem = memo(function MoveItem({
 }: MoveItemProps) {
   const handleClick = useCallback(() => onClick(index), [onClick, index]);
   const info = TEAM_INFO[move.team];
-
   return (
     <button
       onClick={handleClick}
-      className={`hover:bg-muted flex cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 font-mono text-xs ${
-        isActive ? 'bg-muted ring-border ring-1 ring-inset' : ''
-      }`}
+      className={`hover:bg-muted flex cursor-pointer items-center gap-1 rounded px-1.5 py-0.5 font-mono text-xs ${isActive ? 'bg-muted ring-border ring-1 ring-inset' : ''}`}
     >
       <span
         className='inline-block h-2 w-2 shrink-0 rounded-full'
@@ -128,7 +121,6 @@ const MoveItem = memo(function MoveItem({
     </button>
   );
 });
-
 function FourPlayerMoveHistory({
   moves,
   viewingMoveIndex,
@@ -145,12 +137,13 @@ function FourPlayerMoveHistory({
       </p>
     );
   }
-
-  const rounds: { roundNum: number; startIndex: number }[] = [];
+  const rounds: {
+    roundNum: number;
+    startIndex: number;
+  }[] = [];
   for (let i = 0; i < moves.length; i += 4) {
     rounds.push({ roundNum: Math.floor(i / 4) + 1, startIndex: i });
   }
-
   return (
     <ol className='space-y-1'>
       {rounds.map(({ roundNum, startIndex }) => (
@@ -179,7 +172,6 @@ function FourPlayerMoveHistory({
     </ol>
   );
 }
-
 function PlayerButton({
   team,
   isActive,
@@ -193,9 +185,7 @@ function PlayerButton({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all ${
-        isActive ? 'bg-foreground/10' : 'hover:bg-muted'
-      }`}
+      className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all ${isActive ? 'bg-foreground/10' : 'hover:bg-muted'}`}
       style={isActive ? { boxShadow: `0 0 0 2px ${info.cssVar}` } : undefined}
     >
       <div
@@ -206,7 +196,6 @@ function PlayerButton({
     </button>
   );
 }
-
 export function FourPlayerSidebar() {
   const router = useRouter();
   const {
@@ -230,43 +219,33 @@ export function FourPlayerSidebar() {
     abortGame,
     setOrientation
   } = useFourPlayerStore();
-
   const { hasTimer, teamTimes, activeTimer } = useFourPlayerTimer();
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const [settingsOpen, setSettingsOpen] = useState(false);
-
   const canGoBack = viewingMoveIndex > -1;
   const canGoForward = viewingMoveIndex < moves.length - 1;
-
   const { isPlaying, togglePlay } = usePlayback({
     currentIndex: viewingMoveIndex + 1,
     totalItems: moves.length + 1,
     onNext: goToNext
   });
-
   const { copy, isCopied } = useClipboard();
-
   const currentInfo = TEAM_INFO[currentTeam];
   const isChecked = !isGameOver && game.isChecked;
-
   const handleAbort = () => {
     abortGame();
   };
-
   const handleOfferDraw = () => {
     if (soundEnabled) playSound('draw-offer');
   };
-
   const handleAcceptDraw = () => {
     if (soundEnabled) playSound('game-end');
-    // Use the store's internal method to set game result
     useFourPlayerStore.setState({
       isGameOver: true,
       gameStarted: false,
       gameResult: 'Draw by agreement'
     });
   };
-
   const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
   const handleCopyGameState = () => {
     const gameState = JSON.stringify(
@@ -282,7 +261,6 @@ export function FourPlayerSidebar() {
     );
     copy(gameState, 'state');
   };
-
   return (
     <>
       <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>

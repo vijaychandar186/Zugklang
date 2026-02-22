@@ -3,7 +3,6 @@ import { Navbar } from '@/components/layout/Navbar';
 import LegalContent from '../LegalContent';
 import { Footer } from '../landing/components/Footer';
 import { privacyContent } from '@/pages-content/privacy/constants/privacyContent';
-
 export default function PrivacyPage() {
   return (
     <PageContainer>

@@ -1,6 +1,5 @@
 import { Chess } from './chess';
 import { STARTING_FEN } from '@/features/chess/config/constants';
-
 export interface GameState {
   game: Chess;
   currentFEN: string;
@@ -8,24 +7,19 @@ export interface GameState {
   positionHistory: string[];
   viewingIndex: number;
 }
-
 export function loadPGN(pgn: string): GameState | null {
   try {
     const newGame = new Chess();
     newGame.loadPgn(pgn);
-
     const moves: string[] = [];
     const positions: string[] = [STARTING_FEN];
-
     const tempGame = new Chess();
     const history = newGame.history({ verbose: true });
-
     for (const move of history) {
       tempGame.move(move.san);
       moves.push(move.san);
       positions.push(tempGame.fen());
     }
-
     return {
       game: newGame,
       currentFEN: newGame.fen(),
@@ -37,7 +31,6 @@ export function loadPGN(pgn: string): GameState | null {
     return null;
   }
 }
-
 export function loadFEN(fen: string): GameState | null {
   try {
     const newGame = new Chess(fen);
@@ -52,7 +45,6 @@ export function loadFEN(fen: string): GameState | null {
     return null;
   }
 }
-
 export function createInitialGameState(
   startingFEN: string = STARTING_FEN
 ): GameState {

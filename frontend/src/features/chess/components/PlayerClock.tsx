@@ -1,25 +1,20 @@
 'use client';
-
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { formatTime } from '@/features/game/utils/formatting';
-
 type PlayerClockProps = {
   time: number | null;
   isActive: boolean;
   isPlayer: boolean;
 };
-
 export const PlayerClock = memo(function PlayerClock({
   time,
   isActive,
   isPlayer
 }: PlayerClockProps) {
   if (time === null) return null;
-
   const isLow = time <= 30;
   const isCritical = time <= 10;
-
   return (
     <div
       className={cn(

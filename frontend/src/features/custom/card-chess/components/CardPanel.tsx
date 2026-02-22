@@ -1,32 +1,25 @@
 'use client';
-
 import { useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/Icons';
 import { CardDisplay } from './CardDisplay';
 import { useCardChessStore } from '../stores/useCardChessStore';
 import { Skeleton } from '@/components/ui/skeleton';
-
 interface CardPanelProps {
   turnColor: 'w' | 'b';
 }
-
 export function CardPanel({ turnColor }: CardPanelProps) {
   const { drawnCard, isDrawing, needsDraw, drawCard, drawCount, game } =
     useCardChessStore();
-
   const handleDraw = useCallback(() => {
     if (!needsDraw || isDrawing) return;
     drawCard(turnColor);
   }, [needsDraw, isDrawing, drawCard, turnColor]);
-
   const isInCheck = game.isCheck();
   const CARD_SIZE = 100;
-
   return (
     <div className='border-b px-4 py-3'>
       <div className='flex flex-col items-center gap-3'>
-        {/* Always reserve space for the card to prevent layout shift */}
         <div className='flex items-center justify-center'>
           <div className='flex flex-col items-center gap-2'>
             {drawnCard || isDrawing ? (
@@ -93,7 +86,6 @@ export function CardPanel({ turnColor }: CardPanelProps) {
                 )}
               </>
             ) : (
-              // Show skeleton when no card to prevent layout jump
               <div className='flex flex-col items-center gap-2'>
                 <Skeleton
                   className='rounded-xl'

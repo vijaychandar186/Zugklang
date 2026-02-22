@@ -1,13 +1,4 @@
 export type TimeCategory = 'bullet' | 'blitz' | 'rapid' | 'classical';
-
-/**
- * Determines the time control category based on the per-player minutes and increment.
- * Follows FIDE-aligned definitions:
- *   Bullet:    < 3 min, or 3+0 / 3+1
- *   Blitz:     3–10 min estimated (minutes*60 + increment*40 < 600s)
- *   Rapid:     10–60 min estimated
- *   Classical: > 60 min estimated
- */
 export function getTimeCategory(
   minutes: number,
   increment: number
@@ -18,7 +9,6 @@ export function getTimeCategory(
   if (estimatedSeconds < 3600) return 'rapid';
   return 'classical';
 }
-
 export const TIME_CATEGORY_LABELS: Record<TimeCategory, string> = {
   bullet: 'Bullet',
   blitz: 'Blitz',

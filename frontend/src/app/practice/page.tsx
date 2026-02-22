@@ -5,13 +5,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { practiceModes } from '@/constants/practice-modes';
-
 export const metadata: Metadata = {
   title: 'Practice | Zugklang',
   description:
     'Improve your chess skills. Study openings and solve tactical puzzles.'
 };
-
 export default function PracticePage() {
   return (
     <PageContainer scrollable={true}>

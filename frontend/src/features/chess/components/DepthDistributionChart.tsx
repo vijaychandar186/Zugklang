@@ -1,5 +1,4 @@
 'use client';
-
 import { useMemo } from 'react';
 import {
   Bar,
@@ -16,19 +15,16 @@ import {
   ChartTooltipContent,
   type ChartConfig
 } from '@/components/ui/chart';
-
 type DepthDistributionChartProps = {
   moveDepths: (number | null)[];
   className?: string;
 };
-
 const chartConfig = {
   count: {
     label: 'Moves',
     color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
-
 export function DepthDistributionChart({
   moveDepths,
   className
@@ -38,41 +34,32 @@ export function DepthDistributionChart({
     for (let i = 1; i <= 20; i++) {
       counts[i] = 0;
     }
-
     moveDepths.forEach((depth) => {
       if (depth !== null && depth >= 1 && depth <= 20) {
         counts[depth]++;
       }
     });
-
     return Object.entries(counts).map(([depth, count]) => ({
       depth: Number(depth),
       count
     }));
   }, [moveDepths]);
-
   const engineMoves = useMemo(
     () => moveDepths.filter((d): d is number => d !== null),
     [moveDepths]
   );
-
   const totalMoves = engineMoves.length;
-
   const stats = useMemo(() => {
     if (totalMoves === 0) return { mean: '0.0', min: 0, max: 0 };
-
     const mean =
       engineMoves.reduce((sum, depth) => sum + depth, 0) / totalMoves;
     const min = Math.min(...engineMoves);
     const max = Math.max(...engineMoves);
-
     return { mean: mean.toFixed(1), min, max };
   }, [engineMoves, totalMoves]);
-
   if (totalMoves === 0) {
     return null;
   }
-
   return (
     <Card className={className}>
       <CardHeader className='pb-3'>

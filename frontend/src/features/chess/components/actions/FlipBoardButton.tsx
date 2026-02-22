@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import {
@@ -7,11 +6,9 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-
 export interface FlipBoardButtonProps {
   onFlip: () => void;
 }
-
 export function FlipBoardButton({ onFlip }: FlipBoardButtonProps) {
   return (
     <Tooltip>

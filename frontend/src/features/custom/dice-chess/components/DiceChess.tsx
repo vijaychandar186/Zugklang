@@ -1,11 +1,8 @@
 'use client';
-
 import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-
 type DiceValue = 1 | 2 | 3 | 4 | 5 | 6;
-
 type DiceChessProps = {
   size?: number;
   defaultValue?: DiceValue;
@@ -15,11 +12,9 @@ type DiceChessProps = {
   faces?: string[];
   className?: string;
 };
-
 type DiceChessRef = {
   rollDice: (value?: DiceValue) => void;
 };
-
 const WHITE_FACES = [
   '/pieces/white-king.svg',
   '/pieces/white-queen.svg',
@@ -28,7 +23,6 @@ const WHITE_FACES = [
   '/pieces/white-rook.svg',
   '/pieces/white-pawn.svg'
 ];
-
 const BLACK_FACES = [
   '/pieces/black-king.svg',
   '/pieces/black-queen.svg',
@@ -37,7 +31,6 @@ const BLACK_FACES = [
   '/pieces/black-rook.svg',
   '/pieces/black-pawn.svg'
 ];
-
 const BOX_ROTATION: Record<DiceValue, string> = {
   1: 'rotateX(90deg) rotateY(0deg) rotateZ(0deg)',
   2: 'rotateX(0deg) rotateY(0deg) rotateZ(0deg)',
@@ -46,7 +39,6 @@ const BOX_ROTATION: Record<DiceValue, string> = {
   5: 'rotateX(90deg) rotateY(-90deg) rotateZ(90deg)',
   6: 'rotateX(-90deg) rotateY(0deg) rotateZ(0deg)'
 };
-
 function getFaceTransform(face: DiceValue, t: number): React.CSSProperties {
   switch (face) {
     case 1:
@@ -71,7 +63,6 @@ function getFaceTransform(face: DiceValue, t: number): React.CSSProperties {
       return { transform: `rotateX(90deg) translate3d(0,0,${t}px)` };
   }
 }
-
 const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
   (
     {
@@ -86,21 +77,17 @@ const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
     ref
   ) => {
     const [value, setValue] = useState<DiceValue>(defaultValue);
-
     useEffect(() => {
       if (targetValue && !rolling) {
         setValue(targetValue);
       }
     }, [targetValue, rolling]);
-
     const t = size / 2;
-
     useImperativeHandle(ref, () => ({
       rollDice: (forcedValue?: DiceValue) => {
         if (forcedValue) setValue(forcedValue);
       }
     }));
-
     return (
       <div
         className={cn(
@@ -152,8 +139,6 @@ const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
     );
   }
 );
-
 DiceChess.displayName = 'DiceChess';
-
 export { DiceChess, WHITE_FACES, BLACK_FACES };
 export type { DiceChessProps, DiceChessRef, DiceValue };

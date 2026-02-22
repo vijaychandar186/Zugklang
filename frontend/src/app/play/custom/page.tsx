@@ -4,13 +4,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { customModes } from '@/constants/custom-modes';
-
 export const metadata: Metadata = {
   title: 'Custom Games | Zugklang',
   description:
     'Play unique chess variants including 4-Player Chess and Dice Chess. Experience chess in exciting new ways!'
 };
-
 export default function CustomPlayMenuPage() {
   return (
     <PageContainer scrollable={true}>

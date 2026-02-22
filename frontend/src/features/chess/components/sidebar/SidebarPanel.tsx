@@ -1,14 +1,11 @@
 'use client';
-
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-
 export interface SidebarPanelProps {
   children: ReactNode;
   className?: string;
   flexible?: boolean;
 }
-
 export function SidebarPanel({
   children,
   className,

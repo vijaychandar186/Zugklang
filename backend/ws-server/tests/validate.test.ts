@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test';
 import { isValidPromotion, isValidSquare } from '../utils/validate';
-
 describe('validate utilities', () => {
   test('validates chess squares', () => {
     expect(isValidSquare('a1')).toBe(true);
@@ -9,7 +8,6 @@ describe('validate utilities', () => {
     expect(isValidSquare('a9')).toBe(false);
     expect(isValidSquare(42)).toBe(false);
   });
-
   test('validates promotion pieces', () => {
     expect(isValidPromotion('q')).toBe(true);
     expect(isValidPromotion('r')).toBe(true);

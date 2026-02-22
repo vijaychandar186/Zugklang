@@ -1,14 +1,11 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Square, Box } from 'lucide-react';
-
 type Board3dToggleProps = {
   enabled: boolean;
   onToggle: (enabled: boolean) => void;
 };
-
 export function Board3dToggle({ enabled, onToggle }: Board3dToggleProps) {
   return (
     <div className='space-y-3'>

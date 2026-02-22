@@ -1,5 +1,4 @@
 'use client';
-
 import { useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
@@ -14,10 +13,8 @@ import {
   CLASSIFICATION_COLORS,
   CLASSIFICATION_ICONS
 } from '@/features/game-review/types';
-
 const clamp = (v: number, min = 0, max = 100) =>
   Math.min(max, Math.max(min, v));
-
 const getControlPoint = (
   current: number[],
   prev: number[] | undefined,
@@ -27,28 +24,21 @@ const getControlPoint = (
   const smoothing = 0.15;
   const p = prev ?? current;
   const n = next ?? current;
-
   return [
     current[0] + (n[0] - p[0]) * smoothing * (reverse ? -1 : 1),
     current[1] + (n[1] - p[1]) * smoothing * (reverse ? -1 : 1)
   ];
 };
-
 const getSmoothPath = (points: number[][]) => {
   if (!points.length) return '';
-
   let d = `M ${points[0][0]},${points[0][1]}`;
-
   for (let i = 0; i < points.length - 1; i++) {
     const cp1 = getControlPoint(points[i], points[i - 1], points[i + 1]);
     const cp2 = getControlPoint(points[i + 1], points[i], points[i + 2], true);
-
     d += ` C ${cp1[0]},${cp1[1]} ${cp2[0]},${cp2[1]} ${points[i + 1][0]},${points[i + 1][1]}`;
   }
-
   return d;
 };
-
 export function EvaluationGraph({
   positions,
   liveEvaluations,
@@ -62,51 +52,39 @@ export function EvaluationGraph({
 }) {
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const ref = useRef<HTMLDivElement>(null);
-
   const totalMoves = positions?.length || liveEvaluations?.length || 0;
-
   const graph = useMemo(() => {
     const source = positions || liveEvaluations || [];
     if (!source.length) return { points: [], d: '', fill: '' };
-
     const points: number[][] = [];
-
     source.forEach((item, i) => {
       const evaluation = positions
         ? (item as Position).topLines?.[0]?.evaluation
         : (item as LiveEvaluation | null);
-
       const x = (i / Math.max(source.length - 1, 1)) * 100;
       let y = 50;
-
       if (evaluation?.type === 'cp') {
         const val = Math.max(-600, Math.min(600, evaluation.value));
         y = 50 - (val / 600) * 50;
       } else if (evaluation?.type === 'mate') {
         y = evaluation.value > 0 ? 0 : 100;
       }
-
       points.push([x, clamp(y)]);
     });
-
     const d = getSmoothPath(points);
     const fill = `${d} L 100 100 L 0 100 Z`;
-
     return { points, d, fill };
   }, [positions, liveEvaluations]);
-
   if (!totalMoves) return null;
-
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const index = Math.floor((x / rect.width) * totalMoves);
-    setHoverIndex(Math.max(0, Math.min(index, totalMoves - 1)));
+    const clamped = Math.max(0, Math.min(index, totalMoves - 1));
+    setHoverIndex((prev) => (prev === clamped ? prev : clamped));
   };
-
   const hovered = hoverIndex !== null && positions?.[hoverIndex];
-
   return (
     <Card
       ref={ref}

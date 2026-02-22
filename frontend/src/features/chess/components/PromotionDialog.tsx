@@ -1,12 +1,8 @@
 'use client';
-
 import { defaultPieces } from 'react-chessboard';
 import type { PieceSymbol } from '@/lib/chess/chess';
-
 type PieceKey = keyof typeof defaultPieces;
-
 const PROMOTION_PIECES: PieceSymbol[] = ['q', 'r', 'b', 'n'];
-
 interface PromotionDialogProps {
   isOpen: boolean;
   color: 'white' | 'black';
@@ -15,7 +11,6 @@ interface PromotionDialogProps {
   onSelect: (piece: PieceSymbol) => void;
   onCancel: () => void;
 }
-
 export function PromotionDialog({
   isOpen,
   color,
@@ -25,15 +20,11 @@ export function PromotionDialog({
   onCancel
 }: PromotionDialogProps) {
   if (!isOpen) return null;
-
   const file = targetSquare.charCodeAt(0) - 97;
   const rank = parseInt(targetSquare[1]) - 1;
-
   const x = boardOrientation === 'white' ? file : 7 - file;
   const isTop = boardOrientation === 'white' ? rank === 7 : rank === 0;
-
   const leftPercent = x * 12.5;
-
   return (
     <>
       <div
@@ -46,9 +37,7 @@ export function PromotionDialog({
       />
 
       <div
-        className={`absolute z-50 flex flex-col overflow-hidden rounded-sm shadow-lg ${
-          color === 'white' ? 'bg-zinc-800' : 'bg-zinc-100'
-        }`}
+        className={`absolute z-50 flex flex-col overflow-hidden rounded-sm shadow-lg ${color === 'white' ? 'bg-zinc-800' : 'bg-zinc-100'}`}
         style={{
           left: `${leftPercent}%`,
           width: '12.5%',
@@ -63,9 +52,7 @@ export function PromotionDialog({
             <button
               key={piece}
               onClick={() => onSelect(piece)}
-              className={`flex aspect-square items-center justify-center transition-colors ${
-                color === 'white' ? 'hover:bg-zinc-700' : 'hover:bg-zinc-200'
-              }`}
+              className={`flex aspect-square items-center justify-center transition-colors ${color === 'white' ? 'hover:bg-zinc-700' : 'hover:bg-zinc-200'}`}
               title={
                 piece === 'q'
                   ? 'Queen'

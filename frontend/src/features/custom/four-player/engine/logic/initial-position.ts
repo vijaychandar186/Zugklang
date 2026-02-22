@@ -1,7 +1,6 @@
 import { Piece } from './Piece';
 import type { PieceType, Team } from '../types/core';
 import { BOARD_CONFIG } from '../config/board';
-
 const BACK_RANK_LAYOUT: readonly PieceType[] = [
   'R',
   'N',
@@ -12,7 +11,6 @@ const BACK_RANK_LAYOUT: readonly PieceType[] = [
   'N',
   'R'
 ] as const;
-
 const BACK_RANK_LAYOUT_MIRRORED: readonly PieceType[] = [
   'R',
   'N',
@@ -23,17 +21,20 @@ const BACK_RANK_LAYOUT_MIRRORED: readonly PieceType[] = [
   'N',
   'R'
 ] as const;
-
 const PIECES_PER_RANK = 8;
 const RANK_START_OFFSET = 3;
-
 interface TeamSetup {
   readonly team: Team;
   readonly layout: readonly PieceType[];
-  readonly createBackRank: (index: number) => { x: number; y: number };
-  readonly createPawnRank: (index: number) => { x: number; y: number };
+  readonly createBackRank: (index: number) => {
+    x: number;
+    y: number;
+  };
+  readonly createPawnRank: (index: number) => {
+    x: number;
+    y: number;
+  };
 }
-
 const TEAM_SETUPS: readonly TeamSetup[] = [
   {
     team: 'r',
@@ -72,10 +73,8 @@ const TEAM_SETUPS: readonly TeamSetup[] = [
     })
   }
 ];
-
 export function createInitialPieces(): Piece[] {
   const pieces: Piece[] = [];
-
   for (const setup of TEAM_SETUPS) {
     for (let i = 0; i < PIECES_PER_RANK; i++) {
       const { x, y } = setup.createBackRank(i);
@@ -86,6 +85,5 @@ export function createInitialPieces(): Piece[] {
       pieces.push(new Piece(x, y, 'P', setup.team));
     }
   }
-
   return pieces;
 }

@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -23,24 +22,19 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { StandardActionBar } from '@/features/chess/components/sidebar';
 import { StatBox } from '@/features/chess/components/common';
 import { MemoryPiecePalette } from './MemoryPiecePalette';
-
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
-
 type TrainingMode = 'standard' | 'progressive';
 type GameStatus = 'setup' | 'memorizing' | 'placing' | 'results';
-
 type PieceInfo = {
   type: PieceSymbol;
   color: Color;
 };
-
 const SQUARES: Square[] = [
   'a8',
   'b8',
@@ -107,7 +101,6 @@ const SQUARES: Square[] = [
   'g1',
   'h1'
 ];
-
 export function MemoryView() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -115,10 +108,8 @@ export function MemoryView() {
   const [trainingMode, setTrainingMode] = useState<TrainingMode>('standard');
   const [pieceCount, setPieceCount] = useState(6);
   const [memorizeTime, setMemorizeTime] = useState(10);
-
   const [progressiveLevel, setProgressiveLevel] = useState(1);
   const [progressiveStreak, setProgressiveStreak] = useState(0);
-
   const [targetPosition, setTargetPosition] = useState<Map<Square, PieceInfo>>(
     new Map()
   );
@@ -130,13 +121,10 @@ export function MemoryView() {
   const [boardOrientation, setBoardOrientation] = useState<'white' | 'black'>(
     'white'
   );
-
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const theme = useBoardTheme();
-
   useEffect(() => {
     if (gameStatus !== 'memorizing') return;
-
     timerRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev <= 1) {
@@ -147,16 +135,13 @@ export function MemoryView() {
         return prev - 1;
       });
     }, 1000);
-
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [gameStatus]);
-
   const generateRandomPosition = useCallback((numPieces: number) => {
     const position = new Map<Square, PieceInfo>();
     const availableSquares = [...SQUARES];
-
     const whiteKingSquare = availableSquares.splice(
       Math.floor(Math.random() * availableSquares.length),
       1
@@ -165,39 +150,30 @@ export function MemoryView() {
       Math.floor(Math.random() * availableSquares.length),
       1
     )[0];
-
     position.set(whiteKingSquare, { type: 'k', color: 'w' });
     position.set(blackKingSquare, { type: 'k', color: 'b' });
-
     const remainingPieces = numPieces - 2;
     const pieceTypes: PieceSymbol[] = ['q', 'r', 'r', 'b', 'b', 'n', 'n'];
-
     for (let i = 0; i < remainingPieces && availableSquares.length > 0; i++) {
       const squareIndex = Math.floor(Math.random() * availableSquares.length);
       const square = availableSquares.splice(squareIndex, 1)[0];
       const color: Color = Math.random() < 0.5 ? 'w' : 'b';
-
       const rank = square[1];
       let pieceType: PieceSymbol;
-
       if (rank === '1' || rank === '8') {
         pieceType = pieceTypes[Math.floor(Math.random() * pieceTypes.length)];
       } else {
         const allTypes: PieceSymbol[] = [...pieceTypes, 'p', 'p', 'p'];
         pieceType = allTypes[Math.floor(Math.random() * allTypes.length)];
       }
-
       position.set(square, { type: pieceType, color });
     }
-
     return position;
   }, []);
-
   const positionToFen = useCallback((position: Map<Square, PieceInfo>) => {
     const board: (string | null)[][] = Array(8)
       .fill(null)
       .map(() => Array(8).fill(null));
-
     position.forEach((piece, square) => {
       const file = square.charCodeAt(0) - 97;
       const rank = 8 - parseInt(square[1]);
@@ -207,11 +183,9 @@ export function MemoryView() {
           : piece.type.toLowerCase();
       board[rank][file] = pieceChar;
     });
-
     const fenRows = board.map((row) => {
       let fenRow = '';
       let emptyCount = 0;
-
       for (const cell of row) {
         if (cell === null) {
           emptyCount++;
@@ -223,27 +197,21 @@ export function MemoryView() {
           fenRow += cell;
         }
       }
-
       if (emptyCount > 0) {
         fenRow += emptyCount;
       }
-
       return fenRow;
     });
-
     return fenRows.join('/') + ' w - - 0 1';
   }, []);
-
   const getProgressivePieceCount = useCallback((level: number) => {
     return Math.min(3 + Math.floor((level - 1) * 1.5), 32);
   }, []);
-
   const startRound = useCallback(() => {
     const pieces =
       trainingMode === 'progressive'
         ? getProgressivePieceCount(progressiveLevel)
         : pieceCount;
-
     const position = generateRandomPosition(pieces);
     setTargetPosition(position);
     setUserPosition(new Map());
@@ -257,12 +225,10 @@ export function MemoryView() {
     generateRandomPosition,
     getProgressivePieceCount
   ]);
-
   const handlePieceDrop = useCallback(
     ({ sourceSquare, targetSquare, piece }: PieceDropHandlerArgs): boolean => {
       const color = piece.pieceType[0] as 'w' | 'b';
       const type = piece.pieceType[1].toLowerCase() as PieceSymbol;
-
       if (!targetSquare) {
         if (!piece.isSparePiece && sourceSquare) {
           setUserPosition((prev) => {
@@ -273,7 +239,6 @@ export function MemoryView() {
         }
         return true;
       }
-
       if (!piece.isSparePiece && sourceSquare) {
         setUserPosition((prev) => {
           const newPos = new Map(prev);
@@ -288,12 +253,10 @@ export function MemoryView() {
           return newPos;
         });
       }
-
       return true;
     },
     []
   );
-
   const handleSquareRightClick = useCallback(
     ({ square }: { square: string }) => {
       setUserPosition((prev) => {
@@ -306,11 +269,9 @@ export function MemoryView() {
     },
     []
   );
-
   const checkAnswer = useCallback(() => {
     let correct = 0;
     const total = targetPosition.size;
-
     targetPosition.forEach((targetPiece, square) => {
       const userPiece = userPosition.get(square);
       if (
@@ -321,10 +282,8 @@ export function MemoryView() {
         correct++;
       }
     });
-
     setScore({ correct, total });
     setGameStatus('results');
-
     if (session?.user?.id) {
       const pieces =
         trainingMode === 'progressive'
@@ -345,7 +304,6 @@ export function MemoryView() {
         })
       }).catch(() => {});
     }
-
     if (trainingMode === 'progressive') {
       const accuracy = correct / total;
       if (accuracy >= 0.8) {
@@ -373,11 +331,9 @@ export function MemoryView() {
     memorizeTime,
     getProgressivePieceCount
   ]);
-
   const clearBoard = useCallback(() => {
     setUserPosition(new Map());
   }, []);
-
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -385,7 +341,6 @@ export function MemoryView() {
       ? `${mins}:${secs.toString().padStart(2, '0')}`
       : `${secs}s`;
   };
-
   const currentFen = useMemo(() => {
     if (gameStatus === 'memorizing') {
       return positionToFen(targetPosition);
@@ -394,12 +349,9 @@ export function MemoryView() {
     }
     return '8/8/8/8/8/8/8/8 w - - 0 1';
   }, [gameStatus, targetPosition, userPosition, positionToFen]);
-
   const customSquareStyles = useMemo(() => {
     if (gameStatus !== 'results') return {};
-
     const styles: Record<string, React.CSSProperties> = {};
-
     targetPosition.forEach((targetPiece, square) => {
       const userPiece = userPosition.get(square);
       if (
@@ -417,7 +369,6 @@ export function MemoryView() {
         };
       }
     });
-
     userPosition.forEach((_, square) => {
       if (!targetPosition.has(square)) {
         styles[square] = {
@@ -426,10 +377,8 @@ export function MemoryView() {
         };
       }
     });
-
     return styles;
   }, [gameStatus, targetPosition, userPosition]);
-
   const chessboardOptions = useMemo(
     () => ({
       position: currentFen,
@@ -455,7 +404,6 @@ export function MemoryView() {
       handleSquareRightClick
     ]
   );
-
   if (gameStatus === 'setup') {
     return (
       <div className='flex min-h-screen items-center justify-center p-4'>
@@ -567,7 +515,6 @@ export function MemoryView() {
       </div>
     );
   }
-
   if (gameStatus === 'results') {
     const accuracy = Math.round((score.correct / score.total) * 100);
     return (
@@ -634,7 +581,6 @@ export function MemoryView() {
       </div>
     );
   }
-
   if (gameStatus === 'memorizing') {
     return (
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
@@ -723,7 +669,6 @@ export function MemoryView() {
       </div>
     );
   }
-
   return (
     <ChessboardProvider options={chessboardOptions}>
       <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>

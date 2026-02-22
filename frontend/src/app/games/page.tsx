@@ -5,26 +5,24 @@ import { prisma } from '@/lib/db/db';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Navbar } from '@/components/layout/Navbar';
 import { HistoryView } from '@/features/games/components/HistoryView';
-
 export const metadata: Metadata = {
   title: 'History | Zugklang',
   description: 'Your complete chess game and training history.'
 };
-
 export default async function GamesPage({
   searchParams
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{
+    page?: string;
+  }>;
 }) {
   const session = await auth();
   if (!session?.user?.id) redirect('/signin');
-
   const userId = session.user.id;
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.page ?? '1', 10));
   const pageSize = 25;
   const skip = (page - 1) * pageSize;
-
   const [
     games,
     totalCount,
@@ -124,9 +122,7 @@ export default async function GamesPage({
       }
     })
   ]);
-
   const totalPages = Math.ceil(totalCount / pageSize);
-
   return (
     <PageContainer scrollable={true}>
       <Navbar />

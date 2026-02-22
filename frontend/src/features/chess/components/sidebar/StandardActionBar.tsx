@@ -1,5 +1,4 @@
 'use client';
-
 import type { ReactNode } from 'react';
 import { SidebarActionBar } from './SidebarActionBar';
 import {
@@ -7,7 +6,6 @@ import {
   FlipBoardButton,
   EngineToggleButton
 } from '../actions';
-
 export interface StandardActionBarProps {
   onFlipBoard: () => void;
   showSettings?: boolean;
@@ -20,7 +18,6 @@ export interface StandardActionBarProps {
   rightActions?: ReactNode;
   className?: string;
 }
-
 export function StandardActionBar({
   onFlipBoard,
   showSettings = true,

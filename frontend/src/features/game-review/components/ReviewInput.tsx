@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -14,7 +13,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Icons } from '@/components/Icons';
 import type { ReviewStatus } from '@/features/game-review/types';
-
 type ReviewInputProps = {
   input: string;
   onInputChange: (value: string) => void;
@@ -25,7 +23,6 @@ type ReviewInputProps = {
   errorMsg: string;
   onAnalyse: () => void;
 };
-
 export function ReviewInput({
   input,
   onInputChange,
@@ -38,10 +35,8 @@ export function ReviewInput({
 }: ReviewInputProps) {
   const isLoading =
     status === 'parsing' || status === 'evaluating' || status === 'reporting';
-
   const DepthIcon =
     depth <= 14 ? Icons.zap : depth <= 17 ? Icons.rabbit : Icons.turtle;
-
   return (
     <Card>
       <CardHeader>

@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 import { ARROW_COLORS } from '@/features/chess/config/colors';
 import { ChessArrow } from '@/features/chess/types/visualization';
-
 type UseChessArrowsProps = {
   isAnalysisOn: boolean;
   uciLines: string[][];
@@ -11,7 +10,6 @@ type UseChessArrowsProps = {
   gameTurn: 'w' | 'b';
   analysisTurn: 'w' | 'b';
 };
-
 export function useChessArrows({
   isAnalysisOn,
   uciLines,
@@ -23,12 +21,9 @@ export function useChessArrows({
 }: UseChessArrowsProps): ChessArrow[] {
   return useMemo(() => {
     if (!isAnalysisOn || !uciLines[0]) return [];
-
     if (analysisTurn !== gameTurn) return [];
-
     const isPlayerTurn = gameTurn === playerColor;
     const uniqueArrows = new Map<string, ChessArrow>();
-
     if (showBestMoveArrow && isPlayerTurn) {
       uciLines.forEach((line) => {
         if (line.length > 0) {
@@ -44,7 +39,6 @@ export function useChessArrows({
         }
       });
     }
-
     if (showThreatArrow && isPlayerTurn) {
       uciLines.forEach((line) => {
         if (line.length > 1) {
@@ -62,7 +56,6 @@ export function useChessArrows({
         }
       });
     }
-
     return Array.from(uniqueArrows.values());
   }, [
     isAnalysisOn,

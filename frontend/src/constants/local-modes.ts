@@ -1,6 +1,5 @@
 import { Icons } from '@/components/Icons';
 import type { MenuCardItem } from './play-modes';
-
 export const localModes: MenuCardItem[] = [
   {
     href: '/play/local/standard',

@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useMemo, useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -21,7 +20,6 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { toast } from 'sonner';
-
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { MoveHistory } from '@/features/chess/components/sidebar/MoveHistory';
 import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
@@ -32,23 +30,18 @@ import {
   SidebarHeader,
   StandardActionBar
 } from '@/features/chess/components/sidebar';
-
 import { useNavigation } from '@/features/chess/hooks/useNavigation';
 import { usePromotion } from '@/features/chess/hooks/usePromotion';
-
 import {
   usePuzzleState,
   usePuzzleStats,
   usePuzzleActions
 } from '../stores/usePuzzleStore';
 import { type Puzzle, type PuzzleDifficulty } from '../types';
-
 import puzzlesData from '@/resources/puzzles.json';
-
 interface PuzzleViewProps {
   initialBoard3dEnabled?: boolean;
 }
-
 const DIFFICULTY_LABELS: Record<PuzzleDifficulty, string> = {
   beginner: 'Beginner',
   intermediate: 'Intermediate',
@@ -56,7 +49,6 @@ const DIFFICULTY_LABELS: Record<PuzzleDifficulty, string> = {
   master: 'Master',
   elite: 'Elite'
 };
-
 const DIFFICULTY_COLORS: Record<PuzzleDifficulty, string> = {
   beginner: 'bg-[color:var(--success)]/20 [color:var(--success)]',
   intermediate: 'bg-primary/20 text-primary',
@@ -66,13 +58,10 @@ const DIFFICULTY_COLORS: Record<PuzzleDifficulty, string> = {
     'bg-[color:var(--classification-mistake)]/20 [color:var(--classification-mistake)]',
   elite: 'bg-destructive/20 text-destructive'
 };
-
 export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
   const router = useRouter();
   const { data: session } = useSession();
-  // Track the last puzzle ID we already saved so we don't double-save
   const savedPuzzleRef = useRef<string | null>(null);
-  // Puzzle rating state
   const [myPuzzleRating, setMyPuzzleRating] = useState<number | null>(null);
   const [lastPuzzleRatingDelta, setLastPuzzleRatingDelta] = useState<
     number | null
@@ -92,10 +81,8 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     playerTurn,
     showHint
   } = usePuzzleState();
-
   const { puzzlesSolved, puzzlesFailed, currentStreak, bestStreak } =
     usePuzzleStats();
-
   const {
     loadPuzzle,
     setDifficulty,
@@ -105,38 +92,30 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     toggleBoardOrientation,
     goToMove
   } = usePuzzleActions();
-
   const puzzles = useMemo(() => {
     return (
       (puzzlesData as Record<PuzzleDifficulty, Puzzle[]>)[difficulty] || []
     );
   }, [difficulty]);
-
   const displayedFEN = useMemo(() => {
     return positionHistory[viewingIndex] || currentFEN;
   }, [positionHistory, viewingIndex, currentFEN]);
-
   const navigation = useNavigation({
     viewingIndex,
     totalPositions: positionHistory.length,
     onIndexChange: goToMove,
     playbackEnabled: status !== 'playing'
   });
-
   const promotion = usePromotion({
     fen: displayedFEN,
     onMove: makeMove
   });
-
   const hintArrow = useMemo(() => {
     if (!showHint || status !== 'playing' || !playerTurn) return [];
-
     const nextMove = solutionMoves[currentMoveIndex];
     if (!nextMove) return [];
-
     const from = nextMove.slice(0, 2);
     const to = nextMove.slice(2, 4);
-
     return [
       {
         startSquare: from,
@@ -145,34 +124,33 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
       }
     ];
   }, [showHint, status, playerTurn, solutionMoves, currentMoveIndex]);
-
   useEffect(() => {
     if (!currentPuzzle && puzzles.length > 0) {
       loadPuzzle(puzzles[0], 0);
     }
   }, [currentPuzzle, puzzles, loadPuzzle]);
-
-  // Fetch puzzle rating on mount (authenticated users only)
   useEffect(() => {
     if (!session?.user?.id) return;
     fetch('/api/user/puzzle-rating')
       .then((r) => (r.ok ? r.json() : null))
-      .then((data: { rating: number } | null) => {
-        if (data) setMyPuzzleRating(data.rating);
-      })
+      .then(
+        (
+          data: {
+            rating: number;
+          } | null
+        ) => {
+          if (data) setMyPuzzleRating(data.rating);
+        }
+      )
       .catch(() => {});
   }, [session?.user?.id]);
-
-  // Save puzzle attempt once per outcome (success or failed)
   useEffect(() => {
     if (!session?.user?.id) return;
     if (status !== 'success' && status !== 'failed') return;
     if (!currentPuzzle) return;
-    // Use FEN as a unique-enough key for the current puzzle
     const key = `${currentPuzzle.FEN}-${status}`;
     if (savedPuzzleRef.current === key) return;
     savedPuzzleRef.current = key;
-
     fetch('/api/training/puzzle-attempt', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -185,16 +163,21 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
       })
     })
       .then((r) => (r.ok ? r.json() : null))
-      .then((data: { puzzleRatingDelta?: number } | null) => {
-        if (!data || data.puzzleRatingDelta == null) return;
-        setLastPuzzleRatingDelta(data.puzzleRatingDelta);
-        setMyPuzzleRating((prev) =>
-          prev != null ? prev + data.puzzleRatingDelta! : null
-        );
-      })
+      .then(
+        (
+          data: {
+            puzzleRatingDelta?: number;
+          } | null
+        ) => {
+          if (!data || data.puzzleRatingDelta == null) return;
+          setLastPuzzleRatingDelta(data.puzzleRatingDelta);
+          setMyPuzzleRating((prev) =>
+            prev != null ? prev + data.puzzleRatingDelta! : null
+          );
+        }
+      )
       .catch(() => {});
   }, [status, currentPuzzle, difficulty, showHint, session?.user?.id]);
-
   const handlePieceDrop = useCallback(
     ({
       sourceSquare,
@@ -208,7 +191,6 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
       if (status !== 'playing') return false;
       if (!playerTurn) return false;
       if (viewingIndex < positionHistory.length - 1) return false;
-
       const promotionTriggered = promotion.handleMoveWithPromotionCheck(
         sourceSquare,
         targetSquare
@@ -224,13 +206,11 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
       makeMove
     ]
   );
-
   const handleNextPuzzle = useCallback(() => {
     const nextIndex = (puzzleIndex + 1) % puzzles.length;
     loadPuzzle(puzzles[nextIndex], nextIndex);
     toast.success('Next puzzle loaded');
   }, [puzzleIndex, puzzles, loadPuzzle]);
-
   const handleDifficultyChange = useCallback(
     (newDifficulty: PuzzleDifficulty) => {
       setDifficulty(newDifficulty);
@@ -244,16 +224,13 @@ export function PuzzleView({ initialBoard3dEnabled }: PuzzleViewProps = {}) {
     },
     [setDifficulty, loadPuzzle]
   );
-
   const handleRandomPuzzle = useCallback(() => {
     const randomIndex = Math.floor(Math.random() * puzzles.length);
     loadPuzzle(puzzles[randomIndex], randomIndex);
     toast.success('Random puzzle loaded');
   }, [puzzles, loadPuzzle]);
-
   const playerColor = boardOrientation;
   const opponentColor = playerColor === 'white' ? 'black' : 'white';
-
   return (
     <GameViewLayout
       topPlayerInfo={

@@ -1,7 +1,5 @@
 'use client';
-
 import { cn } from '@/lib/utils';
-
 export type EvaluationBarProps = {
   whitePercentage: number;
   label: string;
@@ -9,22 +7,18 @@ export type EvaluationBarProps = {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
 };
-
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
-
 export function getWinPercentageFromCp(cp: number): number {
   const cpClamped = clamp(cp, -1000, 1000);
   const MULTIPLIER = -0.00368208;
   const winChances = 2 / (1 + Math.exp(MULTIPLIER * cpClamped)) - 1;
   return 50 + 50 * winChances;
 }
-
 export function getWinPercentageFromMate(mate: number): number {
   return mate > 0 ? 100 : 0;
 }
-
 export function getWinPercentage(
   cp: number | null,
   mate: number | null
@@ -37,7 +31,6 @@ export function getWinPercentage(
   }
   return 50;
 }
-
 export function formatEvalLabel(
   cp: number | null,
   mate: number | null
@@ -52,7 +45,6 @@ export function formatEvalLabel(
   }
   return '0.0';
 }
-
 export function EvaluationBar({
   whitePercentage,
   label,
@@ -65,15 +57,12 @@ export function EvaluationBar({
     md: 'h-full w-6',
     lg: 'h-full w-5 sm:w-7'
   };
-
   if (!isActive) {
     return null;
   }
-
   const whiteHeight = whitePercentage;
   const blackHeight = 100 - whitePercentage;
   const isBlackBetter = whitePercentage < 50;
-
   return (
     <div
       className={cn(

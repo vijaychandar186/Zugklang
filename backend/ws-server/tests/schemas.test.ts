@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test';
 import { ClientMessageSchema } from '../utils/schemas';
-
 describe('client message schema', () => {
   test('accepts valid join_queue message', () => {
     const result = ClientMessageSchema.safeParse({
@@ -12,7 +11,6 @@ describe('client message schema', () => {
     });
     expect(result.success).toBe(true);
   });
-
   test('rejects invalid move square', () => {
     const result = ClientMessageSchema.safeParse({
       type: 'move',
@@ -22,11 +20,10 @@ describe('client message schema', () => {
     });
     expect(result.success).toBe(false);
   });
-
   test('rejects invalid latency range', () => {
     const result = ClientMessageSchema.safeParse({
       type: 'latency_update',
-      latencyMs: 50_000
+      latencyMs: 50000
     });
     expect(result.success).toBe(false);
   });

@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -23,14 +22,11 @@ import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { TimeControl, TimeControlMode } from '@/features/game/types/rules';
 import { GaussianCurveControl } from './GaussianCurveControl';
 import { EngineMode } from '@/features/chess/types/engine';
-
 type PlayAsOption = 'random' | 'white' | 'black';
-
 type GameSelectionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
-
 export function GameSelectionDialog({
   open,
   onOpenChange
@@ -38,25 +34,20 @@ export function GameSelectionDialog({
   const stockfishLevel = useChessStore((s) => s.stockfishLevel);
   const currentTimeControl = useChessStore((s) => s.timeControl);
   const startGame = useChessStore((s) => s.startGame);
-
   const [depth, setDepth] = useState(stockfishLevel);
   const [playAs, setPlayAs] = useState<PlayAsOption>('random');
   const [engineMode, setEngineMode] = useState<EngineMode>('fixed');
   const [gaussianMean, setGaussianMean] = useState(10);
   const [gaussianVariance, setGaussianVariance] = useState(5);
-
   const [timerMode, setTimerMode] = useState<TimeControlMode>(
     currentTimeControl.mode
   );
-
   const [minutes, setMinutes] = useState(currentTimeControl.minutes || 10);
   const [increment, setIncrement] = useState(currentTimeControl.increment || 0);
-
   const [player1Minutes, setPlayer1Minutes] = useState(10);
   const [player1Increment, setPlayer1Increment] = useState(0);
   const [player2Minutes, setPlayer2Minutes] = useState(10);
   const [player2Increment, setPlayer2Increment] = useState(0);
-
   useEffect(() => {
     if (open) {
       setDepth(stockfishLevel);
@@ -73,13 +64,10 @@ export function GameSelectionDialog({
       setPlayer2Increment(0);
     }
   }, [open, stockfishLevel, currentTimeControl]);
-
   const handleStart = () => {
     const resolvedColor: 'white' | 'black' =
       playAs === 'random' ? (Math.random() < 0.5 ? 'white' : 'black') : playAs;
-
     const userPlaysWhite = resolvedColor === 'white';
-
     const timeControl: TimeControl = {
       mode: timerMode,
       minutes: timerMode === 'timed' ? minutes : 0,
@@ -109,7 +97,6 @@ export function GameSelectionDialog({
             : player1Increment
           : undefined
     };
-
     const engineConfig =
       engineMode === 'fixed'
         ? { mode: 'fixed' as const, level: depth }
@@ -118,11 +105,9 @@ export function GameSelectionDialog({
             mean: gaussianMean,
             variance: gaussianVariance
           };
-
     startGame(resolvedColor, timeControl, engineConfig);
     onOpenChange(false);
   };
-
   const formatTimeLabel = (mins: number) => {
     if (mins < 60) return `${mins} min`;
     const hours = Math.floor(mins / 60);
@@ -130,7 +115,6 @@ export function GameSelectionDialog({
     if (remainingMins === 0) return `${hours} hr`;
     return `${hours} hr ${remainingMins} min`;
   };
-
   const formatIncrementLabel = (secs: number) => {
     if (secs === 0) return 'No increment';
     if (secs < 60) return `+${secs} sec`;
@@ -139,7 +123,6 @@ export function GameSelectionDialog({
     if (remainingSecs === 0) return `+${mins} min`;
     return `+${mins} min ${remainingSecs} sec`;
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-md'>
@@ -150,7 +133,6 @@ export function GameSelectionDialog({
         </DialogHeader>
         <ScrollArea className='max-h-[calc(90vh-8rem)] pr-4'>
           <div className='space-y-6 py-4'>
-            {/* Engine Mode Selection */}
             <div className='space-y-3'>
               <Label className='block text-center'>Engine Mode</Label>
               <RadioGroup
@@ -173,7 +155,6 @@ export function GameSelectionDialog({
               </RadioGroup>
             </div>
 
-            {/* Fixed Level Mode */}
             {engineMode === 'fixed' && (
               <div className='space-y-3'>
                 <Label className='block text-center'>
@@ -194,7 +175,6 @@ export function GameSelectionDialog({
               </div>
             )}
 
-            {/* Probabilistic Mode */}
             {engineMode === 'probabilistic' && (
               <GaussianCurveControl
                 mean={gaussianMean}

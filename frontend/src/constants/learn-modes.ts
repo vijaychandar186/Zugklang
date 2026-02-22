@@ -1,6 +1,5 @@
 import { Icons } from '@/components/Icons';
 import type { MenuCardItem } from './play-modes';
-
 export const learnModes: MenuCardItem[] = [
   {
     href: '/practice/learn/openings',

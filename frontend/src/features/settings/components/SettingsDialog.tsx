@@ -1,5 +1,4 @@
 'use client';
-
 import {
   Dialog,
   DialogContent,
@@ -14,13 +13,11 @@ import { SoundToggle } from './SoundToggle';
 import { Board3dToggle } from './Board3dToggle';
 import { FullscreenToggle } from './FullscreenToggle';
 import { BoardThemeName } from '@/features/chess/types/theme';
-
 type SettingsDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   show3dToggle?: boolean;
 };
-
 export function SettingsDialog({
   open,
   onOpenChange,
@@ -35,11 +32,9 @@ export function SettingsDialog({
   const fullscreenEnabled = useChessStore((s) => s.fullscreenEnabled);
   const setFullscreenEnabled = useChessStore((s) => s.setFullscreenEnabled);
   const { theme, setTheme } = useTheme();
-
   const handleBoardThemeChange = (themeName: BoardThemeName) => {
     setBoardTheme(themeName);
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='sm:max-w-md'>

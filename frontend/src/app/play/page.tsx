@@ -5,13 +5,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { playModes } from '@/constants/play-modes';
-
 export const metadata: Metadata = {
   title: 'Play | Zugklang',
   description:
     'Choose your game mode. Play against the computer or challenge a friend locally.'
 };
-
 export default function PlayPage() {
   return (
     <PageContainer scrollable={true}>

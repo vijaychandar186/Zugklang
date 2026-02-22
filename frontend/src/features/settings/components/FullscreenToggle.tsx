@@ -1,16 +1,13 @@
 'use client';
-
 import { useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/Icons';
-
 type FullscreenToggleProps = {
   enabled: boolean;
   onToggle: (enabled: boolean) => void;
 };
-
 export function FullscreenToggle({ enabled, onToggle }: FullscreenToggleProps) {
   const toggleFullscreen = useCallback(async () => {
     try {
@@ -25,18 +22,15 @@ export function FullscreenToggle({ enabled, onToggle }: FullscreenToggleProps) {
       toast.error('Fullscreen is not supported in this browser');
     }
   }, [onToggle]);
-
   useEffect(() => {
     const handleFullscreenChange = () => {
       onToggle(!!document.fullscreenElement);
     };
-
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
   }, [onToggle]);
-
   return (
     <div className='flex items-center justify-between'>
       <Label>Fullscreen</Label>

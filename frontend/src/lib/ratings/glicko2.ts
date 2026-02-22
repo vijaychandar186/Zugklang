@@ -1,63 +1,42 @@
-/**
- * Glicko-2 rating system — single-game update.
- *
- * Based on Mark Glickman's original algorithm:
- * http://www.glicko.net/glicko/glicko2.pdf
- *
- * All internal calculations use the Glicko-2 scale (μ, φ, σ).
- * Public API works on Glicko-1 / display scale (rating, rd, sigma).
- */
-
-const TAU = 0.5; // system constant controlling σ volatility change
+const TAU = 0.5;
 const EPSILON = 0.000001;
-const SCALE = 173.7178; // conversion factor between Glicko-1 and Glicko-2 scales
-
+const SCALE = 173.7178;
 export interface GlickoPlayer {
-  rating: number; // Glicko-1 display rating (e.g. 1500)
-  rd: number; // Rating Deviation (e.g. 200)
-  sigma: number; // volatility (e.g. 0.06)
+  rating: number;
+  rd: number;
+  sigma: number;
 }
-
 export interface GlickoResult {
   white: GlickoPlayer;
   black: GlickoPlayer;
   whiteDelta: number;
   blackDelta: number;
 }
-
-const RATING_ANCHOR = 700; // display rating for a player at mu=0 (new-player default)
-const PUZZLE_ANCHOR = 1000; // display rating for a puzzle player at mu=0
-
-/** Convert from display scale to Glicko-2 scale */
+const RATING_ANCHOR = 700;
+const PUZZLE_ANCHOR = 1000;
 function toGlicko2(rating: number, rd: number) {
   return {
     mu: (rating - RATING_ANCHOR) / SCALE,
     phi: rd / SCALE
   };
 }
-
-/** Convert from Glicko-2 scale back to display scale */
 function fromGlicko2(mu: number, phi: number) {
   return {
     rating: Math.round(mu * SCALE + RATING_ANCHOR),
     rd: Math.round(phi * SCALE)
   };
 }
-
 function g(phi: number): number {
   return 1 / Math.sqrt(1 + (3 * phi * phi) / (Math.PI * Math.PI));
 }
-
 function E(mu: number, muJ: number, phiJ: number): number {
   return 1 / (1 + Math.exp(-g(phiJ) * (mu - muJ)));
 }
-
 function computeV(mu: number, muJ: number, phiJ: number): number {
   const gPhi = g(phiJ);
   const e = E(mu, muJ, phiJ);
   return 1 / (gPhi * gPhi * e * (1 - e));
 }
-
 function computeDelta(
   v: number,
   mu: number,
@@ -69,8 +48,6 @@ function computeDelta(
   const e = E(mu, muJ, phiJ);
   return v * gPhi * (score - e);
 }
-
-/** Illinois algorithm to solve for new σ */
 function newSigma(
   phi: number,
   sigma: number,
@@ -80,7 +57,6 @@ function newSigma(
   const a = Math.log(sigma * sigma);
   const phiSq = phi * phi;
   const deltaSq = delta * delta;
-
   function f(x: number): number {
     const ex = Math.exp(x);
     const d = phiSq + v + ex;
@@ -88,7 +64,6 @@ function newSigma(
       (ex * (deltaSq - phiSq - v - ex)) / (2 * d * d) - (x - a) / (TAU * TAU)
     );
   }
-
   let A = a;
   let B: number;
   if (deltaSq > phiSq + v) {
@@ -98,10 +73,8 @@ function newSigma(
     while (f(a - k * TAU) < 0) k++;
     B = a - k * TAU;
   }
-
   let fA = f(A);
   let fB = f(B);
-
   while (Math.abs(B - A) > EPSILON) {
     const C = A + ((A - B) * fA) / (fB - fA);
     const fC = f(C);
@@ -114,34 +87,24 @@ function newSigma(
     B = C;
     fB = fC;
   }
-
   return Math.exp(A / 2);
 }
-
-/**
- * Update a player's puzzle rating after a single attempt.
- * The puzzle is treated as an opponent with a fixed rating and RD=100.
- * Uses a separate 1000-anchored scale so puzzle ratings are independent
- * of chess ratings.
- *
- * @param player      - player's current puzzle rating
- * @param puzzleRating - the puzzle's difficulty rating
- * @param solved      - whether the player solved the puzzle
- */
 export function updatePuzzleRating(
   player: GlickoPlayer,
   puzzleRating: number,
   solved: boolean
-): { updated: GlickoPlayer; delta: number } {
+): {
+  updated: GlickoPlayer;
+  delta: number;
+} {
   const p = {
     mu: (player.rating - PUZZLE_ANCHOR) / SCALE,
     phi: player.rd / SCALE
   };
   const opp = {
     mu: (puzzleRating - PUZZLE_ANCHOR) / SCALE,
-    phi: 100 / SCALE // puzzles have fixed ratings; RD=100 models slight uncertainty
+    phi: 100 / SCALE
   };
-
   const outcome: 1 | 0 = solved ? 1 : 0;
   const v = computeV(p.mu, opp.mu, opp.phi);
   const delta = computeDelta(v, p.mu, opp.mu, opp.phi, outcome);
@@ -150,20 +113,11 @@ export function updatePuzzleRating(
   const phi1 = 1 / Math.sqrt(1 / (phiStar * phiStar) + 1 / v);
   const mu1 =
     p.mu + phi1 * phi1 * g(opp.phi) * (outcome - E(p.mu, opp.mu, opp.phi));
-
   const newRating = Math.round(mu1 * SCALE + PUZZLE_ANCHOR);
   const newRd = Math.max(30, Math.round(phi1 * SCALE));
-
   const updated: GlickoPlayer = { rating: newRating, rd: newRd, sigma: sigma1 };
   return { updated, delta: newRating - player.rating };
 }
-
-/**
- * Update ratings for a single game between two players.
- * @param white  - white player's current ratings
- * @param black  - black player's current ratings
- * @param outcome - 1 = white wins, 0 = black wins, 0.5 = draw
- */
 export function updateRatings(
   white: GlickoPlayer,
   black: GlickoPlayer,
@@ -171,8 +125,6 @@ export function updateRatings(
 ): GlickoResult {
   const w = toGlicko2(white.rating, white.rd);
   const b = toGlicko2(black.rating, black.rd);
-
-  // Update white (facing one opponent: black)
   const vW = computeV(w.mu, b.mu, b.phi);
   const deltaW = computeDelta(vW, w.mu, b.mu, b.phi, outcome);
   const sigmaW1 = newSigma(w.phi, white.sigma, vW, deltaW);
@@ -180,8 +132,6 @@ export function updateRatings(
   const phiW1 = 1 / Math.sqrt(1 / (phiStarW * phiStarW) + 1 / vW);
   const muW1 =
     w.mu + phiW1 * phiW1 * g(b.phi) * (outcome - E(w.mu, b.mu, b.phi));
-
-  // Update black (facing one opponent: white; score is 1 - outcome)
   const blackScore = 1 - outcome;
   const vB = computeV(b.mu, w.mu, w.phi);
   const deltaB = computeDelta(vB, b.mu, w.mu, w.phi, blackScore);
@@ -190,14 +140,12 @@ export function updateRatings(
   const phiB1 = 1 / Math.sqrt(1 / (phiStarB * phiStarB) + 1 / vB);
   const muB1 =
     b.mu + phiB1 * phiB1 * g(w.phi) * (blackScore - E(b.mu, w.mu, w.phi));
-
   const newWhite = fromGlicko2(muW1, phiW1);
   const newBlack = fromGlicko2(muB1, phiB1);
-
   return {
     white: {
       rating: newWhite.rating,
-      rd: Math.max(30, newWhite.rd), // floor RD at 30
+      rd: Math.max(30, newWhite.rd),
       sigma: sigmaW1
     },
     black: {

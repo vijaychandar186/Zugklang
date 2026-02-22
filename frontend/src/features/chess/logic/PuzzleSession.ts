@@ -1,7 +1,6 @@
 import { ChessSession, ChessSessionState } from './ChessSession';
 import { ChessJSMove as Move } from '@/lib/chess/chess';
 import { Puzzle, PuzzleStatus } from '@/features/puzzles/types';
-
 export interface PuzzleSessionState extends ChessSessionState {
   status: PuzzleStatus;
   currentPuzzle: Puzzle | null;
@@ -9,28 +8,23 @@ export interface PuzzleSessionState extends ChessSessionState {
   currentMoveIndex: number;
   playerTurn: boolean;
 }
-
 export class PuzzleSession extends ChessSession {
   status: PuzzleStatus = 'idle';
   solutionMoves: string[] = [];
   currentMoveIndex: number = 0;
   playerTurn: boolean = true;
   currentPuzzle: Puzzle | null = null;
-
   constructor() {
     super();
   }
-
   loadPuzzle(puzzle: Puzzle) {
     this.currentPuzzle = puzzle;
     this.solutionMoves = puzzle.Moves.split(' ');
     this.loadFen(puzzle.FEN);
-
     this.status = 'playing';
     this.currentMoveIndex = 0;
     this.playerTurn = false;
   }
-
   get puzzleState(): PuzzleSessionState {
     return {
       ...this.state,
@@ -41,15 +35,12 @@ export class PuzzleSession extends ChessSession {
       playerTurn: this.playerTurn
     };
   }
-
   makeOpponentMove(): Move | null {
     if (this.currentMoveIndex >= this.solutionMoves.length) return null;
-
     const moveStr = this.solutionMoves[this.currentMoveIndex];
     const from = moveStr.slice(0, 2);
     const to = moveStr.slice(2, 4);
     const promotion = moveStr.length > 4 ? moveStr[4] : undefined;
-
     const move = super.makeMove(from, to, promotion);
     if (move) {
       this.currentMoveIndex++;
@@ -57,7 +48,6 @@ export class PuzzleSession extends ChessSession {
     }
     return move;
   }
-
   makePlayerMove(
     from: string,
     to: string,
@@ -69,13 +59,10 @@ export class PuzzleSession extends ChessSession {
     if (this.status !== 'playing' || !this.playerTurn)
       return { move: null, outcome: 'invalid' };
     if (from === to) return { move: null, outcome: 'invalid' };
-
     const expectedMove = this.solutionMoves[this.currentMoveIndex];
     const playerMoveStr = `${from}${to}${promotion || ''}`;
-
     const move = super.makeMove(from, to, promotion);
     if (!move) return { move: null, outcome: 'invalid' };
-
     if (playerMoveStr === expectedMove) {
       this.currentMoveIndex++;
       if (this.currentMoveIndex >= this.solutionMoves.length) {
@@ -90,7 +77,6 @@ export class PuzzleSession extends ChessSession {
       return { move, outcome: 'failed' };
     }
   }
-
   retry(): void {
     if (this.currentPuzzle) {
       this.loadPuzzle(this.currentPuzzle);

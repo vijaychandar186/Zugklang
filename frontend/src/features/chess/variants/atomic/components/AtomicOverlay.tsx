@@ -1,10 +1,8 @@
 'use client';
-
 import Image from 'next/image';
 import { useAtomicThreats } from '../hooks/useAtomicThreats';
 import type { Chess, ChessJSColor } from '@/lib/chess/chess';
 import type { ChessVariant } from '@/features/chess/config/variants';
-
 interface AtomicOverlayProps {
   game: Chess;
   variant: ChessVariant;
@@ -14,7 +12,6 @@ interface AtomicOverlayProps {
   captureTargets: string[];
   currentFEN: string;
 }
-
 export function AtomicOverlay({
   game,
   variant,
@@ -33,9 +30,7 @@ export function AtomicOverlay({
     captureTargets,
     currentFEN
   });
-
   if (overlays.length === 0) return null;
-
   return (
     <>
       {overlays.map(({ square, type, left, top }) => (

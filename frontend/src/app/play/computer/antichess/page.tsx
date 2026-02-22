@@ -3,13 +3,11 @@ import { cookies } from 'next/headers';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { GameView } from '@/features/game/components/GameView';
 import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
-
 export const metadata: Metadata = {
   title: 'Antichess vs Computer | Zugklang',
   description:
     'Play Antichess against Fairy-Stockfish. Lose all your pieces to win!'
 };
-
 export default async function AntichessComputerPage() {
   const cookieStore = await cookies();
   const playAs = cookieStore.get('playAs')?.value as
@@ -18,7 +16,6 @@ export default async function AntichessComputerPage() {
     | undefined;
   const board3dEnabled =
     cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
-
   return (
     <PageContainer scrollable={true}>
       <GameView

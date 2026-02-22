@@ -1,7 +1,6 @@
 import { ChessGameSession } from '../base/ChessGameSession';
 import { VariantCapabilities } from '../base/types';
 import { ChessVariant } from '@/features/chess/config/variants';
-
 export class ThreeCheckSession extends ChessGameSession {
   get capabilities(): VariantCapabilities {
     return {
@@ -13,7 +12,6 @@ export class ThreeCheckSession extends ChessGameSession {
       usesFairyEngine: true
     };
   }
-
   get variant(): ChessVariant {
     return 'threeCheck';
   }

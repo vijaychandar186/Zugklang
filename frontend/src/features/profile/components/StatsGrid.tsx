@@ -1,12 +1,10 @@
 import { Card, CardContent } from '@/components/ui/card';
-
 interface StatsGridProps {
   wins: number;
   losses: number;
   draws: number;
   total: number;
 }
-
 export function StatsGrid({ wins, losses, draws, total }: StatsGridProps) {
   const stats = [
     { label: 'Games', value: total, className: '' },
@@ -14,7 +12,6 @@ export function StatsGrid({ wins, losses, draws, total }: StatsGridProps) {
     { label: 'Losses', value: losses, className: 'text-red-500' },
     { label: 'Draws', value: draws, className: 'text-yellow-500' }
   ];
-
   return (
     <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
       {stats.map((s) => (

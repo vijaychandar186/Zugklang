@@ -1,6 +1,7 @@
-/* global __ENV */
 import http from 'k6/http';
 import { check, sleep } from 'k6';
+
+declare const __ENV: Record<string, string | undefined>;
 
 export const options = {
   stages: [
@@ -14,7 +15,7 @@ export const options = {
   }
 };
 
-const baseUrl = __ENV.BASE_URL || 'http://127.0.0.1:8080';
+const baseUrl = __ENV['BASE_URL'] || 'http://127.0.0.1:8080';
 
 export default function () {
   const res = http.get(`${baseUrl}/health`);

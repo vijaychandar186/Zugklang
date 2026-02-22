@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -62,11 +61,9 @@ import {
 import { playSound } from '@/features/game/utils/sounds';
 import { CrazyhousePocket } from './CrazyhousePocket';
 import type { PieceSymbol } from '@/lib/chess/chess';
-
 interface ChessSidebarProps {
   mode: ChessMode;
 }
-
 export function ChessSidebar({ mode }: ChessSidebarProps) {
   const router = useRouter();
   const {
@@ -84,15 +81,12 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     soundEnabled,
     hasHydrated,
     game,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     currentFEN,
     variant,
     selectedDropPiece,
     engineConfig
   } = useChessState();
-
   const isLocalGame = gameType === 'local';
-
   const {
     goToStart,
     goToEnd,
@@ -108,28 +102,22 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     stopPlayingFromPosition,
     setSelectedDropPiece
   } = useChessActions();
-
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { startAnalysis, endAnalysis } = useAnalysisActions();
-
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [newGameOpen, setNewGameOpen] = useState(false);
   const hasAutoPlayed = useRef(false);
-
   const isPlayMode = mode === 'play';
   const isAnalysisMode = mode === 'analysis';
-
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
   const canAbort = moves.length < 4;
-
   const { copy, isCopied } = useClipboard();
   const { isPlaying, togglePlay } = usePlayback({
     currentIndex: viewingIndex,
     totalItems: positionHistory.length,
     onNext: goToNext
   });
-
   useEffect(() => {
     if (
       isAnalysisMode &&
@@ -142,7 +130,6 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
       }, 100);
     }
   }, [isAnalysisMode, positionHistory.length, goToStart]);
-
   useEffect(() => {
     if (
       hasHydrated &&
@@ -154,7 +141,6 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
       setNewGameOpen(true);
     }
   }, [hasHydrated, isPlayMode, gameStarted, gameOver, moves.length]);
-
   const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
   const handleCopyPGN = () =>
     copy(
@@ -165,31 +151,25 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     const currentFEN = positionHistory[viewingIndex] || positionHistory[0];
     copy(currentFEN, 'fen');
   };
-
   const handleResign = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('You resigned');
     setGameOver(true);
   };
-
   const handleAbort = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Game Aborted');
     setGameOver(true);
   };
-
   const handleOfferDraw = () => {
     if (soundEnabled) playSound('draw-offer');
   };
-
   const handleAcceptDraw = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Draw by agreement');
     setGameOver(true);
   };
-
   const handleNewGame = () => setNewGameOpen(true);
-
   const handleToggleAnalysis = () => {
     if (isAnalysisOn) {
       endAnalysis();
@@ -197,11 +177,9 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
       startAnalysis();
     }
   };
-
   const handlePlayFromPosition = (color: 'white' | 'black') => {
     startPlayingFromPosition(color);
   };
-
   const handleFlipBoard = () => {
     if (isPlayMode) {
       flipBoard();
@@ -209,19 +187,15 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
       toggleBoardOrientation();
     }
   };
-
   const isCrazyhouse = variant === 'crazyhouse';
   const isGameActive = isPlayMode && gameStarted && !gameOver;
-
   const emptyPocket = { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 };
   const whitePocket = isCrazyhouse ? game.getPocket('w') : emptyPocket;
   const blackPocket = isCrazyhouse ? game.getPocket('b') : emptyPocket;
-
   const handlePocketSelect = (role: PieceSymbol) => {
     if (!isGameActive) return;
     setSelectedDropPiece(selectedDropPiece === role ? null : role);
   };
-
   return (
     <>
       <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>

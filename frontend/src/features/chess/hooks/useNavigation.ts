@@ -1,8 +1,6 @@
 'use client';
-
 import { useCallback, useMemo } from 'react';
 import { usePlayback } from './usePlayback';
-
 export interface UseNavigationOptions {
   viewingIndex: number;
   totalPositions: number;
@@ -10,7 +8,6 @@ export interface UseNavigationOptions {
   playbackEnabled?: boolean;
   playbackIntervalMs?: number;
 }
-
 export interface UseNavigationReturn {
   canGoBack: boolean;
   canGoForward: boolean;
@@ -24,7 +21,6 @@ export interface UseNavigationReturn {
   goToNext: () => void;
   goToMove: (index: number) => void;
 }
-
 export function useNavigation({
   viewingIndex,
   totalPositions,
@@ -34,34 +30,28 @@ export function useNavigation({
 }: UseNavigationOptions): UseNavigationReturn {
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < totalPositions - 1;
-
   const goToStart = useCallback(() => {
     onIndexChange(0);
   }, [onIndexChange]);
-
   const goToEnd = useCallback(() => {
     onIndexChange(totalPositions - 1);
   }, [onIndexChange, totalPositions]);
-
   const goToPrev = useCallback(() => {
     if (viewingIndex > 0) {
       onIndexChange(viewingIndex - 1);
     }
   }, [viewingIndex, onIndexChange]);
-
   const goToNext = useCallback(() => {
     if (viewingIndex < totalPositions - 1) {
       onIndexChange(viewingIndex + 1);
     }
   }, [viewingIndex, totalPositions, onIndexChange]);
-
   const goToMove = useCallback(
     (index: number) => {
       onIndexChange(index);
     },
     [onIndexChange]
   );
-
   const { isPlaying, togglePlay, play, pause } = usePlayback({
     currentIndex: viewingIndex,
     totalItems: totalPositions,
@@ -69,7 +59,6 @@ export function useNavigation({
     enabled: playbackEnabled,
     intervalMs: playbackIntervalMs
   });
-
   return useMemo(
     () => ({
       canGoBack,

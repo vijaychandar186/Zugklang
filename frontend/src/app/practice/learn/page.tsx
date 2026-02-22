@@ -4,13 +4,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { learnModes } from '@/constants/learn-modes';
-
 export const metadata: Metadata = {
   title: 'Learn | Zugklang',
   description:
     'Study chess concepts, openings, and more. Build foundational knowledge.'
 };
-
 export default function LearnPage() {
   return (
     <PageContainer scrollable={true}>

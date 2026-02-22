@@ -1,5 +1,4 @@
 'use client';
-
 import { ThemeProvider, useTheme } from 'next-themes';
 import { Toaster } from 'sonner';
 import { SessionProvider } from 'next-auth/react';
@@ -7,35 +6,29 @@ import { useEffect, useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from '@/app/_trpc/client';
+import KBar from '@/components/layout/Kbar';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import {
   BoardThemeName,
   DEFAULT_BOARD_THEME
 } from '@/features/chess/config/board-themes';
 import { COOKIE_CONFIG } from '@/features/chess/config/board';
-
 function ThemeCookieSync() {
   const { theme } = useTheme();
-
   useEffect(() => {
     if (theme) {
       document.cookie = `theme=${theme};path=/;max-age=${COOKIE_CONFIG.maxAge}`;
     }
   }, [theme]);
-
   return null;
 }
-
 function BoardSchemeSync() {
   const boardThemeName = useChessStore((s) => s.boardThemeName);
-
   useEffect(() => {
     document.documentElement.setAttribute('data-board-scheme', boardThemeName);
   }, [boardThemeName]);
-
   return null;
 }
-
 function StoreInitializer({
   initialBoardTheme,
   initialPlayAs
@@ -53,14 +46,12 @@ function StoreInitializer({
   }
   return null;
 }
-
 interface ProvidersProps {
   children: React.ReactNode;
   initialBoardTheme?: string;
   initialPlayAs?: string;
   initialSession?: React.ComponentProps<typeof SessionProvider>['session'];
 }
-
 export function Providers({
   children,
   initialBoardTheme,
@@ -73,7 +64,6 @@ export function Providers({
       links: [httpBatchLink({ url: '/api/trpc' })]
     })
   );
-
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
@@ -98,7 +88,7 @@ export function Providers({
             <ThemeCookieSync />
             <BoardSchemeSync />
             <Toaster position='bottom-right' richColors duration={2000} />
-            {children}
+            <KBar>{children}</KBar>
           </ThemeProvider>
         </SessionProvider>
       </QueryClientProvider>

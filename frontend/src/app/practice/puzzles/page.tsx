@@ -4,13 +4,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { puzzleModes } from '@/constants/puzzle-modes';
-
 export const metadata: Metadata = {
   title: 'Puzzles | Zugklang',
   description:
     'Choose your puzzle mode. Solve at your own pace or race against the clock.'
 };
-
 export default function PuzzlesMenuPage() {
   return (
     <PageContainer scrollable={true}>

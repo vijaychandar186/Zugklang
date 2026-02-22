@@ -1,8 +1,6 @@
 'use client';
-
 import type { ReactNode } from 'react';
 import { BoardContainer } from '../BoardContainer';
-
 export interface GameViewLayoutProps {
   topPlayerInfo?: ReactNode;
   bottomPlayerInfo?: ReactNode;
@@ -12,7 +10,6 @@ export interface GameViewLayoutProps {
   secondarySidebar?: ReactNode;
   className?: string;
 }
-
 export function GameViewLayout({
   topPlayerInfo,
   bottomPlayerInfo,

@@ -1,35 +1,18 @@
 import type { ChessVariant } from '@/features/chess/config/variants';
 import { getUciVariant } from '@/features/chess/config/variants';
-
-/**
- * FairyStockfishEngine - Uses the actual Fairy Stockfish NNUE UCI engine
- * for variant chess (atomic, etc.).
- *
- * The fairy-stockfish WASM is NOT a simple Worker script. It's a module
- * that exposes a Stockfish() factory function which internally manages
- * its own threads. The API is:
- *   - instance.postMessage(command) to send UCI commands
- *   - instance.addMessageListener(fn) where fn receives plain strings
- */
-
-// The Stockfish factory function exposed by the loaded script
 interface FairyStockfishInstance {
   postMessage(command: string): void;
   addMessageListener(listener: (line: string) => void): void;
   removeMessageListener(listener: (line: string) => void): void;
   terminate(): void;
 }
-
-// Declared on window after script loads
 declare global {
   var Stockfish:
     | ((params?: Record<string, unknown>) => Promise<FairyStockfishInstance>)
     | undefined;
 }
-
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Don't load twice
     if (document.querySelector(`script[src="${src}"]`)) {
       resolve();
       return;
@@ -41,7 +24,6 @@ function loadScript(src: string): Promise<void> {
     document.head.appendChild(script);
   });
 }
-
 export class FairyStockfishEngine {
   private engine: FairyStockfishInstance | null = null;
   private currentHandler: ((line: string) => void) | null = null;
@@ -50,9 +32,7 @@ export class FairyStockfishEngine {
   private readyPromise: Promise<void>;
   private resolveReady: (() => void) | null = null;
   private currentVariant: string = '';
-
   private static instance: FairyStockfishEngine | null = null;
-
   static getInstance(): FairyStockfishEngine {
     if (
       !FairyStockfishEngine.instance ||
@@ -62,34 +42,24 @@ export class FairyStockfishEngine {
     }
     return FairyStockfishEngine.instance;
   }
-
   constructor() {
     this.readyPromise = new Promise((resolve) => {
       this.resolveReady = resolve;
     });
-
     this.initializeEngine();
   }
-
   private async initializeEngine(): Promise<void> {
     if (typeof window === 'undefined') {
       this.resolveReady?.();
       return;
     }
-
     try {
-      // Load the fairy-stockfish script which exposes global Stockfish()
       await loadScript('/fairy-stockfish/stockfish.js');
-
       if (!window.Stockfish) {
         throw new Error('Stockfish factory not found after script load');
       }
-
-      // Create the engine instance via the factory
       const engine = await window.Stockfish();
       this.engine = engine;
-
-      // Wait for readyok
       await new Promise<void>((resolve) => {
         const initHandler = (line: string) => {
           if (line.includes('readyok')) {
@@ -99,12 +69,9 @@ export class FairyStockfishEngine {
           }
         };
         engine.addMessageListener(initHandler);
-
-        // Initialize UCI protocol
         engine.postMessage('uci');
         engine.postMessage('isready');
       });
-
       console.log('Fairy-Stockfish engine ready');
       this.resolveReady?.();
     } catch (e) {
@@ -112,11 +79,9 @@ export class FairyStockfishEngine {
       this.resolveReady?.();
     }
   }
-
   async waitUntilReady(): Promise<void> {
     return this.readyPromise;
   }
-
   setVariant(variant: ChessVariant): void {
     const uciVariant = getUciVariant(variant);
     if (this.currentVariant !== uciVariant) {
@@ -124,11 +89,9 @@ export class FairyStockfishEngine {
       this.sendCommand(`setoption name UCI_Variant value ${uciVariant}`);
     }
   }
-
   onMessage(callback: (data: { bestMove: string }) => void): void {
     if (this.engine && !this.isDestroyed) {
       this.clearCurrentHandler();
-
       const handler = (line: string) => {
         const bestMove = line.match(/bestmove\s+(\S+)/)?.[1];
         if (bestMove) {
@@ -142,14 +105,12 @@ export class FairyStockfishEngine {
       this.engine.addMessageListener(handler);
     }
   }
-
   private clearCurrentHandler(): void {
     if (this.currentHandler && this.engine) {
       this.engine.removeMessageListener(this.currentHandler);
       this.currentHandler = null;
     }
   }
-
   async evaluatePosition(
     fen: string,
     depth: number,
@@ -161,28 +122,20 @@ export class FairyStockfishEngine {
         if (variant) {
           this.setVariant(variant);
         }
-
         this.sendCommand(`position fen ${fen}`);
         this.sendCommand(`go depth ${depth}`);
       }
     }
   }
-
   async newGame(variant?: ChessVariant): Promise<void> {
     if (this.engine && !this.isDestroyed) {
       await this.readyPromise;
-
       this.sendCommand('ucinewgame');
-
-      // Set variant AFTER ucinewgame since it resets engine state
       if (variant) {
-        // Force re-send by clearing cached variant
         this.currentVariant = '';
         this.setVariant(variant);
       }
-
       this.sendCommand('isready');
-
       return new Promise((resolve) => {
         const handler = (line: string) => {
           if (line.includes('readyok')) {
@@ -194,20 +147,17 @@ export class FairyStockfishEngine {
       });
     }
   }
-
   stop(): void {
     this.clearCurrentHandler();
     if (this.isReady && this.engine) {
       this.sendCommand('stop');
     }
   }
-
   quit(): void {
     if (this.engine) {
       this.sendCommand('quit');
     }
   }
-
   destroy(): void {
     this.isDestroyed = true;
     this.clearCurrentHandler();
@@ -219,7 +169,6 @@ export class FairyStockfishEngine {
     }
     FairyStockfishEngine.instance = null;
   }
-
   sendCommand(command: string): void {
     this.engine?.postMessage(command);
   }

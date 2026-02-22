@@ -10,7 +10,6 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-
 const VARIANT_LABELS: Record<string, string> = {
   standard: 'Standard',
   fischerRandom: '960',
@@ -22,7 +21,6 @@ const VARIANT_LABELS: Record<string, string> = {
   kingOfTheHill: 'KOTH',
   crazyhouse: 'Crazyhouse'
 };
-
 function buildPgn(moves: string[]): string {
   return moves
     .map((move, i) => {
@@ -31,7 +29,6 @@ function buildPgn(moves: string[]): string {
     })
     .join(' ');
 }
-
 function ResultBadge({
   result,
   isWhite
@@ -64,7 +61,6 @@ function ResultBadge({
     </Badge>
   );
 }
-
 interface GameRow {
   id: string;
   variant: string;
@@ -76,12 +72,15 @@ interface GameRow {
   createdAt: Date;
   whiteUserId: string | null;
   blackUserId: string | null;
-  white: { name: string | null } | null;
-  black: { name: string | null } | null;
+  white: {
+    name: string | null;
+  } | null;
+  black: {
+    name: string | null;
+  } | null;
   whiteRatingDelta: number | null;
   blackRatingDelta: number | null;
 }
-
 interface GamesViewProps {
   games: GameRow[];
   totalCount: number;
@@ -89,7 +88,6 @@ interface GamesViewProps {
   totalPages: number;
   userId: string;
 }
-
 export function GamesView({
   games,
   totalCount,
@@ -155,10 +153,8 @@ export function GamesView({
                     day: 'numeric',
                     year: 'numeric'
                   }).format(game.createdAt);
-
                   const pgn = buildPgn(game.moves);
                   const reviewHref = `/tools/game-review?pgn=${encodeURIComponent(pgn)}`;
-
                   return (
                     <TableRow key={game.id}>
                       <TableCell className='text-muted-foreground px-4 py-2 text-xs'>

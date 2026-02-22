@@ -1,13 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/db';
-
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
   const body = await req.json();
   const {
     trainingMode,
@@ -18,7 +16,6 @@ export async function POST(req: NextRequest) {
     accuracy,
     avgResponseTimeMs
   } = body;
-
   if (
     !trainingMode ||
     !colorMode ||
@@ -30,7 +27,6 @@ export async function POST(req: NextRequest) {
   ) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
   }
-
   const visionSession = await prisma.visionSession.create({
     data: {
       userId: session.user.id,
@@ -43,19 +39,15 @@ export async function POST(req: NextRequest) {
       avgResponseTimeMs: Number(avgResponseTimeMs)
     }
   });
-
   return NextResponse.json(visionSession, { status: 201 });
 }
-
 export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
   const { searchParams } = new URL(req.url);
   const limit = Math.min(parseInt(searchParams.get('limit') ?? '500'), 500);
-
   const sessions = await prisma.visionSession.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: 'desc' },
@@ -72,6 +64,5 @@ export async function GET(req: NextRequest) {
       createdAt: true
     }
   });
-
   return NextResponse.json(sessions);
 }

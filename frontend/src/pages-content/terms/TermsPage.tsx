@@ -3,7 +3,6 @@ import { Navbar } from '@/components/layout/Navbar';
 import LegalContent from '../LegalContent';
 import { Footer } from '../landing/components/Footer';
 import { termsContent } from '@/pages-content/terms/constants/termsContent';
-
 export default function TermsPage() {
   return (
     <PageContainer>

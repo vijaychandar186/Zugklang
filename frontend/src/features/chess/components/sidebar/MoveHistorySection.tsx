@@ -1,11 +1,9 @@
 'use client';
-
 import type { ReactNode } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MoveHistory } from './MoveHistory';
 import { NavigationControls } from './NavigationControls';
 import type { UseNavigationReturn } from '../../hooks/useNavigation';
-
 export interface MoveHistorySectionProps {
   moves: string[];
   viewingIndex: number;
@@ -14,7 +12,6 @@ export interface MoveHistorySectionProps {
   scrollClassName?: string;
   emptyMessage?: ReactNode;
 }
-
 export function MoveHistorySection({
   moves,
   viewingIndex,

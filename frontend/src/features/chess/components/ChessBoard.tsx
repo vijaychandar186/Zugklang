@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useCallback, useMemo } from 'react';
 import { UnifiedChessBoard as Board } from './Board';
 import { Board3D } from './Board3D';
@@ -26,7 +25,6 @@ import '../variants';
 import { variantRegistry } from '../variants/shared/VariantRegistry';
 import { useCrazyhousePocket } from '../variants/crazyhouse/hooks/useCrazyhousePocket';
 import { buildCheckerPieces } from '@/features/chess/variants/checkers-chess/components/CheckerPieces';
-
 export function ChessBoard({
   serverOrientation,
   initialBoard3dEnabled
@@ -56,7 +54,6 @@ export function ChessBoard({
     autoFlipBoard,
     variant
   } = useChessState();
-
   const {
     setGameOver,
     setGameResult,
@@ -68,37 +65,26 @@ export function ChessBoard({
     flipBoard
   } = useChessActions();
   const { switchTimer } = useTimerState();
-
   const isLocalGame = gameType === 'local';
   const isPlayMode = mode === 'play';
   const effectivePlayAs = isPlayMode ? playAs : playerColor;
-
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
   const { turn: analysisTurn } = useAnalysisPosition();
-
   const theme = useBoardTheme();
-
   const stockfishEnabled =
     (isPlayMode && !isLocalGame) || playingAgainstStockfish;
-
   const useFairy = usesFairyEngine(variant);
   const useStandardEngine = !useFairy;
-
   const onMoveExecuted = useCallback(() => {
     if (isPlayMode) {
       const activeColor = game.turn() === 'w' ? 'white' : 'black';
       switchTimer(activeColor);
-
       if (isLocalGame && autoFlipBoard) {
         flipBoard();
       }
-
-      // Record null depth for human moves in computer games
-      // (Engine moves will record their actual depth via onMoveDepthRecorded)
       if (!isLocalGame) {
-        // The move was just made, so check the previous turn (before the move)
         const previousTurn = game.turn() === 'w' ? 'black' : 'white';
         const wasHumanMove = previousTurn === playAs;
         if (wasHumanMove) {
@@ -116,11 +102,9 @@ export function ChessBoard({
     playAs,
     recordMoveDepth
   ]);
-
   const onPremoveAdded = useCallback(() => {
     if (soundEnabled) playSound('premove');
   }, [soundEnabled]);
-
   const {
     isMounted,
     position,
@@ -155,8 +139,6 @@ export function ChessBoard({
     enablePremoves: stockfishEnabled && isPlayMode,
     onPremoveAdded
   });
-
-  // Standard Stockfish for regular chess and fischer-random
   useStockfish({
     game,
     fen: currentFEN,
@@ -169,7 +151,6 @@ export function ChessBoard({
     soundEnabled,
     playSound
   });
-
   const executeDropMove = useCallback(
     (san: string) => {
       const move = makeDropMove(san);
@@ -180,8 +161,6 @@ export function ChessBoard({
     },
     [makeDropMove, onMoveExecuted]
   );
-
-  // Fairy-Stockfish for variant chess (atomic, etc.)
   useFairyStockfish({
     game,
     fen: currentFEN,
@@ -196,7 +175,6 @@ export function ChessBoard({
     soundEnabled,
     playSound
   });
-
   const analysisArrows = useChessArrows({
     isAnalysisOn,
     uciLines,
@@ -206,14 +184,12 @@ export function ChessBoard({
     gameTurn,
     analysisTurn
   });
-
   const loserColor = useMemo((): 'w' | 'b' | null => {
     if (!gameOver) return null;
     const outcome = game.outcome();
     if (!outcome || outcome.winner === undefined) return null;
     return outcome.winner === 'w' ? 'b' : 'w';
   }, [gameOver, game]);
-
   const effectiveBoardOrientation = isPlayMode
     ? boardFlipped
       ? playAs === 'white'
@@ -221,17 +197,11 @@ export function ChessBoard({
         : 'white'
       : playAs
     : boardOrientation;
-
   const resolvedOrientation =
     isMounted && hasHydrated
       ? effectiveBoardOrientation
       : serverOrientation || 'white';
-
-  // Get variant module from registry
   const variantModule = variantRegistry.getModule(variant);
-
-  // Call hooks unconditionally (React hooks rules)
-
   const {
     selectedDropPiece,
     dropSquareStyles,
@@ -246,7 +216,6 @@ export function ChessBoard({
     onMoveExecuted,
     isGameOver: gameOver || (isPlayMode && !gameStarted)
   });
-
   const wrappedSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (selectedDropPiece) {
@@ -263,7 +232,6 @@ export function ChessBoard({
       handleSquareClick
     ]
   );
-
   const mergedSquareStyles = useMemo(() => {
     const base = isMounted && hasHydrated ? squareStyles : {};
     if (!selectedDropPiece) return base;
@@ -275,15 +243,12 @@ export function ChessBoard({
     selectedDropPiece,
     dropSquareStyles
   ]);
-
   useEffect(() => {
     if (!isPlayMode || !gameStarted) return;
-
     if (game.isGameOver()) {
       if (soundEnabled) playSound('game-end');
       const outcome = game.outcome();
       if (!outcome || outcome.winner === undefined) {
-        // Draw: stalemate, insufficient material, or variant draw (e.g. both kings reach rank 8)
         setGameResult('Draw!');
       } else {
         const winner = outcome.winner === 'w' ? 'White' : 'Black';
@@ -311,23 +276,18 @@ export function ChessBoard({
     soundEnabled,
     variant
   ]);
-
   const onNewGame = useCallback(() => {
     if (soundEnabled) playSound('game-start');
     clearState();
   }, [clearState, soundEnabled]);
-
   useEffect(() => {
     setOnNewGame(onNewGame);
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
-
-  // Build custom checker pieces for checkersChess variant
   const checkerPieces = useMemo(
     () => (variant === 'checkersChess' ? buildCheckerPieces() : undefined),
     [variant]
   );
-
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
@@ -345,16 +305,11 @@ export function ChessBoard({
     loserColor,
     ...(checkerPieces ? { pieces: checkerPieces } : {})
   };
-
   const shouldShow3d =
     isMounted && hasHydrated
       ? board3dEnabled
       : (initialBoard3dEnabled ?? false);
-
-  // Get variant overlay components
-  // Overlay components from variant registry
   const BoardOverlayComponent = variantModule?.components?.BoardOverlay;
-
   return (
     <>
       <div className='relative'>
@@ -367,7 +322,7 @@ export function ChessBoard({
             lightSquareStyle={theme.lightSquareStyle}
           />
         )}
-        {/* Render variant-specific board overlay (e.g., Racing Kings finish line) */}
+
         {BoardOverlayComponent && (
           <BoardOverlayComponent
             boardOrientation={resolvedOrientation}

@@ -1,5 +1,4 @@
 'use client';
-
 import { useCallback, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/Icons';
@@ -15,7 +14,6 @@ import {
   type DicePiece
 } from '../stores/useDiceChessStore';
 import { Skeleton } from '@/components/ui/skeleton';
-
 const PIECE_TO_DICE_VALUE: Record<DicePiece, DiceValue> = {
   k: 1,
   q: 2,
@@ -24,21 +22,16 @@ const PIECE_TO_DICE_VALUE: Record<DicePiece, DiceValue> = {
   r: 5,
   p: 6
 };
-
 interface DicePanelProps {
   turnColor: 'w' | 'b';
 }
-
 export function DicePanel({ turnColor }: DicePanelProps) {
   const { dice, isRolling, needsRoll, rollDice } = useDiceChessStore();
-
   const faces = turnColor === 'w' ? WHITE_FACES : BLACK_FACES;
-
   const handleRoll = useCallback(() => {
     if (!needsRoll || isRolling) return;
     rollDice(turnColor);
   }, [needsRoll, isRolling, rollDice, turnColor]);
-
   const rolledValues = useMemo((): [DiceValue, DiceValue, DiceValue] => {
     if (!dice) return [6, 6, 6];
     return [
@@ -47,19 +40,15 @@ export function DicePanel({ turnColor }: DicePanelProps) {
       PIECE_TO_DICE_VALUE[dice[2].piece]
     ];
   }, [dice]);
-
   const DICE_SIZE = 70;
-
   return (
     <div className='border-b px-4 py-3'>
       <div className='flex flex-col items-center gap-3'>
-        {/* Only show dice when rolling or after a roll completes */}
         {(dice || isRolling) && (
           <div className='flex items-center justify-center gap-4'>
             {[0, 1, 2].map((i) => {
               const hasDice = dice !== null;
               const hasValidMoves = hasDice && dice[i].hasValidMoves;
-
               return (
                 <div key={i} className='flex flex-col items-center gap-1'>
                   <div

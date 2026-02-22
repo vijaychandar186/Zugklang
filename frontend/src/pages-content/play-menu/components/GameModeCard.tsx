@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { Icons, type LucideIcon } from '@/components/Icons';
-
 interface GameModeCardProps {
   href: string;
   icon: LucideIcon;
@@ -9,7 +8,6 @@ interface GameModeCardProps {
   actionText: string;
   comingSoon?: boolean;
 }
-
 export function GameModeCard({
   href,
   icon: Icon,
@@ -57,9 +55,7 @@ export function GameModeCard({
         </div>
 
         <div
-          className={`mt-auto flex items-center text-xs font-medium ${
-            comingSoon ? 'text-muted-foreground' : 'text-primary'
-          }`}
+          className={`mt-auto flex items-center text-xs font-medium ${comingSoon ? 'text-muted-foreground' : 'text-primary'}`}
         >
           <span className='underline-offset-4 group-hover:underline'>
             {comingSoon ? 'Coming Soon' : actionText}
@@ -68,11 +64,9 @@ export function GameModeCard({
       </div>
     </div>
   );
-
   if (comingSoon) {
     return <div className='block h-full'>{CardContent}</div>;
   }
-
   return (
     <Link href={href} className='group block h-full'>
       {CardContent}

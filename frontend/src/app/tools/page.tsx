@@ -5,13 +5,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { tools } from '@/constants/tools';
-
 export const metadata: Metadata = {
   title: 'Chess Tools | Zugklang',
   description:
     'Powerful chess analysis and review tools. Analyze positions with Stockfish and review your games.'
 };
-
 export default function ToolsPage() {
   return (
     <PageContainer scrollable={true}>

@@ -1,12 +1,10 @@
 import { CSSProperties } from 'react';
 import { CapturedPieces, CapturablePiece } from '@/features/chess/types/core';
 import { PIECE_VALUES } from '@/features/chess/config/constants';
-
 const STARTING_PIECES = {
   white: { p: 8, n: 2, b: 2, r: 2, q: 1, k: 1 },
   black: { p: 8, n: 2, b: 2, r: 2, q: 1, k: 1 }
 };
-
 export function convertCSSPropertiesToStringObject(
   style: CSSProperties
 ): Record<string, string> {
@@ -18,19 +16,15 @@ export function convertCSSPropertiesToStringObject(
   }
   return result;
 }
-
 export function getCapturedPiecesFromFEN(fen: string): CapturedPieces {
   const boardPart = fen.split(' ')[0];
-
   const currentPieces = {
     white: { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 },
     black: { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 }
   };
-
   for (const char of boardPart) {
     if (char === '/') continue;
     if (!isNaN(parseInt(char))) continue;
-
     const isWhite = char === char.toUpperCase();
     const piece = char.toLowerCase() as 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
     if (isWhite) {
@@ -39,27 +33,22 @@ export function getCapturedPiecesFromFEN(fen: string): CapturedPieces {
       currentPieces.black[piece]++;
     }
   }
-
   const captured: CapturedPieces = { white: [], black: [] };
   const pieceTypes: CapturablePiece[] = ['q', 'r', 'b', 'n', 'p'];
-
   for (const piece of pieceTypes) {
     const blackMissing =
       STARTING_PIECES.black[piece] - currentPieces.black[piece];
     for (let i = 0; i < blackMissing; i++) {
       captured.white.push(piece);
     }
-
     const whiteMissing =
       STARTING_PIECES.white[piece] - currentPieces.white[piece];
     for (let i = 0; i < whiteMissing; i++) {
       captured.black.push(piece);
     }
   }
-
   return captured;
 }
-
 export function getMaterialAdvantage(captured: CapturedPieces): number {
   const whiteValue = captured.white.reduce(
     (sum, p) => sum + PIECE_VALUES[p],

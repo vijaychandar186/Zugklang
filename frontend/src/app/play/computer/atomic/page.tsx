@@ -3,13 +3,11 @@ import { cookies } from 'next/headers';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { GameView } from '@/features/game/components/GameView';
 import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
-
 export const metadata: Metadata = {
   title: 'Atomic Chess vs Computer | Zugklang',
   description:
     'Play Atomic Chess against Fairy-Stockfish. Captures cause explosions that destroy surrounding pieces!'
 };
-
 export default async function AtomicComputerPage() {
   const cookieStore = await cookies();
   const playAs = cookieStore.get('playAs')?.value as
@@ -18,7 +16,6 @@ export default async function AtomicComputerPage() {
     | undefined;
   const board3dEnabled =
     cookieStore.get(BOARD_3D_ENABLED_COOKIE)?.value === 'true';
-
   return (
     <PageContainer scrollable={true}>
       <GameView

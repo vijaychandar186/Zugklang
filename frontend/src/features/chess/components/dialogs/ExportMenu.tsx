@@ -1,5 +1,4 @@
 'use client';
-
 import { useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -10,14 +9,12 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-
 export interface ExportMenuProps {
   getFEN: () => string;
   getPGN: () => string;
   getMoves?: () => string;
   className?: string;
 }
-
 export function ExportMenu({
   getFEN,
   getPGN,
@@ -29,13 +26,11 @@ export function ExportMenu({
     navigator.clipboard.writeText(fen);
     toast.success('FEN copied');
   }, [getFEN]);
-
   const copyPGN = useCallback(() => {
     const pgn = getPGN();
     navigator.clipboard.writeText(pgn || '[No moves]');
     toast.success('PGN copied');
   }, [getPGN]);
-
   const copyMoves = useCallback(() => {
     if (!getMoves) {
       toast.error('No moves to copy');
@@ -45,7 +40,6 @@ export function ExportMenu({
     navigator.clipboard.writeText(moves || 'No moves');
     toast.success('Moves copied');
   }, [getMoves]);
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

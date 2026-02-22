@@ -72,12 +72,42 @@ services:
       dockerfile: Dockerfile.dev
     container_name: zugklang-frontend-dev
     restart: unless-stopped
+    stdin_open: true
+    tty: true
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: development
       DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
       # AUTH_URL, AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET: set in .env.local
+    env_file:
+      - path: ./frontend/.env.local
+        required: false
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/prisma:/app/prisma
+      - /app/node_modules
+      - /app/.next
+      - /app/src/generated
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zugklang-net
+
+  prisma-studio:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: zugklang-prisma-studio-dev
+    restart: unless-stopped
+    ports:
+      - "5555:5555"
+    command: ["sh", "-c", "npx prisma studio --port 5555 --browser none"]
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
     env_file:
       - path: ./frontend/.env.local
         required: false

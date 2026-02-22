@@ -1,15 +1,12 @@
 import type { ServerWebSocket } from 'bun';
 import type { Position } from 'chessops/chess';
-
 export type Color = 'white' | 'black';
 export type CreatorColor = 'white' | 'black' | 'random';
-
 export interface TimeControl {
   mode: 'unlimited' | 'timed' | 'custom';
   minutes: number;
   increment: number;
 }
-
 export interface SocketData {
   id: string;
   userId?: string;
@@ -20,9 +17,7 @@ export interface SocketData {
   variant?: string;
   challengeId?: string;
 }
-
 export type BunWS = ServerWebSocket<SocketData>;
-
 export interface Challenge {
   id: string;
   creator: BunWS;
@@ -31,7 +26,6 @@ export interface Challenge {
   creatorColor: CreatorColor;
   createdAt: number;
 }
-
 export interface Room {
   id: string;
   white: BunWS;
@@ -40,18 +34,14 @@ export interface Room {
   timeControl: TimeControl;
   startingFen: string;
   moves: string[];
-  /** Authoritative chessops position — updated on every legal move. */
   position: Position;
   drawOfferedBy: Color | null;
   rematchOfferedBy: string | null;
   status: 'active' | 'ended';
   createdAt: number;
-  /** Auto-abort timer for the first two moves (1 min each) */
   abortTimer: ReturnType<typeof setTimeout> | null;
-  /** Last known latency for each player — used to restore the signal icon on rejoin */
   whiteLatencyMs: number | null;
   blackLatencyMs: number | null;
-  /** Display names and avatars — persisted so they survive reconnects */
   whiteDisplayName: string | null;
   blackDisplayName: string | null;
   whiteImage: string | null;

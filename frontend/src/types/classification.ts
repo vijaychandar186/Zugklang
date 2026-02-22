@@ -10,7 +10,6 @@ export type Classification =
   | 'blunder'
   | 'forced'
   | 'book';
-
 export const CLASSIFICATION_VALUES: Record<Classification, number> = {
   blunder: 0,
   mistake: 0.15,
@@ -24,7 +23,6 @@ export const CLASSIFICATION_VALUES: Record<Classification, number> = {
   book: 0.9,
   forced: 1
 };
-
 export const CLASSIFICATION_COLORS: Record<Classification, string> = {
   brilliant: 'var(--classification-brilliant)',
   great: 'var(--classification-great)',
@@ -38,7 +36,6 @@ export const CLASSIFICATION_COLORS: Record<Classification, string> = {
   forced: 'var(--classification-forced)',
   book: 'var(--classification-book)'
 };
-
 export const CLASSIFICATION_ICONS: Record<Classification, string> = {
   brilliant: '/moves-classification/brilliancy.svg',
   great: '/moves-classification/great.svg',
@@ -52,7 +49,6 @@ export const CLASSIFICATION_ICONS: Record<Classification, string> = {
   forced: '/moves-classification/forced.svg',
   book: '/moves-classification/book.svg'
 };
-
 export const CLASSIFICATION_LABELS: Record<Classification, string> = {
   brilliant: 'brilliant !!',
   great: 'great !',

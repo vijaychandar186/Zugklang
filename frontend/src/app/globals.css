@@ -125,7 +125,6 @@
   }
 }
 
-/* View Transition Wave Effect for Theme Toggle */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;

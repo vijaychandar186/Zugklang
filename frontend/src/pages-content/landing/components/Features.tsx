@@ -8,7 +8,6 @@ import {
   FEATURE_HEADING,
   FeatureProps
 } from '@/pages-content/landing/content/features';
-
 function FeatureCard({ title, description, href }: FeatureProps) {
   const cardContent = (
     <Card
@@ -33,7 +32,6 @@ function FeatureCard({ title, description, href }: FeatureProps) {
       </CardContent>
     </Card>
   );
-
   if (href) {
     return (
       <Link href={href} className='block h-full'>
@@ -41,10 +39,8 @@ function FeatureCard({ title, description, href }: FeatureProps) {
       </Link>
     );
   }
-
   return cardContent;
 }
-
 export function Features() {
   return (
     <section

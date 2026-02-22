@@ -1,11 +1,8 @@
 import { privateProcedure, router } from '@/trpc/trpc';
 import { prisma } from '@/lib/db/db';
 import { z } from 'zod';
-
 const timeCategorySchema = z.enum(['bullet', 'blitz', 'rapid', 'classical']);
-
 export const userRouter = router({
-  /** Get the signed-in user's rating for a specific time category */
   getMyRating: privateProcedure
     .input(z.object({ category: timeCategorySchema }))
     .query(async ({ ctx, input }) => {
@@ -21,8 +18,6 @@ export const userRouter = router({
         gameCount: record?.gameCount ?? 0
       };
     }),
-
-  /** Get all ratings for the signed-in user */
   getMyRatings: privateProcedure.query(async ({ ctx }) => {
     const records = await prisma.rating.findMany({
       where: { userId: ctx.userId },
@@ -30,8 +25,6 @@ export const userRouter = router({
     });
     return records;
   }),
-
-  /** Get a user's public profile and optionally their rating for a time category */
   getUserProfile: privateProcedure
     .input(
       z.object({
@@ -57,17 +50,13 @@ export const userRouter = router({
             })
           : Promise.resolve(null)
       ]);
-
       if (!user) return null;
-
       return {
         name: user.name ?? 'Unknown',
         image: user.image ?? null,
         rating: input.category ? (ratingRow?.rating ?? 700) : null
       };
     }),
-
-  /** Get the signed-in user's puzzle rating */
   getMyPuzzleRating: privateProcedure.query(async ({ ctx }) => {
     const record = await prisma.puzzleRating.findUnique({
       where: { userId: ctx.userId },

@@ -8,7 +8,6 @@ import {
   EngineConfig,
   sampleFromGaussian
 } from '@/features/chess/types/engine';
-
 type UseFairyStockfishProps = {
   game: Chess;
   fen: string;
@@ -23,7 +22,6 @@ type UseFairyStockfishProps = {
   soundEnabled: boolean;
   playSound: (type: SoundType) => void;
 };
-
 export function useFairyStockfish({
   game,
   fen,
@@ -42,26 +40,19 @@ export function useFairyStockfish({
   const stockfishTimerRef = useRef<NodeJS.Timeout | null>(null);
   const initializedGameIdRef = useRef<number>(-1);
   const gameRef = useRef(game);
-
   useEffect(() => {
     gameRef.current = game;
   }, [game]);
-
   const makeStockfishMove = useCallback(async () => {
     const currentGame = gameRef.current;
     const expectedTurn = playAs === 'white' ? 'b' : 'w';
-
     if (currentGame.turn() !== expectedTurn || currentGame.isGameOver()) {
       return;
     }
-
     const fenToEvaluate = currentGame.fen();
     engine.stop();
-
-    // Determine the depth to use based on engine config
     let depthToUse: number;
     if (engineConfig.mode === 'probabilistic') {
-      // Sample from Gaussian distribution for each move
       depthToUse = sampleFromGaussian(engineConfig.mean, engineConfig.variance);
       console.log(
         `Probabilistic mode (Fairy): sampled depth ${depthToUse} (mean: ${engineConfig.mean}, variance: ${engineConfig.variance})`
@@ -69,29 +60,21 @@ export function useFairyStockfish({
     } else {
       depthToUse = engineConfig.level;
     }
-
     engine.onMessage(({ bestMove }) => {
       if (bestMove) {
         if (gameRef.current.fen() !== fenToEvaluate) return;
-
-        // Drop moves (e.g. "P@e4") contain "@" - handle via SAN
         if (bestMove.includes('@') && onDropMove) {
           onDropMove(bestMove);
-          // Record depth for drop moves too
           onMoveDepthRecorded?.(depthToUse);
           return;
         }
-
         const from = bestMove.substring(0, 2) as Square;
         const to = bestMove.substring(2, 4) as Square;
         const promotion = bestMove.substring(4, 5) || undefined;
-
         onMove(from, to, promotion);
-        // Record the depth used for this move
         onMoveDepthRecorded?.(depthToUse);
       }
     });
-
     await engine.evaluatePosition(fenToEvaluate, depthToUse, variant);
   }, [
     engine,
@@ -102,20 +85,16 @@ export function useFairyStockfish({
     onDropMove,
     onMoveDepthRecorded
   ]);
-
   useEffect(() => {
     if (!enabled) return;
-
     const manageEngineAndMove = async () => {
       if (initializedGameIdRef.current !== gameId) {
         await engine.newGame(variant);
         initializedGameIdRef.current = gameId;
-
         if (gameId > 0 && soundEnabled) {
           playSound('game-start');
         }
       }
-
       const stockfishColor = playAs === 'white' ? 'b' : 'w';
       if (game.turn() === stockfishColor && !game.isGameOver()) {
         stockfishTimerRef.current = setTimeout(async () => {
@@ -128,9 +107,7 @@ export function useFairyStockfish({
         }, MOVE_DELAY);
       }
     };
-
     manageEngineAndMove();
-
     return () => {
       if (stockfishTimerRef.current) {
         clearTimeout(stockfishTimerRef.current);

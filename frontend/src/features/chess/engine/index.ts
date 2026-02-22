@@ -1,7 +1,6 @@
 export { ChessGameSession } from './base/ChessGameSession';
 export { StandardGameSession } from './base/StandardGameSession';
 export type { VariantCapabilities } from './base/types';
-
 export {
   createGameSession,
   AtomicGameSession,

@@ -1,5 +1,4 @@
 'use client';
-
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -10,17 +9,14 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { LogOut, User, History } from 'lucide-react';
-import { SessionProvider, signOut, useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-
 function UserMenuContent() {
   const { data: session, status } = useSession();
-
   if (status === 'loading') {
     return <div className='bg-muted h-8 w-8 animate-pulse rounded-full' />;
   }
-
   if (!session) {
     return (
       <Link href='/signin'>
@@ -28,7 +24,6 @@ function UserMenuContent() {
       </Link>
     );
   }
-
   const initials =
     session.user?.name
       ?.split(' ')
@@ -36,7 +31,6 @@ function UserMenuContent() {
       .join('')
       .toUpperCase()
       .slice(0, 2) ?? '?';
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -72,7 +66,7 @@ function UserMenuContent() {
         <DropdownMenuItem asChild className='cursor-pointer'>
           <Link href='/games'>
             <History className='mr-2 h-4 w-4' />
-            Game History
+            History
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -87,11 +81,6 @@ function UserMenuContent() {
     </DropdownMenu>
   );
 }
-
 export function UserMenu() {
-  return (
-    <SessionProvider>
-      <UserMenuContent />
-    </SessionProvider>
-  );
+  return <UserMenuContent />;
 }

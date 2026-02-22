@@ -7,7 +7,6 @@ import {
   EngineConfig,
   sampleFromGaussian
 } from '@/features/chess/types/engine';
-
 type UseStockfishProps = {
   game: Chess;
   fen: string;
@@ -20,7 +19,6 @@ type UseStockfishProps = {
   soundEnabled: boolean;
   playSound: (type: SoundType) => void;
 };
-
 export function useStockfish({
   game,
   fen,
@@ -37,26 +35,19 @@ export function useStockfish({
   const stockfishTimerRef = useRef<NodeJS.Timeout | null>(null);
   const initializedGameIdRef = useRef<number>(-1);
   const gameRef = useRef(game);
-
   useEffect(() => {
     gameRef.current = game;
   }, [game]);
-
   const makeStockfishMove = useCallback(async () => {
     const currentGame = gameRef.current;
     const expectedTurn = playAs === 'white' ? 'b' : 'w';
-
     if (currentGame.turn() !== expectedTurn || currentGame.isGameOver()) {
       return;
     }
-
     const fenToEvaluate = currentGame.fen();
     engine.stop();
-
-    // Determine the depth to use based on engine config
     let depthToUse: number;
     if (engineConfig.mode === 'probabilistic') {
-      // Sample from Gaussian distribution for each move
       depthToUse = sampleFromGaussian(engineConfig.mean, engineConfig.variance);
       console.log(
         `Probabilistic mode: sampled depth ${depthToUse} (mean: ${engineConfig.mean}, variance: ${engineConfig.variance})`
@@ -64,37 +55,28 @@ export function useStockfish({
     } else {
       depthToUse = engineConfig.level;
     }
-
     engine.onMessage(({ bestMove }) => {
       if (bestMove) {
         if (gameRef.current.fen() !== fenToEvaluate) return;
-
         const from = bestMove.substring(0, 2) as Square;
         const to = bestMove.substring(2, 4) as Square;
         const promotion = bestMove.substring(4, 5) || undefined;
-
         onMove(from, to, promotion);
-        // Record the depth used for this move
         onMoveDepthRecorded?.(depthToUse);
       }
     });
-
     await engine.evaluatePosition(fenToEvaluate, depthToUse);
   }, [engine, playAs, engineConfig, onMove, onMoveDepthRecorded]);
-
   useEffect(() => {
     if (!enabled) return;
-
     const manageEngineAndMove = async () => {
       if (initializedGameIdRef.current !== gameId) {
         await engine.newGame();
         initializedGameIdRef.current = gameId;
-
         if (gameId > 0 && soundEnabled) {
           playSound('game-start');
         }
       }
-
       const stockfishColor = playAs === 'white' ? 'b' : 'w';
       if (game.turn() === stockfishColor && !game.isGameOver()) {
         stockfishTimerRef.current = setTimeout(async () => {
@@ -107,9 +89,7 @@ export function useStockfish({
         }, MOVE_DELAY);
       }
     };
-
     manageEngineAndMove();
-
     return () => {
       if (stockfishTimerRef.current) {
         clearTimeout(stockfishTimerRef.current);

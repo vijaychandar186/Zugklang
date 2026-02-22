@@ -5,9 +5,7 @@ import { STARTING_FEN } from '@/features/chess/config/constants';
 import { GAME_DICE_CHESS_KEY } from '@/lib/storage/keys';
 import { createLazyStorage, hasGameStarted } from '@/lib/storage/lazyStorage';
 import { TimeControl } from '@/features/game/types/rules';
-
 export type DicePiece = 'k' | 'q' | 'b' | 'n' | 'r' | 'p';
-
 export const PIECE_NAMES: Record<DicePiece, string> = {
   k: 'King',
   q: 'Queen',
@@ -16,23 +14,18 @@ export const PIECE_NAMES: Record<DicePiece, string> = {
   r: 'Rook',
   p: 'Pawn'
 };
-
 const ALL_PIECES: DicePiece[] = ['k', 'q', 'b', 'n', 'r', 'p'];
-
 export interface DiceResult {
   piece: DicePiece;
   hasValidMoves: boolean;
 }
-
 function rollRandomPiece(): DicePiece {
   return ALL_PIECES[Math.floor(Math.random() * ALL_PIECES.length)];
 }
-
 function checkPieceHasValidMoves(game: Chess, piece: DicePiece): boolean {
   const moves = game.moves({ verbose: true }) as ChessJSMove[];
   return moves.some((m) => m.piece === piece);
 }
-
 function getGameResult(game: Chess): string | null {
   if (game.isCheckmate()) {
     const winner = game.turn() === 'w' ? 'Black' : 'White';
@@ -43,9 +36,7 @@ function getGameResult(game: Chess): string | null {
   if (game.isInsufficientMaterial()) return 'Draw — insufficient material';
   return null;
 }
-
 interface DiceChessStore {
-  // Game state
   game: Chess;
   currentFEN: string;
   turn: 'w' | 'b';
@@ -56,21 +47,15 @@ interface DiceChessStore {
   gameOver: boolean;
   gameResult: string | null;
   hasHydrated: boolean;
-
-  // Timer state
   timeControl: TimeControl;
   whiteTime: number | null;
   blackTime: number | null;
   activeTimer: 'white' | 'black' | null;
   lastActiveTimestamp: number | null;
-
-  // Dice state
   dice: DiceResult[] | null;
   isRolling: boolean;
   needsRoll: boolean;
   highlightedSquares: Record<string, import('react').CSSProperties>;
-
-  // Game actions
   makeMove: (
     from: string,
     to: string,
@@ -81,12 +66,8 @@ interface DiceChessStore {
   setGameStarted: (started: boolean) => void;
   setGameOver: (over: boolean) => void;
   setGameResult: (result: string | null) => void;
-
-  // Dice actions
   rollDice: (turnColor: 'w' | 'b') => void;
   setNeedsRoll: (needs: boolean) => void;
-
-  // Navigation
   goToStart: () => void;
   goToEnd: () => void;
   goToPrev: () => void;
@@ -94,11 +75,9 @@ interface DiceChessStore {
   goToMove: (index: number) => void;
   calculateHighlights: () => void;
 }
-
 export const useDiceChessStore = create<DiceChessStore>()(
   persist(
     (set, get) => ({
-      // Initial state
       game: new Chess(),
       currentFEN: STARTING_FEN,
       turn: 'w',
@@ -109,21 +88,15 @@ export const useDiceChessStore = create<DiceChessStore>()(
       gameOver: false,
       gameResult: null,
       hasHydrated: false,
-
-      // Timer state
       timeControl: { mode: 'unlimited', minutes: 0, increment: 0 },
       whiteTime: null,
       blackTime: null,
       activeTimer: null,
       lastActiveTimestamp: null,
-
       dice: null,
       isRolling: false,
       needsRoll: true,
       highlightedSquares: {},
-
-      // ── Game actions ───────────────────────────────────────────────────
-
       makeMove: (from, to, promotion) => {
         const {
           game,
@@ -139,12 +112,8 @@ export const useDiceChessStore = create<DiceChessStore>()(
           blackTime
         } = get();
         if (gameOver || needsRoll || isRolling) return null;
-
-        // Get the piece at the source square
         const piece = game.get(from);
         if (!piece) return null;
-
-        // Validate against dice — the piece type must match at least one die with valid moves
         if (dice) {
           const pieceType = piece.type as DicePiece;
           const allowed = dice.some(
@@ -152,40 +121,29 @@ export const useDiceChessStore = create<DiceChessStore>()(
           );
           if (!allowed) return null;
         }
-
-        // Try to make the move
         const move = game.move({ from, to, promotion });
         if (!move) return null;
-
         const newFEN = game.fen();
         const newHistory = [
           ...positionHistory.slice(0, viewingIndex + 1),
           newFEN
         ];
-
-        // Check game over
         const isOver = game.isGameOver();
         const result = isOver ? getGameResult(game) : null;
-
-        // Handle timers
         const playerWhoMoved = move.color === 'w' ? 'white' : 'black';
         const nextPlayer = playerWhoMoved === 'white' ? 'black' : 'white';
         let newWhiteTime = whiteTime;
         let newBlackTime = blackTime;
         let newActiveTimer: 'white' | 'black' | null = null;
-
         if (timeControl.mode === 'timed' && !isOver) {
-          // Add increment to the player who just moved
           const increment = timeControl.increment;
           if (playerWhoMoved === 'white' && whiteTime !== null) {
             newWhiteTime = whiteTime + increment;
           } else if (playerWhoMoved === 'black' && blackTime !== null) {
             newBlackTime = blackTime + increment;
           }
-          // Set active timer to next player
           newActiveTimer = nextPlayer;
         }
-
         set({
           currentFEN: newFEN,
           turn: game.turn(),
@@ -202,24 +160,18 @@ export const useDiceChessStore = create<DiceChessStore>()(
           activeTimer: newActiveTimer,
           lastActiveTimestamp: newActiveTimer ? Date.now() : null
         });
-
         return move;
       },
-
       calculateHighlights: () => {
         const { game, dice } = get();
         if (!dice) {
           set({ highlightedSquares: {} });
           return;
         }
-
         const validPieces = new Set(
           dice.filter((d) => d.hasValidMoves).map((d) => d.piece)
         );
         const squares: Record<string, import('react').CSSProperties> = {};
-
-        // Iterate board to find pieces matching valid dice
-        // Chess.js usage: board() returns 2D array.
         const board = game.board();
         for (let r = 0; r < 8; r++) {
           for (let c = 0; c < 8; c++) {
@@ -229,7 +181,6 @@ export const useDiceChessStore = create<DiceChessStore>()(
               piece.color === game.turn() &&
               validPieces.has(piece.type as DicePiece)
             ) {
-              // Get square name (e.g. 'e4')
               const square = String.fromCharCode(97 + c) + (8 - r);
               squares[square] = {
                 boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
@@ -238,10 +189,8 @@ export const useDiceChessStore = create<DiceChessStore>()(
             }
           }
         }
-
         set({ highlightedSquares: squares });
       },
-
       startNewGame: (timeControl) => {
         const newGame = new Chess();
         const tc = timeControl || {
@@ -253,7 +202,6 @@ export const useDiceChessStore = create<DiceChessStore>()(
         const blackTime = tc.mode === 'timed' ? tc.minutes * 60 : null;
         const activeTimer = tc.mode === 'timed' ? 'white' : null;
         const lastActiveTimestamp = tc.mode === 'timed' ? Date.now() : null;
-
         set({
           game: newGame,
           currentFEN: STARTING_FEN,
@@ -274,7 +222,6 @@ export const useDiceChessStore = create<DiceChessStore>()(
           lastActiveTimestamp
         });
       },
-
       reset: () => {
         set({
           dice: null,
@@ -282,18 +229,12 @@ export const useDiceChessStore = create<DiceChessStore>()(
           needsRoll: true
         });
       },
-
       setGameStarted: (started) => set({ gameStarted: started }),
       setGameOver: (over) => set({ gameOver: over }),
       setGameResult: (result) => set({ gameResult: result }),
-
-      // ── Dice actions ───────────────────────────────────────────────────
-
       rollDice: (_turnColor) => {
         const { game } = get();
         set({ isRolling: true });
-
-        // Simulate rolling animation delay
         setTimeout(() => {
           const rolled: DiceResult[] = [];
           for (let i = 0; i < 3; i++) {
@@ -301,18 +242,13 @@ export const useDiceChessStore = create<DiceChessStore>()(
             const hasValidMoves = checkPieceHasValidMoves(game, piece);
             rolled.push({ piece, hasValidMoves });
           }
-
           const anyValid = rolled.some((d) => d.hasValidMoves);
-
           set({
             dice: rolled,
             isRolling: false,
             needsRoll: false
           });
-
           get().calculateHighlights();
-
-          // Auto re-roll if no valid moves after a short delay
           if (!anyValid) {
             setTimeout(() => {
               get().rollDice(_turnColor);
@@ -320,22 +256,16 @@ export const useDiceChessStore = create<DiceChessStore>()(
           }
         }, 800);
       },
-
       setNeedsRoll: (needs) => set({ needsRoll: needs }),
-
-      // ── Navigation ─────────────────────────────────────────────────────
-
       goToStart: () => {
         const { positionHistory } = get();
         set({ viewingIndex: 0, currentFEN: positionHistory[0] });
       },
-
       goToEnd: () => {
         const { positionHistory } = get();
         const last = positionHistory.length - 1;
         set({ viewingIndex: last, currentFEN: positionHistory[last] });
       },
-
       goToPrev: () => {
         const { viewingIndex, positionHistory } = get();
         if (viewingIndex > 0) {
@@ -343,7 +273,6 @@ export const useDiceChessStore = create<DiceChessStore>()(
           set({ viewingIndex: idx, currentFEN: positionHistory[idx] });
         }
       },
-
       goToNext: () => {
         const { viewingIndex, positionHistory } = get();
         if (viewingIndex < positionHistory.length - 1) {
@@ -351,7 +280,6 @@ export const useDiceChessStore = create<DiceChessStore>()(
           set({ viewingIndex: idx, currentFEN: positionHistory[idx] });
         }
       },
-
       goToMove: (index) => {
         const { positionHistory } = get();
         const posIdx = Math.min(index + 1, positionHistory.length - 1);
@@ -361,7 +289,10 @@ export const useDiceChessStore = create<DiceChessStore>()(
     {
       name: GAME_DICE_CHESS_KEY,
       storage: createLazyStorage((state: unknown) => {
-        const s = state as { moves?: unknown[]; gameStarted?: boolean };
+        const s = state as {
+          moves?: unknown[];
+          gameStarted?: boolean;
+        };
         return hasGameStarted({
           moves: s.moves,
           gameStarted: s.gameStarted
@@ -392,8 +323,6 @@ export const useDiceChessStore = create<DiceChessStore>()(
             state.currentFEN = STARTING_FEN;
           }
           state.turn = state.game.turn();
-
-          // Handle timer state on reload
           if (
             state.activeTimer &&
             state.lastActiveTimestamp &&
@@ -403,7 +332,6 @@ export const useDiceChessStore = create<DiceChessStore>()(
             const elapsedSeconds = Math.floor(
               (now - state.lastActiveTimestamp) / 1000
             );
-
             if (state.activeTimer === 'white' && state.whiteTime !== null) {
               state.whiteTime = Math.max(0, state.whiteTime - elapsedSeconds);
               if (state.whiteTime === 0) {
@@ -422,13 +350,10 @@ export const useDiceChessStore = create<DiceChessStore>()(
                 state.activeTimer = null;
               }
             }
-
-            // Update timestamp to now for continued countdown
             if (!state.gameOver) {
               state.lastActiveTimestamp = now;
             }
           }
-
           state.hasHydrated = true;
         }
       }

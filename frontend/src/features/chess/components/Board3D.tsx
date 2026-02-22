@@ -1,5 +1,4 @@
 'use client';
-
 import { useMemo, useEffect, useRef } from 'react';
 import { Chessboard } from 'react-chessboard';
 import type { CSSProperties } from 'react';
@@ -7,9 +6,12 @@ import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import Image from 'next/image';
-
-type PositionObject = Record<string, { pieceType: string }>;
-
+type PositionObject = Record<
+  string,
+  {
+    pieceType: string;
+  }
+>;
 const PIECE_FILE_MAP: Record<string, string> = {
   wP: 'white-pawn',
   wN: 'white-knight',
@@ -24,7 +26,6 @@ const PIECE_FILE_MAP: Record<string, string> = {
   bQ: 'black-queen',
   bK: 'black-king'
 };
-
 export type Board3DProps = {
   position: string | PositionObject;
   boardOrientation?: 'white' | 'black';
@@ -40,7 +41,6 @@ export type Board3DProps = {
   animationDuration?: number;
   loserColor?: 'w' | 'b' | null;
 };
-
 export function Board3D({
   position,
   boardOrientation = 'white',
@@ -55,27 +55,22 @@ export function Board3D({
 }: Board3DProps) {
   const theme = useBoardTheme();
   const hasMountedRef = useRef(false);
-
   useEffect(() => {
     const timer = setTimeout(() => {
       hasMountedRef.current = true;
     }, 100);
-
     return () => {
       clearTimeout(timer);
     };
   }, []);
-
   const threeDPieces = useMemo(() => {
     const pieces = Object.keys(PIECE_FILE_MAP);
     const pieceComponents: Record<string, () => React.JSX.Element> = {};
-
     pieces.forEach((piece) => {
       const fileName = PIECE_FILE_MAP[piece];
       const isKing = piece[1] === 'K';
       const isLoserPiece =
         loserColor && piece[0] === (loserColor === 'w' ? 'w' : 'b');
-
       pieceComponents[piece] = () => (
         <div
           style={{
@@ -110,10 +105,8 @@ export function Board3D({
         </div>
       );
     });
-
     return pieceComponents;
   }, [loserColor]);
-
   const options = useMemo(() => {
     const boardStyle = {
       boxSizing: 'border-box',
@@ -142,21 +135,18 @@ export function Board3D({
       backgroundSize: 'cover',
       overflow: 'visible'
     } as CSSProperties;
-
     const lightSquareStyle = {
       ...theme.lightSquareStyle,
       backgroundImage: 'url("/3d-assets/wood-texture.svg")',
       backgroundSize: 'cover',
       backgroundBlendMode: 'overlay'
     } as CSSProperties;
-
     const darkSquareStyle = {
       ...theme.darkSquareStyle,
       backgroundImage: 'url("/3d-assets/wood-texture.svg")',
       backgroundSize: 'cover',
       backgroundBlendMode: 'overlay'
     } as CSSProperties;
-
     return {
       id: 'board-3d',
       position,
@@ -196,7 +186,6 @@ export function Board3D({
     onSquareRightClick,
     onPieceDrop
   ]);
-
   return (
     <div
       className='w-full'

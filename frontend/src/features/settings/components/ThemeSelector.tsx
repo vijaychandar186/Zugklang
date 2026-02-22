@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
@@ -11,12 +10,10 @@ import {
 import { BOARD_THEMES } from '@/features/chess/config/board-themes';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { cn } from '@/lib/utils';
-
 type ThemeSelectorProps = {
   currentTheme: BoardThemeName;
   onThemeChange: (themeName: BoardThemeName) => void;
 };
-
 export function BoardThemeSelector({
   currentTheme,
   onThemeChange

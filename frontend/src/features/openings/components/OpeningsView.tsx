@@ -1,5 +1,4 @@
 'use client';
-
 import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chess } from '@/lib/chess/chess';
@@ -19,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { Board3D } from '@/features/chess/components/Board3D';
@@ -41,11 +39,8 @@ import {
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
 import { useOpeningsStore } from '../stores/useOpeningsStore';
 import type { Opening, SortOption } from '../types';
-
 import openingsData from '@/resources/eco-openings.json';
-
 const START_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
 function parsePgnMoves(pgn: string): MoveData[] {
   const moves: MoveData[] = [];
   const parts = pgn.split(/\s+/);
@@ -56,17 +51,14 @@ function parsePgnMoves(pgn: string): MoveData[] {
   }
   return moves;
 }
-
 function getFenAtMoveIndex(pgn: string, moveIndex: number): string {
   try {
     const chess = new Chess();
     if (moveIndex === 0) return chess.fen();
-
     const moves = pgn
       .replace(/\d+\.\s*/g, '')
       .split(/\s+/)
       .filter((m) => m.length > 0);
-
     for (let i = 0; i < Math.min(moveIndex, moves.length); i++) {
       chess.move(moves[i]);
     }
@@ -75,16 +67,13 @@ function getFenAtMoveIndex(pgn: string, moveIndex: number): string {
     return START_FEN;
   }
 }
-
 interface OpeningsViewProps {
   initialBoard3dEnabled?: boolean;
 }
-
 export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
   const router = useRouter();
   const [inputValue, setInputValue] = useState('');
   const [viewingMoveIndex, setViewingMoveIndex] = useState(0);
-
   const {
     selectedOpening,
     selectedIndex,
@@ -103,28 +92,22 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     isFavorite,
     getFavoriteKey
   } = useOpeningsStore();
-
   const { isMounted, shouldShow3d, theme } = useBoardMounting({
     initialBoard3dEnabled
   });
-
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { startAnalysis, endAnalysis, setPosition } = useAnalysisActions();
   const { uciLines } = useEngineAnalysis();
-
   useEngineInit();
-
   useEffect(() => {
     setInputValue(searchQuery);
   }, [searchQuery]);
-
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearchQuery(inputValue);
     }, 150);
     return () => clearTimeout(timer);
   }, [inputValue, setSearchQuery]);
-
   const favoriteOpenings = useMemo(() => {
     const openings = openingsData as Opening[];
     return favorites
@@ -136,15 +119,12 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
       })
       .filter((o): o is Opening => o !== undefined);
   }, [favorites]);
-
   const filteredOpenings = useMemo(() => {
     const baseOpenings =
       activeTab === 'favorites'
         ? favoriteOpenings
         : (openingsData as Opening[]);
-
     let filtered = baseOpenings;
-
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = baseOpenings.filter(
@@ -153,7 +133,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
           o.eco.toLowerCase().includes(query)
       );
     }
-
     const sorted = [...filtered].sort((a, b) => {
       switch (sortOption) {
         case 'name':
@@ -168,35 +147,27 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
           return 0;
       }
     });
-
     return sorted;
   }, [searchQuery, sortOption, activeTab, favoriteOpenings]);
-
   const currentMoves = selectedOpening
     ? parsePgnMoves(selectedOpening.pgn)
     : [];
-
   const [shouldAutoPlay, setShouldAutoPlay] = useState(false);
-
   useEffect(() => {
     if (selectedOpening) {
       setViewingMoveIndex(0);
       setShouldAutoPlay(true);
     }
   }, [selectedOpening]);
-
   const currentFen = selectedOpening
     ? getFenAtMoveIndex(selectedOpening.pgn, viewingMoveIndex)
     : START_FEN;
-
   const currentTurn = currentFen.split(' ')[1] === 'w' ? 'w' : 'b';
-
   useEffect(() => {
     if (isAnalysisOn && currentFen) {
       setPosition(currentFen, currentTurn);
     }
   }, [currentFen, currentTurn, isAnalysisOn, setPosition]);
-
   const analysisArrows = useChessArrows({
     isAnalysisOn,
     uciLines,
@@ -206,10 +177,8 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     gameTurn: currentTurn,
     analysisTurn: currentTurn
   });
-
   const canGoBackMove = viewingMoveIndex > 0;
   const canGoForwardMove = viewingMoveIndex < currentMoves.length;
-
   const goToMoveStart = useCallback(() => setViewingMoveIndex(0), []);
   const goToMoveEnd = useCallback(
     () => setViewingMoveIndex(currentMoves.length),
@@ -225,42 +194,36 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
   const goToMoveIndex = useCallback((moveArrayIndex: number) => {
     setViewingMoveIndex(moveArrayIndex + 1);
   }, []);
-
   const { isPlaying, togglePlay, play } = usePlayback({
     currentIndex: viewingMoveIndex,
     totalItems: currentMoves.length + 1,
     onNext: goToMoveNext,
     enabled: currentMoves.length > 0
   });
-
   useEffect(() => {
     if (shouldAutoPlay && currentMoves.length > 0) {
       play();
       setShouldAutoPlay(false);
     }
   }, [shouldAutoPlay, currentMoves.length, play]);
-
   const handleSelectOpening = useCallback(
     (opening: Opening, index: number) => {
       setSelectedOpening(opening, index);
     },
     [setSelectedOpening]
   );
-
   const goToNextOpening = useCallback(() => {
     if (filteredOpenings.length === 0) return;
     const nextIndex =
       selectedIndex < filteredOpenings.length - 1 ? selectedIndex + 1 : 0;
     setSelectedOpening(filteredOpenings[nextIndex], nextIndex);
   }, [filteredOpenings, selectedIndex, setSelectedOpening]);
-
   const goToPrevOpening = useCallback(() => {
     if (filteredOpenings.length === 0) return;
     const prevIndex =
       selectedIndex > 0 ? selectedIndex - 1 : filteredOpenings.length - 1;
     setSelectedOpening(filteredOpenings[prevIndex], prevIndex);
   }, [filteredOpenings, selectedIndex, setSelectedOpening]);
-
   const handleToggleAnalysis = useCallback(() => {
     if (isAnalysisOn) {
       endAnalysis();
@@ -276,7 +239,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     currentFen,
     currentTurn
   ]);
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement) return;
@@ -300,7 +262,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
         handleToggleAnalysis();
       }
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
@@ -312,7 +273,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     toggleFavorite,
     handleToggleAnalysis
   ]);
-
   const boardProps = {
     position: currentFen,
     boardOrientation,
@@ -320,7 +280,6 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
     squareStyles: {},
     arrows: analysisArrows
   };
-
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
       <div className='flex flex-col items-center gap-2'>
@@ -548,9 +507,7 @@ export function OpeningsView({ initialBoard3dEnabled }: OpeningsViewProps) {
                 {filteredOpenings.map((opening, idx) => (
                   <div
                     key={`${opening.eco}-${opening.name}-${idx}`}
-                    className={`group hover:bg-accent flex min-w-0 items-center justify-between gap-2 overflow-hidden transition-colors ${
-                      selectedIndex === idx ? 'bg-accent' : ''
-                    }`}
+                    className={`group hover:bg-accent flex min-w-0 items-center justify-between gap-2 overflow-hidden transition-colors ${selectedIndex === idx ? 'bg-accent' : ''}`}
                   >
                     <button
                       onClick={() => handleSelectOpening(opening, idx)}

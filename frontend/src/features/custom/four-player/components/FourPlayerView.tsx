@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import { defaultPieces } from 'react-chessboard';
 import { FourPlayerBoard } from './FourPlayerBoard';
@@ -7,16 +6,19 @@ import { FourPlayerSidebar } from './FourPlayerSidebar';
 import { FourPlayerGameDialog } from './FourPlayerGameDialog';
 import { useFourPlayerStore } from '../store';
 import type { Team, PieceType } from '../engine';
-
-const TEAM_INFO: Record<Team, { label: string; cssVar: string }> = {
+const TEAM_INFO: Record<
+  Team,
+  {
+    label: string;
+    cssVar: string;
+  }
+> = {
   r: { label: 'Red', cssVar: 'var(--four-player-red)' },
   b: { label: 'Blue', cssVar: 'var(--four-player-blue)' },
   y: { label: 'Yellow', cssVar: 'var(--four-player-yellow)' },
   g: { label: 'Green', cssVar: 'var(--four-player-green)' }
 };
-
 const PROMO_PIECES: PieceType[] = ['Q', 'R', 'B', 'N'];
-
 function PromotionDialog({
   team,
   onSelect
@@ -50,7 +52,6 @@ function PromotionDialog({
     </div>
   );
 }
-
 export function FourPlayerView() {
   const {
     game,
@@ -62,19 +63,15 @@ export function FourPlayerView() {
     moves,
     startGame
   } = useFourPlayerStore();
-
   const [newGameOpen, setNewGameOpen] = useState(false);
-
   useEffect(() => {
     if (hasHydrated && !gameStarted && !isGameOver && moves.length === 0) {
       setNewGameOpen(true);
     }
   }, [hasHydrated, gameStarted, isGameOver, moves.length]);
-
   const handleStartGame = () => {
     startGame();
   };
-
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
       <div className='flex min-w-0 flex-col items-center gap-2'>

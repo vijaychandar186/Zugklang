@@ -1,22 +1,18 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TIME_CATEGORY_LABELS } from '@/lib/ratings/timeCategory';
-
 interface RatingRow {
   category: string;
   rating: number;
   rd: number;
   gameCount: number;
 }
-
 interface PuzzleRatingRow {
   rating: number;
   rd: number;
   gameCount: number;
 }
-
 const CATEGORY_ORDER = ['bullet', 'blitz', 'rapid', 'classical'];
-
 export function RatingsTable({
   ratings,
   puzzleRating
@@ -26,12 +22,10 @@ export function RatingsTable({
 }) {
   const hasAny = ratings.length > 0 || puzzleRating != null;
   if (!hasAny) return null;
-
   const sorted = [...ratings].sort(
     (a, b) =>
       CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category)
   );
-
   return (
     <Card>
       <CardHeader className='pb-3'>

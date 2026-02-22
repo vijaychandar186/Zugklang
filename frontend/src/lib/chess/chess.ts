@@ -28,11 +28,9 @@ import {
   makePgn
 } from 'chessops/pgn';
 import { setupPosition, defaultPosition } from 'chessops/variant';
-
 export type ChessJSColor = 'w' | 'b';
 export type ChessJSPieceType = 'p' | 'n' | 'b' | 'r' | 'q' | 'k';
 export type ChessJSSquare = string;
-
 export interface ChessJSMove {
   color: ChessJSColor;
   from: ChessJSSquare;
@@ -44,18 +42,15 @@ export interface ChessJSMove {
   lan?: string;
   captured?: ChessJSPieceType;
 }
-
 export interface ChessJSPiece {
   type: ChessJSPieceType;
   color: ChessJSColor;
 }
-
 export type MoveOptions = {
   verbose?: boolean;
   square?: string;
   maxWidth?: number;
 };
-
 export type PieceSymbol = ChessJSPieceType;
 export type Color = ChessJSColor;
 export type Square = ChessJSSquare;
@@ -66,7 +61,6 @@ export type ShortMove = {
   to: ChessJSSquare;
   promotion?: ChessJSPieceType;
 };
-
 const roleToType: Record<string, ChessJSPieceType> = {
   pawn: 'p',
   knight: 'n',
@@ -75,7 +69,6 @@ const roleToType: Record<string, ChessJSPieceType> = {
   queen: 'q',
   king: 'k'
 };
-
 const typeToRole: Record<string, Role> = {
   p: 'pawn',
   n: 'knight',
@@ -84,41 +77,41 @@ const typeToRole: Record<string, Role> = {
   q: 'queen',
   k: 'king'
 };
-
 const colorToChar: Record<string, ChessJSColor> = {
   white: 'w',
   black: 'b'
 };
-
 const charToColor: Record<string, ChessOpsColor> = {
   w: 'white',
   b: 'black'
 };
-
 export class Chess {
   private _game: Game<PgnNodeData>;
   private _currentNode: Node<PgnNodeData>;
   private _pos: Position;
   private _startFen: string;
   private _headers: Map<string, string>;
-  private _historyStack: { position: Position; move: ChessJSMove }[] = [];
-
+  private _historyStack: {
+    position: Position;
+    move: ChessJSMove;
+  }[] = [];
   constructor(
     fen?: string,
     optionsOrVariant:
       | Rules
-      | { skipValidation?: boolean; variant?: Rules } = 'chess'
+      | {
+          skipValidation?: boolean;
+          variant?: Rules;
+        } = 'chess'
   ) {
     let variant: Rules = 'chess';
     let skipValidation = false;
-
     if (typeof optionsOrVariant === 'string') {
       variant = optionsOrVariant;
     } else if (typeof optionsOrVariant === 'object') {
       if (optionsOrVariant.variant) variant = optionsOrVariant.variant;
       skipValidation = !!optionsOrVariant.skipValidation;
     }
-
     this._headers = new Map([
       ['Event', '?'],
       ['Site', '?'],
@@ -129,25 +122,20 @@ export class Chess {
       ['Result', '*'],
       ['Variant', variant === 'chess' ? 'Standard' : variant]
     ]);
-
     this._pos = defaultPosition(variant);
     this._startFen = makeFen(this._pos.toSetup());
-
     if (fen) {
       this.load(fen, { skipValidation });
     }
-
     this._game = {
       headers: this._headers,
       moves: new Node()
     };
     this._currentNode = this._game.moves;
   }
-
   fen(): string {
     return makeFen(this._pos.toSetup());
   }
-
   reset(): void {
     const variant =
       this.header()['Variant'] === 'Standard'
@@ -159,11 +147,14 @@ export class Chess {
     this._startFen = makeFen(this._pos.toSetup());
     this._historyStack = [];
   }
-
-  load(fen: string, options?: { skipValidation?: boolean }): boolean {
+  load(
+    fen: string,
+    options?: {
+      skipValidation?: boolean;
+    }
+  ): boolean {
     try {
       const setup = parseFen(fen).unwrap();
-
       if (options?.skipValidation) {
         this._pos.board = setup.board.clone();
         this._pos.turn = setup.turn;
@@ -174,7 +165,6 @@ export class Chess {
       } else {
         this._pos = setupPosition(this._pos.rules || 'chess', setup).unwrap();
       }
-
       this._startFen = fen;
       this._game.moves = new Node();
       this._currentNode = this._game.moves;
@@ -184,13 +174,17 @@ export class Chess {
       return false;
     }
   }
-
   move(
-    move: string | { from: string; to: string; promotion?: string }
+    move:
+      | string
+      | {
+          from: string;
+          to: string;
+          promotion?: string;
+        }
   ): ChessJSMove | null {
     try {
       let m: ChessOpsMove;
-
       if (typeof move === 'string') {
         const parsed = parseSan(this._pos, move);
         if (!parsed) return null;
@@ -199,13 +193,11 @@ export class Chess {
         const fromSq = parseSquare(move.from);
         const toSq = parseSquare(move.to);
         if (fromSq === undefined || toSq === undefined) return null;
-
         const piece = this._pos.board.get(fromSq);
         const isPromotion =
           piece?.role === 'pawn' &&
           ((piece.color === 'white' && squareRank(toSq) === 7) ||
             (piece.color === 'black' && squareRank(toSq) === 0));
-
         m = {
           from: fromSq,
           to: toSq,
@@ -216,39 +208,31 @@ export class Chess {
         };
         if (!this._pos.isLegal(m)) return null;
       }
-
       const san = makeSan(this._pos, m);
       const moveObj = this._makeMoveObjectInternal(m, san, this._pos);
-
       const positionClone = this._pos.clone();
       this._historyStack.push({ position: positionClone, move: moveObj });
-
       this._pos.play(m);
-
       const newNode = new ChildNode<PgnNodeData>({ san });
       this._currentNode.children.push(newNode);
       this._currentNode = newNode;
-
       return moveObj;
     } catch (e) {
       console.error(e);
       return null;
     }
   }
-
   put(piece: ChessJSPiece, square: string): boolean {
     const sq = parseSquare(square);
     if (sq === undefined) return false;
     const role = typeToRole[piece.type];
     if (!role) return false;
-
     this._pos.board.set(sq, {
       role: role,
       color: charToColor[piece.color]
     });
     return true;
   }
-
   remove(square: string): ChessJSPiece | null {
     const sq = parseSquare(square);
     if (sq === undefined) return null;
@@ -259,11 +243,9 @@ export class Chess {
       color: colorToChar[piece.color]
     };
   }
-
   turn(): ChessJSColor {
     return colorToChar[this._pos.turn];
   }
-
   get(square: string): ChessJSPiece | null {
     const sq = parseSquare(square);
     if (sq === undefined) return null;
@@ -274,14 +256,12 @@ export class Chess {
       color: colorToChar[piece.color]
     };
   }
-
   history(options: { verbose: true }): ChessJSMove[];
   history(options?: { verbose: false }): string[];
   history(options?: { verbose?: boolean }): (string | ChessJSMove)[];
   history(options?: { verbose?: boolean }): (string | ChessJSMove)[] {
     const moves: (string | ChessJSMove)[] = [];
     const verbose = options?.verbose;
-
     if (!verbose) {
       let node = this._game.moves;
       while (node.children.length > 0) {
@@ -296,7 +276,6 @@ export class Chess {
         parseFen(this._startFen).unwrap()
       ).unwrap();
       let node = this._game.moves;
-
       while (node.children.length > 0) {
         const child = node.children[0];
         const m = parseSan(tempPos, child.data.san);
@@ -315,7 +294,6 @@ export class Chess {
     }
     return moves;
   }
-
   moves(): string[];
   moves(options: { verbose: true; square?: string }): ChessJSMove[];
   moves(options?: { verbose: false; square?: string }): string[];
@@ -326,7 +304,6 @@ export class Chess {
   moves({ square, verbose }: MoveOptions = {}): (string | ChessJSMove)[] {
     const moves: (string | ChessJSMove)[] = [];
     const ctx = this._pos.ctx();
-
     const generateForSquare = (sq: ChessOpsSquare) => {
       const dests = this._pos.dests(sq, ctx);
       for (const to of dests) {
@@ -347,7 +324,6 @@ export class Chess {
         addMove(m);
       }
     };
-
     const addMove = (m: ChessOpsMove) => {
       const san = makeSan(this._pos, m);
       if (verbose) {
@@ -356,7 +332,6 @@ export class Chess {
         moves.push(san);
       }
     };
-
     if (square) {
       const sq = parseSquare(square);
       if (sq !== undefined) generateForSquare(sq);
@@ -369,51 +344,44 @@ export class Chess {
     }
     return moves;
   }
-
   undo(): ChessJSMove | null {
     if (this._historyStack.length === 0) return null;
-
     const last = this._historyStack.pop()!;
     const prevPos = last.position;
-
     this._pos = prevPos;
     return last.move;
   }
-
   isGameOver(): boolean {
     return this._pos.isEnd();
   }
-
   isCheck(): boolean {
     return this._pos.isCheck();
   }
-
   isCheckmate(): boolean {
     return this._pos.isCheckmate();
   }
-
   isDraw(): boolean {
     const outcome = this._pos.outcome();
     if (outcome && outcome.winner === undefined) return true;
     return this._pos.isStalemate() || this._pos.isInsufficientMaterial();
   }
-
-  outcome(): { winner: 'w' | 'b' | undefined } | undefined {
+  outcome():
+    | {
+        winner: 'w' | 'b' | undefined;
+      }
+    | undefined {
     const o = this._pos.outcome();
     if (!o) return undefined;
     return {
       winner: o.winner ? colorToChar[o.winner] : undefined
     };
   }
-
   isStalemate(): boolean {
     return this._pos.isStalemate();
   }
-
   isInsufficientMaterial(): boolean {
     return this._pos.isInsufficientMaterial();
   }
-
   board(): ({
     type: ChessJSPieceType;
     color: ChessJSColor;
@@ -448,11 +416,9 @@ export class Chess {
     }
     return output;
   }
-
   pgn(): string {
     return makePgn(this._game);
   }
-
   loadPgn(pgn: string): boolean {
     try {
       const games = parsePgn(pgn);
@@ -467,7 +433,6 @@ export class Chess {
           this._startFen = makeFen(defaultPosition('chess').toSetup());
           this._pos = defaultPosition('chess');
         }
-
         let node = this._game.moves;
         while (node.children.length > 0) {
           const child = node.children[0];
@@ -483,7 +448,6 @@ export class Chess {
       return false;
     }
   }
-
   header(): Record<string, string> {
     const h: Record<string, string> = {};
     for (const [k, v] of this._game.headers) {
@@ -491,15 +455,12 @@ export class Chess {
     }
     return h;
   }
-
   getSquaresAttackedBy(color: ChessJSColor): string[] {
     const chessOpsColor: ChessOpsColor = charToColor[color];
     let allAttacked = SquareSet.empty();
-
     for (const sq of this._pos.board[chessOpsColor]) {
       const piece = this._pos.board.get(sq);
       if (!piece) continue;
-
       let attacks: SquareSet;
       switch (piece.role) {
         case 'pawn':
@@ -525,17 +486,13 @@ export class Chess {
       }
       allAttacked = allAttacked.union(attacks);
     }
-
     return [...allAttacked].map((sq) => makeSquare(sq));
   }
-
   getAdjacentOccupied(square: string, excludePawns = false): string[] {
     const sq = parseSquare(square);
     if (sq === undefined) return [];
-
     const adjacent = kingAttacks(sq);
     const result: string[] = [];
-
     for (const adjSq of adjacent.intersect(this._pos.board.occupied)) {
       if (excludePawns) {
         const piece = this._pos.board.get(adjSq);
@@ -543,10 +500,8 @@ export class Chess {
       }
       result.push(makeSquare(adjSq));
     }
-
     return result;
   }
-
   getPocket(color: ChessJSColor): Record<PieceSymbol, number> {
     const result: Record<PieceSymbol, number> = {
       p: 0,
@@ -566,12 +521,10 @@ export class Chess {
     result.k = side.king;
     return result;
   }
-
   getDropSquares(): string[] {
     const dropDests = this._pos.dropDests();
     return [...dropDests].map((sq) => makeSquare(sq));
   }
-
   private _makeMoveObjectInternal(
     move: ChessOpsMove,
     san: string,
@@ -582,19 +535,15 @@ export class Chess {
     const pieceObj = !isDrop(move)
       ? pos.board.get(move.from)
       : { role: move.role, color: pos.turn };
-
     const capturedPiece = !isDrop(move) ? pos.board.get(move.to) : undefined;
-
     let isEnPassant = false;
     if (!isDrop(move) && pieceObj?.role === 'pawn' && !capturedPiece) {
       if (Math.abs(move.from - move.to) % 8 !== 0) {
         isEnPassant = true;
       }
     }
-
     let captured = capturedPiece ? roleToType[capturedPiece.role] : undefined;
     if (isEnPassant) captured = 'p';
-
     return {
       color: colorToChar[pos.turn],
       from,

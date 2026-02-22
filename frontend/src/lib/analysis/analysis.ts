@@ -9,7 +9,6 @@ import {
   computeEstimatedEloFromPositions,
   type Evaluation
 } from './winPercentage';
-
 const pieceValues: Record<string, number> = {
   p: 1,
   n: 3,
@@ -19,9 +18,7 @@ const pieceValues: Record<string, number> = {
   k: Infinity,
   m: 0
 };
-
 const promotions = [undefined, 'b', 'n', 'r', 'q'] as const;
-
 function classifyByWinPercentage(
   prevEval: Evaluation,
   currEval: Evaluation,
@@ -30,7 +27,6 @@ function classifyByWinPercentage(
   const prevWinPct = getWinPercentageFromEval(prevEval);
   const currWinPct = getWinPercentageFromEval(currEval);
   const winPctDiff = (currWinPct - prevWinPct) * (isWhiteMove ? 1 : -1);
-
   if (winPctDiff < -20) return 'blunder';
   if (winPctDiff < -10) return 'mistake';
   if (winPctDiff < -7) return 'miss';
@@ -38,25 +34,20 @@ function classifyByWinPercentage(
   if (winPctDiff < -2) return 'good';
   return 'excellent';
 }
-
 interface InfluencingPiece {
   square: Square;
   color: string;
   type: string;
 }
-
 function getAttackers(fen: string, square: Square): InfluencingPiece[] {
   const attackers: InfluencingPiece[] = [];
   const board = new Chess(fen);
   const piece = board.get(square);
-
   if (!piece) return attackers;
-
   board.load(
     fen.replace(/(?<= )(?:w|b)(?= )/g, piece.color === 'w' ? 'b' : 'w')
   );
   const legalMoves = board.moves({ verbose: true });
-
   for (const move of legalMoves) {
     if (move.to === square) {
       attackers.push({
@@ -66,21 +57,15 @@ function getAttackers(fen: string, square: Square): InfluencingPiece[] {
       });
     }
   }
-
   return attackers;
 }
-
 function isPieceHanging(lastFen: string, fen: string, square: Square): boolean {
   const lastBoard = new Chess(lastFen);
   const board = new Chess(fen);
-
   const lastPiece = lastBoard.get(square);
   const piece = board.get(square);
-
   if (!piece) return false;
-
   const attackers = getAttackers(fen, square);
-
   if (
     lastPiece &&
     pieceValues[lastPiece.type] >= pieceValues[piece.type] &&
@@ -88,7 +73,6 @@ function isPieceHanging(lastFen: string, fen: string, square: Square): boolean {
   ) {
     return false;
   }
-
   if (
     lastPiece &&
     piece.type === 'r' &&
@@ -98,36 +82,28 @@ function isPieceHanging(lastFen: string, fen: string, square: Square): boolean {
   ) {
     return false;
   }
-
   if (
     attackers.some((atk) => pieceValues[atk.type] < pieceValues[piece.type])
   ) {
     return true;
   }
-
   return false;
 }
-
 async function analyse(positions: Position[]): Promise<GameReport> {
   let positionIndex = 0;
   for (const position of positions.slice(1)) {
     positionIndex++;
-
     const board = new Chess(position.fen);
     const lastPosition = positions[positionIndex - 1];
-
     const topMove = lastPosition.topLines?.find((line) => line.id === 1);
     const secondTopMove = lastPosition.topLines?.find((line) => line.id === 2);
     if (!topMove) continue;
-
     const previousEvaluation = topMove.evaluation;
     let evaluation = position.topLines?.find(
       (line) => line.id === 1
     )?.evaluation;
     if (!previousEvaluation) continue;
-
     const moveColour = position.fen.includes(' b ') ? 'white' : 'black';
-
     if (!evaluation) {
       evaluation = { type: board.isCheckmate() ? 'mate' : 'cp', value: 0 };
       if (!position.topLines) position.topLines = [];
@@ -138,7 +114,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
         moveUCI: ''
       });
     }
-
     const absoluteEvaluation =
       evaluation.value * (moveColour === 'white' ? 1 : -1);
     const previousAbsoluteEvaluation =
@@ -146,11 +121,9 @@ async function analyse(positions: Position[]): Promise<GameReport> {
     const absoluteSecondEvaluation =
       (secondTopMove?.evaluation.value ?? 0) *
       (moveColour === 'white' ? 1 : -1);
-
     let evalLoss = Infinity;
     let cutoffEvalLoss = Infinity;
     let lastLineEvalLoss = Infinity;
-
     const matchingTopLine = lastPosition.topLines?.find(
       (line) => line.moveUCI === position.move?.uci
     );
@@ -163,7 +136,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
           matchingTopLine.evaluation.value - previousEvaluation.value;
       }
     }
-
     if (lastPosition.cutoffEvaluation) {
       if (moveColour === 'white') {
         cutoffEvalLoss = lastPosition.cutoffEvaluation.value - evaluation.value;
@@ -171,22 +143,17 @@ async function analyse(positions: Position[]): Promise<GameReport> {
         cutoffEvalLoss = evaluation.value - lastPosition.cutoffEvaluation.value;
       }
     }
-
     if (moveColour === 'white') {
       evalLoss = previousEvaluation.value - evaluation.value;
     } else {
       evalLoss = evaluation.value - previousEvaluation.value;
     }
-
     evalLoss = Math.min(evalLoss, cutoffEvalLoss, lastLineEvalLoss);
-
     if (!secondTopMove) {
       position.classification = 'forced';
       continue;
     }
-
     const noMate = previousEvaluation.type === 'cp' && evaluation.type === 'cp';
-
     if (topMove.moveUCI === position.move?.uci) {
       position.classification = 'best';
     } else {
@@ -196,7 +163,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
         evaluation,
         isWhiteMove
       );
-
       if (previousEvaluation.type === 'cp' && evaluation.type === 'mate') {
         if (absoluteEvaluation > 0) {
           position.classification = 'best';
@@ -253,13 +219,11 @@ async function analyse(positions: Position[]): Promise<GameReport> {
         }
       }
     }
-
     if (position.classification === 'best') {
       const winningAnyways =
         (absoluteSecondEvaluation >= 700 && topMove.evaluation.type === 'cp') ||
         (topMove.evaluation.type === 'mate' &&
           secondTopMove?.evaluation.type === 'mate');
-
       if (absoluteEvaluation >= 0 && !winningAnyways && position.move) {
         const lastBoard = new Chess(lastPosition.fen);
         const currentBoard = new Chess(position.fen);
@@ -268,7 +232,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
             position.move.uci.slice(2, 4) as Square
           ) || { type: 'm' };
           const sacrificedPieces: InfluencingPiece[] = [];
-
           for (const row of currentBoard.board()) {
             for (const piece of row) {
               if (!piece) continue;
@@ -276,7 +239,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
               if (piece.type === 'k' || piece.type === 'p') continue;
               if (pieceValues[lastPiece.type] >= pieceValues[piece.type])
                 continue;
-
               if (
                 isPieceHanging(lastPosition.fen, position.fen, piece.square)
               ) {
@@ -285,13 +247,10 @@ async function analyse(positions: Position[]): Promise<GameReport> {
               }
             }
           }
-
           let anyPieceViablyCapturable = false;
           const captureTestBoard = new Chess(position.fen);
-
           for (const piece of sacrificedPieces) {
             const attackers = getAttackers(position.fen, piece.square);
-
             for (const attacker of attackers) {
               for (const promotion of promotions) {
                 try {
@@ -300,7 +259,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
                     to: piece.square,
                     promotion: promotion as 'q' | 'r' | 'b' | 'n' | undefined
                   });
-
                   let attackerPinned = false;
                   for (const row of captureTestBoard.board()) {
                     for (const enemyPiece of row) {
@@ -310,7 +268,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
                         enemyPiece.type === 'k'
                       )
                         continue;
-
                       if (
                         isPieceHanging(
                           position.fen,
@@ -328,7 +285,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
                     }
                     if (attackerPinned) break;
                   }
-
                   if (
                     !attackerPinned &&
                     !captureTestBoard.moves().some((m) => m.endsWith('#'))
@@ -336,7 +292,6 @@ async function analyse(positions: Position[]): Promise<GameReport> {
                     anyPieceViablyCapturable = true;
                     break;
                   }
-
                   captureTestBoard.undo();
                 } catch {
                   continue;
@@ -346,13 +301,11 @@ async function analyse(positions: Position[]): Promise<GameReport> {
             }
             if (anyPieceViablyCapturable) break;
           }
-
           if (!anyPieceViablyCapturable) {
             position.classification = 'best';
           }
         }
       }
-
       if (
         noMate &&
         position.classification !== 'brilliant' &&
@@ -370,33 +323,27 @@ async function analyse(positions: Position[]): Promise<GameReport> {
         position.classification = 'great';
       }
     }
-
     if (position.classification === 'blunder' && absoluteEvaluation >= 1000) {
       position.classification = 'mistake';
     }
-
     if (
       position.classification === 'blunder' &&
       previousAbsoluteEvaluation <= -1000
     ) {
       position.classification = 'mistake';
     }
-
     position.classification = position.classification ?? 'book';
   }
-
   interface OpeningData {
     name: string;
     fen: string;
   }
-
   for (const position of positions) {
     const opening = (openingsData as OpeningData[]).find((o) =>
       position.fen.includes(o.fen)
     );
     position.opening = opening?.name;
   }
-
   for (const position of positions.slice(1)) {
     if (position.opening) {
       position.classification = 'book';
@@ -404,15 +351,12 @@ async function analyse(positions: Position[]): Promise<GameReport> {
       break;
     }
   }
-
   for (const position of positions) {
     for (const line of position.topLines || []) {
       if (!line.moveUCI || line.moveUCI.length < 4) continue;
       if (line.evaluation.type === 'mate' && line.evaluation.value === 0)
         continue;
-
       const board = new Chess(position.fen);
-
       try {
         const move = board.move({
           from: line.moveUCI.slice(0, 2),
@@ -431,12 +375,10 @@ async function analyse(positions: Position[]): Promise<GameReport> {
       }
     }
   }
-
   const accuracies = {
     white: { current: 0, maximum: 0 },
     black: { current: 0, maximum: 0 }
   };
-
   for (const position of positions.slice(1)) {
     const moveColour = position.fen.includes(' b ') ? 'white' : 'black';
     const classification = position.classification as Classification;
@@ -444,9 +386,7 @@ async function analyse(positions: Position[]): Promise<GameReport> {
       CLASSIFICATION_VALUES[classification] ?? 0;
     accuracies[moveColour].maximum++;
   }
-
   const estimatedElo = computeEstimatedEloFromPositions(positions);
-
   return {
     accuracies: {
       white:
@@ -462,5 +402,4 @@ async function analyse(positions: Position[]): Promise<GameReport> {
     positions: positions
   };
 }
-
 export default analyse;

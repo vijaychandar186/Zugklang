@@ -1,17 +1,14 @@
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-
 interface LegalSection {
   heading: string;
   body: string;
 }
-
 interface LegalContentProps {
   title: string;
   lastUpdated: string;
   sections: LegalSection[];
 }
-
 export default function LegalContent({
   title,
   lastUpdated,

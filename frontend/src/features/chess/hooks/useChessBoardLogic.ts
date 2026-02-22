@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { Chess, Square, Move, PieceSymbol } from '@/lib/chess/chess';
 import { SquareStyles, RightClickedSquares } from '@/features/chess/types/core';
@@ -11,9 +10,12 @@ import {
 } from '@/features/game/utils/sounds';
 import type { ChessVariant } from '@/features/chess/config/variants';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
-
-type PositionObject = Record<string, { pieceType: string }>;
-
+type PositionObject = Record<
+  string,
+  {
+    pieceType: string;
+  }
+>;
 function fenToPosition(fen: string): PositionObject {
   const position: PositionObject = {};
   const [boardPart] = fen.split(' ');
@@ -32,7 +34,6 @@ function fenToPosition(fen: string): PositionObject {
     N: 'wN',
     P: 'wP'
   };
-
   rows.forEach((row, rowIndex) => {
     let fileIndex = 0;
     for (const char of row) {
@@ -45,22 +46,18 @@ function fenToPosition(fen: string): PositionObject {
       }
     }
   });
-
   return position;
 }
-
 export type Premove = {
   from: Square;
   to: Square;
   promotion?: string;
 };
-
 export type PendingPromotion = {
   from: Square;
   to: Square;
   color: 'white' | 'black';
 };
-
 export type ChessBoardLogicOptions = {
   game: Chess;
   currentFEN: string;
@@ -78,7 +75,6 @@ export type ChessBoardLogicOptions = {
   enablePremoves?: boolean;
   onPremoveAdded?: () => void;
 };
-
 export function useChessBoardLogic({
   game,
   currentFEN,
@@ -104,22 +100,17 @@ export function useChessBoardLogic({
   const [premoves, setPremoves] = useState<Premove[]>([]);
   const [pendingPromotion, setPendingPromotion] =
     useState<PendingPromotion | null>(null);
-
   const gameRef = useRef(game);
   gameRef.current = game;
-
   const soundEnabledRef = useRef(soundEnabled);
   soundEnabledRef.current = soundEnabled;
-
   const isViewingHistory = viewingIndex < positionHistory.length - 1;
   const playerColorShort: 'w' | 'b' = playerColor === 'white' ? 'w' : 'b';
   const gameTurn = game.turn();
   const isPlayerTurn = gameTurn === playerColorShort;
-
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
   const playMoveSound = useCallback(
     (move: Move, gameAfterMove: Chess) => {
       if (!soundEnabledRef.current) return;
@@ -136,7 +127,6 @@ export function useChessBoardLogic({
         isPlayerMove
       );
       playSound(soundType);
-
       if (variant === 'atomic') {
         if (isCapture) {
           playRawSound('/variant/atomic/impact.mp3');
@@ -147,7 +137,6 @@ export function useChessBoardLogic({
     },
     [playerColorShort, variant]
   );
-
   const executeMove = useCallback(
     (from: Square, to: Square, promotion?: string): boolean => {
       const move = makeMove(from, to, promotion || 'q');
@@ -163,7 +152,6 @@ export function useChessBoardLogic({
     },
     [makeMove, playMoveSound, onMoveExecuted]
   );
-
   const isPromotionMove = useCallback(
     (from: Square, to: Square): boolean => {
       const piece = game.get(from);
@@ -173,7 +161,6 @@ export function useChessBoardLogic({
     },
     [game]
   );
-
   const completePromotion = useCallback(
     (piece: PieceSymbol) => {
       if (!pendingPromotion) return;
@@ -181,13 +168,11 @@ export function useChessBoardLogic({
     },
     [pendingPromotion, executeMove]
   );
-
   const cancelPromotion = useCallback(() => {
     setPendingPromotion(null);
     setMoveFrom(null);
     setOptionSquares({});
   }, []);
-
   const getMoveOptions = useCallback(
     (square: Square): boolean => {
       const moves = game.moves({ square, verbose: true });
@@ -201,18 +186,15 @@ export function useChessBoardLogic({
     },
     [game]
   );
-
   const handleUserMove = useCallback(
     (from: Square, to: Square, promotion?: string): boolean => {
       if (isGameOver || game.isGameOver()) {
         return false;
       }
-
       if (isViewingHistory) {
         goToEnd();
         return false;
       }
-
       if (!allowOpponentMoves) {
         const piece = game.get(from);
         if (piece?.color !== playerColorShort) {
@@ -232,7 +214,6 @@ export function useChessBoardLogic({
           return false;
         }
       }
-
       if (!promotion && isPromotionMove(from, to)) {
         const moves = game.moves({ square: from, verbose: true });
         const isLegal = moves.some((m) => m.to === to);
@@ -248,7 +229,6 @@ export function useChessBoardLogic({
           return true;
         }
       }
-
       const success = executeMove(from, to, promotion);
       if (!success && soundEnabledRef.current) {
         playSound('illegal');
@@ -269,7 +249,6 @@ export function useChessBoardLogic({
       executeMove
     ]
   );
-
   const onDrop = useCallback(
     ({
       sourceSquare,
@@ -284,29 +263,23 @@ export function useChessBoardLogic({
     },
     [handleUserMove]
   );
-
   const handleSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (isGameOver || game.isGameOver()) {
         return;
       }
-
       if (isViewingHistory) {
         goToEnd();
         return;
       }
-
       setRightClickedSquares({});
       const sq = square as Square;
-
       if (!moveFrom) {
         if (getMoveOptions(sq)) setMoveFrom(sq);
         return;
       }
-
       const moves = game.moves({ square: moveFrom, verbose: true });
       const found = moves.find((m) => m.from === moveFrom && m.to === sq);
-
       if (!found) {
         if (getMoveOptions(sq)) {
           setMoveFrom(sq);
@@ -316,7 +289,6 @@ export function useChessBoardLogic({
         }
         return;
       }
-
       handleUserMove(moveFrom, sq);
       setMoveFrom(null);
       setOptionSquares({});
@@ -331,7 +303,6 @@ export function useChessBoardLogic({
       handleUserMove
     ]
   );
-
   const handleSquareRightClick = useCallback(
     ({ square }: { square: string }) => {
       if (enablePremoves && premoves.length > 0) {
@@ -346,11 +317,9 @@ export function useChessBoardLogic({
     },
     [enablePremoves, premoves.length]
   );
-
   useEffect(() => {
     if (!enablePremoves || premoves.length === 0) return;
     if (!isPlayerTurn || game.isGameOver()) return;
-
     const [first, ...rest] = premoves;
     const success = executeMove(first.from, first.to, first.promotion);
     if (success) {
@@ -359,13 +328,11 @@ export function useChessBoardLogic({
       setPremoves([]);
     }
   }, [enablePremoves, premoves, isPlayerTurn, game, executeMove]);
-
   const captureTargets = useMemo<string[]>(() => {
     if (!moveFrom) return [];
     const moves = game.moves({ square: moveFrom, verbose: true });
     return moves.filter((m) => m.captured).map((m) => m.to);
   }, [game, moveFrom]);
-
   const premoveStyles = useMemo<SquareStyles>(() => {
     if (!enablePremoves || premoves.length === 0) return {};
     return premoves.reduce(
@@ -377,11 +344,9 @@ export function useChessBoardLogic({
       {} as SquareStyles
     );
   }, [enablePremoves, premoves]);
-
   const squareStyles = useMemo<SquareStyles>(() => {
     return { ...optionSquares, ...rightClickedSquares, ...premoveStyles };
   }, [optionSquares, rightClickedSquares, premoveStyles]);
-
   const clearState = useCallback(() => {
     setOptionSquares({});
     setRightClickedSquares({});
@@ -389,19 +354,13 @@ export function useChessBoardLogic({
     setPremoves([]);
     setPendingPromotion(null);
   }, []);
-
   const position = useMemo(() => {
-    // Show empty board until store is hydrated to prevent wrong-position flash
     if (!isMounted || !hasHydrated) return {};
-
     const baseFen = isViewingHistory ? currentFEN : game.fen();
-
     if (!enablePremoves || premoves.length === 0) {
       return baseFen;
     }
-
     const posObj = fenToPosition(baseFen);
-
     for (const premove of premoves) {
       const piece = posObj[premove.from];
       if (piece) {
@@ -409,7 +368,6 @@ export function useChessBoardLogic({
         posObj[premove.to] = piece;
       }
     }
-
     return posObj;
   }, [
     isMounted,
@@ -420,7 +378,6 @@ export function useChessBoardLogic({
     enablePremoves,
     premoves
   ]);
-
   return {
     isMounted,
     position,

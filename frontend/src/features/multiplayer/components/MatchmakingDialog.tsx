@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
@@ -21,25 +20,20 @@ import { Icons } from '@/components/Icons';
 import { toast } from 'sonner';
 import type { TimeControl, TimeControlMode } from '@/features/game/types/rules';
 import type { ChallengeColor, MultiplayerStatus } from '../types';
-
 interface MatchmakingDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   status: MultiplayerStatus;
   variantLabel: string;
   errorMessage: string | null;
-  /** Set when we created a challenge and are waiting for a friend */
   pendingChallengeId: string | null;
-  /** Set when the page was opened via a friend's challenge link */
   initialChallengeId?: string;
   onFindGame: (timeControl: TimeControl) => void;
   onCancel: () => void;
   onCreateChallenge: (timeControl: TimeControl, color: ChallengeColor) => void;
   onCancelChallenge: () => void;
 }
-
 type Mode = 'random' | 'friend';
-
 export function MatchmakingDialog({
   open,
   onOpenChange,
@@ -60,7 +54,6 @@ export function MatchmakingDialog({
   const [minutes, setMinutes] = useState(10);
   const [increment, setIncrement] = useState(0);
   const [color, setColor] = useState<ChallengeColor>('random');
-
   const isMatched = status === 'matched';
   const isSearching = status === 'waiting';
   const isWaitingForFriend =
@@ -68,7 +61,6 @@ export function MatchmakingDialog({
   const isRandomSearching = status === 'waiting' && pendingChallengeId === null;
   const isJoiningFriend =
     initialChallengeId != null && !isMatched && status !== 'error';
-
   useEffect(() => {
     if (!open) {
       setTimerMode('unlimited');
@@ -78,45 +70,36 @@ export function MatchmakingDialog({
       if (!initialChallengeId) setMode('random');
     }
   }, [open, initialChallengeId]);
-
   const buildTimeControl = (): TimeControl => ({
     mode: timerMode,
     minutes: timerMode === 'timed' ? minutes : 0,
     increment: timerMode === 'timed' ? increment : 0
   });
-
   const handleFindGame = () => onFindGame(buildTimeControl());
-
   const handleCreateChallenge = () =>
     onCreateChallenge(buildTimeControl(), color);
-
   const handleCancelRandom = () => {
     onCancel();
     onOpenChange(false);
   };
-
   const handleCancelChallenge = () => {
     onCancelChallenge();
   };
-
   const shareLink = pendingChallengeId
     ? `${typeof window !== 'undefined' ? window.location.origin + window.location.pathname : ''}?challenge=${pendingChallengeId}`
     : '';
-
   const handleCopyLink = useCallback(() => {
     if (!shareLink) return;
     navigator.clipboard.writeText(shareLink).then(() => {
       toast.success('Link copied!');
     });
   }, [shareLink]);
-
   const formatTimeLabel = (mins: number) => {
     if (mins < 60) return `${mins} min`;
     const h = Math.floor(mins / 60);
     const m = mins % 60;
     return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
   };
-
   const formatIncrementLabel = (secs: number) => {
     if (secs === 0) return 'No increment';
     if (secs < 60) return `+${secs} sec`;
@@ -124,10 +107,8 @@ export function MatchmakingDialog({
     const s = secs % 60;
     return s === 0 ? `+${m} min` : `+${m} min ${s} sec`;
   };
-
   const timeControlSummary =
     timerMode === 'unlimited' ? 'Unlimited' : `${minutes}+${increment}`;
-
   const renderTimeControlPicker = () => (
     <div className='space-y-4'>
       <div className='space-y-2'>
@@ -185,7 +166,6 @@ export function MatchmakingDialog({
       )}
     </div>
   );
-
   return (
     <Dialog
       open={open}
@@ -206,7 +186,6 @@ export function MatchmakingDialog({
           </div>
         )}
 
-        {/* ── Matched ── */}
         {isMatched ? (
           <div className='flex flex-col items-center gap-4 py-6'>
             <div className='flex h-16 w-16 items-center justify-center rounded-full bg-green-500/10'>
@@ -217,8 +196,7 @@ export function MatchmakingDialog({
               Starting game…
             </p>
           </div>
-        ) : /* ── Joining a friend's game (opened via link) ── */
-        isJoiningFriend ? (
+        ) : isJoiningFriend ? (
           <div className='flex flex-col items-center gap-4 py-6'>
             <div className='bg-primary/10 flex h-16 w-16 items-center justify-center rounded-full'>
               <Icons.spinner className='text-primary h-8 w-8 animate-spin' />
@@ -230,8 +208,7 @@ export function MatchmakingDialog({
               {variantLabel}
             </p>
           </div>
-        ) : /* ── Waiting for friend (created a challenge) ── */
-        isWaitingForFriend ? (
+        ) : isWaitingForFriend ? (
           <div className='flex flex-col items-center gap-4 py-6'>
             <div className='bg-primary/10 flex h-16 w-16 items-center justify-center rounded-full'>
               <Icons.spinner className='text-primary h-8 w-8 animate-spin' />
@@ -260,8 +237,7 @@ export function MatchmakingDialog({
               Cancel
             </Button>
           </div>
-        ) : /* ── Random match searching ── */
-        isRandomSearching ? (
+        ) : isRandomSearching ? (
           <div className='flex flex-col items-center gap-4 py-6'>
             <div className='bg-primary/10 flex h-16 w-16 items-center justify-center rounded-full'>
               <Icons.spinner className='text-primary h-8 w-8 animate-spin' />
@@ -281,9 +257,7 @@ export function MatchmakingDialog({
             </Button>
           </div>
         ) : (
-          /* ── Setup ── */
           <div className='space-y-5 py-2'>
-            {/* Mode tabs */}
             <div className='flex rounded-lg border p-1'>
               <button
                 className={`flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -325,7 +299,6 @@ export function MatchmakingDialog({
                 </p>
                 {renderTimeControlPicker()}
 
-                {/* Color picker */}
                 <div className='space-y-2'>
                   <Label className='block text-center'>Play as</Label>
                   <div className='flex gap-2'>

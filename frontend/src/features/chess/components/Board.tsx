@@ -1,14 +1,16 @@
 'use client';
-
 import { useMemo } from 'react';
 import { Chessboard, defaultPieces } from 'react-chessboard';
 import type { CSSProperties } from 'react';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
-
-type PositionObject = Record<string, { pieceType: string }>;
-
+type PositionObject = Record<
+  string,
+  {
+    pieceType: string;
+  }
+>;
 export type UnifiedChessBoardProps = {
   position: string | PositionObject;
   boardOrientation?: 'white' | 'black';
@@ -27,13 +29,10 @@ export type UnifiedChessBoardProps = {
   loserColor?: 'w' | 'b' | null;
   pieces?: Record<string, () => React.JSX.Element>;
 };
-
 const PIECE_KEYS = ['P', 'R', 'N', 'B', 'Q', 'K'] as const;
 const COLORS = ['w', 'b'] as const;
-
 function buildPiecesWithGrayed(loserColor: 'w' | 'b') {
   const pieces: Record<string, () => React.JSX.Element> = {};
-
   for (const color of COLORS) {
     for (const key of PIECE_KEYS) {
       const pieceKey = `${color}${key}`;
@@ -49,10 +48,8 @@ function buildPiecesWithGrayed(loserColor: 'w' | 'b') {
       }
     }
   }
-
   return pieces;
 }
-
 export function UnifiedChessBoard({
   position,
   boardOrientation = 'white',
@@ -72,9 +69,7 @@ export function UnifiedChessBoard({
     () => (loserColor ? buildPiecesWithGrayed(loserColor) : undefined),
     [loserColor]
   );
-
   const finalPieces = pieces ?? grayedPieces;
-
   const options = useMemo(
     () => ({
       position,
@@ -115,7 +110,6 @@ export function UnifiedChessBoard({
       finalPieces
     ]
   );
-
   return (
     <div className='w-full'>
       <Chessboard options={options} />

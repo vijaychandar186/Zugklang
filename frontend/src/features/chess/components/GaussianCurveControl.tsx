@@ -1,5 +1,4 @@
 'use client';
-
 import { useMemo } from 'react';
 import {
   Area,
@@ -18,28 +17,24 @@ import {
   ChartTooltipContent,
   type ChartConfig
 } from '@/components/ui/chart';
-
 type GaussianCurveControlProps = {
   mean: number;
   variance: number;
   onMeanChange: (mean: number) => void;
   onVarianceChange: (variance: number) => void;
 };
-
 function gaussianPDF(x: number, mean: number, variance: number): number {
   const stdDev = Math.sqrt(variance);
   const coefficient = 1 / (stdDev * Math.sqrt(2 * Math.PI));
   const exponent = -Math.pow(x - mean, 2) / (2 * variance);
   return coefficient * Math.exp(exponent);
 }
-
 const chartConfig = {
   probability: {
     label: 'Probability',
     color: 'var(--chart-1)'
   }
 } satisfies ChartConfig;
-
 export function GaussianCurveControl({
   mean,
   variance,
@@ -52,10 +47,8 @@ export function GaussianCurveControl({
       return { level, probability: gaussianPDF(level, mean, variance) };
     });
   }, [mean, variance]);
-
   return (
     <div className='space-y-4'>
-      {/* Gaussian Curve Visualization */}
       <div className='bg-background rounded-lg border p-4'>
         <Label className='mb-3 block text-center text-sm font-medium'>
           Difficulty Distribution
@@ -136,7 +129,6 @@ export function GaussianCurveControl({
         </div>
       </div>
 
-      {/* Mean Control */}
       <div className='space-y-3'>
         <Label className='block text-center'>
           Mean Difficulty: {mean}
@@ -158,7 +150,6 @@ export function GaussianCurveControl({
         </div>
       </div>
 
-      {/* Variance Control */}
       <div className='space-y-3'>
         <Label className='block text-center'>
           Variance: {variance.toFixed(1)}
@@ -186,7 +177,6 @@ export function GaussianCurveControl({
         </div>
       </div>
 
-      {/* Explanation */}
       <div className='bg-muted/50 rounded-lg p-3'>
         <p className='text-muted-foreground text-xs leading-relaxed'>
           <strong>Probabilistic Mode:</strong> The engine will sample moves from

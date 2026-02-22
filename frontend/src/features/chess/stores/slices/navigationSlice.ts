@@ -3,7 +3,6 @@ export interface NavigationState {
   positionHistory: string[];
   currentFEN: string;
 }
-
 export interface NavigationActions {
   goToStart: () => void;
   goToEnd: () => void;
@@ -12,9 +11,7 @@ export interface NavigationActions {
   goToMove: (moveIndex: number) => void;
   isViewingHistory: () => boolean;
 }
-
 export type NavigationSlice = NavigationState & NavigationActions;
-
 export const createNavigationSlice = <T extends NavigationSlice>(
   set: (partial: Partial<T> | ((state: T) => Partial<T>)) => void,
   get: () => T
@@ -27,7 +24,6 @@ export const createNavigationSlice = <T extends NavigationSlice>(
           currentFEN: state.positionHistory[0]
         }) as Partial<T>
     ),
-
   goToEnd: () =>
     set(
       (state) =>
@@ -36,7 +32,6 @@ export const createNavigationSlice = <T extends NavigationSlice>(
           currentFEN: state.positionHistory[state.positionHistory.length - 1]
         }) as Partial<T>
     ),
-
   goToPrev: () =>
     set((state) => {
       const newIndex = Math.max(0, state.viewingIndex - 1);
@@ -45,7 +40,6 @@ export const createNavigationSlice = <T extends NavigationSlice>(
         currentFEN: state.positionHistory[newIndex]
       } as Partial<T>;
     }),
-
   goToNext: () =>
     set((state) => {
       const newIndex = Math.min(
@@ -57,7 +51,6 @@ export const createNavigationSlice = <T extends NavigationSlice>(
         currentFEN: state.positionHistory[newIndex]
       } as Partial<T>;
     }),
-
   goToMove: (moveIndex) =>
     set((state) => {
       const positionIndex = moveIndex + 1;
@@ -70,7 +63,6 @@ export const createNavigationSlice = <T extends NavigationSlice>(
         currentFEN: state.positionHistory[clampedIndex]
       } as Partial<T>;
     }),
-
   isViewingHistory: () => {
     const state = get();
     return state.viewingIndex < state.positionHistory.length - 1;

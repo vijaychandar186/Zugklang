@@ -1,5 +1,4 @@
 'use client';
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -20,13 +19,11 @@ import {
 } from '@/components/ui/select';
 import { TimeControl, TimeControlMode } from '@/features/game/types/rules';
 import { useFourPlayerStore } from '../store';
-
 interface FourPlayerGameDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStart: () => void;
 }
-
 export function FourPlayerGameDialog({
   open,
   onOpenChange,
@@ -34,7 +31,6 @@ export function FourPlayerGameDialog({
 }: FourPlayerGameDialogProps) {
   const currentTimeControl = useFourPlayerStore((s) => s.timeControl);
   const autoRotateBoard = useFourPlayerStore((s) => s.autoRotateBoard);
-
   const [rotateOnMove, setRotateOnMove] = useState(autoRotateBoard);
   const [timerMode, setTimerMode] = useState<TimeControlMode>(
     currentTimeControl?.mode || 'unlimited'
@@ -43,7 +39,6 @@ export function FourPlayerGameDialog({
   const [increment, setIncrement] = useState(
     currentTimeControl?.increment || 0
   );
-
   useEffect(() => {
     if (open) {
       setRotateOnMove(autoRotateBoard);
@@ -52,21 +47,17 @@ export function FourPlayerGameDialog({
       setIncrement(currentTimeControl?.increment || 0);
     }
   }, [open, autoRotateBoard, currentTimeControl]);
-
   const handleStart = () => {
     const timeControl: TimeControl = {
       mode: timerMode,
       minutes: timerMode === 'timed' ? minutes : 0,
       increment: timerMode === 'timed' ? increment : 0
     };
-
     useFourPlayerStore.getState().setTimeControl(timeControl);
     useFourPlayerStore.getState().setAutoRotateBoard(rotateOnMove);
-
     onStart();
     onOpenChange(false);
   };
-
   const formatTimeLabel = (mins: number) => {
     if (mins < 60) return `${mins} min`;
     const hours = Math.floor(mins / 60);
@@ -74,7 +65,6 @@ export function FourPlayerGameDialog({
     if (remainingMins === 0) return `${hours} hr`;
     return `${hours} hr ${remainingMins} min`;
   };
-
   const formatIncrementLabel = (secs: number) => {
     if (secs === 0) return 'No increment';
     if (secs < 60) return `+${secs} sec`;
@@ -83,7 +73,6 @@ export function FourPlayerGameDialog({
     if (remainingSecs === 0) return `+${mins} min`;
     return `+${mins} min ${remainingSecs} sec`;
   };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className='max-h-[90vh] overflow-y-auto sm:max-w-md'>

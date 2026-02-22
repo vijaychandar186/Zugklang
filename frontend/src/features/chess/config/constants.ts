@@ -1,5 +1,4 @@
 import { CapturablePiece, PieceCode } from '../types/core';
-
 export const STARTING_FEN =
   'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
 export const RACING_KINGS_STARTING_FEN =
@@ -7,7 +6,6 @@ export const RACING_KINGS_STARTING_FEN =
 export const HORDE_STARTING_FEN =
   'rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1';
 export const EMPTY_FEN = '8/8/8/8/8/8/8/8 w - - 0 1';
-
 export const PIECE_VALUES: Record<CapturablePiece, number> = {
   p: 1,
   n: 3,
@@ -15,7 +13,6 @@ export const PIECE_VALUES: Record<CapturablePiece, number> = {
   r: 5,
   q: 9
 };
-
 export const ALL_PIECE_CODES: PieceCode[] = [
   'wK',
   'wQ',
@@ -30,6 +27,5 @@ export const ALL_PIECE_CODES: PieceCode[] = [
   'bN',
   'bP'
 ];
-
 export const WHITE_PIECES: PieceCode[] = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP'];
 export const BLACK_PIECES: PieceCode[] = ['bK', 'bQ', 'bR', 'bB', 'bN', 'bP'];

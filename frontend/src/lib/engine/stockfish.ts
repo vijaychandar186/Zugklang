@@ -4,7 +4,6 @@ const getStockfishPath = () => {
     ? '/stockfish/stockfish.wasm.js'
     : '/stockfish/stockfish.js';
 };
-
 export class StockfishEngine {
   private worker: Worker | null = null;
   private currentHandler: ((e: MessageEvent) => void) | null = null;
@@ -12,28 +11,28 @@ export class StockfishEngine {
   private isReady = false;
   private readyPromise: Promise<void>;
   private resolveReady: (() => void) | null = null;
-
   private static instance: StockfishEngine | null = null;
-
   static getInstance(): StockfishEngine {
     if (!StockfishEngine.instance || StockfishEngine.instance.isDestroyed) {
       StockfishEngine.instance = new StockfishEngine();
     }
     return StockfishEngine.instance;
   }
-
   constructor() {
     this.readyPromise = new Promise((resolve) => {
       this.resolveReady = resolve;
     });
-
     if (typeof Worker !== 'undefined') {
       try {
         this.worker = new Worker(getStockfishPath());
-        this.worker.onerror = (e) => {
-          console.error('Stockfish Worker Error:', e);
+        this.worker.onerror = (e: ErrorEvent) => {
+          console.error(
+            'Stockfish Worker Error:',
+            e.message,
+            e.filename,
+            e.lineno
+          );
         };
-
         const initHandler = (e: MessageEvent) => {
           const data = String(e.data || '');
           if (data.includes('readyok')) {
@@ -43,7 +42,6 @@ export class StockfishEngine {
           }
         };
         this.worker.addEventListener('message', initHandler);
-
         this.sendCommand('uci');
         this.sendCommand('isready');
       } catch (e) {
@@ -54,15 +52,12 @@ export class StockfishEngine {
       this.resolveReady?.();
     }
   }
-
   async waitUntilReady(): Promise<void> {
     return this.readyPromise;
   }
-
   onMessage(callback: (data: { bestMove: string }) => void) {
     if (this.worker && !this.isDestroyed) {
       this.clearCurrentHandler();
-
       const handler = (e: MessageEvent) => {
         const data = String(e.data || '');
         const bestMove = data.match(/bestmove\s+(\S+)/)?.[1];
@@ -77,14 +72,12 @@ export class StockfishEngine {
       this.worker.addEventListener('message', handler);
     }
   }
-
   private clearCurrentHandler() {
     if (this.currentHandler && this.worker) {
       this.worker.removeEventListener('message', this.currentHandler);
       this.currentHandler = null;
     }
   }
-
   async evaluatePosition(fen: string, depth: number): Promise<void> {
     if (this.worker && !this.isDestroyed) {
       await this.readyPromise;
@@ -94,7 +87,6 @@ export class StockfishEngine {
       }
     }
   }
-
   async newGame(): Promise<void> {
     if (this.worker && !this.isDestroyed) {
       await this.readyPromise;
@@ -112,20 +104,17 @@ export class StockfishEngine {
       });
     }
   }
-
   stop() {
     this.clearCurrentHandler();
     if (this.isReady && this.worker) {
       this.sendCommand('stop');
     }
   }
-
   quit() {
     if (this.worker) {
       this.sendCommand('quit');
     }
   }
-
   destroy() {
     this.isDestroyed = true;
     this.clearCurrentHandler();
@@ -136,15 +125,12 @@ export class StockfishEngine {
       this.worker = null;
     }
   }
-
   sendCommand(command: string) {
     this.worker?.postMessage(command);
   }
-
   addEventListener(type: 'message', listener: (e: MessageEvent) => void) {
     this.worker?.addEventListener(type, listener);
   }
-
   removeEventListener(type: 'message', listener: (e: MessageEvent) => void) {
     this.worker?.removeEventListener(type, listener);
   }

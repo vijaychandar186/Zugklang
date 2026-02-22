@@ -5,7 +5,6 @@ export const ANALYSIS_DEFAULTS = {
   hashSize: 128,
   updateInterval: 100
 } as const;
-
 export const EVALUATION_CONFIG = {
   equalPosition: 50,
   mateAdvantageWhite: 98,

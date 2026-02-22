@@ -9,7 +9,6 @@ import {
   FAQProps,
   FAQ_SUBTITLE
 } from '@/pages-content/landing/content/faq';
-
 export function FAQ() {
   return (
     <section id='faq' className='w-full px-4 py-16 sm:py-24 lg:px-6'>

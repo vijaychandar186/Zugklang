@@ -8,7 +8,6 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-
 interface GameRow {
   id: string;
   variant: string;
@@ -19,12 +18,15 @@ interface GameRow {
   createdAt: Date;
   whiteUserId: string | null;
   blackUserId: string | null;
-  white: { name: string | null } | null;
-  black: { name: string | null } | null;
+  white: {
+    name: string | null;
+  } | null;
+  black: {
+    name: string | null;
+  } | null;
   whiteRatingDelta: number | null;
   blackRatingDelta: number | null;
 }
-
 const VARIANT_LABELS: Record<string, string> = {
   standard: 'Standard',
   fischerRandom: '960',
@@ -36,7 +38,6 @@ const VARIANT_LABELS: Record<string, string> = {
   kingOfTheHill: 'KOTH',
   crazyhouse: 'Crazyhouse'
 };
-
 function ResultBadge({
   result,
   isWhite
@@ -69,7 +70,6 @@ function ResultBadge({
     </Badge>
   );
 }
-
 export function RecentGamesTable({
   games,
   userId
@@ -91,7 +91,6 @@ export function RecentGamesTable({
       </Card>
     );
   }
-
   return (
     <Card>
       <CardHeader className='pb-3'>
@@ -123,7 +122,6 @@ export function RecentGamesTable({
                 day: 'numeric',
                 year: 'numeric'
               }).format(game.createdAt);
-
               return (
                 <TableRow key={game.id}>
                   <TableCell className='text-muted-foreground px-4 py-2 text-xs'>

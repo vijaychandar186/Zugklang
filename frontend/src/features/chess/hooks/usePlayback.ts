@@ -1,7 +1,5 @@
 'use client';
-
 import { useState, useEffect, useCallback } from 'react';
-
 export type UsePlaybackOptions = {
   currentIndex: number;
   totalItems: number;
@@ -9,7 +7,6 @@ export type UsePlaybackOptions = {
   intervalMs?: number;
   enabled?: boolean;
 };
-
 export function usePlayback({
   currentIndex,
   totalItems,
@@ -18,13 +15,11 @@ export function usePlayback({
   enabled = true
 }: UsePlaybackOptions) {
   const [isPlaying, setIsPlaying] = useState(false);
-
   useEffect(() => {
     if (!enabled) {
       setIsPlaying(false);
       return;
     }
-
     let interval: NodeJS.Timeout;
     if (isPlaying) {
       interval = setInterval(() => {
@@ -37,19 +32,15 @@ export function usePlayback({
     }
     return () => clearInterval(interval);
   }, [isPlaying, currentIndex, totalItems, onNext, intervalMs, enabled]);
-
   const togglePlay = useCallback(() => {
     setIsPlaying((prev) => !prev);
   }, []);
-
   const play = useCallback(() => {
     setIsPlaying(true);
   }, []);
-
   const pause = useCallback(() => {
     setIsPlaying(false);
   }, []);
-
   return {
     isPlaying,
     togglePlay,

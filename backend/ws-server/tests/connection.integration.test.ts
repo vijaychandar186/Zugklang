@@ -7,28 +7,29 @@ import {
   createTestRoom,
   resetInMemoryState
 } from './helpers';
-
-function findMessage<T extends { type: string }>(
-  messages: unknown[],
-  type: T['type']
-): T | undefined {
-  return messages.find((m) => (m as { type?: string }).type === type) as
-    | T
-    | undefined;
+function findMessage<
+  T extends {
+    type: string;
+  }
+>(messages: unknown[], type: T['type']): T | undefined {
+  return messages.find(
+    (m) =>
+      (
+        m as {
+          type?: string;
+        }
+      ).type === type
+  ) as T | undefined;
 }
-
 describe('connection flow integration', () => {
   const originalSetTimeout = globalThis.setTimeout;
-
   beforeEach(() => {
     resetInMemoryState();
   });
-
   afterEach(() => {
     globalThis.setTimeout = originalSetTimeout;
     resetInMemoryState();
   });
-
   test('rejoin succeeds with valid token and replaces room socket', () => {
     const oldWhite = createMockWs('white-old', 'u-white');
     const black = createMockWs('black', 'u-black');
@@ -36,7 +37,6 @@ describe('connection flow integration', () => {
     oldWhite.data.roomId = '11111111-1111-1111-1111-111111111111';
     black.data.color = 'black';
     black.data.roomId = '11111111-1111-1111-1111-111111111111';
-
     const room = createTestRoom({
       id: '11111111-1111-1111-1111-111111111111',
       white: asBunWs(oldWhite),
@@ -45,24 +45,20 @@ describe('connection flow integration', () => {
     room.moves = ['e2e4', 'e7e5'];
     room.blackLatencyMs = 42;
     rooms.set(room.id, room);
-
     const token = 'aaaa1111-1111-1111-1111-111111111111';
     rejoinTokens.set(token, 'white-old');
-
     const reconnecting = createMockWs('new-temp', 'u-white');
     handleRejoinRoom(asBunWs(reconnecting), {
       roomId: room.id,
       rejoinToken: token
     });
-
     expect(rejoinTokens.has(token)).toBe(false);
     expect(reconnecting.data.id).toBe('white-old');
     expect(rooms.get(room.id)?.white.data.id).toBe('white-old');
     expect(
-      findMessage<{ type: 'opponent_reconnected' }>(
-        black.sent,
-        'opponent_reconnected'
-      )
+      findMessage<{
+        type: 'opponent_reconnected';
+      }>(black.sent, 'opponent_reconnected')
     ).toBeDefined();
     const rejoined = findMessage<{
       type: 'rejoined';
@@ -72,52 +68,45 @@ describe('connection flow integration', () => {
     expect(rejoined?.moves).toEqual(['e2e4', 'e7e5']);
     expect(rejoined?.opponentLatencyMs).toBe(42);
   });
-
   test('rejoin fails when token is invalid', () => {
     const ws = createMockWs('p1');
     handleRejoinRoom(asBunWs(ws), {
       roomId: '11111111-1111-1111-1111-111111111111',
       rejoinToken: 'bbbb1111-1111-1111-1111-111111111111'
     });
-    const failed = findMessage<{ type: 'rejoin_failed'; reason: string }>(
-      ws.sent,
-      'rejoin_failed'
-    );
+    const failed = findMessage<{
+      type: 'rejoin_failed';
+      reason: string;
+    }>(ws.sent, 'rejoin_failed');
     expect(failed?.reason).toBe('invalid_token');
   });
-
   test('disconnect schedules abandonment and ends game when timer fires', () => {
     globalThis.setTimeout = ((cb: unknown) => {
       if (typeof cb === 'function') cb();
       return 1 as unknown as ReturnType<typeof setTimeout>;
     }) as typeof setTimeout;
-
     const white = createMockWs('white', 'u-white');
     const black = createMockWs('black', 'u-black');
     white.data.color = 'white';
     white.data.roomId = '22222222-2222-2222-2222-222222222222';
     black.data.color = 'black';
     black.data.roomId = '22222222-2222-2222-2222-222222222222';
-
     const room = createTestRoom({
       id: '22222222-2222-2222-2222-222222222222',
       white: asBunWs(white),
       black: asBunWs(black)
     });
     rooms.set(room.id, room);
-
     handleDisconnect(asBunWs(white));
-
     expect(reconnectTimeouts.size).toBe(1);
     expect(rooms.get(room.id)?.status).toBe('ended');
-    const blackDisconnected = findMessage<{ type: 'opponent_disconnected' }>(
-      black.sent,
-      'opponent_disconnected'
-    );
-    const blackGameOver = findMessage<{ type: 'game_over'; reason: string }>(
-      black.sent,
-      'game_over'
-    );
+    const blackDisconnected = findMessage<{
+      type: 'opponent_disconnected';
+    }>(black.sent, 'opponent_disconnected');
+    const blackGameOver = findMessage<{
+      type: 'game_over';
+      reason: string;
+    }>(black.sent, 'game_over');
     expect(blackDisconnected).toBeDefined();
     expect(blackGameOver?.reason).toBe('abandoned');
   });

@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,13 +15,11 @@ import {
   useAnalysisConfig,
   useAnalysisActions
 } from '@/features/chess/stores/useAnalysisStore';
-
 const MAX_THREADS =
   typeof navigator !== 'undefined' ? navigator.hardwareConcurrency || 4 : 4;
 const MAX_HASH = 512;
 const MAX_LINES = 5;
 const MAX_SEARCH_TIME = 30;
-
 export function AnalysisSettings() {
   const {
     multiPV,
@@ -40,7 +37,6 @@ export function AnalysisSettings() {
     setShowBestMoveArrow,
     setShowThreatArrow
   } = useAnalysisActions();
-
   return (
     <Dialog>
       <DialogTrigger asChild>

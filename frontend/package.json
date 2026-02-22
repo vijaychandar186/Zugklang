@@ -50,6 +50,7 @@
     "clsx": "^2.1.1",
     "dotenv": "^17.3.1",
     "fairy-stockfish-nnue.wasm": "1.1.9",
+    "kbar": "0.1.0-beta.48",
     "lucide-react": "^0.562.0",
     "next": "^16.0.7",
     "next-auth": "5.0.0-beta.30",

@@ -1,6 +1,5 @@
 import { Icons } from '@/components/Icons';
 import type { MenuCardItem } from './play-modes';
-
 export const multiplayerModes: MenuCardItem[] = [
   {
     href: '/play/multiplayer/standard',

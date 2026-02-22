@@ -1,5 +1,4 @@
 import { CSSProperties } from 'react';
-
 export type BoardThemeName =
   | 'default'
   | 'blue'
@@ -7,14 +6,12 @@ export type BoardThemeName =
   | 'gold'
   | 'orange'
   | 'mono';
-
 export type BoardTheme = {
   dark: CSSProperties;
   light: CSSProperties;
   label: string;
   name: BoardThemeName;
 };
-
 export const BOARD_THEMES: BoardTheme[] = [
   {
     name: 'default',
@@ -53,38 +50,30 @@ export const BOARD_THEMES: BoardTheme[] = [
     label: 'Mono'
   }
 ];
-
 export const DEFAULT_BOARD_THEME: BoardThemeName = 'default';
-
 export function getBoardTheme(name: BoardThemeName): BoardTheme {
   return BOARD_THEMES.find((t) => t.name === name) ?? BOARD_THEMES[0];
 }
-
 export const BOARD_STYLES = {
   boardStyle: {
     borderRadius: '4px',
     boxShadow: '0 2px 10px var(--board-shadow)'
   } as CSSProperties,
-
   getMoveOptionStyle: (isCapture: boolean): CSSProperties => ({
     background: isCapture
       ? 'radial-gradient(circle, var(--highlight-move-option) 85%, transparent 85%)'
       : 'radial-gradient(circle, var(--highlight-move-option) 25%, transparent 25%)',
     borderRadius: '50%'
   }),
-
   selectedSquare: {
     background: 'var(--highlight-selected)'
   } as CSSProperties,
-
   premoveSquare: {
     background: 'var(--highlight-premove)'
   } as CSSProperties,
-
   rightClickSquare: {
     backgroundColor: 'var(--highlight-right-click)'
   } as CSSProperties,
-
   dropSquareStyle: {
     boxShadow: 'inset 0 0 1px 6px var(--highlight-drop-alt)'
   } as CSSProperties

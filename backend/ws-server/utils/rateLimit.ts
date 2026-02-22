@@ -1,8 +1,6 @@
 const messageLog = new Map<string, number[]>();
-
 const LIMIT = 30;
-const WINDOW_MS = 3_000;
-
+const WINDOW_MS = 3000;
 export function isRateLimited(id: string): boolean {
   const now = Date.now();
   const timestamps = messageLog.get(id) ?? [];
@@ -11,7 +9,6 @@ export function isRateLimited(id: string): boolean {
   messageLog.set(id, recent);
   return recent.length > LIMIT;
 }
-
 export function clearRateLimit(id: string): void {
   messageLog.delete(id);
 }

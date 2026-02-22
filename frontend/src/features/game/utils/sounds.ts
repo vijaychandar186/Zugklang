@@ -12,7 +12,6 @@ export type SoundType =
   | 'illegal'
   | 'tenseconds'
   | 'draw-offer';
-
 const SOUND_FILES: Record<SoundType, string> = {
   'game-start': '/audio/sounds/game-start.mp3',
   'game-end': '/audio/sounds/game-end.mp3',
@@ -28,34 +27,26 @@ const SOUND_FILES: Record<SoundType, string> = {
   tenseconds: '/audio/sounds/ten-seconds.mp3',
   'draw-offer': '/audio/sounds/draw-offer.mp3'
 };
-
 const audioCache: Partial<Record<SoundType, HTMLAudioElement>> = {};
 let preloaded = false;
-
 function preloadSounds() {
   if (preloaded || typeof window === 'undefined') return;
-
   (Object.keys(SOUND_FILES) as SoundType[]).forEach((type) => {
     const audio = new Audio(SOUND_FILES[type]);
     audio.preload = 'auto';
     audio.load();
     audioCache[type] = audio;
   });
-
   preloaded = true;
 }
-
 if (typeof window !== 'undefined') {
   preloadSounds();
 }
-
 export function playSound(type: SoundType) {
   try {
     if (!preloaded) preloadSounds();
-
     const audio = audioCache[type];
     if (!audio) return;
-
     const clone = audio.cloneNode() as HTMLAudioElement;
     clone.volume = audio.volume;
     clone.play().catch((error) => {
@@ -65,9 +56,7 @@ export function playSound(type: SoundType) {
     console.warn('Audio playback error', error);
   }
 }
-
 const rawAudioCache: Record<string, HTMLAudioElement> = {};
-
 export function playRawSound(path: string) {
   try {
     let audio = rawAudioCache[path];
@@ -86,7 +75,6 @@ export function playRawSound(path: string) {
     console.warn('Audio playback error', error);
   }
 }
-
 export function getSoundType(
   isCapture: boolean,
   isCheck: boolean,

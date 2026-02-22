@@ -1,8 +1,6 @@
 'use client';
-
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-
 export interface StatBoxProps {
   label: string;
   value: string | number;
@@ -12,7 +10,6 @@ export interface StatBoxProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
-
 const variantStyles = {
   default: '',
   success: '[color:var(--success)]',
@@ -20,13 +17,11 @@ const variantStyles = {
   warning: '[color:var(--classification-inaccuracy)]',
   primary: 'text-primary'
 } as const;
-
 const sizeStyles = {
   sm: { value: 'text-lg', label: 'text-xs' },
   md: { value: 'text-2xl', label: 'text-xs' },
   lg: { value: 'text-4xl', label: 'text-sm' }
 } as const;
-
 export function StatBox({
   label,
   value,

@@ -1,5 +1,5 @@
 'use client';
-
+import { useMemo } from 'react';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type {
@@ -19,14 +19,15 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-
 type ReviewReportProps = {
   report: GameReport;
   currentPosition?: Position;
   currentMoveIndex: number;
 };
-
-const CLASSIFICATION_LABELS: { key: Classification; label: string }[] = [
+const CLASSIFICATION_LABELS: {
+  key: Classification;
+  label: string;
+}[] = [
   { key: 'brilliant', label: 'Brilliant' },
   { key: 'great', label: 'Great' },
   { key: 'best', label: 'Best' },
@@ -38,18 +39,46 @@ const CLASSIFICATION_LABELS: { key: Classification; label: string }[] = [
   { key: 'blunder', label: 'Blunder' },
   { key: 'book', label: 'Book' }
 ];
-
 export function ReviewReport({
   report,
   currentPosition,
   currentMoveIndex
 }: ReviewReportProps) {
   const classification = currentPosition?.classification;
-
   const previousPosition =
     currentMoveIndex > 0 ? report.positions[currentMoveIndex - 1] : undefined;
   const bestMoveLine = previousPosition?.topLines?.find((l) => l.id === 1);
-
+  const classificationCounts = useMemo(() => {
+    const counts: Record<
+      Classification,
+      {
+        white: number;
+        black: number;
+      }
+    > = {
+      brilliant: { white: 0, black: 0 },
+      great: { white: 0, black: 0 },
+      best: { white: 0, black: 0 },
+      excellent: { white: 0, black: 0 },
+      good: { white: 0, black: 0 },
+      inaccuracy: { white: 0, black: 0 },
+      mistake: { white: 0, black: 0 },
+      miss: { white: 0, black: 0 },
+      blunder: { white: 0, black: 0 },
+      book: { white: 0, black: 0 },
+      forced: { white: 0, black: 0 }
+    };
+    for (let i = 1; i < report.positions.length; i++) {
+      const key = report.positions[i].classification;
+      if (!key || !counts[key]) continue;
+      if (i % 2 === 1) {
+        counts[key].white += 1;
+      } else {
+        counts[key].black += 1;
+      }
+    }
+    return counts;
+  }, [report.positions]);
   return (
     <Card>
       <CardHeader>
@@ -111,13 +140,8 @@ export function ReviewReport({
             </TableHeader>
             <TableBody>
               {CLASSIFICATION_LABELS.map(({ key, label }) => {
-                const whiteCount = report.positions.filter(
-                  (p, i) => i > 0 && i % 2 === 1 && p.classification === key
-                ).length;
-                const blackCount = report.positions.filter(
-                  (p, i) => i > 0 && i % 2 === 0 && p.classification === key
-                ).length;
-
+                const whiteCount = classificationCounts[key].white;
+                const blackCount = classificationCounts[key].black;
                 return (
                   <TableRow key={key}>
                     <TableCell
@@ -213,7 +237,6 @@ export function ReviewReport({
                       (line.moveUCI && line.moveUCI.length >= 4
                         ? line.moveUCI
                         : null);
-
                     return (
                       <div
                         key={i}

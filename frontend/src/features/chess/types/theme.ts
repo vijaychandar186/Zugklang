@@ -1,5 +1,4 @@
 import { CSSProperties } from 'react';
-
 export type BoardThemeName =
   | 'default'
   | 'blue'
@@ -7,7 +6,6 @@ export type BoardThemeName =
   | 'gold'
   | 'orange'
   | 'mono';
-
 export type BoardTheme = {
   name: BoardThemeName;
   label: string;

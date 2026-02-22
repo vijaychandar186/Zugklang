@@ -4,13 +4,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { computerModes } from '@/constants/computer-modes';
-
 export const metadata: Metadata = {
   title: 'Play vs Computer | Zugklang',
   description:
     'Challenge Stockfish at various difficulty levels. Play standard chess or try variants like Fischer Random.'
 };
-
 export default function ComputerPlayMenuPage() {
   return (
     <PageContainer scrollable={true}>

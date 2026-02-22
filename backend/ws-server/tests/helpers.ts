@@ -10,13 +10,11 @@ import {
 } from '../state';
 import { buildPosition } from '../utils/chess';
 import { getStartingFen } from '../utils/fen';
-
 export interface MockWs {
   data: SocketData;
   sent: unknown[];
   send: (payload: string) => number;
 }
-
 export function createMockWs(id: string, userId?: string): MockWs {
   const data: SocketData = userId ? { id, userId } : { id };
   const ws: MockWs = {
@@ -29,11 +27,9 @@ export function createMockWs(id: string, userId?: string): MockWs {
   };
   return ws;
 }
-
 export function asBunWs(ws: MockWs): BunWS {
   return ws as unknown as BunWS;
 }
-
 export function resetInMemoryState(): void {
   for (const room of rooms.values()) {
     if (room.abortTimer !== null) clearTimeout(room.abortTimer);
@@ -41,7 +37,6 @@ export function resetInMemoryState(): void {
   for (const timeout of reconnectTimeouts.values()) {
     clearTimeout(timeout);
   }
-
   queues.clear();
   rooms.clear();
   challenges.clear();
@@ -49,7 +44,6 @@ export function resetInMemoryState(): void {
   connectedUserIds.clear();
   rejoinTokens.clear();
 }
-
 export function createTestRoom(params: {
   id: string;
   white: BunWS;
@@ -65,7 +59,6 @@ export function createTestRoom(params: {
     increment: 0
   };
   const startingFen = getStartingFen(variant);
-
   return {
     id: params.id,
     white: params.white,

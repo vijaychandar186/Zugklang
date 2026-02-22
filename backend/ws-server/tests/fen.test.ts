@@ -1,6 +1,5 @@
 import { describe, expect, test } from 'bun:test';
 import { generateChess960Fen, getStartingFen } from '../utils/fen';
-
 function pieceAt(backRank: string, piece: string): number[] {
   const indexes: number[] = [];
   for (let i = 0; i < backRank.length; i++) {
@@ -8,7 +7,6 @@ function pieceAt(backRank: string, piece: string): number[] {
   }
   return indexes;
 }
-
 describe('fen utilities', () => {
   test('returns fixed start FENs for known variants', () => {
     expect(getStartingFen('standard')).toBe(
@@ -21,7 +19,6 @@ describe('fen utilities', () => {
       'rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP w kq - 0 1'
     );
   });
-
   test('generates valid chess960 constraints', () => {
     for (let i = 0; i < 100; i++) {
       const fen = generateChess960Fen();
@@ -29,11 +26,9 @@ describe('fen utilities', () => {
       const [backRankBlack] = board!.split('/');
       expect(backRankBlack).toBeDefined();
       expect(backRankBlack!.length).toBe(8);
-
       const bishops = pieceAt(backRankBlack!, 'b');
       const king = pieceAt(backRankBlack!, 'k')[0];
       const rooks = pieceAt(backRankBlack!, 'r');
-
       expect(bishops.length).toBe(2);
       expect(bishops[0]! % 2).not.toBe(bishops[1]! % 2);
       expect(rooks.length).toBe(2);

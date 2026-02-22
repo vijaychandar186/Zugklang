@@ -1,5 +1,4 @@
 'use client';
-
 import { useMemo, useRef, useEffect, useState } from 'react';
 import { useCurrentPositionData } from '@/features/game-review/stores/useGameReviewStore';
 import {
@@ -12,28 +11,23 @@ import {
   formatEvalLabel,
   type EvaluationBarProps
 } from '@/features/analysis/components/EvaluationBar';
-
 type ReviewEvaluationBarProps = Omit<
   EvaluationBarProps,
   'whitePercentage' | 'label' | 'isActive'
 >;
-
 type EvalState = {
   cp: number | null;
   mate: number | null;
 };
-
 export function ReviewEvaluationBar(props: ReviewEvaluationBarProps) {
   const { evaluation: reviewEvaluation } = useCurrentPositionData();
   const { isAnalysisOn } = useAnalysisState();
   const engineAnalysis = useEngineAnalysis();
-
   const prevValueRef = useRef<EvalState>({ cp: null, mate: null });
   const [displayValues, setDisplayValues] = useState<EvalState>({
     cp: 0,
     mate: null
   });
-
   const liveEvaluation = useMemo(() => {
     if (!isAnalysisOn) return null;
     const { cp, mate } = engineAnalysis;
@@ -41,11 +35,12 @@ export function ReviewEvaluationBar(props: ReviewEvaluationBarProps) {
     return {
       type: mate !== null ? 'mate' : 'cp',
       value: mate !== null ? mate : (cp ?? 0)
-    } as { type: 'cp' | 'mate'; value: number };
+    } as {
+      type: 'cp' | 'mate';
+      value: number;
+    };
   }, [isAnalysisOn, engineAnalysis]);
-
   const evaluation = liveEvaluation || reviewEvaluation;
-
   useEffect(() => {
     if (!evaluation) {
       if (
@@ -56,10 +51,8 @@ export function ReviewEvaluationBar(props: ReviewEvaluationBarProps) {
       }
       return;
     }
-
     const newCp = evaluation.type === 'cp' ? evaluation.value : null;
     const newMate = evaluation.type === 'mate' ? evaluation.value : null;
-
     if (
       prevValueRef.current.cp !== newCp ||
       prevValueRef.current.mate !== newMate
@@ -68,13 +61,9 @@ export function ReviewEvaluationBar(props: ReviewEvaluationBarProps) {
       prevValueRef.current = { cp: newCp, mate: newMate };
     }
   }, [evaluation]);
-
   const { cp, mate } = displayValues;
-
   const whitePercentage = useMemo(() => getWinPercentage(cp, mate), [cp, mate]);
-
   const label = useMemo(() => formatEvalLabel(cp, mate), [cp, mate]);
-
   return (
     <EvaluationBar
       whitePercentage={whitePercentage}

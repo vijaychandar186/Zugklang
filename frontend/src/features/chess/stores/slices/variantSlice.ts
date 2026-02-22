@@ -7,12 +7,10 @@ import {
 } from '@/features/chess/config/variants';
 import { TimeControl } from '@/features/game/types/rules';
 import { saveToModeStorage, loadFromModeStorage } from '../gameStorage';
-
 export interface VariantSlice {
   variant: ChessVariant;
   setVariant: (variant: ChessVariant) => void;
 }
-
 type PersistedPlayState = {
   mode: 'play' | 'analysis';
   gameType: 'computer' | 'local';
@@ -34,13 +32,11 @@ type PersistedPlayState = {
   autoFlipBoard: boolean;
   variant: ChessVariant;
 };
-
 const DEFAULT_TIME_CONTROL: TimeControl = {
   mode: 'unlimited',
   minutes: 0,
   increment: 0
 };
-
 export const createVariantSlice: StateCreator<
   VariantSlice & {
     mode: 'play' | 'analysis';
@@ -69,11 +65,9 @@ export const createVariantSlice: StateCreator<
   VariantSlice
 > = (set, get) => ({
   variant: 'standard',
-
   setVariant: (variant) => {
     const state = get();
     if (state.variant !== variant) {
-      // Save current variant's state
       const currentState: PersistedPlayState = {
         mode: state.mode,
         gameType: state.gameType,
@@ -96,8 +90,6 @@ export const createVariantSlice: StateCreator<
         variant: state.variant
       };
       saveToModeStorage(`${state.gameType}-${state.variant}`, currentState);
-
-      // Try to load saved state for the new variant
       const savedState = loadFromModeStorage<PersistedPlayState>(
         `${state.gameType}-${variant}`
       );
@@ -131,12 +123,8 @@ export const createVariantSlice: StateCreator<
             playingAgainstStockfish: false
           });
           return;
-        } catch {
-          // Fall through to fresh state
-        }
+        } catch {}
       }
-
-      // No saved state or load failed - start fresh
       const startingFEN = getStartingFEN(variant);
       const newGame = new Chess(startingFEN, variantToRules(variant));
       set({

@@ -1,5 +1,4 @@
 'use client';
-
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { Board3D } from '@/features/chess/components/Board3D';
 import { PromotionDialog } from '@/features/chess/components/PromotionDialog';
@@ -19,7 +18,6 @@ import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { useStockfish } from '@/features/engine/hooks/useStockfish';
 import { playSound } from '@/features/game/utils/sounds';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
-
 export function AnalysisChessBoard() {
   const {
     game,
@@ -30,19 +28,15 @@ export function AnalysisChessBoard() {
     playingAgainstStockfish,
     playerColor
   } = useAnalysisBoardState();
-
   const { makeMove, goToEnd } = useAnalysisBoardActions();
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
   const engineConfig = useChessStore((s) => s.engineConfig);
-
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
   const { turn: analysisTurn } = useAnalysisPosition();
-
   const theme = useBoardTheme();
-
   const {
     isMounted,
     position,
@@ -69,7 +63,6 @@ export function AnalysisChessBoard() {
     goToEnd,
     allowOpponentMoves: !playingAgainstStockfish
   });
-
   useStockfish({
     game,
     fen: currentFEN,
@@ -81,7 +74,6 @@ export function AnalysisChessBoard() {
     soundEnabled,
     playSound
   });
-
   const analysisArrows = useChessArrows({
     isAnalysisOn,
     uciLines,
@@ -91,9 +83,7 @@ export function AnalysisChessBoard() {
     gameTurn,
     analysisTurn
   });
-
   const resolvedOrientation = isMounted ? boardOrientation : 'white';
-
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
@@ -104,7 +94,6 @@ export function AnalysisChessBoard() {
     onSquareRightClick: handleSquareRightClick,
     arrows: analysisArrows
   };
-
   return (
     <div className='relative'>
       {isMounted && board3dEnabled ? (

@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useCallback, useMemo, useRef } from 'react';
 import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
 import { Board3D } from '@/features/chess/components/Board3D';
@@ -25,20 +24,14 @@ import {
 } from '@/features/chess/stores/useAnalysisStore';
 import type { OnOpponentMoveFn } from '../types';
 import type { Square, Move } from '@/lib/chess/chess';
-
 interface MultiplayerChessBoardProps {
   serverOrientation?: 'white' | 'black';
   initialBoard3dEnabled?: boolean;
-  /** Called with the move the local player just made */
   onPlayerMove: (from: string, to: string, promotion?: string) => void;
-  /** Register the callback to apply an incoming opponent move */
   setOnOpponentMove: (fn: OnOpponentMoveFn | null) => void;
-  /** Moves to silently replay after reconnection (UCI strings e.g. "e2e4", "@N@e4") */
   movesToReplay?: string[] | null;
-  /** Called after all movesToReplay have been applied */
   onMovesReplayed?: () => void;
 }
-
 export function MultiplayerChessBoard({
   serverOrientation,
   initialBoard3dEnabled,
@@ -63,7 +56,6 @@ export function MultiplayerChessBoard({
     boardFlipped,
     variant
   } = useChessState();
-
   const {
     setGameOver,
     setGameResult,
@@ -73,33 +65,25 @@ export function MultiplayerChessBoard({
     goToEnd
   } = useChessActions();
   const { switchTimer } = useTimerState();
-
   const isPlayMode = mode === 'play';
-
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
   const { turn: analysisTurn } = useAnalysisPosition();
-
   const theme = useBoardTheme();
-
-  // Track whether a move being executed came from the opponent (via WS)
   const isApplyingOpponentMoveRef = useRef(false);
-
   const onMoveExecuted = useCallback(
     (move: Move) => {
       if (isPlayMode) {
         const activeColor = game.turn() === 'w' ? 'white' : 'black';
         switchTimer(activeColor);
       }
-      // Only forward to WS if this is a local player move
       if (!isApplyingOpponentMoveRef.current) {
         onPlayerMove(move.from, move.to, move.promotion);
       }
     },
     [isPlayMode, game, switchTimer, onPlayerMove]
   );
-
   const {
     isMounted,
     position,
@@ -130,20 +114,15 @@ export function MultiplayerChessBoard({
     goToEnd,
     isGameOver: gameOver || (isPlayMode && !gameStarted),
     onMoveExecuted,
-    allowOpponentMoves: false // multiplayer: only allow own pieces
+    allowOpponentMoves: false
   });
-
-  // Expose executeMove so the WS hook can apply opponent moves
   const executeMoveRef = useRef(executeMove);
   executeMoveRef.current = executeMove;
-
   useEffect(() => {
     const applyOpponentMove: OnOpponentMoveFn = (from, to, promotion) => {
       isApplyingOpponentMoveRef.current = true;
       if (from === '@') {
-        // Crazyhouse drop move — `to` is the full SAN e.g. "N@e4"
         makeDropMove(to);
-        // Switch timer manually (makeDropMove doesn't trigger onMoveExecuted)
         if (isPlayMode) {
           const activeColor = game.turn() === 'w' ? 'white' : 'black';
           switchTimer(activeColor);
@@ -156,8 +135,6 @@ export function MultiplayerChessBoard({
     setOnOpponentMove(applyOpponentMove);
     return () => setOnOpponentMove(null);
   }, [setOnOpponentMove, makeDropMove, isPlayMode, game, switchTimer]);
-
-  // Replay moves silently after reconnection
   const makeDropMoveRef = useRef(makeDropMove);
   makeDropMoveRef.current = makeDropMove;
   useEffect(() => {
@@ -176,8 +153,6 @@ export function MultiplayerChessBoard({
     }
     onMovesReplayed?.();
   }, [movesToReplay, onMovesReplayed]);
-
-  // Crazyhouse drop moves: player's own drops
   const executeDropMove = useCallback(
     (san: string) => {
       const move = makeDropMove(san);
@@ -186,15 +161,12 @@ export function MultiplayerChessBoard({
           const activeColor = game.turn() === 'w' ? 'white' : 'black';
           switchTimer(activeColor);
         }
-        // '@' as from-square signals a drop move to the WS peer
         onPlayerMove('@', san);
       }
       return move;
     },
     [makeDropMove, isPlayMode, game, switchTimer, onPlayerMove]
   );
-
-  // Game-over detection (checkmate / stalemate / variant win)
   useEffect(() => {
     if (!isPlayMode || !gameStarted) return;
     if (game.isGameOver()) {
@@ -222,17 +194,14 @@ export function MultiplayerChessBoard({
     soundEnabled,
     variant
   ]);
-
   const onNewGame = useCallback(() => {
     if (soundEnabled) playSound('game-start');
     clearState();
   }, [clearState, soundEnabled]);
-
   useEffect(() => {
     setOnNewGame(onNewGame);
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
-
   const analysisArrows = useChessArrows({
     isAnalysisOn,
     uciLines,
@@ -242,14 +211,12 @@ export function MultiplayerChessBoard({
     gameTurn,
     analysisTurn
   });
-
   const loserColor = useMemo((): 'w' | 'b' | null => {
     if (!gameOver) return null;
     const outcome = game.outcome();
     if (!outcome || outcome.winner === undefined) return null;
     return outcome.winner === 'w' ? 'b' : 'w';
   }, [gameOver, game]);
-
   const effectiveBoardOrientation = isPlayMode
     ? boardFlipped
       ? playAs === 'white'
@@ -257,14 +224,11 @@ export function MultiplayerChessBoard({
         : 'white'
       : playAs
     : boardOrientation;
-
   const resolvedOrientation =
     isMounted && hasHydrated
       ? effectiveBoardOrientation
       : serverOrientation || 'white';
-
   const variantModule = variantRegistry.getModule(variant);
-
   const {
     selectedDropPiece,
     dropSquareStyles,
@@ -279,7 +243,6 @@ export function MultiplayerChessBoard({
     onMoveExecuted: () => {},
     isGameOver: gameOver || (isPlayMode && !gameStarted)
   });
-
   const wrappedSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (selectedDropPiece) {
@@ -296,7 +259,6 @@ export function MultiplayerChessBoard({
       handleSquareClick
     ]
   );
-
   const mergedSquareStyles = useMemo(() => {
     const base = isMounted && hasHydrated ? squareStyles : {};
     if (!selectedDropPiece) return base;
@@ -308,12 +270,10 @@ export function MultiplayerChessBoard({
     selectedDropPiece,
     dropSquareStyles
   ]);
-
   const checkerPieces = useMemo(
     () => (variant === 'checkersChess' ? buildCheckerPieces() : undefined),
     [variant]
   );
-
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
@@ -331,14 +291,11 @@ export function MultiplayerChessBoard({
     loserColor,
     ...(checkerPieces ? { pieces: checkerPieces } : {})
   };
-
   const shouldShow3d =
     isMounted && hasHydrated
       ? board3dEnabled
       : (initialBoard3dEnabled ?? false);
-
   const BoardOverlayComponent = variantModule?.components?.BoardOverlay;
-
   return (
     <>
       <div className='relative'>

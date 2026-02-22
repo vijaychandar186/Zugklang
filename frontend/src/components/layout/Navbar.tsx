@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -12,24 +11,21 @@ import {
 } from '@/components/ui/sheet';
 import { Icons } from '@/components/Icons';
 import ThemeToggle from '@/components/layout/ThemeToggle/theme-toggle';
+import SearchInput from '@/components/layout/Kbar/SearchInput';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/layout/UserMenu';
-
 interface RouteProps {
   href: string;
   label: string;
 }
-
 const routeList: RouteProps[] = [
   { href: '/play', label: 'Play' },
   { href: '/tools', label: 'Tools' },
   { href: '/practice', label: 'Practice' }
 ];
-
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
-
   return (
     <header className='border-border/40 bg-background/80 sticky top-0 z-40 w-full border-b backdrop-blur-md'>
       <div className='flex h-14 w-full items-center justify-between px-4 lg:px-6'>
@@ -38,7 +34,6 @@ export function Navbar() {
           <span className='text-lg font-bold tracking-tight'>Zugklang</span>
         </Link>
 
-        {/* Desktop Nav */}
         <nav className='hidden items-center gap-6 md:flex'>
           {routeList.map(({ href, label }) => (
             <Link
@@ -55,14 +50,14 @@ export function Navbar() {
           ))}
         </nav>
 
-        {/* Desktop Actions */}
         <div className='hidden items-center gap-3 md:flex'>
+          <SearchInput />
           <ThemeToggle />
           <UserMenu />
         </div>
 
-        {/* Mobile Menu */}
         <div className='flex items-center gap-2 md:hidden'>
+          <SearchInput />
           <ThemeToggle />
 
           <Sheet open={isOpen} onOpenChange={setIsOpen}>

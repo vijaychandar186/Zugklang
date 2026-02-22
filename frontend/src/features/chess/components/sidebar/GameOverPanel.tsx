@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -11,7 +10,6 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { DepthDistributionChart } from '../DepthDistributionChart';
-
 type GameOverPanelProps = {
   gameResult: string | null;
   onNewGame: () => void;
@@ -19,7 +17,6 @@ type GameOverPanelProps = {
   moveDepths?: (number | null)[];
   showDepthDistribution?: boolean;
 };
-
 export function GameOverPanel({
   gameResult,
   onNewGame,
@@ -28,7 +25,6 @@ export function GameOverPanel({
   showDepthDistribution = false
 }: GameOverPanelProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-
   return (
     <div className='flex flex-col gap-2 border-b pb-2'>
       <p className='text-center text-sm font-medium'>{gameResult}</p>

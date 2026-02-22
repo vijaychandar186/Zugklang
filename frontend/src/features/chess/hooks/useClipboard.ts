@@ -1,22 +1,17 @@
 'use client';
-
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
-
 export type UseClipboardOptions = {
   resetDelay?: number;
 };
-
 export function useClipboard({ resetDelay = 2000 }: UseClipboardOptions = {}) {
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
   useEffect(() => {
     if (copiedKey) {
       const timer = setTimeout(() => setCopiedKey(null), resetDelay);
       return () => clearTimeout(timer);
     }
   }, [copiedKey, resetDelay]);
-
   const copy = useCallback(async (text: string, key: string) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -26,28 +21,23 @@ export function useClipboard({ resetDelay = 2000 }: UseClipboardOptions = {}) {
       return false;
     }
   }, []);
-
   const isCopied = useCallback((key: string) => copiedKey === key, [copiedKey]);
-
   return {
     copy,
     isCopied,
     copiedKey
   };
 }
-
 export interface UseChessClipboardOptions {
   getFEN: () => string;
   getPGN: () => string;
   getMoves?: () => string;
 }
-
 export interface UseChessClipboardReturn {
   copyFEN: () => void;
   copyPGN: () => void;
   copyMoves: () => void;
 }
-
 export function useChessClipboard({
   getFEN,
   getPGN,
@@ -58,13 +48,11 @@ export function useChessClipboard({
     navigator.clipboard.writeText(fen);
     toast.success('FEN copied');
   }, [getFEN]);
-
   const copyPGN = useCallback(() => {
     const pgn = getPGN();
     navigator.clipboard.writeText(pgn || '[No moves]');
     toast.success('PGN copied');
   }, [getPGN]);
-
   const copyMoves = useCallback(() => {
     if (!getMoves) {
       toast.error('No moves to copy');
@@ -74,14 +62,12 @@ export function useChessClipboard({
     navigator.clipboard.writeText(moves || 'No moves');
     toast.success('Moves copied');
   }, [getMoves]);
-
   return {
     copyFEN,
     copyPGN,
     copyMoves
   };
 }
-
 export function formatMovesText(moves: string[]): string {
   const pairs: string[] = [];
   for (let i = 0; i < moves.length; i += 2) {
@@ -92,7 +78,6 @@ export function formatMovesText(moves: string[]): string {
   }
   return pairs.join(' ');
 }
-
 export function formatPGN(
   moves: string[],
   options: {
@@ -110,7 +95,6 @@ export function formatPGN(
   } = options;
   const date = new Date();
   const dateStr = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-
   let result = '*';
   if (gameOver && gameResult) {
     if (gameResult.includes('White wins')) {
@@ -128,7 +112,6 @@ export function formatPGN(
       result = '1/2-1/2';
     }
   }
-
   const whiteName = isLocalGame
     ? 'White'
     : playAs === 'white'
@@ -139,7 +122,6 @@ export function formatPGN(
     : playAs === 'black'
       ? 'Player'
       : 'Stockfish';
-
   const headers = [
     '[Site "Zugklang"]',
     `[Date "${dateStr}"]`,
@@ -147,6 +129,5 @@ export function formatPGN(
     `[Black "${blackName}"]`,
     `[Result "${result}"]`
   ].join('\n');
-
   return `${headers}\n\n${formatMovesText(moves)} ${result}`;
 }

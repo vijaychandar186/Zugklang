@@ -5,7 +5,6 @@ import {
   HORDE_STARTING_FEN
 } from './constants';
 import { generateRandomChess960FEN } from '../utils/chess960';
-
 export type ChessVariant =
   | 'standard'
   | 'fischerRandom'
@@ -17,7 +16,6 @@ export type ChessVariant =
   | 'kingOfTheHill'
   | 'crazyhouse'
   | 'checkersChess';
-
 type VariantConfig = {
   rules: Rules;
   uciVariant: string;
@@ -26,7 +24,6 @@ type VariantConfig = {
   getStartingFEN: () => string;
   boardOverlay?: 'finishLine';
 };
-
 const VARIANT_CONFIG: Record<ChessVariant, VariantConfig> = {
   standard: {
     rules: 'chess',
@@ -100,31 +97,24 @@ const VARIANT_CONFIG: Record<ChessVariant, VariantConfig> = {
     getStartingFEN: () => STARTING_FEN
   }
 };
-
 export function getVariantConfig(variant: ChessVariant): VariantConfig {
   return VARIANT_CONFIG[variant];
 }
-
 export function variantToRules(variant: ChessVariant): Rules {
   return VARIANT_CONFIG[variant].rules;
 }
-
 export function getStartingFEN(variant: ChessVariant): string {
   return VARIANT_CONFIG[variant].getStartingFEN();
 }
-
 export function usesFairyEngine(variant: ChessVariant): boolean {
   return VARIANT_CONFIG[variant].useFairyEngine;
 }
-
 export function getEngineName(variant: ChessVariant): string {
   return VARIANT_CONFIG[variant].engineName;
 }
-
 export function getUciVariant(variant: ChessVariant): string {
   return VARIANT_CONFIG[variant].uciVariant;
 }
-
 export function hasBoardOverlay(
   variant: ChessVariant
 ): VariantConfig['boardOverlay'] | undefined {

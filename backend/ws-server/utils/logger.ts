@@ -1,5 +1,4 @@
 type LogLevel = 'info' | 'warn' | 'error';
-
 function log(
   level: LogLevel,
   msg: string,
@@ -9,7 +8,6 @@ function log(
     JSON.stringify({ ts: new Date().toISOString(), level, msg, ...data })
   );
 }
-
 export const logger = {
   info: (msg: string, data?: Record<string, unknown>) => log('info', msg, data),
   warn: (msg: string, data?: Record<string, unknown>) => log('warn', msg, data),

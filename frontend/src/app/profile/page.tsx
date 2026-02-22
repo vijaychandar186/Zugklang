@@ -5,18 +5,14 @@ import { prisma } from '@/lib/db/db';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { Navbar } from '@/components/layout/Navbar';
 import { ProfileView } from '@/features/profile/components/ProfileView';
-
 export const metadata: Metadata = {
   title: 'Profile | Zugklang',
   description: 'Your chess profile, ratings, and game history.'
 };
-
 export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/signin');
-
   const userId = session.user.id;
-
   const [user, ratings, puzzleRating, recentGames] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -64,9 +60,7 @@ export default async function ProfilePage() {
       }
     })
   ]);
-
   if (!user) redirect('/signin');
-
   return (
     <PageContainer scrollable={true}>
       <Navbar />

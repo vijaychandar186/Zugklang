@@ -1,5 +1,4 @@
 import Link from 'next/link';
-
 const footerLinks = [
   {
     heading: 'Play',
@@ -16,7 +15,7 @@ const footerLinks = [
       { label: 'Puzzles', href: '/practice/puzzles' },
       { label: 'Puzzle Rush', href: '/practice/puzzles/rush' },
       { label: 'Opening Explorer', href: '/practice/learn/openings' },
-      { label: 'Memory & Vision', href: '/practice/memory' }
+      { label: 'Memory & Vision', href: '/practice/cognitive/memory' }
     ]
   },
   {
@@ -36,7 +35,6 @@ const footerLinks = [
     ]
   }
 ];
-
 export function Footer() {
   return (
     <footer className='border-t'>

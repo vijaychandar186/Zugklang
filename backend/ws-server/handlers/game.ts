@@ -4,38 +4,32 @@ import { send, getOpponent, isInRoom } from '../utils/socket';
 import { applyMove } from '../utils/chess';
 import { logger } from '../utils/logger';
 import { createRoom } from './queue';
-
 export function handleMove(
   ws: BunWS,
-  msg: { from: string; to: string; promotion?: string | undefined }
+  msg: {
+    from: string;
+    to: string;
+    promotion?: string | undefined;
+  }
 ): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status === 'ended') return;
   if (!isInRoom(room, ws)) return;
-
-  // Reject moves submitted out of turn
   if (room.position.turn !== ws.data.color) {
     send(ws, { type: 'error', message: 'Not your turn.' });
     return;
   }
-
   const { from, to, promotion } = msg;
-
-  // Validate chess legality and advance the authoritative server position
   const legal = applyMove(room.position, from, to, promotion);
   if (!legal) {
     send(ws, { type: 'error', message: 'Illegal move.' });
     return;
   }
-
   room.moves.push(`${from}${to}${promotion ?? ''}`);
   send(getOpponent(room, ws), { type: 'opponent_move', from, to, promotion });
-
-  // Manage auto-abort timer for the first two moves
   if (room.moves.length === 1) {
-    // White moved: reset timer — now black has 1 minute to make their first move
     if (room.abortTimer !== null) clearTimeout(room.abortTimer);
     room.abortTimer = setTimeout(() => {
       const r = rooms.get(roomId!);
@@ -56,22 +50,19 @@ export function handleMove(
         roomId: roomId!.slice(0, 8),
         moves: r.moves.length
       });
-    }, 60_000);
+    }, 60000);
   } else if (room.moves.length === 2) {
-    // Both players made their first move — cancel auto-abort
     if (room.abortTimer !== null) {
       clearTimeout(room.abortTimer);
       room.abortTimer = null;
     }
   }
 }
-
 export function handleResign(ws: BunWS): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status === 'ended') return;
-
   if (room.abortTimer !== null) {
     clearTimeout(room.abortTimer);
     room.abortTimer = null;
@@ -80,7 +71,6 @@ export function handleResign(ws: BunWS): void {
   revokeRoomTokens(room);
   const isWhite = room.white.data.id === ws.data.id;
   const winner = isWhite ? 'Black' : 'White';
-
   const payload = {
     type: 'game_over',
     result: `${winner} wins by resignation`,
@@ -91,31 +81,25 @@ export function handleResign(ws: BunWS): void {
   };
   send(room.white, payload);
   send(room.black, payload);
-
   logger.info('game_resign', {
     roomId: roomId.slice(0, 8),
     resignedColor: isWhite ? 'white' : 'black'
   });
 }
-
 export function handleOfferDraw(ws: BunWS): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status === 'ended') return;
-
   room.drawOfferedBy = ws.data.color ?? null;
   send(getOpponent(room, ws), { type: 'draw_offered' });
 }
-
 export function handleAcceptDraw(ws: BunWS): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status === 'ended' || !room.drawOfferedBy) return;
-
   if (room.drawOfferedBy === ws.data.color) return;
-
   if (room.abortTimer !== null) {
     clearTimeout(room.abortTimer);
     room.abortTimer = null;
@@ -131,26 +115,21 @@ export function handleAcceptDraw(ws: BunWS): void {
   };
   send(room.white, payload);
   send(room.black, payload);
-
   logger.info('game_draw', { roomId: roomId.slice(0, 8) });
 }
-
 export function handleDeclineDraw(ws: BunWS): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room) return;
-
   room.drawOfferedBy = null;
   send(getOpponent(room, ws), { type: 'draw_declined' });
 }
-
 export function handleAbort(ws: BunWS): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status === 'ended') return;
-
   if (room.abortTimer !== null) {
     clearTimeout(room.abortTimer);
     room.abortTimer = null;
@@ -166,74 +145,65 @@ export function handleAbort(ws: BunWS): void {
   };
   send(room.white, payload);
   send(room.black, payload);
-
   logger.info('game_aborted', { roomId: roomId.slice(0, 8) });
 }
-
 export function handleOfferRematch(ws: BunWS): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status !== 'ended') return;
   if (!isInRoom(room, ws)) return;
-
   const opponent = getOpponent(room, ws);
-  // Opponent has already left for a new game — silently drop the offer.
   if (opponent.data.roomId !== roomId) return;
-
   room.rematchOfferedBy = ws.data.id;
   send(opponent, { type: 'rematch_offered' });
 }
-
 export function handleAcceptRematch(ws: BunWS): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status !== 'ended') return;
   if (!room.rematchOfferedBy || room.rematchOfferedBy === ws.data.id) return;
-
-  // Swap colors for the rematch
   const [newWhite, newBlack] =
     room.white.data.id === ws.data.id
-      ? [room.white, room.black] // acceptor was white → stays white? No: swap
-      : [room.black, room.white]; // acceptor was black → becomes white
-  // Convention: acceptor becomes white (color swaps each rematch)
+      ? [room.white, room.black]
+      : [room.black, room.white];
   createRoom(newWhite, newBlack, room.variant, room.timeControl);
 }
-
 export function handleDeclineRematch(ws: BunWS): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status !== 'ended') return;
-
   room.rematchOfferedBy = null;
   send(getOpponent(room, ws), { type: 'rematch_declined' });
 }
-
 export function handleGameOverNotify(
   ws: BunWS,
-  msg: { result: string; reason: string }
+  msg: {
+    result: string;
+    reason: string;
+  }
 ): void {
   const roomId = ws.data.roomId;
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status === 'ended') return;
-
   if (room.abortTimer !== null) {
     clearTimeout(room.abortTimer);
     room.abortTimer = null;
   }
   room.status = 'ended';
   revokeRoomTokens(room);
-  send(getOpponent(room, ws), {
+  const gameOverPayload = {
     type: 'game_over',
     result: msg.result,
     reason: msg.reason,
     whiteUserId: room.white.data.userId ?? null,
     blackUserId: room.black.data.userId ?? null
-  });
-
+  };
+  send(getOpponent(room, ws), gameOverPayload);
+  send(ws, gameOverPayload);
   logger.info('game_over', {
     roomId: roomId.slice(0, 8),
     result: msg.result,

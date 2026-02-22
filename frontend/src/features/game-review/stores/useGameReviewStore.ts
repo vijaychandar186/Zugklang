@@ -12,9 +12,7 @@ import {
   createBoardOrientationSlice,
   BoardOrientationSlice
 } from '@/features/chess/stores/slices';
-
 const STARTING_FEN = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
-
 type GameReviewStoreState = {
   pgn: string;
   depth: number;
@@ -26,7 +24,6 @@ type GameReviewStoreState = {
   liveEvaluations: (LiveEvaluation | null)[];
   currentMoveIndex: number;
 };
-
 type GameReviewStoreActions = {
   setPgn: (pgn: string) => void;
   setDepth: (depth: number) => void;
@@ -44,11 +41,9 @@ type GameReviewStoreActions = {
   getCurrentFen: () => string;
   getTotalMoves: () => number;
 };
-
 type GameReviewStore = GameReviewStoreState &
   GameReviewStoreActions &
   BoardOrientationSlice;
-
 export const useGameReviewStore = create<GameReviewStore>()(
   persist(
     (set, get) => ({
@@ -63,7 +58,6 @@ export const useGameReviewStore = create<GameReviewStore>()(
       currentMoveIndex: 0,
       boardOrientation: 'white',
       boardFlipped: false,
-
       setPgn: (pgn) => set({ pgn }),
       setDepth: (depth) => set({ depth }),
       setStatus: (status) => set({ status }),
@@ -77,23 +71,27 @@ export const useGameReviewStore = create<GameReviewStore>()(
         }),
       setLivePositions: (positions) => set({ livePositions: positions }),
       setLiveEvaluations: (evals) => set({ liveEvaluations: evals }),
-
       updateLiveEvaluation: (index, evaluation) =>
         set((state) => {
+          const existing = state.liveEvaluations[index];
+          if (
+            existing &&
+            existing.type === evaluation.type &&
+            existing.value === evaluation.value
+          ) {
+            return state;
+          }
           const newEvals = [...state.liveEvaluations];
           newEvals[index] = evaluation;
           return { liveEvaluations: newEvals };
         }),
-
       navigate: (delta) =>
         set((state) => {
           const { report, livePositions, currentMoveIndex } = state;
           const positions = report?.positions || livePositions;
           if (positions.length === 0) return state;
-
           const maxIndex = positions.length - 1;
           let newIndex: number;
-
           if (delta === Infinity) {
             newIndex = maxIndex;
           } else if (delta === -Infinity) {
@@ -104,24 +102,19 @@ export const useGameReviewStore = create<GameReviewStore>()(
               Math.min(currentMoveIndex + delta, maxIndex)
             );
           }
-
           if (newIndex === currentMoveIndex) return state;
           return { currentMoveIndex: newIndex };
         }),
-
       goToMove: (index) =>
         set((state) => {
           const { report, livePositions } = state;
           const positions = report?.positions || livePositions;
           if (positions.length === 0) return { currentMoveIndex: index };
-
           const maxIndex = positions.length - 1;
           const clampedIndex = Math.max(0, Math.min(index, maxIndex));
           return { currentMoveIndex: clampedIndex };
         }),
-
       ...createBoardOrientationSlice(set),
-
       resetReview: () =>
         set({
           status: 'idle',
@@ -132,18 +125,15 @@ export const useGameReviewStore = create<GameReviewStore>()(
           liveEvaluations: [],
           currentMoveIndex: 0
         }),
-
       getCurrentPosition: () => {
         const { report, livePositions, currentMoveIndex } = get();
         const positions = report?.positions || livePositions;
         return positions[currentMoveIndex];
       },
-
       getCurrentFen: () => {
         const position = get().getCurrentPosition();
         return position?.fen || STARTING_FEN;
       },
-
       getTotalMoves: () => {
         const { report, livePositions } = get();
         return report ? report.positions.length : livePositions.length;
@@ -155,20 +145,12 @@ export const useGameReviewStore = create<GameReviewStore>()(
       partialize: (state) => ({
         pgn: state.pgn,
         depth: state.depth,
-        report: state.report,
-        currentMoveIndex: state.currentMoveIndex,
         boardFlipped: state.boardFlipped,
         boardOrientation: state.boardOrientation
-      }),
-      onRehydrateStorage: () => (state) => {
-        if (state && state.report) {
-          state.status = 'complete';
-        }
-      }
+      })
     }
   )
 );
-
 export const useGameReviewState = () =>
   useGameReviewStore(
     useShallow((s) => ({
@@ -185,7 +167,6 @@ export const useGameReviewState = () =>
       boardOrientation: s.boardOrientation
     }))
   );
-
 export const useGameReviewActions = () =>
   useGameReviewStore(
     useShallow((s) => ({
@@ -209,14 +190,12 @@ export const useGameReviewActions = () =>
       getTotalMoves: s.getTotalMoves
     }))
   );
-
 export const useCurrentPositionData = () =>
   useGameReviewStore(
     useShallow((s) => {
       const positions = s.report?.positions || s.livePositions;
       const position = positions[s.currentMoveIndex];
       const topLine = position?.topLines?.find((l) => l.id === 1);
-
       return {
         position,
         classification: position?.classification,

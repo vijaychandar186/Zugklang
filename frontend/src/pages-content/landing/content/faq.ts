@@ -3,10 +3,8 @@ export interface FAQProps {
   answer: string;
   value: string;
 }
-
 export const FAQ_SUBTITLE =
   'Find answers to common questions about Zugklang chess.';
-
 export const FAQList: FAQProps[] = [
   {
     question: 'What chess engines does Zugklang use?',

@@ -5,31 +5,25 @@ import './globals.css';
 import './theme.css';
 import { Providers } from '@/components/layout/Providers';
 import { auth } from '@/lib/auth/auth';
-
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin']
 });
-
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin']
 });
-
 const META_THEME_COLORS = {
   light: '#ffffff',
   dark: '#09090b'
 };
-
 export const metadata: Metadata = {
   title: 'Zugklang',
   description: 'Play chess where the position speaks through sound'
 };
-
 export const viewport: Viewport = {
   themeColor: META_THEME_COLORS.light
 };
-
 export default async function RootLayout({
   children
 }: Readonly<{
@@ -39,7 +33,6 @@ export default async function RootLayout({
   const theme = cookieStore.get('theme')?.value;
   const boardScheme = cookieStore.get('boardScheme')?.value;
   const playAs = cookieStore.get('playAs')?.value;
-
   return (
     <html lang='en' suppressHydrationWarning data-board-scheme={boardScheme}>
       <head>

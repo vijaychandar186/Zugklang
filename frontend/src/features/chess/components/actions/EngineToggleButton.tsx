@@ -1,5 +1,4 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import {
@@ -7,13 +6,11 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-
 export interface EngineToggleButtonProps {
   isOn: boolean;
   disabled?: boolean;
   onToggle: () => void;
 }
-
 export function EngineToggleButton({
   isOn,
   disabled = false,

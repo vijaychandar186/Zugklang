@@ -1,5 +1,4 @@
 'use client';
-
 import { create } from 'zustand';
 import { useShallow } from 'zustand/shallow';
 import { persist, createJSONStorage } from 'zustand/middleware';
@@ -11,10 +10,8 @@ import {
   createBoardOrientationSlice,
   BoardOrientationSlice
 } from '@/features/chess/stores/slices';
-
 import { PuzzleSession } from '@/features/chess/logic/PuzzleSession';
 import { Puzzle, PuzzleDifficulty, PuzzleStatus } from '../types';
-
 interface PuzzleState extends NavigationSlice, BoardOrientationSlice {
   session: PuzzleSession;
   currentPuzzle: Puzzle | null;
@@ -29,7 +26,6 @@ interface PuzzleState extends NavigationSlice, BoardOrientationSlice {
   currentStreak: number;
   bestStreak: number;
 }
-
 interface PuzzleActions {
   loadPuzzle: (puzzle: Puzzle, index: number) => void;
   setDifficulty: (difficulty: PuzzleDifficulty) => void;
@@ -37,14 +33,11 @@ interface PuzzleActions {
   resetPuzzle: () => void;
   toggleHint: () => void;
 }
-
 type PuzzleStore = PuzzleState & PuzzleActions;
-
 export const usePuzzleStore = create<PuzzleStore>()(
   persist(
     (set, get) => {
       const session = new PuzzleSession();
-
       return {
         session,
         currentPuzzle: null,
@@ -63,17 +56,13 @@ export const usePuzzleStore = create<PuzzleStore>()(
         puzzlesFailed: 0,
         currentStreak: 0,
         bestStreak: 0,
-
         ...createNavigationSlice(set, get),
         ...createBoardOrientationSlice(set),
-
         loadPuzzle: (puzzle, index) => {
           const { session } = get();
           session.loadPuzzle(puzzle);
-
           const fenTurn = puzzle.FEN.split(' ')[1];
           const playerColor = fenTurn === 'w' ? 'black' : 'white';
-
           set({
             currentPuzzle: puzzle,
             puzzleIndex: index,
@@ -86,10 +75,8 @@ export const usePuzzleStore = create<PuzzleStore>()(
             boardOrientation: playerColor,
             showHint: false
           });
-
           setTimeout(() => {
             const { session, status, playerTurn } = get();
-
             if (status === 'playing' && !playerTurn) {
               const move = session.makeOpponentMove();
               if (move) {
@@ -105,24 +92,17 @@ export const usePuzzleStore = create<PuzzleStore>()(
             }
           }, 500);
         },
-
         setDifficulty: (difficulty) => set({ difficulty }),
-
         makeMove: (from, to, promotion) => {
           const { session, status, playerTurn, viewingIndex, positionHistory } =
             get();
-
           if (status !== 'playing' || !playerTurn) return null;
           if (viewingIndex < positionHistory.length - 1) return null;
-
           const { move, outcome } = session.makePlayerMove(from, to, promotion);
-
           if (!move) return null;
-
           set((state) => {
             const newMoves = [...state.moves, move.san];
             const newHistory = [...state.positionHistory, session.fen];
-
             const newState: Partial<PuzzleState> = {
               currentFEN: session.fen,
               moves: newMoves,
@@ -131,7 +111,6 @@ export const usePuzzleStore = create<PuzzleStore>()(
               status: session.status,
               playerTurn: session.playerTurn
             };
-
             if (outcome === 'success') {
               const newStreak = state.currentStreak + 1;
               newState.puzzlesSolved = state.puzzlesSolved + 1;
@@ -141,10 +120,8 @@ export const usePuzzleStore = create<PuzzleStore>()(
               newState.puzzlesFailed = state.puzzlesFailed + 1;
               newState.currentStreak = 0;
             }
-
             return newState;
           });
-
           if (outcome === 'continue') {
             setTimeout(() => {
               const { session: currentSession, status: currentStatus } = get();
@@ -163,17 +140,14 @@ export const usePuzzleStore = create<PuzzleStore>()(
               }
             }, 300);
           }
-
           return move;
         },
-
         resetPuzzle: () => {
           const { currentPuzzle, puzzleIndex, loadPuzzle } = get();
           if (currentPuzzle) {
             loadPuzzle(currentPuzzle, puzzleIndex);
           }
         },
-
         toggleHint: () => set((state) => ({ showHint: !state.showHint }))
       };
     },
@@ -190,7 +164,6 @@ export const usePuzzleStore = create<PuzzleStore>()(
     }
   )
 );
-
 export function usePuzzleState() {
   return usePuzzleStore(
     useShallow((state) => ({
@@ -210,7 +183,6 @@ export function usePuzzleState() {
     }))
   );
 }
-
 export function usePuzzleStats() {
   return usePuzzleStore(
     useShallow((state) => ({
@@ -221,7 +193,6 @@ export function usePuzzleStats() {
     }))
   );
 }
-
 export function usePuzzleActions() {
   return usePuzzleStore(
     useShallow((state) => ({

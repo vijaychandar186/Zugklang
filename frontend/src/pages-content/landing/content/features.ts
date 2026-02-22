@@ -3,9 +3,7 @@ export interface FeatureProps {
   description: string;
   href?: string;
 }
-
 export const FEATURE_HEADING = 'Powerful Chess Features';
-
 export const featureList: string[] = [
   'Stockfish 16',
   'Fairy-Stockfish',
@@ -23,7 +21,6 @@ export const featureList: string[] = [
   'Multiple Themes',
   'Keyboard Shortcuts'
 ];
-
 export const features: FeatureProps[] = [
   {
     title: 'Advanced AI Engines',

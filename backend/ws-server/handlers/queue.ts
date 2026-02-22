@@ -5,11 +5,9 @@ import { getStartingFen } from '../utils/fen';
 import { buildPosition } from '../utils/chess';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
-
 function timeControlKey(tc: TimeControl): string {
   return `${tc.mode}:${String(tc.minutes)}:${String(tc.increment)}`;
 }
-
 export function createRoom(
   white: BunWS,
   black: BunWS,
@@ -18,12 +16,10 @@ export function createRoom(
 ): void {
   const roomId = crypto.randomUUID();
   const startingFen = getStartingFen(variant);
-
   white.data.color = 'white';
   white.data.roomId = roomId;
   black.data.color = 'black';
   black.data.roomId = roomId;
-
   const room: Room = {
     id: roomId,
     white,
@@ -45,10 +41,7 @@ export function createRoom(
     whiteImage: white.data.userImage ?? null,
     blackImage: black.data.userImage ?? null
   };
-
   rooms.set(roomId, room);
-
-  // Auto-abort if white hasn't moved within 1 minute
   room.abortTimer = setTimeout(() => {
     const r = rooms.get(roomId);
     if (!r || r.status === 'ended') return;
@@ -68,15 +61,12 @@ export function createRoom(
       roomId: roomId.slice(0, 8),
       moves: r.moves.length
     });
-  }, 60_000);
-
+  }, 60000);
   const whiteToken = issueRejoinToken(white.data.id);
   const blackToken = issueRejoinToken(black.data.id);
-
   const whiteUserId = white.data.userId ?? null;
   const blackUserId = black.data.userId ?? null;
   const { whiteDisplayName, blackDisplayName, whiteImage, blackImage } = room;
-
   send(white, {
     type: 'matched',
     roomId,
@@ -107,7 +97,6 @@ export function createRoom(
     whiteImage,
     blackImage
   });
-
   logger.info('room_created', {
     roomId: roomId.slice(0, 8),
     white: white.data.id.slice(0, 8),
@@ -115,14 +104,12 @@ export function createRoom(
     variant
   });
 }
-
 function matchPlayers(
   playerA: BunWS,
   playerB: BunWS,
   variant: string,
   timeControl: TimeControl
 ): void {
-  // Safety guard: never pair a player against themselves (same authenticated user)
   if (
     playerA.data.userId &&
     playerB.data.userId &&
@@ -131,7 +118,6 @@ function matchPlayers(
     logger.warn('same_user_match_blocked', {
       userId: playerA.data.userId.slice(0, 8)
     });
-    // Re-queue both players so they each wait for a different opponent
     const queueKey = `${variant}:${timeControlKey(timeControl)}`;
     const queue = queues.get(queueKey) ?? [];
     queues.set(queueKey, queue);
@@ -145,7 +131,6 @@ function matchPlayers(
     Math.random() < 0.5 ? [playerA, playerB] : [playerB, playerA];
   createRoom(white, black, variant, timeControl);
 }
-
 export function handleJoinQueue(
   ws: BunWS,
   msg: {
@@ -156,30 +141,21 @@ export function handleJoinQueue(
   }
 ): void {
   const { variant, timeControl } = msg;
-
-  // Store display info from the client
   if (msg.displayName !== undefined) ws.data.displayName = msg.displayName;
   if (msg.userImage !== undefined) ws.data.userImage = msg.userImage;
-
   removeFromQueues(ws);
-
   if (ws.data.roomId) {
     const room = rooms.get(ws.data.roomId);
     if (room?.status === 'active') handleResign(ws);
     delete ws.data.roomId;
   }
-
   ws.data.variant = variant;
-
   const queueKey = `${variant}:${timeControlKey(timeControl)}`;
-
   let queue = queues.get(queueKey);
   if (!queue) {
     queue = [];
     queues.set(queueKey, queue);
   }
-
-  // Scan for a suitable opponent — skip entries from the same authenticated user
   let opponentIdx = -1;
   for (let i = 0; i < queue.length; i++) {
     const candidate = queue[i];
@@ -189,12 +165,11 @@ export function handleJoinQueue(
       candidate.data.userId &&
       ws.data.userId === candidate.data.userId
     ) {
-      continue; // same user in the queue — skip
+      continue;
     }
     opponentIdx = i;
     break;
   }
-
   if (opponentIdx >= 0) {
     const opponent = queue.splice(opponentIdx, 1)[0]!;
     matchPlayers(ws, opponent, variant, timeControl);
@@ -203,7 +178,6 @@ export function handleJoinQueue(
     send(ws, { type: 'waiting' });
   }
 }
-
 export function handleLeaveQueue(ws: BunWS): void {
   removeFromQueues(ws);
   send(ws, { type: 'queue_left' });

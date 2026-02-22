@@ -1,10 +1,8 @@
 'use client';
-
 import { useMemo } from 'react';
 import * as deck from '@letele/playing-cards';
 import { cn } from '@/lib/utils';
 import type { PlayingCard } from '../stores/useCardChessStore';
-
 interface CardDisplayProps {
   card: PlayingCard | null;
   size?: number;
@@ -12,8 +10,6 @@ interface CardDisplayProps {
   className?: string;
   isDrawing?: boolean;
 }
-
-// Map our card representation to the library's component names
 function getCardComponentName(card: PlayingCard): string {
   const rankMap: Record<string, string> = {
     A: 'a',
@@ -25,19 +21,14 @@ function getCardComponentName(card: PlayingCard): string {
     '7': '7',
     '8': '8',
     '9': '9',
-    '10': '0', // Library uses '0' for 10
+    '10': '0',
     J: 'j',
     Q: 'q',
     K: 'k'
   };
-
   const rank = rankMap[card.rank];
-
-  // Component name format: first letter is suit (uppercase), second is rank (lowercase)
-  // E.g., "Ha" for Ace of Hearts, "S0" for 10 of Spades
   return `${card.suit}${rank}`;
 }
-
 export function CardDisplay({
   card,
   size = 120,
@@ -47,21 +38,22 @@ export function CardDisplay({
 }: CardDisplayProps) {
   const CardComponent = useMemo(() => {
     if (!card || isDrawing) {
-      // Show card back when drawing or no card
-      return deck['B1'] as React.ComponentType<{ style?: React.CSSProperties }>;
+      return deck['B1'] as React.ComponentType<{
+        style?: React.CSSProperties;
+      }>;
     }
-
     const componentName = getCardComponentName(card);
     const component = deck[componentName as keyof typeof deck];
-
     if (!component) {
       console.warn(`Card component not found: ${componentName}`);
-      return deck['B1'] as React.ComponentType<{ style?: React.CSSProperties }>;
+      return deck['B1'] as React.ComponentType<{
+        style?: React.CSSProperties;
+      }>;
     }
-
-    return component as React.ComponentType<{ style?: React.CSSProperties }>;
+    return component as React.ComponentType<{
+      style?: React.CSSProperties;
+    }>;
   }, [card, isDrawing]);
-
   return (
     <div
       className={cn(
@@ -72,7 +64,7 @@ export function CardDisplay({
       )}
       style={{
         width: size,
-        height: size * 1.4, // Standard playing card ratio (5:7)
+        height: size * 1.4,
         position: 'relative'
       }}
     >

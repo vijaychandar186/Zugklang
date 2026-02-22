@@ -1,14 +1,11 @@
 'use client';
-
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Icons } from '@/components/Icons';
-
 type AppearanceSelectorProps = {
   theme: string | undefined;
   onThemeChange: (theme: string) => void;
 };
-
 export function AppearanceSelector({
   theme,
   onThemeChange

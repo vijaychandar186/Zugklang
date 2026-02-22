@@ -1,6 +1,5 @@
 import type { Team } from '../types/core';
 import type { Piece } from '../logic/Piece';
-
 export function pieceAt(
   pieces: readonly Piece[],
   x: number,
@@ -8,7 +7,6 @@ export function pieceAt(
 ): Piece | undefined {
   return pieces.find((piece) => piece.isAtPosition(x, y));
 }
-
 export function isOccupied(
   pieces: readonly Piece[],
   x: number,
@@ -16,7 +14,6 @@ export function isOccupied(
 ): boolean {
   return pieceAt(pieces, x, y) !== undefined;
 }
-
 export function isOccupiedByOpponent(
   pieces: readonly Piece[],
   x: number,
@@ -26,7 +23,6 @@ export function isOccupiedByOpponent(
   const piece = pieceAt(pieces, x, y);
   return piece !== undefined && piece.team !== team;
 }
-
 export function isEmptyOrOpponent(
   pieces: readonly Piece[],
   x: number,

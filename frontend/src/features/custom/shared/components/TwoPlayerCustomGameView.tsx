@@ -34,6 +34,7 @@ interface TwoPlayerCustomGameViewProps {
   blackTime: number | null;
   activeTimer: 'white' | 'black' | null;
   sidebar: ReactNode;
+  canMove?: boolean;
 }
 export function TwoPlayerCustomGameView({
   currentFEN,
@@ -46,7 +47,8 @@ export function TwoPlayerCustomGameView({
   whiteTime,
   blackTime,
   activeTimer,
-  sidebar
+  sidebar,
+  canMove = true
 }: TwoPlayerCustomGameViewProps) {
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
@@ -112,7 +114,7 @@ export function TwoPlayerCustomGameView({
     }
     return false;
   }
-  const isActive = gameStarted && !gameOver;
+  const isActive = gameStarted && !gameOver && canMove;
   const orientation = boardFlipped ? ('black' as const) : ('white' as const);
   const hasTimer = timeControl.mode === 'timed';
   const topTime = boardFlipped ? whiteTime : blackTime;

@@ -3,7 +3,7 @@ import { CardChessSidebar } from './CardChessSidebar';
 import { useCardChessStore } from '../stores/useCardChessStore';
 import { useCardChessTimer } from '../hooks/useCardChessTimer';
 import { TwoPlayerCustomGameView } from '@/features/custom/shared/components/TwoPlayerCustomGameView';
-export function CardChessView() {
+export function CardChessView({ canMove }: { canMove?: boolean } = {}) {
   const {
     currentFEN,
     gameStarted,
@@ -30,6 +30,7 @@ export function CardChessView() {
       blackTime={blackTime}
       activeTimer={activeTimer}
       sidebar={<CardChessSidebar mode='play' />}
+      canMove={canMove}
     />
   );
 }

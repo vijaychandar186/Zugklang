@@ -40,5 +40,13 @@ export const playModes: MenuCardItem[] = [
     description:
       'Unique chess variants including 4-Player Chess and Dice Chess. Experience chess in exciting new ways!',
     actionText: 'Choose Mode'
+  },
+  {
+    href: '/play/custom-multiplayer',
+    icon: Icons.bookUser,
+    title: 'Custom Multiplayer',
+    description:
+      'Play custom game modes in multiplayer setups, including Dice Chess, Card Chess, and 4-Player Chess.',
+    actionText: 'Choose Mode'
   }
 ];

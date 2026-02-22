@@ -3,7 +3,7 @@ import { DiceChessSidebar } from './DiceChessSidebar';
 import { useDiceChessStore } from '../stores/useDiceChessStore';
 import { useDiceChessTimer } from '../hooks/useDiceChessTimer';
 import { TwoPlayerCustomGameView } from '@/features/custom/shared/components/TwoPlayerCustomGameView';
-export function DiceChessView() {
+export function DiceChessView({ canMove }: { canMove?: boolean } = {}) {
   const {
     currentFEN,
     gameStarted,
@@ -30,6 +30,7 @@ export function DiceChessView() {
       blackTime={blackTime}
       activeTimer={activeTimer}
       sidebar={<DiceChessSidebar mode='play' />}
+      canMove={canMove}
     />
   );
 }

@@ -16,8 +16,6 @@ export interface SocketData {
   roomId?: string;
   variant?: string;
   challengeId?: string;
-  customRoomId?: string;
-  customQueueMode?: string;
 }
 export type BunWS = ServerWebSocket<SocketData>;
 export interface Challenge {
@@ -26,15 +24,6 @@ export interface Challenge {
   variant: string;
   timeControl: TimeControl;
   creatorColor: CreatorColor;
-  createdAt: number;
-}
-export type CustomMode = 'dice-chess' | 'card-chess' | 'four-player';
-export interface CustomRoom {
-  id: string;
-  mode: CustomMode;
-  hostId: string;
-  participants: BunWS[];
-  maxPlayers: number;
   createdAt: number;
 }
 export interface Room {

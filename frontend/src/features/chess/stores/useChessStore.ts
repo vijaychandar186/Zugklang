@@ -137,6 +137,11 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   setAutoFlipBoard: (enabled: boolean) => void;
   setVariant: (variant: ChessVariant) => void;
   setTimeControl: (timeControl: TimeControl) => void;
+  setTimerSnapshot: (
+    whiteTime: number | null,
+    blackTime: number | null,
+    activeTimer: 'white' | 'black' | null
+  ) => void;
   tickTimer: (color: 'white' | 'black') => void;
   switchTimer: (toColor: 'white' | 'black') => void;
   stopTimer: () => void;
@@ -381,8 +386,9 @@ export const useChessStore = create<ChessStore>()(
           timeControl,
           whiteTime: timers.whiteTime,
           blackTime: timers.blackTime,
-          activeTimer: hasTimer(timeControl) ? color : null,
-          lastActiveTimestamp: hasTimer(timeControl) ? Date.now() : null,
+          // Multiplayer clock becomes authoritative only after first WS clock sync.
+          activeTimer: null,
+          lastActiveTimestamp: null,
           playingAgainstStockfish: false
         });
       },
@@ -589,6 +595,13 @@ export const useChessStore = create<ChessStore>()(
         });
       },
       setTimeControl: (timeControl) => set({ timeControl }),
+      setTimerSnapshot: (whiteTime, blackTime, activeTimer) =>
+        set({
+          whiteTime,
+          blackTime,
+          activeTimer,
+          lastActiveTimestamp: Date.now()
+        }),
       tickTimer: (color) =>
         set((state) => {
           if (state.activeTimer !== color || state.gameOver) return {};
@@ -620,12 +633,17 @@ export const useChessStore = create<ChessStore>()(
       onTimeout: (color) => {
         const state = get();
         const isPlayerTimeout = color === state.playAs;
-        const engineName = getEngineName(state.variant);
+        const timeoutMessage =
+          state.gameType === 'multiplayer'
+            ? isPlayerTimeout
+              ? 'Opponent wins on time!'
+              : 'You win on time!'
+            : isPlayerTimeout
+              ? `${getEngineName(state.variant)} wins on time!`
+              : 'You win on time!';
         set({
           gameOver: true,
-          gameResult: isPlayerTimeout
-            ? `${engineName} wins on time!`
-            : 'You win on time!',
+          gameResult: timeoutMessage,
           activeTimer: null,
           lastActiveTimestamp: null
         });
@@ -841,12 +859,14 @@ export const useChessActions = () =>
 export const useTimerState = () =>
   useChessStore(
     useShallow((s) => ({
+      gameType: s.gameType,
       timeControl: s.timeControl,
       whiteTime: s.whiteTime,
       blackTime: s.blackTime,
       activeTimer: s.activeTimer,
       playAs: s.playAs,
       gameOver: s.gameOver,
+      setTimerSnapshot: s.setTimerSnapshot,
       tickTimer: s.tickTimer,
       switchTimer: s.switchTimer,
       stopTimer: s.stopTimer,

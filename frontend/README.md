@@ -114,7 +114,7 @@ Create `frontend/.env.local`:
 
 ```env
 DATABASE_URL="postgresql://admin:mysecretpassword@localhost:5432/mydatabase"
-NEXTAUTH_URL="http://localhost:3000"
+AUTH_URL="http://localhost:3000"
 AUTH_SECRET="any-random-secret"
 AUTH_GITHUB_ID="your-github-oauth-app-id"
 AUTH_GITHUB_SECRET="your-github-oauth-app-secret"

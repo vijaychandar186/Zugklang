@@ -9,7 +9,10 @@ import { PlayerClock } from '@/features/chess/components/PlayerClock';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { useGameView } from '@/features/chess/hooks/useGameView';
 import { useGameTimer } from '@/features/chess/hooks/useGameTimer';
-import { useChessStore } from '@/features/chess/stores/useChessStore';
+import {
+  useChessStore,
+  useTimerState
+} from '@/features/chess/stores/useChessStore';
 import { AnalysisLines } from '@/features/analysis/components/AnalysisLines';
 import {
   useAnalysisState,
@@ -130,9 +133,8 @@ export function MultiplayerGameView({
 }: MultiplayerGameViewProps) {
   const ws = useMultiplayerWS();
   const { data: session } = useSession();
-  const [matchmakingOpen, setMatchmakingOpen] = useState(
-    () => loadSession() === null && !ws.isSecondaryTab
-  );
+  const [matchmakingOpen, setMatchmakingOpen] = useState(false);
+  const [sessionRestorePending, setSessionRestorePending] = useState(true);
   const [pendingMoves, setPendingMoves] = useState<string[] | null>(null);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
   const {
@@ -154,6 +156,7 @@ export function MultiplayerGameView({
   const startMultiplayerGame = useChessStore((s) => s.startMultiplayerGame);
   const setGameResult = useChessStore((s) => s.setGameResult);
   const setGameOver = useChessStore((s) => s.setGameOver);
+  const { setTimerSnapshot } = useTimerState();
   const playAs = useChessStore((s) => s.playAs);
   const gameStarted = useChessStore((s) => s.gameStarted);
   const gameOver = useChessStore((s) => s.gameOver);
@@ -298,10 +301,17 @@ export function MultiplayerGameView({
     }
   }, [matchmakingOpen, ws.isSecondaryTab]);
   useEffect(() => {
+    // Resolve session-backed UI only on client to avoid hydration flicker.
+    if (typeof window === 'undefined') return;
     const savedSession = loadSession();
     if (savedSession && savedSession.variant === variant) {
+      setMatchmakingOpen(false);
       ws.rejoin(savedSession.roomId, savedSession.rejoinToken);
       return;
+    }
+    setSessionRestorePending(false);
+    if (!ws.isSecondaryTab) {
+      setMatchmakingOpen(true);
     }
     if (challengeId) {
       ws.joinChallenge(
@@ -311,6 +321,18 @@ export function MultiplayerGameView({
       );
     }
   }, []);
+  useEffect(() => {
+    if (!sessionRestorePending) return;
+    if (
+      ws.status === 'rejoined' ||
+      ws.status === 'matched' ||
+      ws.status === 'playing' ||
+      ws.status === 'error' ||
+      (ws.status === 'idle' && loadSession() === null)
+    ) {
+      setSessionRestorePending(false);
+    }
+  }, [sessionRestorePending, ws.status]);
   useEffect(() => {
     if (ws.isSecondaryTab) return;
     if (ws.status === 'matched' && ws.myColor) {
@@ -370,6 +392,7 @@ export function MultiplayerGameView({
     startMultiplayerGame
   ]);
   useEffect(() => {
+    if (sessionRestorePending) return;
     if (
       ws.status === 'idle' &&
       !matchmakingOpen &&
@@ -378,8 +401,9 @@ export function MultiplayerGameView({
     ) {
       setMatchmakingOpen(true);
     }
-  }, [ws.status, ws.isSecondaryTab]);
+  }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
   useEffect(() => {
+    if (sessionRestorePending) return;
     if (!ws.isSecondaryTab) return;
     const showDialog =
       ws.status === 'idle' ||
@@ -387,7 +411,7 @@ export function MultiplayerGameView({
       ws.status === 'waiting' ||
       ws.status === 'error';
     setMatchmakingOpen(showDialog);
-  }, [ws.status, ws.isSecondaryTab]);
+  }, [sessionRestorePending, ws.status, ws.isSecondaryTab]);
   useEffect(() => {
     ws.setOnServerGameOver((result, reason, whiteUserId, blackUserId) => {
       if (reason !== 'checkmate') {
@@ -398,6 +422,18 @@ export function MultiplayerGameView({
     });
     return () => ws.setOnServerGameOver(null);
   }, [ws.setOnServerGameOver, setGameResult, setGameOver, saveMultiplayerGame]);
+  useEffect(() => {
+    ws.setOnClockSync((whiteTimeMs, blackTimeMs, activeClock) => {
+      const toSeconds = (ms: number | null) =>
+        ms === null ? null : Math.max(0, Math.ceil(ms / 1000));
+      setTimerSnapshot(
+        toSeconds(whiteTimeMs),
+        toSeconds(blackTimeMs),
+        activeClock
+      );
+    });
+    return () => ws.setOnClockSync(null);
+  }, [ws.setOnClockSync, setTimerSnapshot]);
   useEffect(() => {
     if (gameOver && ws.status === 'playing') {
       const myColor = ws.myColor ?? 'white';
@@ -510,6 +546,13 @@ export function MultiplayerGameView({
                   </>
                 )
               )}
+            </div>
+            <div className='flex items-center gap-2'>
+              <CapturedPiecesDisplay
+                pieces={topCaptured}
+                pieceColor={bottomColor}
+                advantage={topAdvantage}
+              />
               {hasTimer && (
                 <PlayerClock
                   time={topTime}
@@ -518,11 +561,6 @@ export function MultiplayerGameView({
                 />
               )}
             </div>
-            <CapturedPiecesDisplay
-              pieces={topCaptured}
-              pieceColor={bottomColor}
-              advantage={topAdvantage}
-            />
           </div>
 
           <BoardContainer>
@@ -569,6 +607,13 @@ export function MultiplayerGameView({
                   </>
                 )
               )}
+            </div>
+            <div className='flex items-center gap-2'>
+              <CapturedPiecesDisplay
+                pieces={bottomCaptured}
+                pieceColor={topColor}
+                advantage={bottomAdvantage}
+              />
               {hasTimer && (
                 <PlayerClock
                   time={bottomTime}
@@ -577,11 +622,6 @@ export function MultiplayerGameView({
                 />
               )}
             </div>
-            <CapturedPiecesDisplay
-              pieces={bottomCaptured}
-              pieceColor={topColor}
-              advantage={bottomAdvantage}
-            />
           </div>
         </div>
 
@@ -632,7 +672,7 @@ export function MultiplayerGameView({
         )}
 
       <MatchmakingDialog
-        open={matchmakingOpen}
+        open={matchmakingOpen && !sessionRestorePending}
         onOpenChange={(v) => {
           if (
             !v &&

@@ -77,6 +77,13 @@ export type ServerMessage =
       blackUserId: string | null;
     }
   | {
+      type: 'clock_sync';
+      whiteTimeMs: number | null;
+      blackTimeMs: number | null;
+      activeClock: 'white' | 'black' | null;
+      serverNow: number;
+    }
+  | {
       type: 'draw_offered';
     }
   | {
@@ -223,6 +230,11 @@ export type OnServerGameOverFn = (
   whiteUserId: string | null,
   blackUserId: string | null
 ) => void;
+export type OnClockSyncFn = (
+  whiteTimeMs: number | null,
+  blackTimeMs: number | null,
+  activeClock: 'white' | 'black' | null
+) => void;
 export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   joinQueue: (
     variant: string,
@@ -257,6 +269,7 @@ export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   notifyGameOver: (result: string, reason: string) => void;
   setOnOpponentMove: (fn: OnOpponentMoveFn | null) => void;
   setOnServerGameOver: (fn: OnServerGameOverFn | null) => void;
+  setOnClockSync: (fn: OnClockSyncFn | null) => void;
   offerRematch: () => void;
   acceptRematch: () => void;
   declineRematch: () => void;

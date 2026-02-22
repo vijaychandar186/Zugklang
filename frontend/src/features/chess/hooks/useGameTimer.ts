@@ -3,6 +3,7 @@ import { useTimerState } from '@/features/chess/stores/useChessStore';
 import { playSound } from '@/features/game/utils/sounds';
 export function useGameTimer() {
   const {
+    gameType,
     timeControl,
     whiteTime,
     blackTime,
@@ -37,11 +38,15 @@ export function useGameTimer() {
         intervalRef.current = null;
       }
     };
-  }, [timeControl, gameOver, activeTimer, tickTimer]);
+  }, [gameType, timeControl, gameOver, activeTimer, tickTimer]);
   useEffect(() => {
     if (timeControl.mode === 'unlimited') return;
     if (whiteTime !== null) {
-      if (whiteTime <= 0 && activeTimer === 'white') {
+      if (
+        gameType !== 'multiplayer' &&
+        whiteTime <= 0 &&
+        activeTimer === 'white'
+      ) {
         onTimeout('white');
       } else if (
         whiteTime <= 10 &&
@@ -55,7 +60,11 @@ export function useGameTimer() {
       }
     }
     if (blackTime !== null) {
-      if (blackTime <= 0 && activeTimer === 'black') {
+      if (
+        gameType !== 'multiplayer' &&
+        blackTime <= 0 &&
+        activeTimer === 'black'
+      ) {
         onTimeout('black');
       } else if (
         blackTime <= 10 &&
@@ -68,7 +77,15 @@ export function useGameTimer() {
         }
       }
     }
-  }, [whiteTime, blackTime, activeTimer, onTimeout, timeControl, playAs]);
+  }, [
+    gameType,
+    whiteTime,
+    blackTime,
+    activeTimer,
+    onTimeout,
+    timeControl,
+    playAs
+  ]);
   useEffect(() => {
     if (whiteTime !== null && whiteTime > 10) {
       lastTenSecondsRef.current.white = false;

@@ -69,112 +69,73 @@ async function getOrCreateRating(
   };
 }
 export async function POST(req: NextRequest) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  const userId = session.user.id;
-  let body: SaveGameBody;
   try {
-    body = (await req.json()) as SaveGameBody;
-  } catch {
-    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
-  }
-  const {
-    roomId,
-    moves,
-    variant,
-    gameType,
-    result,
-    resultReason,
-    myColor,
-    opponentUserId,
-    timeControl,
-    startingFen
-  } = body;
-  if (isAbortedGame(result, resultReason)) {
-    return NextResponse.json({ skipped: true, reason: 'abort' });
-  }
-  // If this game has already been saved (by the other player), return the
-  // existing deltas so both players see their rating change. This also
-  // prevents the rating from being updated twice.
-  if (roomId) {
-    const existing = await prisma.game.findUnique({
-      where: { roomId },
-      select: { id: true, whiteRatingDelta: true, blackRatingDelta: true }
-    });
-    if (existing) {
-      return NextResponse.json({
-        gameId: existing.id,
-        whiteRatingDelta: existing.whiteRatingDelta,
-        blackRatingDelta: existing.blackRatingDelta
-      });
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-  }
-  let resolvedOpponentUserId = opponentUserId ?? null;
-  if (resolvedOpponentUserId) {
-    const opponentExists = await prisma.user.findUnique({
-      where: { id: resolvedOpponentUserId },
-      select: { id: true }
-    });
-    if (!opponentExists) resolvedOpponentUserId = null;
-  }
-  const whiteUserId = myColor === 'white' ? userId : resolvedOpponentUserId;
-  const blackUserId = myColor === 'black' ? userId : resolvedOpponentUserId;
-  const pgnResult = toPgnResult(result, resultReason);
-  const category = (() => {
-    if (variant !== 'standard') return null;
-    if (timeControl.mode === 'unlimited') return 'classical' as const;
-    if (timeControl.mode !== 'timed') return null;
-    return getTimeCategory(timeControl.minutes, timeControl.increment);
-  })();
-  const isRated =
-    category !== null &&
-    pgnResult !== '*' &&
-    moves.length >= 2 &&
-    gameType === 'multiplayer' &&
-    whiteUserId &&
-    blackUserId;
-  let whitePregameRating: number | null = null;
-  let blackPregameRating: number | null = null;
-  let whiteRatingDelta: number | null = null;
-  let blackRatingDelta: number | null = null;
-  if (isRated && category) {
-    const [whiteRating, blackRating] = await Promise.all([
-      getOrCreateRating(whiteUserId!, category),
-      getOrCreateRating(blackUserId!, category)
-    ]);
-    whitePregameRating = whiteRating.rating;
-    blackPregameRating = blackRating.rating;
-    let outcome: 1 | 0 | 0.5;
-    if (pgnResult === '1-0') outcome = 1;
-    else if (pgnResult === '0-1') outcome = 0;
-    else outcome = 0.5;
-    const updated = updateRatings(whiteRating, blackRating, outcome);
-    whiteRatingDelta = updated.whiteDelta;
-    blackRatingDelta = updated.blackDelta;
-    await prisma.$transaction([
-      prisma.rating.update({
-        where: { userId_category: { userId: whiteUserId!, category } },
-        data: {
-          rating: updated.white.rating,
-          rd: updated.white.rd,
-          sigma: updated.white.sigma,
-          gameCount: { increment: 1 }
-        }
-      }),
-      prisma.rating.update({
-        where: { userId_category: { userId: blackUserId!, category } },
-        data: {
-          rating: updated.black.rating,
-          rd: updated.black.rd,
-          sigma: updated.black.sigma,
-          gameCount: { increment: 1 }
-        }
-      })
-    ]);
-  }
-  try {
+    const userId = session.user.id;
+    let body: SaveGameBody;
+    try {
+      body = (await req.json()) as SaveGameBody;
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
+    const {
+      roomId,
+      moves,
+      variant,
+      gameType,
+      result,
+      resultReason,
+      myColor,
+      opponentUserId,
+      timeControl,
+      startingFen
+    } = body;
+    if (isAbortedGame(result, resultReason)) {
+      return NextResponse.json({ skipped: true, reason: 'abort' });
+    }
+    // If this game has already been saved (by the other player), return the
+    // existing deltas so both players see their rating change. This also
+    // prevents the rating from being updated twice.
+    if (roomId) {
+      const existing = await prisma.game.findUnique({
+        where: { roomId },
+        select: { id: true, whiteRatingDelta: true, blackRatingDelta: true }
+      });
+      if (existing) {
+        return NextResponse.json({
+          gameId: existing.id,
+          whiteRatingDelta: existing.whiteRatingDelta,
+          blackRatingDelta: existing.blackRatingDelta
+        });
+      }
+    }
+    let resolvedOpponentUserId = opponentUserId ?? null;
+    if (resolvedOpponentUserId) {
+      const opponentExists = await prisma.user.findUnique({
+        where: { id: resolvedOpponentUserId },
+        select: { id: true }
+      });
+      if (!opponentExists) resolvedOpponentUserId = null;
+    }
+    const whiteUserId = myColor === 'white' ? userId : resolvedOpponentUserId;
+    const blackUserId = myColor === 'black' ? userId : resolvedOpponentUserId;
+    const pgnResult = toPgnResult(result, resultReason);
+    const category = (() => {
+      if (variant !== 'standard') return null;
+      if (timeControl.mode === 'unlimited') return 'classical' as const;
+      if (timeControl.mode !== 'timed') return null;
+      return getTimeCategory(timeControl.minutes, timeControl.increment);
+    })();
+    const isRated =
+      category !== null &&
+      pgnResult !== '*' &&
+      moves.length >= 2 &&
+      gameType === 'multiplayer' &&
+      whiteUserId &&
+      blackUserId;
     const game = await prisma.game.create({
       data: {
         roomId: roomId ?? null,
@@ -187,13 +148,66 @@ export async function POST(req: NextRequest) {
         moves,
         startingFen,
         timeControl,
-        whitePregameRating,
-        blackPregameRating,
-        whiteRatingDelta,
-        blackRatingDelta,
+        whitePregameRating: null,
+        blackPregameRating: null,
+        whiteRatingDelta: null,
+        blackRatingDelta: null,
         moveCount: moves.length
       }
     });
+    let whitePregameRating: number | null = null;
+    let blackPregameRating: number | null = null;
+    let whiteRatingDelta: number | null = null;
+    let blackRatingDelta: number | null = null;
+    if (isRated && category) {
+      try {
+        const [whiteRating, blackRating] = await Promise.all([
+          getOrCreateRating(whiteUserId!, category),
+          getOrCreateRating(blackUserId!, category)
+        ]);
+        whitePregameRating = whiteRating.rating;
+        blackPregameRating = blackRating.rating;
+        let outcome: 1 | 0 | 0.5;
+        if (pgnResult === '1-0') outcome = 1;
+        else if (pgnResult === '0-1') outcome = 0;
+        else outcome = 0.5;
+        const updated = updateRatings(whiteRating, blackRating, outcome);
+        whiteRatingDelta = updated.whiteDelta;
+        blackRatingDelta = updated.blackDelta;
+        await prisma.$transaction([
+          prisma.rating.update({
+            where: { userId_category: { userId: whiteUserId!, category } },
+            data: {
+              rating: updated.white.rating,
+              rd: updated.white.rd,
+              sigma: updated.white.sigma,
+              gameCount: { increment: 1 }
+            }
+          }),
+          prisma.rating.update({
+            where: { userId_category: { userId: blackUserId!, category } },
+            data: {
+              rating: updated.black.rating,
+              rd: updated.black.rd,
+              sigma: updated.black.sigma,
+              gameCount: { increment: 1 }
+            }
+          }),
+          prisma.game.update({
+            where: { id: game.id },
+            data: {
+              whitePregameRating,
+              blackPregameRating,
+              whiteRatingDelta,
+              blackRatingDelta
+            }
+          })
+        ]);
+      } catch (ratingErr) {
+        // Keep the game history row even if rating update fails.
+        console.error('Failed to update ratings for saved game:', ratingErr);
+      }
+    }
     return NextResponse.json({
       gameId: game.id,
       whiteRatingDelta,

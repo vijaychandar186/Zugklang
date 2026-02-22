@@ -7,7 +7,8 @@ import type {
   MultiplayerWSState,
   UseMultiplayerWSReturn,
   OnOpponentMoveFn,
-  OnServerGameOverFn
+  OnServerGameOverFn,
+  OnClockSyncFn
 } from '../types';
 const SESSION_KEY = 'zugklang_mp_session';
 const LS_ACTIVE_KEY = 'zugklang_mp_active';
@@ -104,6 +105,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const pingTimestampRef = useRef<number | null>(null);
   const onOpponentMoveRef = useRef<OnOpponentMoveFn | null>(null);
   const onServerGameOverRef = useRef<OnServerGameOverFn | null>(null);
+  const onClockSyncRef = useRef<OnClockSyncFn | null>(null);
   const roomIdRef = useRef<string | null>(null);
   const isPrimaryRef = useRef(false);
   const latestStateRef = useRef<MultiplayerWSState>(state);
@@ -373,6 +375,13 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           msg.blackUserId
         );
         break;
+      case 'clock_sync':
+        onClockSyncRef.current?.(
+          msg.whiteTimeMs,
+          msg.blackTimeMs,
+          msg.activeClock
+        );
+        break;
       case 'draw_offered':
         setState((s) => ({ ...s, drawOffered: true }));
         break;
@@ -611,6 +620,9 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const setOnServerGameOver = useCallback((fn: OnServerGameOverFn | null) => {
     onServerGameOverRef.current = fn;
   }, []);
+  const setOnClockSync = useCallback((fn: OnClockSyncFn | null) => {
+    onClockSyncRef.current = fn;
+  }, []);
   const disconnect = useCallback(() => {
     clearSession();
     stopPing();
@@ -701,6 +713,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     notifyGameOver,
     setOnOpponentMove,
     setOnServerGameOver,
+    setOnClockSync,
     disconnect
   };
 }

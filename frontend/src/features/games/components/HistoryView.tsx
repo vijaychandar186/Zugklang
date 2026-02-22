@@ -1,6 +1,7 @@
 'use client';
 import * as React from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -30,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Icons } from '@/components/Icons';
 export interface GameRow {
   id: string;
@@ -102,6 +104,25 @@ export interface HistoryViewProps {
   puzzleRush: PuzzleRushRow[];
   memorySessions: MemorySessionRow[];
   visionSessions: VisionSessionRow[];
+}
+function HistoryContentSkeleton() {
+  return (
+    <div className='space-y-4'>
+      <div className='flex gap-1 rounded-lg border p-1'>
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className='h-8 flex-1 rounded-md' />
+        ))}
+      </div>
+      <Skeleton className='h-10 w-64' />
+      <div className='overflow-hidden rounded-md border'>
+        <div className='space-y-2 p-4'>
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Skeleton key={i} className='h-8 w-full' />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 const VARIANT_LABELS: Record<string, string> = {
   standard: 'Standard',
@@ -684,6 +705,8 @@ export function HistoryView({
   memorySessions,
   visionSessions
 }: HistoryViewProps) {
+  const router = useRouter();
+  const [isRefreshing, startRefresh] = React.useTransition();
   const [activeTab, setActiveTab] = React.useState<Tab>('games');
   const gameColumns = React.useMemo(() => makeGameColumns(userId), [userId]);
   const tabs: {
@@ -706,105 +729,126 @@ export function HistoryView({
             All your activity across games and training modes
           </p>
         </div>
-        <Link href='/profile'>
-          <Button variant='outline' size='sm'>
-            Back to Profile
-          </Button>
-        </Link>
-      </div>
-
-      <div className='flex gap-1 rounded-lg border p-1'>
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setActiveTab(t.id)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
-              activeTab === t.id
-                ? 'bg-primary text-primary-foreground'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
+        <div className='flex items-center gap-2'>
+          <Button
+            variant='outline'
+            size='sm'
+            disabled={isRefreshing}
+            onClick={() => startRefresh(() => router.refresh())}
           >
-            {t.label}
-            <span
-              className={`rounded-full px-1.5 py-0.5 text-xs ${
-                activeTab === t.id
-                  ? 'bg-primary-foreground/20 text-primary-foreground'
-                  : 'bg-muted text-muted-foreground'
-              }`}
-            >
-              {t.count}
-            </span>
-          </button>
-        ))}
+            {isRefreshing ? (
+              <Icons.spinner className='mr-2 h-4 w-4 animate-spin' />
+            ) : (
+              <Icons.rotate className='mr-2 h-4 w-4' />
+            )}
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
+          <Link href='/profile'>
+            <Button variant='outline' size='sm'>
+              Back to Profile
+            </Button>
+          </Link>
+        </div>
       </div>
 
-      {activeTab === 'games' && (
-        <div className='space-y-4'>
-          <DataTable
-            columns={gameColumns}
-            data={games}
-            filterColumn='opponent'
-            filterPlaceholder='Filter by opponent...'
-          />
+      {isRefreshing ? (
+        <HistoryContentSkeleton />
+      ) : (
+        <>
+          <div className='flex gap-1 rounded-lg border p-1'>
+            {tabs.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                  activeTab === t.id
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t.label}
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-xs ${
+                    activeTab === t.id
+                      ? 'bg-primary-foreground/20 text-primary-foreground'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {t.count}
+                </span>
+              </button>
+            ))}
+          </div>
 
-          {totalPages > 1 && (
-            <div className='flex items-center justify-center gap-2'>
-              {page > 1 && (
-                <Link href={`/games?page=${page - 1}`}>
-                  <Button variant='outline' size='sm'>
-                    Previous
-                  </Button>
-                </Link>
-              )}
-              <span className='text-muted-foreground text-sm'>
-                Page {page} of {totalPages}
-              </span>
-              {page < totalPages && (
-                <Link href={`/games?page=${page + 1}`}>
-                  <Button variant='outline' size='sm'>
-                    Next
-                  </Button>
-                </Link>
+          {activeTab === 'games' && (
+            <div className='space-y-4'>
+              <DataTable
+                columns={gameColumns}
+                data={games}
+                filterColumn='opponent'
+                filterPlaceholder='Filter by opponent...'
+              />
+
+              {totalPages > 1 && (
+                <div className='flex items-center justify-center gap-2'>
+                  {page > 1 && (
+                    <Link href={`/games?page=${page - 1}`}>
+                      <Button variant='outline' size='sm'>
+                        Previous
+                      </Button>
+                    </Link>
+                  )}
+                  <span className='text-muted-foreground text-sm'>
+                    Page {page} of {totalPages}
+                  </span>
+                  {page < totalPages && (
+                    <Link href={`/games?page=${page + 1}`}>
+                      <Button variant='outline' size='sm'>
+                        Next
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               )}
             </div>
           )}
-        </div>
-      )}
 
-      {activeTab === 'puzzles' && (
-        <DataTable
-          columns={puzzleColumns}
-          data={puzzleAttempts}
-          filterColumn='difficulty'
-          filterPlaceholder='Filter by difficulty...'
-        />
-      )}
+          {activeTab === 'puzzles' && (
+            <DataTable
+              columns={puzzleColumns}
+              data={puzzleAttempts}
+              filterColumn='difficulty'
+              filterPlaceholder='Filter by difficulty...'
+            />
+          )}
 
-      {activeTab === 'rush' && (
-        <DataTable
-          columns={rushColumns}
-          data={puzzleRush}
-          filterColumn='difficulty'
-          filterPlaceholder='Filter by difficulty...'
-        />
-      )}
+          {activeTab === 'rush' && (
+            <DataTable
+              columns={rushColumns}
+              data={puzzleRush}
+              filterColumn='difficulty'
+              filterPlaceholder='Filter by difficulty...'
+            />
+          )}
 
-      {activeTab === 'memory' && (
-        <DataTable
-          columns={memoryColumns}
-          data={memorySessions}
-          filterColumn='mode'
-          filterPlaceholder='Filter by mode...'
-        />
-      )}
+          {activeTab === 'memory' && (
+            <DataTable
+              columns={memoryColumns}
+              data={memorySessions}
+              filterColumn='mode'
+              filterPlaceholder='Filter by mode...'
+            />
+          )}
 
-      {activeTab === 'vision' && (
-        <DataTable
-          columns={visionColumns}
-          data={visionSessions}
-          filterColumn='trainingMode'
-          filterPlaceholder='Filter by mode...'
-        />
+          {activeTab === 'vision' && (
+            <DataTable
+              columns={visionColumns}
+              data={visionSessions}
+              filterColumn='trainingMode'
+              filterPlaceholder='Filter by mode...'
+            />
+          )}
+        </>
       )}
     </div>
   );

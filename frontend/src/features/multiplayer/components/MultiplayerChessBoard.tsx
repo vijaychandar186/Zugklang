@@ -5,8 +5,7 @@ import { Board3D } from '@/features/chess/components/Board3D';
 import { PromotionDialog } from '@/features/chess/components/PromotionDialog';
 import {
   useChessState,
-  useChessActions,
-  useTimerState
+  useChessActions
 } from '@/features/chess/stores/useChessStore';
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
 import { useChessBoardLogic } from '@/features/chess/hooks/useChessBoardLogic';
@@ -64,7 +63,6 @@ export function MultiplayerChessBoard({
     makeDropMove,
     goToEnd
   } = useChessActions();
-  const { switchTimer } = useTimerState();
   const isPlayMode = mode === 'play';
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
@@ -74,15 +72,11 @@ export function MultiplayerChessBoard({
   const isApplyingOpponentMoveRef = useRef(false);
   const onMoveExecuted = useCallback(
     (move: Move) => {
-      if (isPlayMode) {
-        const activeColor = game.turn() === 'w' ? 'white' : 'black';
-        switchTimer(activeColor);
-      }
       if (!isApplyingOpponentMoveRef.current) {
         onPlayerMove(move.from, move.to, move.promotion);
       }
     },
-    [isPlayMode, game, switchTimer, onPlayerMove]
+    [onPlayerMove]
   );
   const {
     isMounted,
@@ -123,10 +117,6 @@ export function MultiplayerChessBoard({
       isApplyingOpponentMoveRef.current = true;
       if (from === '@') {
         makeDropMove(to);
-        if (isPlayMode) {
-          const activeColor = game.turn() === 'w' ? 'white' : 'black';
-          switchTimer(activeColor);
-        }
       } else {
         executeMoveRef.current(from as Square, to as Square, promotion);
       }
@@ -134,7 +124,7 @@ export function MultiplayerChessBoard({
     };
     setOnOpponentMove(applyOpponentMove);
     return () => setOnOpponentMove(null);
-  }, [setOnOpponentMove, makeDropMove, isPlayMode, game, switchTimer]);
+  }, [setOnOpponentMove, makeDropMove]);
   const makeDropMoveRef = useRef(makeDropMove);
   makeDropMoveRef.current = makeDropMove;
   useEffect(() => {
@@ -157,15 +147,11 @@ export function MultiplayerChessBoard({
     (san: string) => {
       const move = makeDropMove(san);
       if (move) {
-        if (isPlayMode) {
-          const activeColor = game.turn() === 'w' ? 'white' : 'black';
-          switchTimer(activeColor);
-        }
         onPlayerMove('@', san);
       }
       return move;
     },
-    [makeDropMove, isPlayMode, game, switchTimer, onPlayerMove]
+    [makeDropMove, onPlayerMove]
   );
   useEffect(() => {
     if (!isPlayMode || !gameStarted) return;

@@ -46,7 +46,7 @@ export const playModes: MenuCardItem[] = [
     icon: Icons.bookUser,
     title: 'Custom Multiplayer',
     description:
-      'Play custom game modes in multiplayer setups, including Dice Chess, Card Chess, and 4-Player Chess.',
+      'Play Dice Chess or Card Chess online with a friend — same matchmaking as standard multiplayer.',
     actionText: 'Choose Mode'
   }
 ];

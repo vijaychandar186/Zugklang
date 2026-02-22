@@ -3,19 +3,11 @@ import type { MenuCardItem } from './play-modes';
 
 export const customMultiplayerModes: MenuCardItem[] = [
   {
-    href: '/play/custom-multiplayer/four-player',
-    icon: Icons.usersRound,
-    title: '4-Player Chess',
-    description:
-      'Multiplayer 4-player chess on a 14x14 board with teams and rotating turns.',
-    actionText: 'Play Multiplayer'
-  },
-  {
     href: '/play/custom-multiplayer/dice-chess',
     icon: Icons.dices,
     title: 'Dice Chess',
     description:
-      'Multiplayer Dice Chess where rolls constrain legal piece moves each turn.',
+      'Multiplayer Dice Chess — rolls constrain which piece type you may move each turn.',
     actionText: 'Play Multiplayer'
   },
   {
@@ -23,7 +15,7 @@ export const customMultiplayerModes: MenuCardItem[] = [
     icon: Icons.spade,
     title: 'Card Chess',
     description:
-      'Multiplayer Card Chess with draw-based move constraints and tactical card play.',
+      'Multiplayer Card Chess — draw a card each turn to unlock the piece you must move.',
     actionText: 'Play Multiplayer'
   }
 ];

@@ -1,17 +1,19 @@
 import type { Metadata } from 'next';
-import { PageContainer } from '@/components/layout/PageContainer';
 import { CardChessMultiplayerView } from '@/features/custom/card-chess/components/CardChessMultiplayerView';
 
 export const metadata: Metadata = {
   title: 'Card Chess Multiplayer | Zugklang',
   description:
-    'Play Card Chess in custom multiplayer mode with card-constrained move selection.'
+    'Play Card Chess online — get matched with a random opponent or invite a friend.'
 };
 
-export default function CardChessMultiplayerPage() {
-  return (
-    <PageContainer scrollable={true}>
-      <CardChessMultiplayerView />
-    </PageContainer>
-  );
+interface Props {
+  searchParams: Promise<{ challenge?: string }>;
+}
+
+export default async function CardChessMultiplayerPage({
+  searchParams
+}: Props) {
+  const { challenge } = await searchParams;
+  return <CardChessMultiplayerView challengeId={challenge} />;
 }

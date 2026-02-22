@@ -42,15 +42,42 @@ const MODE_INFO_BY_HREF: Record<string, InfoEntry> = {
   },
   '/play/custom-multiplayer': {
     objective:
-      'Create or join a custom online room and play custom modes live with other players.',
+      'Get matched online and play Dice Chess or Card Chess live against another player.',
     rules: [
-      'Open a mode, create a room, and share the room link with friends.',
-      'The host state is synchronized across all connected players.',
-      'Player count depends on mode: 2 players for Dice/Card, 4 players for 4-Player Chess.'
+      'Matchmaking and challenge links work identically to standard multiplayer.',
+      'The dice roll or card draw is enforced client-side for the active player each turn.',
+      'Illegal chess moves are rejected by the server regardless of dice or card result.'
     ],
     tips: [
-      'Wait for all required players before starting.',
-      'Use the in-game room pane to copy and share the invite link.'
+      'Use "Play with Friend" in the matchmaking dialog to generate a shareable invite link.',
+      'Rejoin is supported — if you disconnect, the game waits 30 seconds before ending.'
+    ]
+  },
+  '/play/custom-multiplayer/dice-chess': {
+    objective:
+      'Win by checkmating your opponent while playing under dice constraints.',
+    rules: [
+      'Roll 3 dice at the start of your turn — each shows a piece type.',
+      'You may only move a piece whose type appears on a valid (highlighted) die.',
+      'If none of the rolled pieces have legal moves, the dice re-roll automatically.'
+    ],
+    tips: [
+      'Highlighted squares show which pieces are currently movable.',
+      'Plan ahead for rolls — have multiple piece types in play to stay flexible.'
+    ]
+  },
+  '/play/custom-multiplayer/card-chess': {
+    objective:
+      'Win by checkmating your opponent while playing under card constraints.',
+    rules: [
+      'Draw a card at the start of your turn — the rank maps to a specific piece.',
+      'You may only move the piece indicated by your drawn card.',
+      'If the drawn card has no legal moves, another card is drawn automatically.',
+      'When in check, you may draw up to 5 cards; failing all 5 results in a loss.'
+    ],
+    tips: [
+      'The card deck is independent per player — you each manage your own draws.',
+      'Keep all your pieces active to minimise the chance of a dead draw.'
     ]
   },
   '/play/computer/standard': {
@@ -276,45 +303,6 @@ const MODE_INFO_BY_HREF: Record<string, InfoEntry> = {
     rules: [
       'Card ranks map to move permissions for specific piece types.',
       'Card management changes strategic planning each turn.'
-    ]
-  },
-  '/play/custom-multiplayer/dice-chess': {
-    objective:
-      'Play Dice Chess online where rolls restrict legal moves each turn.',
-    rules: [
-      'Create/join a 2-player room via room link.',
-      'Only the active side can interact during its turn.',
-      'Room state is synchronized live between both players.'
-    ],
-    tips: [
-      'If the opponent joins late, the host snapshot syncs the full board state.',
-      'Use highlighted pieces after each roll to avoid illegal move attempts.'
-    ]
-  },
-  '/play/custom-multiplayer/card-chess': {
-    objective:
-      'Play Card Chess online with shared deck/discard state and turn-based card draws.',
-    rules: [
-      'Create/join a 2-player room via room link.',
-      'Card draw results and board state are synchronized in real time.',
-      'Only the active side can draw and move on its turn.'
-    ],
-    tips: [
-      'When in check, plan around forced redraw chains.',
-      'Use the room pane link button to quickly bring in your opponent.'
-    ]
-  },
-  '/play/custom-multiplayer/four-player': {
-    objective:
-      'Play live 4-player chess online with synchronized turn order and room seating.',
-    rules: [
-      'Create/join a 4-seat room and fill all seats (R/B/Y/G).',
-      'Turn order rotates by team and only the active team can move.',
-      'The 4-player room pane shows seat assignment, room status, and invite controls.'
-    ],
-    tips: [
-      'Share the room link early so all four players can join before starting.',
-      'Watch your team seat indicator in the pane to track whose turn is next.'
     ]
   },
   '/tools/analysis': {

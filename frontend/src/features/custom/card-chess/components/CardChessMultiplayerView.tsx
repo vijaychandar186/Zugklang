@@ -1,387 +1,1277 @@
 'use client';
-
-import { useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useShallow } from 'zustand/shallow';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { Chess } from '@/lib/chess/chess';
-import { CardChessView } from './CardChessView';
-import { useCardChessStore } from '../stores/useCardChessStore';
-import type { PlayingCard, CardResult } from '../stores/useCardChessStore';
-import { useCustomMultiplayerWS } from '@/features/custom/shared/hooks/useCustomMultiplayerWS';
-import { useChessStore } from '@/features/chess/stores/useChessStore';
-import { Button } from '@/components/ui/button';
+import type { ChessJSMove } from '@/lib/chess/chess';
+import { STARTING_FEN } from '@/features/chess/config/constants';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import type { TimeControl } from '@/features/game/types/rules';
-import type { CSSProperties } from 'react';
+  useMultiplayerWS,
+  loadSession
+} from '@/features/multiplayer/hooks/useMultiplayerWS';
+import { MatchmakingDialog } from '@/features/multiplayer/components/MatchmakingDialog';
+import { useSession } from 'next-auth/react';
+import { UnifiedChessBoard as Board } from '@/features/chess/components/Board';
+import { Board3D } from '@/features/chess/components/Board3D';
+import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
+import { CapturedPiecesDisplay } from '@/features/chess/components/CapturedPieces';
+import { BoardContainer } from '@/features/chess/components/BoardContainer';
+import { useChessStore } from '@/features/chess/stores/useChessStore';
+import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
+import {
+  getCapturedPiecesFromFEN,
+  getMaterialAdvantage
+} from '@/features/chess/utils/fen-logic';
+import { playSound, getSoundType } from '@/features/game/utils/sounds';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Button } from '@/components/ui/button';
+import { Icons } from '@/components/Icons';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from '@/components/ui/alert-dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
+import { MoveHistory } from '@/features/chess/components/sidebar/MoveHistory';
+import { NavigationControls } from '@/features/chess/components/sidebar/NavigationControls';
+import { GameOverPanel } from '@/features/chess/components/sidebar/GameOverPanel';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import { CardDisplay } from './CardDisplay';
+import {
+  type CardRank,
+  type CardSuit,
+  type PlayingCard,
+  type CardResult,
+  CARD_TO_PIECE,
+  PIECE_NAMES
+} from '../stores/useCardChessStore';
+import type { ChallengeColor } from '@/features/multiplayer/types';
 
-type CardSnapshot = {
-  currentFEN: string;
-  turn: 'w' | 'b';
-  moves: string[];
-  positionHistory: string[];
-  viewingIndex: number;
-  gameStarted: boolean;
-  gameOver: boolean;
-  gameResult: string | null;
-  timeControl: TimeControl;
-  whiteTime: number | null;
-  blackTime: number | null;
-  activeTimer: 'white' | 'black' | null;
-  lastActiveTimestamp: number | null;
-  deck: PlayingCard[];
-  discardPile: PlayingCard[];
+const VARIANT = 'card-chess';
+
+// ---------------------------------------------------------------------------
+// Deck helpers (pure, no store dependency)
+// ---------------------------------------------------------------------------
+function createDeck(): PlayingCard[] {
+  const ranks: CardRank[] = [
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10',
+    'J',
+    'Q',
+    'K',
+    'A'
+  ];
+  const suits: CardSuit[] = ['H', 'D', 'C', 'S'];
+  const deck: PlayingCard[] = [];
+  for (const suit of suits) {
+    for (const rank of ranks) {
+      deck.push({ rank, suit });
+    }
+  }
+  return deck;
+}
+
+function shuffleDeck(deck: PlayingCard[]): PlayingCard[] {
+  const shuffled = [...deck];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
+  }
+  return shuffled;
+}
+
+function getPieceName(card: PlayingCard): string {
+  const mapping = CARD_TO_PIECE[card.rank];
+  if (mapping.type === 'p' && mapping.file) {
+    return `${mapping.file}-Pawn`;
+  }
+  return PIECE_NAMES[mapping.type];
+}
+
+function checkCardHasValidMoves(game: Chess, card: PlayingCard): boolean {
+  const mapping = CARD_TO_PIECE[card.rank];
+  const moves = game.moves({ verbose: true }) as {
+    piece: string;
+    from: string;
+  }[];
+  if (mapping.type === 'p' && mapping.file) {
+    return moves.some((m) => m.piece === 'p' && m.from[0] === mapping.file);
+  }
+  return moves.some((m) => m.piece === mapping.type);
+}
+
+function getHighlightsForCard(
+  game: Chess,
+  card: PlayingCard
+): Record<string, React.CSSProperties> {
+  const mapping = CARD_TO_PIECE[card.rank];
+  const squares: Record<string, React.CSSProperties> = {};
+  const board = game.board();
+  for (let r = 0; r < 8; r++) {
+    for (let c = 0; c < 8; c++) {
+      const p = board[r]?.[c];
+      if (!p || p.color !== game.turn()) continue;
+      const square = String.fromCharCode(97 + c) + (8 - r);
+      if (mapping.type === 'p' && mapping.file) {
+        if (p.type === 'p' && square[0] === mapping.file) {
+          squares[square] = {
+            boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+            borderRadius: '4px'
+          };
+        }
+      } else {
+        if (p.type === mapping.type) {
+          squares[square] = {
+            boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+            borderRadius: '4px'
+          };
+        }
+      }
+    }
+  }
+  return squares;
+}
+
+function getGameResult(game: Chess): string | null {
+  if (game.isCheckmate())
+    return `${game.turn() === 'w' ? 'Black' : 'White'} wins by checkmate`;
+  if (game.isStalemate()) return 'Draw by stalemate';
+  if (game.isDraw()) return 'Draw';
+  if (game.isInsufficientMaterial()) return 'Draw — insufficient material';
+  return null;
+}
+
+const ABANDON_TIMEOUT_MS = 30000;
+
+function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
+  const [secsLeft, setSecsLeft] = useState(() =>
+    Math.max(
+      0,
+      Math.ceil((ABANDON_TIMEOUT_MS - (Date.now() - disconnectedAt)) / 1000)
+    )
+  );
+  useEffect(() => {
+    const id = setInterval(() => {
+      setSecsLeft(
+        Math.max(
+          0,
+          Math.ceil((ABANDON_TIMEOUT_MS - (Date.now() - disconnectedAt)) / 1000)
+        )
+      );
+    }, 500);
+    return () => clearInterval(id);
+  }, [disconnectedAt]);
+  return (
+    <span className='animate-pulse text-xs text-yellow-500'>
+      Reconnecting… Auto-abandon in {secsLeft}s
+    </span>
+  );
+}
+
+function SignalIndicator({
+  wsStatus,
+  latencyMs
+}: {
+  wsStatus: string;
+  latencyMs: number | null;
+}) {
+  if (wsStatus === 'error' || wsStatus === 'idle' || latencyMs === null)
+    return null;
+  if (latencyMs <= 80)
+    return <Icons.signal className='h-4 w-4 text-green-500' />;
+  if (latencyMs <= 150)
+    return <Icons.signalHigh className='h-4 w-4 text-green-400' />;
+  if (latencyMs <= 300)
+    return <Icons.signalMedium className='h-4 w-4 text-yellow-500' />;
+  return <Icons.signalLow className='h-4 w-4 text-red-500' />;
+}
+
+// ---------------------------------------------------------------------------
+// Card panel (prop-driven, not store-driven)
+// ---------------------------------------------------------------------------
+interface CardMultiplayerPanelProps {
   drawnCard: CardResult | null;
   isDrawing: boolean;
   needsDraw: boolean;
+  onDraw: () => void;
+  turnColor: 'w' | 'b';
+  isMyTurn: boolean;
+  gameStarted: boolean;
+  gameOver: boolean;
+  isInCheck: boolean;
   drawCount: number;
-  highlightedSquares: Record<string, CSSProperties>;
-};
+}
 
-function PlayerRow({
-  name,
-  color,
-  isMe,
-  isEmpty
-}: {
-  name: string | null;
-  color: 'white' | 'black';
-  isMe: boolean;
-  isEmpty: boolean;
-}) {
-  return (
-    <div className='flex items-center gap-3 rounded-md border p-2.5'>
-      <div
-        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-bold ${
-          color === 'white'
-            ? 'border-border bg-background text-foreground'
-            : 'border-foreground bg-foreground text-background'
-        }`}
-      >
-        {isEmpty ? '?' : (name?.[0]?.toUpperCase() ?? '?')}
+function CardMultiplayerPanel({
+  drawnCard,
+  isDrawing,
+  needsDraw,
+  onDraw,
+  turnColor,
+  isMyTurn,
+  gameStarted,
+  gameOver,
+  isInCheck,
+  drawCount
+}: CardMultiplayerPanelProps) {
+  const CARD_SIZE = 100;
+
+  if (!gameStarted || gameOver) return null;
+
+  if (!isMyTurn && !drawnCard && !isDrawing) {
+    return (
+      <div className='border-b px-4 py-3'>
+        <p className='text-muted-foreground text-center text-sm'>
+          Waiting for opponent…
+        </p>
       </div>
-      <div className='min-w-0 flex-1'>
-        <p
-          className={`truncate text-sm font-medium ${isEmpty ? 'text-muted-foreground italic' : ''}`}
-        >
-          {isEmpty ? 'Waiting...' : (name ?? 'Anonymous')}
-        </p>
-        <p className='text-muted-foreground text-xs'>
-          {color === 'white' ? 'White' : 'Black'}
-          {isMe && ' · You'}
-        </p>
+    );
+  }
+
+  return (
+    <div className='border-b px-4 py-3'>
+      <div className='flex flex-col items-center gap-3'>
+        <div className='flex items-center justify-center'>
+          <div className='flex flex-col items-center gap-2'>
+            {drawnCard || isDrawing ? (
+              <>
+                <div
+                  className={cn(
+                    'relative rounded-xl border-2 p-2 transition-all duration-300',
+                    drawnCard &&
+                      !isDrawing &&
+                      drawnCard.hasValidMoves &&
+                      'border-primary/50 shadow-[0_0_12px_rgba(var(--primary-rgb,59,130,246),0.4)]',
+                    drawnCard &&
+                      !isDrawing &&
+                      !drawnCard.hasValidMoves &&
+                      'border-destructive/30',
+                    (!drawnCard || isDrawing) && 'border-transparent'
+                  )}
+                  style={{
+                    width: CARD_SIZE + 20,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <CardDisplay
+                    card={drawnCard?.card ?? null}
+                    size={CARD_SIZE}
+                    isDrawing={isDrawing}
+                    disabled={drawnCard ? !drawnCard.hasValidMoves : false}
+                  />
+                  {drawnCard && !isDrawing && !drawnCard.hasValidMoves && (
+                    <div className='absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-black/25'>
+                      <span className='text-destructive text-2xl font-bold drop-shadow'>
+                        ✗
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {drawnCard && !isDrawing && (
+                  <div className='flex flex-col items-center gap-1'>
+                    <span
+                      className={cn(
+                        'text-sm font-medium tracking-wide',
+                        drawnCard.hasValidMoves
+                          ? 'text-primary'
+                          : 'text-muted-foreground line-through opacity-60'
+                      )}
+                    >
+                      {drawnCard.pieceName}
+                    </span>
+                    <span className='text-muted-foreground text-xs'>
+                      {drawnCard.card.rank}
+                      {drawnCard.card.suit === 'H'
+                        ? '♥'
+                        : drawnCard.card.suit === 'D'
+                          ? '♦'
+                          : drawnCard.card.suit === 'C'
+                            ? '♣'
+                            : '♠'}
+                    </span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className='flex flex-col items-center gap-2'>
+                <Skeleton
+                  className='rounded-xl'
+                  style={{
+                    width: CARD_SIZE + 20,
+                    height: CARD_SIZE * 1.4 + 20
+                  }}
+                />
+                <Skeleton className='h-5 w-20' />
+                <Skeleton className='h-4 w-12' />
+              </div>
+            )}
+          </div>
+        </div>
+
+        {needsDraw && !isDrawing && (
+          <>
+            <div className='flex flex-col items-center gap-1'>
+              <p className='text-muted-foreground text-sm'>
+                {turnColor === 'w' ? 'White' : 'Black'}&apos;s turn — Draw a
+                card!
+              </p>
+              {isInCheck && drawCount > 0 && (
+                <p className='text-destructive text-xs font-medium'>
+                  In Check — Draw {drawCount}/5
+                </p>
+              )}
+            </div>
+            {isMyTurn && (
+              <button
+                onClick={onDraw}
+                className={cn(
+                  'group flex items-center justify-center gap-3 rounded-xl px-8 py-3',
+                  'bg-primary text-primary-foreground font-semibold',
+                  'transition-all duration-200 hover:opacity-90 active:scale-95',
+                  'shadow-lg hover:shadow-xl'
+                )}
+              >
+                <Icons.spade className='h-5 w-5' />
+                <span>Draw Card</span>
+              </button>
+            )}
+          </>
+        )}
+
+        {isDrawing && <Skeleton className='h-5 w-24' />}
+
+        {drawnCard && !isDrawing && !needsDraw && (
+          <p className='text-muted-foreground text-center text-xs'>
+            {drawnCard.hasValidMoves
+              ? isMyTurn
+                ? 'Move the highlighted piece on the board'
+                : 'Opponent is moving…'
+              : isInCheck && drawCount < 5
+                ? 'No valid moves — drawing another card...'
+                : !isInCheck
+                  ? 'No valid moves — drawing another card...'
+                  : 'Game over!'}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-export function CardChessMultiplayerView() {
-  const ws = useCustomMultiplayerWS();
-  const params = useSearchParams();
-  const { data: session } = useSession();
-  const applyingRemoteRef = useRef(false);
-  const initializedRef = useRef(false);
-  const roomFromUrl = params.get('room');
-  const state = useCardChessStore(
-    useShallow((s) => ({
-      currentFEN: s.currentFEN,
-      turn: s.turn,
-      moves: s.moves,
-      positionHistory: s.positionHistory,
-      viewingIndex: s.viewingIndex,
-      gameStarted: s.gameStarted,
-      gameOver: s.gameOver,
-      gameResult: s.gameResult,
-      timeControl: s.timeControl,
-      whiteTime: s.whiteTime,
-      blackTime: s.blackTime,
-      activeTimer: s.activeTimer,
-      lastActiveTimestamp: s.lastActiveTimestamp,
-      deck: s.deck,
-      discardPile: s.discardPile,
-      drawnCard: s.drawnCard,
-      isDrawing: s.isDrawing,
-      needsDraw: s.needsDraw,
-      drawCount: s.drawCount,
-      highlightedSquares: s.highlightedSquares
-    }))
-  );
+// ---------------------------------------------------------------------------
+// Minimal sidebar
+// ---------------------------------------------------------------------------
+interface CustomMultiplayerSidebarProps {
+  moves: string[];
+  viewingIndex: number;
+  positionHistory: string[];
+  gameOver: boolean;
+  gameResult: string | null;
+  gameStarted: boolean;
+  movesCount: number;
+  activePanel?: React.ReactNode;
+  onResign: () => void;
+  onAbort: () => void;
+  onFindNewGame: () => void;
+  onGoToStart: () => void;
+  onGoToEnd: () => void;
+  onGoToPrev: () => void;
+  onGoToNext: () => void;
+  onGoToMove: (idx: number) => void;
+}
 
-  const me = ws.playerId;
-  const playerIndex = useMemo(
-    () => ws.players.findIndex((p) => p.playerId === me),
-    [ws.players, me]
-  );
-  const myColor: 'white' | 'black' | null =
-    playerIndex === 0 ? 'white' : playerIndex === 1 ? 'black' : null;
-  const roomReady = ws.players.length >= 2;
-  const canInteract = useMemo(() => {
-    if (!roomReady) return ws.isHost;
-    if (!state.gameStarted || state.gameOver) return ws.isHost;
-    if (myColor === 'white') return state.turn === 'w';
-    if (myColor === 'black') return state.turn === 'b';
-    return false;
-  }, [
-    roomReady,
-    ws.isHost,
-    state.gameStarted,
-    state.gameOver,
-    myColor,
-    state.turn
-  ]);
-
-  // Auto-flip board for black player
-  useEffect(() => {
-    if (myColor === 'black') {
-      useChessStore.setState({ boardFlipped: true });
-    } else if (myColor === 'white') {
-      useChessStore.setState({ boardFlipped: false });
-    }
-  }, [myColor]);
-
-  // Auto-join on mount when URL has room param
-  useEffect(() => {
-    if (!roomFromUrl) return;
-    if (initializedRef.current) return;
-    initializedRef.current = true;
-    ws.joinRoom(
-      roomFromUrl,
-      session?.user?.name ?? undefined,
-      session?.user?.image ?? undefined
-    );
-  }, [roomFromUrl, ws, session]);
-
-  const snapshot: CardSnapshot = state;
-  useEffect(() => {
-    if (applyingRemoteRef.current) return;
-    if (!ws.roomId) return;
-    if (!canInteract) return;
-    ws.sendState(snapshot);
-  }, [snapshot, ws, canInteract]);
-
-  useEffect(() => {
-    ws.setOnState((incoming) => {
-      const remote = incoming as CardSnapshot;
-      applyingRemoteRef.current = true;
-      useCardChessStore.setState({
-        currentFEN: remote.currentFEN,
-        turn: remote.turn,
-        moves: remote.moves,
-        positionHistory: remote.positionHistory,
-        viewingIndex: remote.viewingIndex,
-        gameStarted: remote.gameStarted,
-        gameOver: remote.gameOver,
-        gameResult: remote.gameResult,
-        timeControl: remote.timeControl,
-        whiteTime: remote.whiteTime,
-        blackTime: remote.blackTime,
-        activeTimer: remote.activeTimer,
-        lastActiveTimestamp: remote.lastActiveTimestamp,
-        deck: remote.deck,
-        discardPile: remote.discardPile,
-        drawnCard: remote.drawnCard,
-        isDrawing: remote.isDrawing,
-        needsDraw: remote.needsDraw,
-        drawCount: remote.drawCount,
-        highlightedSquares: remote.highlightedSquares,
-        game: new Chess(remote.currentFEN),
-        hasHydrated: true
-      });
-      applyingRemoteRef.current = false;
-    });
-    ws.setOnSyncRequest(() => ws.sendState(snapshot));
-    return () => {
-      ws.setOnState(null);
-      ws.setOnSyncRequest(null);
-    };
-  }, [ws, snapshot]);
-
-  const shareUrl =
-    typeof window !== 'undefined' && ws.roomId
-      ? `${window.location.origin}/play/custom-multiplayer/card-chess?room=${ws.roomId}`
-      : '';
-
-  const displayName = session?.user?.name ?? undefined;
-  const userImage = session?.user?.image ?? undefined;
-  const inRoom = ws.status === 'in_room';
-
-  // ── Pre-game dialog ───────────────────────────────────────────────────────
-  const showPreGameDialog = !inRoom;
-
-  const preGameContent = () => {
-    if (ws.status === 'error') {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle>Connection Error</DialogTitle>
-            <DialogDescription>{ws.errorMessage}</DialogDescription>
-          </DialogHeader>
-          <Button className='w-full' onClick={() => window.location.reload()}>
-            Retry
-          </Button>
-        </>
-      );
-    }
-    if (ws.status === 'in_queue') {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle>Finding Opponent</DialogTitle>
-            <DialogDescription>
-              Searching for a Card Chess opponent...
-            </DialogDescription>
-          </DialogHeader>
-          <div className='flex justify-center py-4'>
-            <div className='border-primary h-10 w-10 animate-spin rounded-full border-4 border-t-transparent' />
-          </div>
-          <Button
-            variant='outline'
-            className='w-full'
-            onClick={() => ws.leaveQueue()}
-          >
-            Cancel
-          </Button>
-        </>
-      );
-    }
-    if (ws.status === 'connecting' || (roomFromUrl && !inRoom)) {
-      return (
-        <>
-          <DialogHeader>
-            <DialogTitle>Connecting</DialogTitle>
-            <DialogDescription>Joining game...</DialogDescription>
-          </DialogHeader>
-          <div className='flex justify-center py-4'>
-            <div className='border-primary h-10 w-10 animate-spin rounded-full border-4 border-t-transparent' />
-          </div>
-        </>
-      );
-    }
-    // Lobby
-    return (
-      <>
-        <DialogHeader>
-          <DialogTitle>Card Chess Multiplayer</DialogTitle>
-          <DialogDescription>
-            Draw a card each turn to see which piece you must move.
-          </DialogDescription>
-        </DialogHeader>
-        <div className='flex flex-col gap-3 pt-2'>
-          <Button
-            size='lg'
-            className='w-full'
-            onClick={() => ws.joinQueue('card-chess', displayName, userImage)}
-          >
-            Find Opponent
-          </Button>
-          <Button
-            size='lg'
-            variant='outline'
-            className='w-full'
-            onClick={() => ws.createRoom('card-chess', displayName, userImage)}
-          >
-            Create Private Game
-          </Button>
-        </div>
-        <p className='text-muted-foreground text-center text-xs'>
-          Private game gives you a shareable invite link.
-        </p>
-      </>
-    );
-  };
-
-  // ── In-room info dialog ───────────────────────────────────────────────────
-  const whitePlayer = ws.players[0] ?? null;
-  const blackPlayer = ws.players[1] ?? null;
-  const statusText = !roomReady
-    ? 'Waiting for opponent...'
-    : !state.gameStarted
-      ? 'Set up and start from the sidebar'
-      : state.gameOver
-        ? (state.gameResult ?? 'Game over')
-        : canInteract
-          ? 'Your turn'
-          : "Opponent's turn";
+function CustomMultiplayerSidebar({
+  moves,
+  viewingIndex,
+  positionHistory,
+  gameOver,
+  gameResult,
+  gameStarted,
+  movesCount,
+  activePanel,
+  onResign,
+  onAbort,
+  onFindNewGame,
+  onGoToStart,
+  onGoToEnd,
+  onGoToPrev,
+  onGoToNext,
+  onGoToMove
+}: CustomMultiplayerSidebarProps) {
+  const canGoBack = viewingIndex > 0;
+  const canGoForward = viewingIndex < positionHistory.length - 1;
+  const canAbort = movesCount < 4;
 
   return (
-    <>
-      {/* Pre-game: non-dismissable dialog */}
-      <Dialog open={showPreGameDialog} onOpenChange={() => {}}>
-        <DialogContent
-          className='sm:max-w-sm [&>button:last-child]:hidden'
-          onInteractOutside={(e) => e.preventDefault()}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-        >
-          {preGameContent()}
-        </DialogContent>
-      </Dialog>
+    <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
+      <div className='flex shrink-0 items-center border-b px-4 py-3'>
+        <h3 className='font-semibold'>Moves</h3>
+      </div>
 
-      {/* Game — always rendered */}
-      <div className='relative'>
-        <CardChessView />
+      {activePanel}
 
-        {/* Room info button — sits above the turn blocker */}
-        {inRoom && (
-          <div className='absolute top-2 right-2 z-40'>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button
-                  size='sm'
-                  variant='secondary'
-                  className='h-7 px-2.5 text-xs shadow-sm'
-                >
-                  {!roomReady
-                    ? '1/2 Players'
-                    : canInteract
-                      ? 'Your turn'
-                      : "Opponent's turn"}
-                </Button>
-              </DialogTrigger>
-              <DialogContent className='sm:max-w-sm'>
-                <DialogHeader>
-                  <DialogTitle>Card Chess — Room</DialogTitle>
-                  <DialogDescription>{statusText}</DialogDescription>
-                </DialogHeader>
-                <div className='flex flex-col gap-2'>
-                  <PlayerRow
-                    name={whitePlayer?.displayName ?? null}
-                    color='white'
-                    isMe={myColor === 'white'}
-                    isEmpty={!whitePlayer}
-                  />
-                  <PlayerRow
-                    name={blackPlayer?.displayName ?? null}
-                    color='black'
-                    isMe={myColor === 'black'}
-                    isEmpty={!blackPlayer}
-                  />
-                </div>
-                {shareUrl && !roomReady && (
+      <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
+        <div className='px-4 py-2'>
+          <MoveHistory
+            moves={moves}
+            viewingIndex={viewingIndex}
+            onMoveClick={onGoToMove}
+            showDepthTooltips={false}
+          />
+        </div>
+      </ScrollArea>
+
+      <NavigationControls
+        viewingIndex={viewingIndex}
+        totalPositions={positionHistory.length}
+        canGoBack={canGoBack}
+        canGoForward={canGoForward}
+        isPlaying={false}
+        onTogglePlay={() => {}}
+        onGoToStart={onGoToStart}
+        onGoToEnd={onGoToEnd}
+        onGoToPrev={onGoToPrev}
+        onGoToNext={onGoToNext}
+      />
+
+      <div className='bg-muted/50 space-y-2 border-t p-2'>
+        {(gameOver || !gameStarted) && (
+          <GameOverPanel
+            gameResult={gameResult || 'No active game'}
+            onNewGame={onFindNewGame}
+          />
+        )}
+
+        <div className='flex items-center justify-end'>
+          <AlertDialog>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <AlertDialogTrigger asChild>
                   <Button
-                    variant='outline'
-                    className='w-full'
-                    onClick={() => navigator.clipboard.writeText(shareUrl)}
+                    variant='ghost'
+                    size='icon'
+                    className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive'
+                    disabled={gameOver || !gameStarted}
                   >
-                    Copy Invite Link
+                    {canAbort ? (
+                      <Icons.abort className='h-4 w-4' />
+                    ) : (
+                      <Icons.flag className='h-4 w-4' />
+                    )}
                   </Button>
-                )}
-              </DialogContent>
-            </Dialog>
+                </AlertDialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>
+                {canAbort ? 'Abort Game' : 'Resign Game'}
+              </TooltipContent>
+            </Tooltip>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {canAbort ? 'Abort Game?' : 'Resign Game?'}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {canAbort
+                    ? 'Are you sure you want to abort?'
+                    : 'Are you sure you want to resign? Your opponent wins.'}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={canAbort ? onAbort : onResign}
+                  className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                >
+                  {canAbort ? 'Abort' : 'Resign'}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main view
+// ---------------------------------------------------------------------------
+interface CardChessMultiplayerViewProps {
+  challengeId?: string;
+}
+
+export function CardChessMultiplayerView({
+  challengeId
+}: CardChessMultiplayerViewProps) {
+  const ws = useMultiplayerWS();
+  const { data: session } = useSession();
+
+  // Chess state (self-managed, not via useChessStore)
+  const chessRef = useRef(new Chess());
+  const positionHistoryRef = useRef<string[]>([STARTING_FEN]);
+  const [currentFEN, setCurrentFEN] = useState(STARTING_FEN);
+  const [moves, setMoves] = useState<string[]>([]);
+  const [positionHistory, setPositionHistory] = useState<string[]>([
+    STARTING_FEN
+  ]);
+  const [viewingIndex, setViewingIndex] = useState(0);
+  const [turn, setTurn] = useState<'w' | 'b'>('w');
+  const [gameStarted, setGameStarted] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [gameResult, setGameResult] = useState<string | null>(null);
+
+  // Card state (each player has their own deck — no sync needed)
+  const deckRef = useRef<PlayingCard[]>(shuffleDeck(createDeck()));
+  const discardPileRef = useRef<PlayingCard[]>([]);
+  const drawCountRef = useRef(0);
+  const [drawnCard, setDrawnCard] = useState<CardResult | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [needsDraw, setNeedsDraw] = useState(true);
+  const [drawCount, setDrawCount] = useState(0);
+  const [isInCheck, setIsInCheck] = useState(false);
+  const [highlightedSquares, setHighlightedSquares] = useState<
+    Record<string, React.CSSProperties>
+  >({});
+
+  // Clock state (driven by server clock_sync)
+  const [whiteTimeSecs, setWhiteTimeSecs] = useState<number | null>(null);
+  const [blackTimeSecs, setBlackTimeSecs] = useState<number | null>(null);
+  const [activeClock, setActiveClock] = useState<'white' | 'black' | null>(
+    null
+  );
+
+  // Matchmaking state
+  const [matchmakingOpen, setMatchmakingOpen] = useState(false);
+  const [sessionRestorePending, setSessionRestorePending] = useState(true);
+  const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
+
+  // Board settings from global store
+  const board3dEnabled = useChessStore((s) => s.board3dEnabled);
+  const soundEnabled = useChessStore((s) => s.soundEnabled);
+  const theme = useBoardTheme();
+
+  const myColor = ws.myColor;
+  const boardOrientation =
+    myColor === 'black' ? ('black' as const) : ('white' as const);
+  const isMyTurn =
+    gameStarted &&
+    !gameOver &&
+    myColor !== null &&
+    ((myColor === 'white' && turn === 'w') ||
+      (myColor === 'black' && turn === 'b'));
+
+  const capturedPieces = useMemo(
+    () => getCapturedPiecesFromFEN(currentFEN),
+    [currentFEN]
+  );
+  const materialAdvantage = useMemo(
+    () => getMaterialAdvantage(capturedPieces),
+    [capturedPieces]
+  );
+
+  // Orientation helpers (my color at bottom)
+  const boardFlipped = myColor === 'black';
+  const topColor = boardFlipped ? 'white' : 'black';
+  const bottomColor = boardFlipped ? 'black' : 'white';
+
+  // ---------------------------------------------------------------------------
+  // Draw card logic (reads from chessRef so always current)
+  // ---------------------------------------------------------------------------
+  const doDrawCard = useCallback(() => {
+    const chess = chessRef.current;
+    const isInCheckNow = chess.isCheck();
+    setIsDrawing(true);
+    setTimeout(() => {
+      let currentDeck = deckRef.current;
+      let currentDiscardPile = discardPileRef.current;
+      if (currentDeck.length === 0) {
+        currentDeck = shuffleDeck([...currentDiscardPile]);
+        currentDiscardPile = [];
+      }
+      const cardFromDeck = currentDeck[0]!;
+      deckRef.current = currentDeck.slice(1);
+      discardPileRef.current = currentDiscardPile;
+
+      const hasValidMoves = checkCardHasValidMoves(chess, cardFromDeck);
+      const pieceName = getPieceName(cardFromDeck);
+      const cardResult: CardResult = {
+        card: cardFromDeck,
+        hasValidMoves,
+        pieceName
+      };
+
+      const newDrawCount = drawCountRef.current + 1;
+      drawCountRef.current = newDrawCount;
+
+      setDrawnCard(cardResult);
+      setIsDrawing(false);
+      setNeedsDraw(false);
+      setDrawCount(newDrawCount);
+      setHighlightedSquares(
+        hasValidMoves ? getHighlightsForCard(chess, cardFromDeck) : {}
+      );
+
+      if (!hasValidMoves) {
+        if (isInCheckNow && newDrawCount >= 5) {
+          const loser = chess.turn();
+          const winner = loser === 'w' ? 'Black' : 'White';
+          const result = `${winner} wins — ${loser === 'w' ? 'White' : 'Black'} cannot escape check after 5 draws`;
+          setGameOver(true);
+          setGameResult(result);
+        } else {
+          setTimeout(doDrawCard, 1200);
+        }
+      }
+    }, 600);
+  }, []); // all deps are stable refs
+
+  const drawCard = useCallback(() => {
+    if (!isMyTurn || isDrawing || !needsDraw) return;
+    doDrawCard();
+  }, [isMyTurn, isDrawing, needsDraw, doDrawCard]);
+
+  // ---------------------------------------------------------------------------
+  // Apply a move to local state (shared by my move + opponent move)
+  // ---------------------------------------------------------------------------
+  const applyMove = useCallback(
+    (moveObj: ChessJSMove, isOpponent: boolean) => {
+      const chess = chessRef.current;
+      const newFEN = chess.fen();
+      const newTurn = chess.turn();
+      const isOver = chess.isGameOver();
+      const result = isOver ? getGameResult(chess) : null;
+
+      const newHistory = [...positionHistoryRef.current, newFEN];
+      positionHistoryRef.current = newHistory;
+
+      setCurrentFEN(newFEN);
+      setTurn(newTurn);
+      setMoves((prev) => [...prev, moveObj.san]);
+      setPositionHistory(newHistory);
+      setViewingIndex(newHistory.length - 1);
+      setDrawnCard(null);
+      setNeedsDraw(!isOver);
+      setDrawCount(0);
+      drawCountRef.current = 0;
+      setHighlightedSquares({});
+      setIsInCheck(chess.isCheck());
+
+      if (soundEnabled) {
+        const isCapture = moveObj.captured !== undefined;
+        const isCheck = chess.isCheck();
+        const isCastle = moveObj.san === 'O-O' || moveObj.san === 'O-O-O';
+        const isPromotion = moveObj.promotion !== undefined;
+        playSound(
+          getSoundType(isCapture, isCheck, isCastle, isPromotion, !isOpponent)
+        );
+      }
+
+      if (isOver) {
+        setGameOver(true);
+        setGameResult(result);
+        if (!isOpponent) {
+          const reason = chess.isCheckmate() ? 'checkmate' : 'draw';
+          ws.notifyGameOver(result ?? 'Game over', reason);
+        }
+      }
+    },
+    [soundEnabled, ws]
+  );
+
+  // ---------------------------------------------------------------------------
+  // Handle board piece drop (my move)
+  // ---------------------------------------------------------------------------
+  function handlePieceDrop({
+    sourceSquare,
+    targetSquare
+  }: {
+    sourceSquare: string;
+    targetSquare: string | null;
+  }): boolean {
+    if (!targetSquare) return false;
+    if (!isMyTurn || needsDraw || isDrawing || gameOver) {
+      if (soundEnabled) playSound('illegal');
+      return false;
+    }
+
+    const chess = chessRef.current;
+    const piece = chess.get(sourceSquare);
+    if (!piece) return false;
+
+    // Card constraint
+    if (drawnCard) {
+      const mapping = CARD_TO_PIECE[drawnCard.card.rank];
+      if (mapping.type === 'p' && mapping.file) {
+        if (piece.type !== 'p' || sourceSquare[0] !== mapping.file) {
+          if (soundEnabled) playSound('illegal');
+          return false;
+        }
+      } else {
+        if (piece.type !== mapping.type) {
+          if (soundEnabled) playSound('illegal');
+          return false;
+        }
+      }
+      if (!drawnCard.hasValidMoves) return false;
+    }
+
+    let moveObj = chess.move({
+      from: sourceSquare,
+      to: targetSquare
+    }) as ChessJSMove | null;
+    if (!moveObj) {
+      moveObj = chess.move({
+        from: sourceSquare,
+        to: targetSquare,
+        promotion: 'q'
+      }) as ChessJSMove | null;
+    }
+    if (!moveObj) {
+      if (soundEnabled) playSound('illegal');
+      return false;
+    }
+
+    // Move played card to discard pile
+    if (drawnCard) {
+      discardPileRef.current = [...discardPileRef.current, drawnCard.card];
+    }
+
+    applyMove(moveObj, false);
+    ws.sendMove(sourceSquare, targetSquare, moveObj.promotion);
+    return true;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Opponent move (from server)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    ws.setOnOpponentMove((from, to, promotion) => {
+      const chess = chessRef.current;
+      const moveObj = chess.move({
+        from,
+        to,
+        promotion
+      }) as ChessJSMove | null;
+      if (moveObj) applyMove(moveObj, true);
+    });
+    return () => ws.setOnOpponentMove(null);
+  }, [ws.setOnOpponentMove, applyMove]);
+
+  // ---------------------------------------------------------------------------
+  // Server game over (resign, abort, timeout, opponent abandoned)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    ws.setOnServerGameOver((result) => {
+      setGameOver(true);
+      setGameResult(result);
+    });
+    return () => ws.setOnServerGameOver(null);
+  }, [ws.setOnServerGameOver]);
+
+  // ---------------------------------------------------------------------------
+  // Clock sync
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    ws.setOnClockSync((wMs, bMs, active) => {
+      const toSecs = (ms: number | null) =>
+        ms === null ? null : Math.max(0, Math.ceil(ms / 1000));
+      setWhiteTimeSecs(toSecs(wMs));
+      setBlackTimeSecs(toSecs(bMs));
+      setActiveClock(active);
+    });
+    return () => ws.setOnClockSync(null);
+  }, [ws.setOnClockSync]);
+
+  // Local clock countdown between server syncs
+  useEffect(() => {
+    if (!activeClock || gameOver) return;
+    const id = setInterval(() => {
+      if (activeClock === 'white') {
+        setWhiteTimeSecs((prev) =>
+          prev !== null ? Math.max(0, prev - 1) : null
+        );
+      } else {
+        setBlackTimeSecs((prev) =>
+          prev !== null ? Math.max(0, prev - 1) : null
+        );
+      }
+    }, 1000);
+    return () => clearInterval(id);
+  }, [activeClock, gameOver]);
+
+  // ---------------------------------------------------------------------------
+  // Start game helper
+  // ---------------------------------------------------------------------------
+  const startGameFromFresh = useCallback((replayMoves?: string[]) => {
+    const chess = new Chess();
+    const history: string[] = [STARTING_FEN];
+    const sanMoves: string[] = [];
+
+    if (replayMoves) {
+      for (const uci of replayMoves) {
+        const from = uci.slice(0, 2);
+        const to = uci.slice(2, 4);
+        const promotion = uci[4] || undefined;
+        const mo = chess.move({ from, to, promotion }) as ChessJSMove | null;
+        if (mo) {
+          sanMoves.push(mo.san);
+          history.push(chess.fen());
+        }
+      }
+    }
+
+    chessRef.current = chess;
+    positionHistoryRef.current = history;
+    deckRef.current = shuffleDeck(createDeck());
+    discardPileRef.current = [];
+    drawCountRef.current = 0;
+
+    const fen = chess.fen();
+    const isOver = chess.isGameOver();
+
+    setCurrentFEN(fen);
+    setTurn(chess.turn());
+    setMoves(sanMoves);
+    setPositionHistory(history);
+    setViewingIndex(history.length - 1);
+    setGameStarted(true);
+    setGameOver(isOver);
+    setGameResult(isOver ? getGameResult(chess) : null);
+    setDrawnCard(null);
+    setNeedsDraw(!isOver);
+    setDrawCount(0);
+    setIsDrawing(false);
+    setIsInCheck(chess.isCheck());
+    setHighlightedSquares({});
+  }, []);
+
+  // ---------------------------------------------------------------------------
+  // React to WebSocket status changes
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (ws.status === 'matched' && ws.myColor) {
+      const t = setTimeout(() => {
+        startGameFromFresh();
+        ws.setPlaying();
+        setMatchmakingOpen(false);
+        setActiveChallengeId(undefined);
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.delete('challenge');
+          window.history.replaceState({}, '', url.toString());
+        }
+      }, 800);
+      return () => clearTimeout(t);
+    }
+  }, [ws.status, ws.myColor, startGameFromFresh]);
+
+  useEffect(() => {
+    if (ws.status === 'rejoined' && ws.myColor) {
+      const movesToReplay = ws.movesToReplay ?? [];
+      startGameFromFresh(movesToReplay);
+      if (movesToReplay.length > 0) ws.clearMovesToReplay();
+      ws.setPlaying();
+      setMatchmakingOpen(false);
+    }
+  }, [ws.status, ws.myColor]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---------------------------------------------------------------------------
+  // Session restore on mount
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const saved = loadSession();
+    if (saved && saved.variant === VARIANT) {
+      setMatchmakingOpen(false);
+      ws.rejoin(saved.roomId, saved.rejoinToken);
+      return;
+    }
+    setSessionRestorePending(false);
+    if (!ws.isSecondaryTab) setMatchmakingOpen(true);
+    if (challengeId) {
+      ws.joinChallenge(
+        challengeId,
+        session?.user?.name ?? undefined,
+        session?.user?.image ?? undefined
+      );
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!sessionRestorePending) return;
+    if (
+      ws.status === 'rejoined' ||
+      ws.status === 'matched' ||
+      ws.status === 'playing' ||
+      ws.status === 'error' ||
+      (ws.status === 'idle' && loadSession() === null)
+    ) {
+      setSessionRestorePending(false);
+    }
+  }, [sessionRestorePending, ws.status]);
+
+  useEffect(() => {
+    if (sessionRestorePending) return;
+    if (
+      ws.status === 'idle' &&
+      !matchmakingOpen &&
+      loadSession() === null &&
+      !ws.isSecondaryTab
+    ) {
+      setMatchmakingOpen(true);
+    }
+  }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
+
+  // Pre-connect when dialog opens
+  useEffect(() => {
+    if (matchmakingOpen && !ws.isSecondaryTab) {
+      ws.preConnect();
+    }
+  }, [matchmakingOpen, ws.isSecondaryTab]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---------------------------------------------------------------------------
+  // Handlers passed to MatchmakingDialog
+  // ---------------------------------------------------------------------------
+  const handleFindGame = useCallback(
+    (timeControl: Parameters<typeof ws.joinQueue>[1]) => {
+      ws.joinQueue(
+        VARIANT,
+        timeControl,
+        session?.user?.name ?? undefined,
+        session?.user?.image ?? undefined
+      );
+    },
+    [ws.joinQueue, session]
+  );
+
+  const handleCreateChallenge = useCallback(
+    (
+      timeControl: Parameters<typeof ws.createChallenge>[1],
+      color: ChallengeColor
+    ) => {
+      ws.createChallenge(
+        VARIANT,
+        timeControl,
+        color,
+        session?.user?.name ?? undefined,
+        session?.user?.image ?? undefined
+      );
+    },
+    [ws.createChallenge, session]
+  );
+
+  const handleFindNewGame = useCallback(() => {
+    ws.disconnect();
+    setGameStarted(false);
+    setGameOver(false);
+    setGameResult(null);
+    setMoves([]);
+    const chess = new Chess();
+    chessRef.current = chess;
+    positionHistoryRef.current = [STARTING_FEN];
+    deckRef.current = shuffleDeck(createDeck());
+    discardPileRef.current = [];
+    drawCountRef.current = 0;
+    setCurrentFEN(STARTING_FEN);
+    setPositionHistory([STARTING_FEN]);
+    setViewingIndex(0);
+    setTurn('w');
+    setDrawnCard(null);
+    setNeedsDraw(true);
+    setDrawCount(0);
+    setIsDrawing(false);
+    setIsInCheck(false);
+    setHighlightedSquares({});
+    setMatchmakingOpen(true);
+  }, [ws.disconnect]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---------------------------------------------------------------------------
+  // Resign / abort
+  // ---------------------------------------------------------------------------
+  const handleResign = useCallback(() => {
+    if (soundEnabled) playSound('game-end');
+    setGameResult('You resigned');
+    setGameOver(true);
+    ws.resign();
+  }, [soundEnabled, ws.resign]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleAbort = useCallback(() => {
+    if (soundEnabled) playSound('game-end');
+    setGameResult('Game Aborted');
+    setGameOver(true);
+    ws.abort();
+  }, [soundEnabled, ws.abort]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---------------------------------------------------------------------------
+  // Navigation (position history)
+  // ---------------------------------------------------------------------------
+  const goToStart = useCallback(() => {
+    setViewingIndex(0);
+    setCurrentFEN(positionHistoryRef.current[0]!);
+  }, []);
+  const goToEnd = useCallback(() => {
+    const last = positionHistoryRef.current.length - 1;
+    setViewingIndex(last);
+    setCurrentFEN(positionHistoryRef.current[last]!);
+  }, []);
+  const goToPrev = useCallback(() => {
+    setViewingIndex((prev) => {
+      if (prev <= 0) return prev;
+      const next = prev - 1;
+      setCurrentFEN(positionHistoryRef.current[next]!);
+      return next;
+    });
+  }, []);
+  const goToNext = useCallback(() => {
+    setViewingIndex((prev) => {
+      const last = positionHistoryRef.current.length - 1;
+      if (prev >= last) return prev;
+      const next = prev + 1;
+      setCurrentFEN(positionHistoryRef.current[next]!);
+      return next;
+    });
+  }, []);
+  const goToMove = useCallback((idx: number) => {
+    const posIdx = Math.min(idx + 1, positionHistoryRef.current.length - 1);
+    setViewingIndex(posIdx);
+    setCurrentFEN(positionHistoryRef.current[posIdx]!);
+  }, []);
+
+  const showIndicator = gameStarted && !gameOver;
+  const hasTimer = whiteTimeSecs !== null || blackTimeSecs !== null;
+  const topTime = boardFlipped ? whiteTimeSecs : blackTimeSecs;
+  const bottomTime = boardFlipped ? blackTimeSecs : whiteTimeSecs;
+  const topTimerActive = activeClock === topColor && !gameOver;
+  const bottomTimerActive = activeClock === bottomColor && !gameOver;
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+  return (
+    <>
+      <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
+        {/* Board column */}
+        <div className='flex flex-col items-center gap-2'>
+          {/* Top player (opponent) */}
+          <div className='flex w-full items-center justify-between py-2'>
+            <div className='flex items-center gap-2'>
+              <PlayerInfo
+                name={ws.opponentName ?? 'Opponent'}
+                image={ws.opponentImage ?? null}
+              />
+              {showIndicator &&
+                (ws.opponentDisconnected ? (
+                  <AbandonCountdown
+                    disconnectedAt={ws.opponentDisconnectedAt ?? Date.now()}
+                  />
+                ) : (
+                  <SignalIndicator
+                    wsStatus={ws.status}
+                    latencyMs={ws.opponentLatencyMs}
+                  />
+                ))}
+            </div>
+            <div className='flex items-center gap-2'>
+              <CapturedPiecesDisplay
+                pieces={
+                  boardFlipped ? capturedPieces.black : capturedPieces.white
+                }
+                pieceColor={boardFlipped ? 'white' : 'black'}
+                advantage={
+                  boardFlipped
+                    ? materialAdvantage > 0
+                      ? materialAdvantage
+                      : undefined
+                    : materialAdvantage < 0
+                      ? Math.abs(materialAdvantage)
+                      : undefined
+                }
+              />
+              {hasTimer && topTime !== null && (
+                <span
+                  className={cn(
+                    'font-mono text-sm tabular-nums',
+                    topTimerActive && topTime <= 10
+                      ? 'text-destructive font-bold'
+                      : 'text-muted-foreground'
+                  )}
+                >
+                  {String(Math.floor(topTime / 60)).padStart(2, '0')}:
+                  {String(topTime % 60).padStart(2, '0')}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <BoardContainer>
+            {board3dEnabled ? (
+              <Board3D
+                position={currentFEN}
+                onPieceDrop={handlePieceDrop}
+                boardOrientation={boardOrientation}
+                canDrag={isMyTurn && !needsDraw && !isDrawing}
+                squareStyles={highlightedSquares}
+              />
+            ) : (
+              <Board
+                position={currentFEN}
+                onPieceDrop={handlePieceDrop}
+                boardOrientation={boardOrientation}
+                darkSquareStyle={theme.darkSquareStyle}
+                lightSquareStyle={theme.lightSquareStyle}
+                canDrag={isMyTurn && !needsDraw && !isDrawing}
+                animationDuration={200}
+                squareStyles={highlightedSquares}
+              />
+            )}
+          </BoardContainer>
+
+          {/* Bottom player (me) */}
+          <div className='flex w-full items-center justify-between py-2'>
+            <div className='flex items-center gap-2'>
+              <PlayerInfo
+                name={session?.user?.name ?? 'You'}
+                image={session?.user?.image ?? null}
+              />
+              {showIndicator && (
+                <SignalIndicator
+                  wsStatus={ws.status}
+                  latencyMs={ws.latencyMs}
+                />
+              )}
+            </div>
+            <div className='flex items-center gap-2'>
+              <CapturedPiecesDisplay
+                pieces={
+                  boardFlipped ? capturedPieces.white : capturedPieces.black
+                }
+                pieceColor={boardFlipped ? 'black' : 'white'}
+                advantage={
+                  boardFlipped
+                    ? materialAdvantage < 0
+                      ? Math.abs(materialAdvantage)
+                      : undefined
+                    : materialAdvantage > 0
+                      ? materialAdvantage
+                      : undefined
+                }
+              />
+              {hasTimer && bottomTime !== null && (
+                <span
+                  className={cn(
+                    'font-mono text-sm tabular-nums',
+                    bottomTimerActive && bottomTime <= 10
+                      ? 'text-destructive font-bold'
+                      : 'text-muted-foreground'
+                  )}
+                >
+                  {String(Math.floor(bottomTime / 60)).padStart(2, '0')}:
+                  {String(bottomTime % 60).padStart(2, '0')}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar column */}
+        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>
+          <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
+            <CustomMultiplayerSidebar
+              moves={moves}
+              viewingIndex={viewingIndex}
+              positionHistory={positionHistory}
+              gameOver={gameOver}
+              gameResult={gameResult}
+              gameStarted={gameStarted}
+              movesCount={moves.length}
+              activePanel={
+                <CardMultiplayerPanel
+                  drawnCard={drawnCard}
+                  isDrawing={isDrawing}
+                  needsDraw={needsDraw}
+                  onDraw={drawCard}
+                  turnColor={turn}
+                  isMyTurn={isMyTurn}
+                  gameStarted={gameStarted}
+                  gameOver={gameOver}
+                  isInCheck={isInCheck}
+                  drawCount={drawCount}
+                />
+              }
+              onResign={handleResign}
+              onAbort={handleAbort}
+              onFindNewGame={handleFindNewGame}
+              onGoToStart={goToStart}
+              onGoToEnd={goToEnd}
+              onGoToPrev={goToPrev}
+              onGoToNext={goToNext}
+              onGoToMove={goToMove}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Secondary-tab overlay */}
+      {ws.isSecondaryTab &&
+        (ws.status === 'playing' ||
+          ws.status === 'matched' ||
+          ws.status === 'rejoined') && (
+          <div className='bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm'>
+            <div className='bg-card mx-4 flex max-w-sm flex-col items-center gap-3 rounded-xl border p-8 text-center shadow-xl'>
+              <Icons.system className='text-muted-foreground h-10 w-10' />
+              <div>
+                <p className='text-lg font-semibold'>
+                  Game in progress in another tab
+                </p>
+                <p className='text-muted-foreground mt-1 text-sm'>
+                  Switch to the other tab to continue playing.
+                </p>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Turn blocker */}
-        {!canInteract && inRoom && (
-          <div className='absolute inset-0 z-30' aria-hidden='true' />
-        )}
-      </div>
+      <MatchmakingDialog
+        open={matchmakingOpen && !sessionRestorePending}
+        onOpenChange={(v) => {
+          if (
+            !v &&
+            (ws.status === 'idle' ||
+              ws.status === 'connecting' ||
+              ws.status === 'error')
+          ) {
+            setMatchmakingOpen(false);
+          }
+        }}
+        status={ws.status}
+        variantLabel='Card Chess'
+        errorMessage={ws.errorMessage}
+        pendingChallengeId={ws.pendingChallengeId}
+        initialChallengeId={activeChallengeId}
+        onFindGame={handleFindGame}
+        onCancel={ws.leaveQueue}
+        onCreateChallenge={handleCreateChallenge}
+        onCancelChallenge={ws.cancelChallenge}
+      />
     </>
   );
 }

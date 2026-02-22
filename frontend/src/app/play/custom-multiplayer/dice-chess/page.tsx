@@ -1,17 +1,19 @@
 import type { Metadata } from 'next';
-import { PageContainer } from '@/components/layout/PageContainer';
 import { DiceChessMultiplayerView } from '@/features/custom/dice-chess/components/DiceChessMultiplayerView';
 
 export const metadata: Metadata = {
   title: 'Dice Chess Multiplayer | Zugklang',
   description:
-    'Play Dice Chess in custom multiplayer mode with roll-based move constraints.'
+    'Play Dice Chess online — get matched with a random opponent or invite a friend.'
 };
 
-export default function DiceChessMultiplayerPage() {
-  return (
-    <PageContainer scrollable={true}>
-      <DiceChessMultiplayerView />
-    </PageContainer>
-  );
+interface Props {
+  searchParams: Promise<{ challenge?: string }>;
+}
+
+export default async function DiceChessMultiplayerPage({
+  searchParams
+}: Props) {
+  const { challenge } = await searchParams;
+  return <DiceChessMultiplayerView challengeId={challenge} />;
 }

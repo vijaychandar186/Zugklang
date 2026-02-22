@@ -12,6 +12,8 @@ interface SaveGameBody {
   resultReason: string;
   myColor: 'white' | 'black';
   opponentUserId?: string | null;
+  whiteUserId?: string | null;
+  blackUserId?: string | null;
   timeControl: {
     mode: string;
     minutes: number;
@@ -89,6 +91,8 @@ export async function POST(req: NextRequest) {
     resultReason,
     myColor,
     opponentUserId,
+    whiteUserId,
+    blackUserId,
     timeControl,
     startingFen
   } = body;
@@ -111,16 +115,30 @@ export async function POST(req: NextRequest) {
       });
     }
   }
-  let resolvedOpponentUserId = opponentUserId ?? null;
-  if (resolvedOpponentUserId) {
-    const opponentExists = await prisma.user.findUnique({
-      where: { id: resolvedOpponentUserId },
-      select: { id: true }
-    });
-    if (!opponentExists) resolvedOpponentUserId = null;
-  }
-  const whiteUserId = myColor === 'white' ? userId : resolvedOpponentUserId;
-  const blackUserId = myColor === 'black' ? userId : resolvedOpponentUserId;
+  const candidateIds = new Set<string>();
+  if (opponentUserId) candidateIds.add(opponentUserId);
+  if (whiteUserId) candidateIds.add(whiteUserId);
+  if (blackUserId) candidateIds.add(blackUserId);
+  if (userId) candidateIds.add(userId);
+  const existingUsers =
+    candidateIds.size > 0
+      ? await prisma.user.findMany({
+          where: { id: { in: Array.from(candidateIds) } },
+          select: { id: true }
+        })
+      : [];
+  const existingUserIds = new Set(existingUsers.map((u) => u.id));
+  const validUserId = (id: string | null | undefined) =>
+    id && existingUserIds.has(id) ? id : null;
+  const resolvedOpponentUserId = validUserId(opponentUserId);
+  const explicitWhiteUserId = validUserId(whiteUserId);
+  const explicitBlackUserId = validUserId(blackUserId);
+  const resolvedWhiteUserId =
+    explicitWhiteUserId ??
+    (myColor === 'white' ? userId : resolvedOpponentUserId);
+  const resolvedBlackUserId =
+    explicitBlackUserId ??
+    (myColor === 'black' ? userId : resolvedOpponentUserId);
   const pgnResult = toPgnResult(result, resultReason);
   const category = (() => {
     if (variant !== 'standard') return null;
@@ -133,16 +151,16 @@ export async function POST(req: NextRequest) {
     pgnResult !== '*' &&
     moves.length >= 2 &&
     gameType === 'multiplayer' &&
-    whiteUserId &&
-    blackUserId;
+    resolvedWhiteUserId &&
+    resolvedBlackUserId;
   let whitePregameRating: number | null = null;
   let blackPregameRating: number | null = null;
   let whiteRatingDelta: number | null = null;
   let blackRatingDelta: number | null = null;
   if (isRated && category) {
     const [whiteRating, blackRating] = await Promise.all([
-      getOrCreateRating(whiteUserId!, category),
-      getOrCreateRating(blackUserId!, category)
+      getOrCreateRating(resolvedWhiteUserId!, category),
+      getOrCreateRating(resolvedBlackUserId!, category)
     ]);
     whitePregameRating = whiteRating.rating;
     blackPregameRating = blackRating.rating;
@@ -155,7 +173,9 @@ export async function POST(req: NextRequest) {
     blackRatingDelta = updated.blackDelta;
     await prisma.$transaction([
       prisma.rating.update({
-        where: { userId_category: { userId: whiteUserId!, category } },
+        where: {
+          userId_category: { userId: resolvedWhiteUserId!, category }
+        },
         data: {
           rating: updated.white.rating,
           rd: updated.white.rd,
@@ -164,7 +184,9 @@ export async function POST(req: NextRequest) {
         }
       }),
       prisma.rating.update({
-        where: { userId_category: { userId: blackUserId!, category } },
+        where: {
+          userId_category: { userId: resolvedBlackUserId!, category }
+        },
         data: {
           rating: updated.black.rating,
           rd: updated.black.rd,
@@ -178,8 +200,8 @@ export async function POST(req: NextRequest) {
     const game = await prisma.game.create({
       data: {
         roomId: roomId ?? null,
-        whiteUserId,
-        blackUserId,
+        whiteUserId: resolvedWhiteUserId,
+        blackUserId: resolvedBlackUserId,
         variant,
         gameType,
         result: pgnResult,

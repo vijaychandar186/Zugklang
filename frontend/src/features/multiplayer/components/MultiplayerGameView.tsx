@@ -227,8 +227,12 @@ export function MultiplayerGameView({
       if (!session?.user?.id) return;
       savedRoomIdRef.current = roomId;
       const myColor = ws.myColor ?? 'white';
-      const opponentUserId =
-        myColor === 'white' ? serverBlackUserId : serverWhiteUserId;
+      const whiteUserId = serverWhiteUserId ?? ws.whiteUserId;
+      const blackUserId = serverBlackUserId ?? ws.blackUserId;
+      const resolvedOpponentUserId =
+        myColor === 'white'
+          ? (blackUserId ?? opponentUserId ?? null)
+          : (whiteUserId ?? opponentUserId ?? null);
       const startingFen =
         positionHistory[0] ??
         'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
@@ -243,7 +247,9 @@ export function MultiplayerGameView({
           result,
           resultReason: reason,
           myColor,
-          opponentUserId,
+          opponentUserId: resolvedOpponentUserId,
+          whiteUserId,
+          blackUserId,
           timeControl,
           startingFen
         })
@@ -271,6 +277,9 @@ export function MultiplayerGameView({
     [
       ws.roomId,
       ws.myColor,
+      ws.whiteUserId,
+      ws.blackUserId,
+      opponentUserId,
       moves,
       variant,
       timeControl,

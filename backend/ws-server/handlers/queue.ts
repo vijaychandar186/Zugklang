@@ -1,6 +1,7 @@
 import type { BunWS, TimeControl, Room } from '../types';
 import { queues, rooms, issueRejoinToken, revokeRoomTokens } from '../state';
 import { send, removeFromQueues } from '../utils/socket';
+import { broadcastClock, startRoomClock, stopRoomClock } from '../utils/clock';
 import { getStartingFen } from '../utils/fen';
 import { buildPosition } from '../utils/chess';
 import { logger } from '../utils/logger';
@@ -39,7 +40,14 @@ export function createRoom(
     whiteDisplayName: white.data.displayName ?? null,
     blackDisplayName: black.data.displayName ?? null,
     whiteImage: white.data.userImage ?? null,
-    blackImage: black.data.userImage ?? null
+    blackImage: black.data.userImage ?? null,
+    whiteTimeMs:
+      timeControl.mode === 'unlimited' ? null : timeControl.minutes * 60 * 1000,
+    blackTimeMs:
+      timeControl.mode === 'unlimited' ? null : timeControl.minutes * 60 * 1000,
+    activeClock: timeControl.mode === 'unlimited' ? null : 'white',
+    clockLastUpdatedAt: timeControl.mode === 'unlimited' ? null : Date.now(),
+    clockInterval: null
   };
   rooms.set(roomId, room);
   room.abortTimer = setTimeout(() => {
@@ -47,6 +55,7 @@ export function createRoom(
     if (!r || r.status === 'ended') return;
     r.abortTimer = null;
     r.status = 'ended';
+    stopRoomClock(r);
     revokeRoomTokens(r);
     const payload = {
       type: 'game_over',
@@ -96,6 +105,34 @@ export function createRoom(
     blackDisplayName,
     whiteImage,
     blackImage
+  });
+  // Anchor both clients on the exact same initial clock snapshot immediately.
+  broadcastClock(room);
+  startRoomClock(room, (timedOutColor) => {
+    const r = rooms.get(roomId);
+    if (!r || r.status === 'ended') return;
+    r.status = 'ended';
+    if (r.abortTimer !== null) {
+      clearTimeout(r.abortTimer);
+      r.abortTimer = null;
+    }
+    stopRoomClock(r);
+    revokeRoomTokens(r);
+    const winner = timedOutColor === 'white' ? 'Black' : 'White';
+    const payload = {
+      type: 'game_over',
+      result: `${winner} wins on time`,
+      reason: 'timeout',
+      winner: winner.toLowerCase(),
+      whiteUserId: r.white.data.userId ?? null,
+      blackUserId: r.black.data.userId ?? null
+    };
+    send(r.white, payload);
+    send(r.black, payload);
+    logger.info('game_timeout', {
+      roomId: roomId.slice(0, 8),
+      timedOutColor
+    });
   });
   logger.info('room_created', {
     roomId: roomId.slice(0, 8),

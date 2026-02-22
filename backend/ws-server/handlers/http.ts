@@ -1,4 +1,10 @@
-import { rooms, challenges, queues, reconnectTimeouts } from '../state';
+import {
+  rooms,
+  challenges,
+  queues,
+  reconnectTimeouts,
+  customRooms
+} from '../state';
 const startedAt = Date.now();
 function handleHealth(): Response {
   return Response.json({
@@ -29,7 +35,8 @@ function handleStats(req: Request): Response {
     endedRooms,
     challenges: challenges.size,
     queuedPlayers,
-    reconnectingPlayers: reconnectTimeouts.size
+    reconnectingPlayers: reconnectTimeouts.size,
+    customRooms: customRooms.size
   });
 }
 function handleAdmin(req: Request): Response {
@@ -56,7 +63,15 @@ function handleAdmin(req: Request): Response {
     })),
     queues: Object.fromEntries(
       [...queues.entries()].map(([k, v]) => [k, v.length])
-    )
+    ),
+    customRooms: [...customRooms.values()].map((r) => ({
+      id: r.id,
+      mode: r.mode,
+      hostId: r.hostId,
+      players: r.participants.length,
+      maxPlayers: r.maxPlayers,
+      createdAt: r.createdAt
+    }))
   });
 }
 export function handleHttpRequest(req: Request): Response | undefined {

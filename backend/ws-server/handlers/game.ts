@@ -2,6 +2,12 @@ import type { BunWS } from '../types';
 import { rooms, revokeRoomTokens } from '../state';
 import { send, getOpponent, isInRoom } from '../utils/socket';
 import { applyMove } from '../utils/chess';
+import {
+  broadcastClock,
+  projectClock,
+  settleActiveClock,
+  stopRoomClock
+} from '../utils/clock';
 import { logger } from '../utils/logger';
 import { createRoom } from './queue';
 export function handleMove(
@@ -28,7 +34,47 @@ export function handleMove(
     return;
   }
   room.moves.push(`${from}${to}${promotion ?? ''}`);
+  if (room.activeClock !== null) {
+    settleActiveClock(room);
+    const snapshot = projectClock(room);
+    const timedOut =
+      (snapshot.activeClock === 'white' && snapshot.whiteTimeMs === 0) ||
+      (snapshot.activeClock === 'black' && snapshot.blackTimeMs === 0);
+    if (timedOut) {
+      room.status = 'ended';
+      stopRoomClock(room);
+      revokeRoomTokens(room);
+      const timedOutColor = snapshot.activeClock!;
+      const winner = timedOutColor === 'white' ? 'Black' : 'White';
+      const payload = {
+        type: 'game_over',
+        result: `${winner} wins on time`,
+        reason: 'timeout',
+        winner: winner.toLowerCase(),
+        whiteUserId: room.white.data.userId ?? null,
+        blackUserId: room.black.data.userId ?? null
+      };
+      send(room.white, payload);
+      send(room.black, payload);
+      logger.info('game_timeout', {
+        roomId: roomId.slice(0, 8),
+        timedOutColor
+      });
+      return;
+    }
+  }
   send(getOpponent(room, ws), { type: 'opponent_move', from, to, promotion });
+  if (room.activeClock !== null) {
+    const movedColor = ws.data.color!;
+    if (movedColor === 'white' && room.whiteTimeMs !== null) {
+      room.whiteTimeMs += room.timeControl.increment * 1000;
+    } else if (movedColor === 'black' && room.blackTimeMs !== null) {
+      room.blackTimeMs += room.timeControl.increment * 1000;
+    }
+    room.activeClock = movedColor === 'white' ? 'black' : 'white';
+    room.clockLastUpdatedAt = Date.now();
+    broadcastClock(room);
+  }
   if (room.moves.length === 1) {
     if (room.abortTimer !== null) clearTimeout(room.abortTimer);
     room.abortTimer = setTimeout(() => {
@@ -36,6 +82,7 @@ export function handleMove(
       if (!r || r.status === 'ended') return;
       r.abortTimer = null;
       r.status = 'ended';
+      stopRoomClock(r);
       revokeRoomTokens(r);
       const payload = {
         type: 'game_over',
@@ -68,6 +115,7 @@ export function handleResign(ws: BunWS): void {
     room.abortTimer = null;
   }
   room.status = 'ended';
+  stopRoomClock(room);
   revokeRoomTokens(room);
   const isWhite = room.white.data.id === ws.data.id;
   const winner = isWhite ? 'Black' : 'White';
@@ -105,6 +153,7 @@ export function handleAcceptDraw(ws: BunWS): void {
     room.abortTimer = null;
   }
   room.status = 'ended';
+  stopRoomClock(room);
   revokeRoomTokens(room);
   const payload = {
     type: 'game_over',
@@ -135,6 +184,7 @@ export function handleAbort(ws: BunWS): void {
     room.abortTimer = null;
   }
   room.status = 'ended';
+  stopRoomClock(room);
   revokeRoomTokens(room);
   const payload = {
     type: 'game_over',
@@ -194,6 +244,7 @@ export function handleGameOverNotify(
     room.abortTimer = null;
   }
   room.status = 'ended';
+  stopRoomClock(room);
   revokeRoomTokens(room);
   const gameOverPayload = {
     type: 'game_over',

@@ -33,6 +33,7 @@ export function asBunWs(ws: MockWs): BunWS {
 export function resetInMemoryState(): void {
   for (const room of rooms.values()) {
     if (room.abortTimer !== null) clearTimeout(room.abortTimer);
+    if (room.clockInterval !== null) clearInterval(room.clockInterval);
   }
   for (const timeout of reconnectTimeouts.values()) {
     clearTimeout(timeout);
@@ -78,6 +79,13 @@ export function createTestRoom(params: {
     whiteDisplayName: null,
     blackDisplayName: null,
     whiteImage: null,
-    blackImage: null
+    blackImage: null,
+    whiteTimeMs:
+      timeControl.mode === 'unlimited' ? null : timeControl.minutes * 60 * 1000,
+    blackTimeMs:
+      timeControl.mode === 'unlimited' ? null : timeControl.minutes * 60 * 1000,
+    activeClock: timeControl.mode === 'unlimited' ? null : 'white',
+    clockLastUpdatedAt: timeControl.mode === 'unlimited' ? null : Date.now(),
+    clockInterval: null
   };
 }

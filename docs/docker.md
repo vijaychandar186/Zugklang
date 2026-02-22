@@ -202,7 +202,7 @@ Volume mounts should handle this, but if changes aren't reflected:
 
 ```env
 DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
-NEXTAUTH_URL="http://localhost:3000"
+AUTH_URL="http://localhost:3000"
 AUTH_SECRET="your-secret-key"
 AUTH_GITHUB_ID="your-github-oauth-id"
 AUTH_GITHUB_SECRET="your-github-oauth-secret"

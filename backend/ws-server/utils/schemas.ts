@@ -4,6 +4,7 @@ const SquareSchema = z
   .regex(/^[a-h][1-8]$/, 'Must be a valid square (e.g. e2)');
 const PromotionSchema = z.enum(['q', 'r', 'b', 'n']);
 const CreatorColorSchema = z.enum(['white', 'black', 'random']);
+const CustomModeSchema = z.enum(['dice-chess', 'card-chess', 'four-player']);
 export const TimeControlSchema = z.object({
   mode: z.enum(['unlimited', 'timed', 'custom']),
   minutes: z.number().int().min(0).max(180),
@@ -64,6 +65,28 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('offer_rematch') }),
   z.object({ type: z.literal('accept_rematch') }),
-  z.object({ type: z.literal('decline_rematch') })
+  z.object({ type: z.literal('decline_rematch') }),
+  z.object({
+    type: z.literal('create_custom_room'),
+    mode: CustomModeSchema,
+    ...DisplayInfoSchema
+  }),
+  z.object({
+    type: z.literal('join_custom_room'),
+    roomId: z.string().uuid(),
+    ...DisplayInfoSchema
+  }),
+  z.object({ type: z.literal('leave_custom_room') }),
+  z.object({
+    type: z.literal('custom_state'),
+    roomId: z.string().uuid(),
+    state: z.unknown()
+  }),
+  z.object({
+    type: z.literal('join_custom_queue'),
+    mode: z.enum(['dice-chess', 'card-chess']),
+    ...DisplayInfoSchema
+  }),
+  z.object({ type: z.literal('leave_custom_queue') })
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;

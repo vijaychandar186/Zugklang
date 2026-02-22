@@ -8,6 +8,7 @@ import {
   revokeRoomTokens
 } from '../state';
 import { send, removeFromQueues, getOpponent } from '../utils/socket';
+import { broadcastClock, stopRoomClock } from '../utils/clock';
 import { clearRateLimit } from '../utils/rateLimit';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
@@ -67,6 +68,7 @@ export function handleRejoinRoom(
     whiteImage: room.whiteImage,
     blackImage: room.blackImage
   });
+  broadcastClock(room);
   logger.info('player_rejoined', { roomId: roomId.slice(0, 8), color });
 }
 export function handleDisconnect(ws: BunWS): void {
@@ -92,6 +94,7 @@ export function handleDisconnect(ws: BunWS): void {
         const r = rooms.get(roomId);
         if (r?.status === 'active') {
           r.status = 'ended';
+          stopRoomClock(r);
           revokeRoomTokens(r);
           const isWhite = color === 'white';
           const winner = isWhite ? 'Black' : 'White';

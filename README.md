@@ -83,7 +83,7 @@ Minimum required variables in `frontend/.env.local`:
 
 ```env
 DATABASE_URL="postgresql://admin:mysecretpassword@localhost:5432/mydatabase"
-NEXTAUTH_URL="http://localhost:3000"
+AUTH_URL="http://localhost:3000"
 AUTH_SECRET="any-random-secret"
 AUTH_GITHUB_ID="your-github-oauth-app-id"
 AUTH_GITHUB_SECRET="your-github-oauth-app-secret"
@@ -173,7 +173,7 @@ docker run -d \
   --network zugklang-net \
   -e DATABASE_URL=postgresql://admin:mysecretpassword@zugklang-postgres:5432/mydatabase \
   -e NEXT_PUBLIC_WS_URL=ws://localhost:8080 \
-  -e NEXTAUTH_URL=http://localhost:3000 \
+  -e AUTH_URL=http://localhost:3000 \
   -e AUTH_SECRET=your-secret \
   -e AUTH_GITHUB_ID=your-github-id \
   -e AUTH_GITHUB_SECRET=your-github-secret \
@@ -277,7 +277,7 @@ docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma db push
 | Variable | Required | Description |
 |---|---|---|
 | `DATABASE_URL` | Yes | PostgreSQL connection string |
-| `NEXTAUTH_URL` | Yes | Public base URL of the app |
+| `AUTH_URL` | Yes | Public base URL of the app |
 | `AUTH_SECRET` | Yes | Random secret for NextAuth |
 | `AUTH_GITHUB_ID` | Yes | GitHub OAuth App client ID |
 | `AUTH_GITHUB_SECRET` | Yes | GitHub OAuth App client secret |

@@ -14,6 +14,15 @@ import {
   handleCancelChallenge
 } from './handlers/challenge';
 import {
+  handleCreateCustomRoom,
+  handleJoinCustomRoom,
+  handleLeaveCustomRoom,
+  handleCustomState,
+  handleCustomDisconnect,
+  handleJoinCustomQueue,
+  handleLeaveCustomQueue
+} from './handlers/custom';
+import {
   handleMove,
   handleResign,
   handleOfferDraw,
@@ -187,6 +196,24 @@ Bun.serve<SocketData>({
         case 'decline_rematch':
           handleDeclineRematch(ws);
           break;
+        case 'create_custom_room':
+          handleCreateCustomRoom(ws, msg);
+          break;
+        case 'join_custom_room':
+          handleJoinCustomRoom(ws, msg);
+          break;
+        case 'leave_custom_room':
+          handleLeaveCustomRoom(ws);
+          break;
+        case 'custom_state':
+          handleCustomState(ws, msg);
+          break;
+        case 'join_custom_queue':
+          handleJoinCustomQueue(ws, msg);
+          break;
+        case 'leave_custom_queue':
+          handleLeaveCustomQueue(ws);
+          break;
         case 'ping':
           send(ws, { type: 'pong' });
           break;
@@ -217,6 +244,7 @@ Bun.serve<SocketData>({
           connectedUserIds.delete(ws.data.userId);
         }
       }
+      handleCustomDisconnect(ws);
       handleDisconnect(ws);
     }
   }

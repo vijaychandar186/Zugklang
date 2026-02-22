@@ -19,14 +19,11 @@ function findMessage<
     type: string;
   }
 >(messages: unknown[], type: T['type']): T | undefined {
-  return messages.find(
-    (m) =>
-      (
-        m as {
-          type?: string;
-        }
-      ).type === type
-  ) as T | undefined;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i] as { type?: string };
+    if (m.type === type) return m as T;
+  }
+  return undefined;
 }
 describe('game handler integration', () => {
   beforeEach(() => {

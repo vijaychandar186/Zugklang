@@ -1,7 +1,9 @@
-import type { BunWS, Challenge, Room } from './types';
+import type { BunWS, Challenge, Room, CustomRoom } from './types';
 export const queues = new Map<string, BunWS[]>();
 export const rooms = new Map<string, Room>();
 export const challenges = new Map<string, Challenge>();
+export const customRooms = new Map<string, CustomRoom>();
+export const customQueues = new Map<string, BunWS[]>();
 export const reconnectTimeouts = new Map<
   string,
   ReturnType<typeof setTimeout>

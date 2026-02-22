@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { usePathname } from 'next/navigation';
-import AppSidebar from '@/components/layout/AppSidebar';
+import AppSidebar from '@/components/layout/Sidebar/AppSidebar';
 import { useInfobar } from '@/components/ui/infobar';
 import {
   useSidebar,

@@ -20,7 +20,11 @@ import {
   getCapturedPiecesFromFEN,
   getMaterialAdvantage
 } from '@/features/chess/utils/fen-logic';
-import { playSound, getSoundType } from '@/features/game/utils/sounds';
+import {
+  playSound,
+  getSoundType,
+  playRawSound
+} from '@/features/game/utils/sounds';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -55,6 +59,7 @@ import {
   PIECE_NAMES
 } from '../stores/useCardChessStore';
 import type { ChallengeColor } from '@/features/multiplayer/types';
+import { ABANDON_TIMEOUT_MS } from '@/features/multiplayer/config';
 
 const VARIANT = 'card-chess';
 
@@ -156,8 +161,6 @@ function getGameResult(game: Chess): string | null {
   if (game.isInsufficientMaterial()) return 'Draw — insufficient material';
   return null;
 }
-
-const ABANDON_TIMEOUT_MS = 30000;
 
 function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
   const [secsLeft, setSecsLeft] = useState(() =>
@@ -593,6 +596,12 @@ export function CardChessMultiplayerView({
   const topColor = boardFlipped ? 'white' : 'black';
   const bottomColor = boardFlipped ? 'black' : 'white';
 
+  // Stable ref so doDrawCard (with [] deps) can call the latest sendCardSync
+  const sendCardSyncRef = useRef(ws.sendCardSync);
+  sendCardSyncRef.current = ws.sendCardSync;
+  const soundEnabledRef = useRef(soundEnabled);
+  soundEnabledRef.current = soundEnabled;
+
   // ---------------------------------------------------------------------------
   // Draw card logic (reads from chessRef so always current)
   // ---------------------------------------------------------------------------
@@ -629,6 +638,8 @@ export function CardChessMultiplayerView({
       setHighlightedSquares(
         hasValidMoves ? getHighlightsForCard(chess, cardFromDeck) : {}
       );
+      sendCardSyncRef.current(cardFromDeck.rank, cardFromDeck.suit);
+      if (soundEnabledRef.current) playRawSound('/custom/sounds/cards.mp3');
 
       if (!hasValidMoves) {
         if (isInCheckNow && newDrawCount >= 5) {
@@ -800,6 +811,30 @@ export function CardChessMultiplayerView({
     });
     return () => ws.setOnClockSync(null);
   }, [ws.setOnClockSync]);
+
+  // ---------------------------------------------------------------------------
+  // Opponent card sync (show their drawn card on our board too)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    ws.setOnSyncCard((rank, suit) => {
+      const chess = chessRef.current;
+      const card: PlayingCard = {
+        rank: rank as CardRank,
+        suit: suit as CardSuit
+      };
+      const hasValidMoves = checkCardHasValidMoves(chess, card);
+      const pieceName = getPieceName(card);
+      setDrawnCard({ card, hasValidMoves, pieceName });
+      setNeedsDraw(false);
+      setIsDrawing(false);
+      setIsInCheck(chess.isCheck());
+      setHighlightedSquares(
+        hasValidMoves ? getHighlightsForCard(chess, card) : {}
+      );
+      if (soundEnabledRef.current) playRawSound('/custom/sounds/cards.mp3');
+    });
+    return () => ws.setOnSyncCard(null);
+  }, [ws.setOnSyncCard]);
 
   // Local clock countdown between server syncs
   useEffect(() => {

@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Paintbrush, Pipette, ChevronRight } from 'lucide-react';
 import { CustomSchemePicker } from './CustomSchemePicker';
-import { SCHEMES } from '@/components/layout/Providers';
+import { SCHEMES } from './constants';
 
 type SchemeKey = (typeof SCHEMES)[number]['value'];
 
@@ -62,7 +62,10 @@ export const SchemeModal: React.FC<SchemeModalProps> = ({
         <div className='grid gap-4 py-4'>
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
-              <Button variant='outline' className='w-full justify-between'>
+              <Button
+                variant='outline'
+                className='w-full justify-between hover:text-inherit active:text-inherit'
+              >
                 <div className='flex items-center'>
                   <Paintbrush className='mr-2 h-4 w-4' />
                   {currentSchemeName}
@@ -87,7 +90,7 @@ export const SchemeModal: React.FC<SchemeModalProps> = ({
                     setIsDropdownOpen(false);
                     setIsOpen(false);
                   }}
-                  className={`cursor-pointer ${activeScheme === scheme.value ? 'bg-accent' : ''}`}
+                  className={`cursor-pointer focus:text-inherit data-[highlighted]:text-inherit ${activeScheme === scheme.value ? 'bg-accent' : ''}`}
                 >
                   {scheme.name}
                 </DropdownMenuItem>
@@ -98,7 +101,7 @@ export const SchemeModal: React.FC<SchemeModalProps> = ({
                   e.preventDefault();
                   setActiveScheme('custom');
                 }}
-                className={`flex cursor-pointer items-center justify-between ${
+                className={`flex cursor-pointer items-center justify-between focus:text-inherit data-[highlighted]:text-inherit ${
                   activeScheme === 'custom' ? 'bg-accent' : ''
                 }`}
               >

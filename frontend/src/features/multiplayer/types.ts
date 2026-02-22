@@ -33,6 +33,7 @@ export type ServerMessage =
       blackDisplayName: string | null;
       whiteImage: string | null;
       blackImage: string | null;
+      abortStartedAt: number | null;
     }
   | {
       type: 'challenge_created';
@@ -57,6 +58,8 @@ export type ServerMessage =
       blackDisplayName: string | null;
       whiteImage: string | null;
       blackImage: string | null;
+      abortStartedAt: number | null;
+      opponentDisconnectedAt: number | null;
     }
   | {
       type: 'rejoin_failed';
@@ -90,7 +93,12 @@ export type ServerMessage =
       type: 'draw_declined';
     }
   | {
+      type: 'abort_window';
+      startedAt: number;
+    }
+  | {
       type: 'opponent_disconnected';
+      disconnectedAt: number;
     }
   | {
       type: 'opponent_reconnected';
@@ -111,6 +119,15 @@ export type ServerMessage =
   | {
       type: 'error';
       message: string;
+    }
+  | {
+      type: 'dice_synced';
+      pieces: [string, string, string];
+    }
+  | {
+      type: 'card_synced';
+      rank: string;
+      suit: string;
     };
 export type ChallengeColor = 'white' | 'black' | 'random';
 export type ClientMessage =
@@ -206,6 +223,7 @@ export interface MultiplayerWSState {
   drawOffered: boolean;
   opponentDisconnected: boolean;
   opponentDisconnectedAt: number | null;
+  abortStartedAt: number | null;
   errorMessage: string | null;
   pendingChallengeId: string | null;
   movesToReplay: string[] | null;
@@ -235,6 +253,8 @@ export type OnClockSyncFn = (
   blackTimeMs: number | null,
   activeClock: 'white' | 'black' | null
 ) => void;
+export type OnSyncDiceFn = (pieces: [string, string, string]) => void;
+export type OnSyncCardFn = (rank: string, suit: string) => void;
 export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   joinQueue: (
     variant: string,
@@ -270,6 +290,10 @@ export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   setOnOpponentMove: (fn: OnOpponentMoveFn | null) => void;
   setOnServerGameOver: (fn: OnServerGameOverFn | null) => void;
   setOnClockSync: (fn: OnClockSyncFn | null) => void;
+  sendDiceSync: (pieces: [string, string, string]) => void;
+  sendCardSync: (rank: string, suit: string) => void;
+  setOnSyncDice: (fn: OnSyncDiceFn | null) => void;
+  setOnSyncCard: (fn: OnSyncCardFn | null) => void;
   offerRematch: () => void;
   acceptRematch: () => void;
   declineRematch: () => void;

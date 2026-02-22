@@ -11,7 +11,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Icons } from '@/components/Icons';
-import { SCHEMES, SchemeName } from '@/components/layout/Providers';
+import { SCHEMES, type SchemeName } from '@/components/layout/Scheme/constants';
 
 type SchemeSelectorProps = {
   currentScheme: SchemeName;

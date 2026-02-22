@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { cookies } from 'next/headers';
-import SidebarSectionShell from '@/components/layout/SidebarSectionShell';
+import { SidebarSectionShell } from '@/components/layout/Sidebar';
 
 export default async function PlayLayout({
   children

@@ -8,7 +8,7 @@ import {
 } from 'next/font/google';
 import { cookies } from 'next/headers';
 import './globals.css';
-import './theme.css';
+import './styles/theme.css';
 import { Providers } from '@/components/layout/Providers';
 import { auth } from '@/lib/auth/auth';
 const geistSans = Geist({

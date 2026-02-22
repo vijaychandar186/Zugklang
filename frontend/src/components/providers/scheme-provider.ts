@@ -1,6 +1,7 @@
 'use client';
 
-import { useScheme, type SchemeName } from '@/components/layout/Providers';
+import { useScheme } from '@/components/layout/Providers';
+import type { SchemeName } from '@/components/layout/Scheme/constants';
 
 export type SchemeKey = SchemeName;
 

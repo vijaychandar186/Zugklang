@@ -37,7 +37,15 @@ docker run -d --name zugklang-postgres \
 * [ ] Flags
 * [ ] Guest mode
 * [ ] Invite through email
+* [ ] ELO-wise queue logic
+* [ ] Elo calculation adjustment
+* [ ] Validate abandon
+* [ ] Auto abort
+* [ ] 4p Chess Multiplayer
+* [ ] Stats for Dice and Card Chess
+* [ ] ~~Config for auto abort and WS-server states~~
+* [ ] ~~Dice and card pick sound assets~~
 
 ### Frontend
 
-* [ ] CSS files cleanup
+* [x] ~~CSS files cleanup~~

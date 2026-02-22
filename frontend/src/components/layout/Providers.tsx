@@ -1,45 +1,26 @@
 'use client';
-import { ThemeProvider, useTheme } from 'next-themes';
+import { ThemeProvider } from 'next-themes';
 import { Toaster } from 'sonner';
 import { SessionProvider } from 'next-auth/react';
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react';
+import { createContext, useContext, useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { trpc } from '@/app/_trpc/client';
-import KBar from '@/components/layout/Kbar';
-import { InfoSidebar } from '@/components/layout/InfoSidebar';
-import { InfobarProvider } from '@/components/ui/infobar';
-import { useChessStore } from '@/features/chess/stores/useChessStore';
 import {
   BoardThemeName,
   DEFAULT_BOARD_THEME
 } from '@/features/chess/config/board-themes';
-import { COOKIE_CONFIG } from '@/features/chess/config/board';
+import {
+  BoardSchemeSyncProvider,
+  ThemeCookieSyncProvider
+} from '@/components/providers/theme-sync-provider';
+import { ChessStoreInitializer } from '@/components/providers/chess-store-initializer';
+import { KbarProvider } from '@/components/providers/kbar-provider';
+import { SchemeSyncProvider } from '@/components/providers/scheme-sync-provider';
+import { SCHEMES, type SchemeName } from '@/components/layout/Scheme/constants';
 
-const SCHEME_COOKIE = 'scheme';
-const CUSTOM_COLOR_COOKIE = 'custom_color';
-const CUSTOM_FOREGROUND_COOKIE = 'custom_foreground';
 const DEFAULT_CUSTOM_COLOR = '#52525b';
 const DEFAULT_CUSTOM_FOREGROUND = '#ffffff';
-
-export const SCHEMES = [
-  { name: 'Default', value: 'default' },
-  { name: 'Claude', value: 'claude' },
-  { name: 'Supabase', value: 'supabase' },
-  { name: 'Vercel', value: 'vercel' },
-  { name: 'Mono', value: 'mono' },
-  { name: 'Notebook', value: 'notebook' },
-  { name: 'Custom', value: 'custom' }
-] as const;
-
-export type SchemeName = (typeof SCHEMES)[number]['value'];
 
 type SchemeContextValue = {
   scheme: SchemeName;
@@ -59,39 +40,7 @@ export function useScheme() {
   }
   return context;
 }
-function ThemeCookieSync() {
-  const { theme } = useTheme();
-  useEffect(() => {
-    if (theme) {
-      document.cookie = `theme=${theme};path=/;max-age=${COOKIE_CONFIG.maxAge}`;
-    }
-  }, [theme]);
-  return null;
-}
-function BoardSchemeSync() {
-  const boardThemeName = useChessStore((s) => s.boardThemeName);
-  useEffect(() => {
-    document.documentElement.setAttribute('data-board-scheme', boardThemeName);
-  }, [boardThemeName]);
-  return null;
-}
-function StoreInitializer({
-  initialBoardTheme,
-  initialPlayAs
-}: {
-  initialBoardTheme: BoardThemeName;
-  initialPlayAs: 'white' | 'black' | undefined;
-}) {
-  const initialized = useRef(false);
-  if (!initialized.current) {
-    useChessStore.setState({
-      boardThemeName: initialBoardTheme,
-      ...(initialPlayAs && { playAs: initialPlayAs })
-    });
-    initialized.current = true;
-  }
-  return null;
-}
+
 interface ProvidersProps {
   children: React.ReactNode;
   initialBoardTheme?: string;
@@ -138,20 +87,6 @@ export function Providers({
       : DEFAULT_CUSTOM_FOREGROUND
   );
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-scheme', scheme);
-    document.cookie = `${SCHEME_COOKIE}=${scheme};path=/;max-age=${COOKIE_CONFIG.maxAge}`;
-  }, [scheme]);
-  useEffect(() => {
-    document.documentElement.style.setProperty('--custom-color', customColor);
-    document.documentElement.style.setProperty(
-      '--custom-foreground',
-      customForeground
-    );
-    document.cookie = `${CUSTOM_COLOR_COOKIE}=${customColor};path=/;max-age=${COOKIE_CONFIG.maxAge}`;
-    document.cookie = `${CUSTOM_FOREGROUND_COOKIE}=${customForeground};path=/;max-age=${COOKIE_CONFIG.maxAge}`;
-  }, [customColor, customForeground]);
-
   const schemeValue = useMemo(
     () => ({
       scheme,
@@ -175,7 +110,7 @@ export function Providers({
             disableTransitionOnChange
             enableColorScheme
           >
-            <StoreInitializer
+            <ChessStoreInitializer
               initialBoardTheme={
                 (initialBoardTheme as BoardThemeName) || DEFAULT_BOARD_THEME
               }
@@ -185,18 +120,16 @@ export function Providers({
                   : undefined
               }
             />
-            <ThemeCookieSync />
-            <BoardSchemeSync />
+            <ThemeCookieSyncProvider />
+            <BoardSchemeSyncProvider />
+            <SchemeSyncProvider
+              scheme={scheme}
+              customColor={customColor}
+              customForeground={customForeground}
+            />
             <Toaster position='bottom-right' richColors duration={2000} />
             <SchemeContext.Provider value={schemeValue}>
-              <InfobarProvider defaultOpen={false}>
-                <KBar>
-                  <div className='flex min-h-svh w-full flex-1 flex-col'>
-                    {children}
-                  </div>
-                  <InfoSidebar side='right' />
-                </KBar>
-              </InfobarProvider>
+              <KbarProvider>{children}</KbarProvider>
             </SchemeContext.Provider>
           </ThemeProvider>
         </SessionProvider>

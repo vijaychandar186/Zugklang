@@ -6,6 +6,7 @@ import { getStartingFen } from '../utils/fen';
 import { buildPosition } from '../utils/chess';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
+import { ABORT_TIMEOUT_MS } from '../config';
 function timeControlKey(tc: TimeControl): string {
   return `${tc.mode}:${String(tc.minutes)}:${String(tc.increment)}`;
 }
@@ -35,6 +36,9 @@ export function createRoom(
     status: 'active',
     createdAt: Date.now(),
     abortTimer: null,
+    abortTimerStartedAt: null,
+    whiteDisconnectedAt: null,
+    blackDisconnectedAt: null,
     whiteLatencyMs: null,
     blackLatencyMs: null,
     whiteDisplayName: white.data.displayName ?? null,
@@ -50,10 +54,12 @@ export function createRoom(
     clockInterval: null
   };
   rooms.set(roomId, room);
+  room.abortTimerStartedAt = Date.now();
   room.abortTimer = setTimeout(() => {
     const r = rooms.get(roomId);
     if (!r || r.status === 'ended') return;
     r.abortTimer = null;
+    r.abortTimerStartedAt = null;
     r.status = 'ended';
     stopRoomClock(r);
     revokeRoomTokens(r);
@@ -70,12 +76,18 @@ export function createRoom(
       roomId: roomId.slice(0, 8),
       moves: r.moves.length
     });
-  }, 60000);
+  }, ABORT_TIMEOUT_MS);
   const whiteToken = issueRejoinToken(white.data.id);
   const blackToken = issueRejoinToken(black.data.id);
   const whiteUserId = white.data.userId ?? null;
   const blackUserId = black.data.userId ?? null;
-  const { whiteDisplayName, blackDisplayName, whiteImage, blackImage } = room;
+  const {
+    whiteDisplayName,
+    blackDisplayName,
+    whiteImage,
+    blackImage,
+    abortTimerStartedAt
+  } = room;
   send(white, {
     type: 'matched',
     roomId,
@@ -89,7 +101,8 @@ export function createRoom(
     whiteDisplayName,
     blackDisplayName,
     whiteImage,
-    blackImage
+    blackImage,
+    abortStartedAt: abortTimerStartedAt
   });
   send(black, {
     type: 'matched',
@@ -104,7 +117,8 @@ export function createRoom(
     whiteDisplayName,
     blackDisplayName,
     whiteImage,
-    blackImage
+    blackImage,
+    abortStartedAt: abortTimerStartedAt
   });
   // Anchor both clients on the exact same initial clock snapshot immediately.
   broadcastClock(room);

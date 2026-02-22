@@ -26,6 +26,8 @@ import {
   handleDeclineRematch
 } from './handlers/game';
 import { handleRejoinRoom, handleDisconnect } from './handlers/connection';
+import { handleSyncDice, handleSyncCard } from './handlers/sync';
+import { GC_INTERVAL_MS, GC_ROOM_MAX_AGE_MS } from './config';
 const PORT = parseInt(process.env['PORT'] ?? '8080', 10);
 const ALLOWED_ORIGINS =
   process.env['ALLOWED_ORIGINS']
@@ -187,6 +189,12 @@ Bun.serve<SocketData>({
         case 'decline_rematch':
           handleDeclineRematch(ws);
           break;
+        case 'sync_dice':
+          handleSyncDice(ws, msg);
+          break;
+        case 'sync_card':
+          handleSyncCard(ws, msg);
+          break;
         case 'ping':
           send(ws, { type: 'pong' });
           break;
@@ -222,26 +230,23 @@ Bun.serve<SocketData>({
   }
 });
 logger.info('server_started', { port: PORT });
-setInterval(
-  () => {
-    const threshold = Date.now() - 30 * 60 * 1000;
-    let roomsCleaned = 0;
-    let challengesCleaned = 0;
-    for (const [id, room] of rooms) {
-      if (room.status === 'ended' && room.createdAt < threshold) {
-        rooms.delete(id);
-        roomsCleaned++;
-      }
+setInterval(() => {
+  const threshold = Date.now() - GC_ROOM_MAX_AGE_MS;
+  let roomsCleaned = 0;
+  let challengesCleaned = 0;
+  for (const [id, room] of rooms) {
+    if (room.status === 'ended' && room.createdAt < threshold) {
+      rooms.delete(id);
+      roomsCleaned++;
     }
-    for (const [id, challenge] of challenges) {
-      if (challenge.createdAt < threshold) {
-        challenges.delete(id);
-        challengesCleaned++;
-      }
+  }
+  for (const [id, challenge] of challenges) {
+    if (challenge.createdAt < threshold) {
+      challenges.delete(id);
+      challengesCleaned++;
     }
-    if (roomsCleaned > 0 || challengesCleaned > 0) {
-      logger.info('gc_ran', { roomsCleaned, challengesCleaned });
-    }
-  },
-  5 * 60 * 1000
-);
+  }
+  if (roomsCleaned > 0 || challengesCleaned > 0) {
+    logger.info('gc_ran', { roomsCleaned, challengesCleaned });
+  }
+}, GC_INTERVAL_MS);

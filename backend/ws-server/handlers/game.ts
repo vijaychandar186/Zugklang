@@ -10,6 +10,7 @@ import {
 } from '../utils/clock';
 import { logger } from '../utils/logger';
 import { createRoom } from './queue';
+import { ABORT_TIMEOUT_MS } from '../config';
 export function handleMove(
   ws: BunWS,
   msg: {
@@ -77,10 +78,13 @@ export function handleMove(
   }
   if (room.moves.length === 1) {
     if (room.abortTimer !== null) clearTimeout(room.abortTimer);
+    const abortNow = Date.now();
+    room.abortTimerStartedAt = abortNow;
     room.abortTimer = setTimeout(() => {
       const r = rooms.get(roomId!);
       if (!r || r.status === 'ended') return;
       r.abortTimer = null;
+      r.abortTimerStartedAt = null;
       r.status = 'ended';
       stopRoomClock(r);
       revokeRoomTokens(r);
@@ -97,12 +101,15 @@ export function handleMove(
         roomId: roomId!.slice(0, 8),
         moves: r.moves.length
       });
-    }, 60000);
+    }, ABORT_TIMEOUT_MS);
+    send(room.white, { type: 'abort_window', startedAt: abortNow });
+    send(room.black, { type: 'abort_window', startedAt: abortNow });
   } else if (room.moves.length === 2) {
     if (room.abortTimer !== null) {
       clearTimeout(room.abortTimer);
       room.abortTimer = null;
     }
+    room.abortTimerStartedAt = null;
   }
 }
 export function handleResign(ws: BunWS): void {

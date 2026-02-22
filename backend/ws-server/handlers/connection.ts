@@ -12,6 +12,7 @@ import { broadcastClock, stopRoomClock } from '../utils/clock';
 import { clearRateLimit } from '../utils/rateLimit';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
+import { ABANDON_TIMEOUT_MS } from '../config';
 export function handleRejoinRoom(
   ws: BunWS,
   msg: {
@@ -48,6 +49,8 @@ export function handleRejoinRoom(
   ws.data.roomId = roomId;
   if (isWhite) room.white = ws;
   else room.black = ws;
+  if (isWhite) room.whiteDisconnectedAt = null;
+  else room.blackDisconnectedAt = null;
   const opponent = isWhite ? room.black : room.white;
   send(opponent, { type: 'opponent_reconnected' });
   const newToken = issueRejoinToken(playerId);
@@ -66,7 +69,11 @@ export function handleRejoinRoom(
     whiteDisplayName: room.whiteDisplayName,
     blackDisplayName: room.blackDisplayName,
     whiteImage: room.whiteImage,
-    blackImage: room.blackImage
+    blackImage: room.blackImage,
+    abortStartedAt: room.abortTimerStartedAt,
+    opponentDisconnectedAt: isWhite
+      ? room.blackDisconnectedAt
+      : room.whiteDisconnectedAt
   });
   broadcastClock(room);
   logger.info('player_rejoined', { roomId: roomId.slice(0, 8), color });
@@ -85,7 +92,13 @@ export function handleDisconnect(ws: BunWS): void {
         clearTimeout(room.abortTimer);
         room.abortTimer = null;
       }
-      send(getOpponent(room, ws), { type: 'opponent_disconnected' });
+      const disconnectedAt = Date.now();
+      if (ws.data.color === 'white') room.whiteDisconnectedAt = disconnectedAt;
+      else room.blackDisconnectedAt = disconnectedAt;
+      send(getOpponent(room, ws), {
+        type: 'opponent_disconnected',
+        disconnectedAt
+      });
       const playerId = ws.data.id;
       const roomId = ws.data.roomId;
       const color: Color = ws.data.color ?? 'white';
@@ -112,7 +125,7 @@ export function handleDisconnect(ws: BunWS): void {
             winner
           });
         }
-      }, 30000);
+      }, ABANDON_TIMEOUT_MS);
       reconnectTimeouts.set(playerId, timeout);
     }
   }

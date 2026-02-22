@@ -20,15 +20,16 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { navItems } from '@/config/nav-config';
-import { useMediaQuery } from '../hooks/use-media-query';
-import { useFilteredNavItems } from '../hooks/use-nav';
+import { useMediaQuery } from '@/components/hooks/use-media-query';
+import { useFilteredNavItems } from '@/components/hooks/use-nav';
 import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
-import { Icons } from '../Icons';
-import SidebarSearchButton from './Kbar/SidebarSearchButton';
-import SidebarSchemeButton from './SidebarSchemeButton';
+import { Icons } from '@/components/Icons';
+import SidebarSearchButton from '../Kbar/SidebarSearchButton';
+import { SidebarSchemeButton } from '../Scheme';
+import { SidebarThemeButton } from '../Theme';
 import SidebarUserMenu from './SidebarUserMenu';
 
 export default function AppSidebar() {
@@ -45,6 +46,7 @@ export default function AppSidebar() {
       <SidebarHeader>
         <SidebarSearchButton />
         <SidebarSchemeButton />
+        <SidebarThemeButton />
       </SidebarHeader>
       <SidebarContent className='overflow-x-hidden'>
         <SidebarGroup>

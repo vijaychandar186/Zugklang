@@ -20,7 +20,11 @@ import {
   getCapturedPiecesFromFEN,
   getMaterialAdvantage
 } from '@/features/chess/utils/fen-logic';
-import { playSound, getSoundType } from '@/features/game/utils/sounds';
+import {
+  playSound,
+  getSoundType,
+  playRawSound
+} from '@/features/game/utils/sounds';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
@@ -53,6 +57,7 @@ import {
   PIECE_NAMES
 } from '../stores/useDiceChessStore';
 import type { ChallengeColor } from '@/features/multiplayer/types';
+import { ABANDON_TIMEOUT_MS } from '@/features/multiplayer/config';
 
 const VARIANT = 'dice-chess';
 const ALL_PIECES: DicePiece[] = ['k', 'q', 'b', 'n', 'r', 'p'];
@@ -109,8 +114,6 @@ function getGameResult(game: Chess): string | null {
   if (game.isInsufficientMaterial()) return 'Draw — insufficient material';
   return null;
 }
-
-const ABANDON_TIMEOUT_MS = 30000;
 
 function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
   const [secsLeft, setSecsLeft] = useState(() =>
@@ -516,6 +519,12 @@ export function DiceChessMultiplayerView({
   const topColor = boardFlipped ? 'white' : 'black';
   const bottomColor = boardFlipped ? 'black' : 'white';
 
+  // Stable ref so doRoll (with [] deps) can call the latest sendDiceSync
+  const sendDiceSyncRef = useRef(ws.sendDiceSync);
+  sendDiceSyncRef.current = ws.sendDiceSync;
+  const soundEnabledRef = useRef(soundEnabled);
+  soundEnabledRef.current = soundEnabled;
+
   // ---------------------------------------------------------------------------
   // Dice roll logic (reads from chessRef so always current)
   // ---------------------------------------------------------------------------
@@ -533,11 +542,17 @@ export function DiceChessMultiplayerView({
       setIsRolling(false);
       setNeedsRoll(false);
       setHighlightedSquares(getHighlightsForDice(chess, rolled));
+      sendDiceSyncRef.current([
+        rolled[0]!.piece,
+        rolled[1]!.piece,
+        rolled[2]!.piece
+      ]);
+      if (soundEnabledRef.current) playRawSound('/custom/sounds/dice.mp3');
       if (!rolled.some((d) => d.hasValidMoves)) {
         setTimeout(doRoll, 1200);
       }
     }, 800);
-  }, []); // chessRef is stable
+  }, []); // chessRef and sendDiceSyncRef are stable
 
   const rollDice = useCallback(() => {
     if (!isMyTurn || isRolling || !needsRoll) return;
@@ -681,6 +696,25 @@ export function DiceChessMultiplayerView({
     });
     return () => ws.setOnClockSync(null);
   }, [ws.setOnClockSync]);
+
+  // ---------------------------------------------------------------------------
+  // Opponent dice sync (show their roll result on our board too)
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    ws.setOnSyncDice((pieces) => {
+      const chess = chessRef.current;
+      const synced: DiceResult[] = pieces.map((p) => ({
+        piece: p as DicePiece,
+        hasValidMoves: checkPieceHasValidMoves(chess, p as DicePiece)
+      }));
+      setDice(synced);
+      setNeedsRoll(false);
+      setIsRolling(false);
+      setHighlightedSquares(getHighlightsForDice(chess, synced));
+      if (soundEnabledRef.current) playRawSound('/custom/sounds/dice.mp3');
+    });
+    return () => ws.setOnSyncDice(null);
+  }, [ws.setOnSyncDice]);
 
   // Local clock countdown between server syncs
   useEffect(() => {

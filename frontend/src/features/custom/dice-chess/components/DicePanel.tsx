@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/Icons';
 import {
@@ -14,6 +14,8 @@ import {
   type DicePiece
 } from '../stores/useDiceChessStore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useChessStore } from '@/features/chess/stores/useChessStore';
+import { playRawSound } from '@/features/game/utils/sounds';
 const PIECE_TO_DICE_VALUE: Record<DicePiece, DiceValue> = {
   k: 1,
   q: 2,
@@ -27,7 +29,17 @@ interface DicePanelProps {
 }
 export function DicePanel({ turnColor }: DicePanelProps) {
   const { dice, isRolling, needsRoll, rollDice } = useDiceChessStore();
+  const soundEnabled = useChessStore((s) => s.soundEnabled);
   const faces = turnColor === 'w' ? WHITE_FACES : BLACK_FACES;
+
+  const prevDiceRef = useRef(dice);
+  useEffect(() => {
+    if (prevDiceRef.current === null && dice !== null && soundEnabled) {
+      playRawSound('/custom/sounds/dice.mp3');
+    }
+    prevDiceRef.current = dice;
+  }, [dice, soundEnabled]);
+
   const handleRoll = useCallback(() => {
     if (!needsRoll || isRolling) return;
     rollDice(turnColor);

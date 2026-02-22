@@ -21,7 +21,7 @@ function getCardComponentName(card: PlayingCard): string {
     '7': '7',
     '8': '8',
     '9': '9',
-    '10': '0',
+    '10': '10',
     J: 'j',
     Q: 'q',
     K: 'k'

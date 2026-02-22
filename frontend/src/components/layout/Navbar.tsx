@@ -10,9 +10,9 @@ import {
   SheetTrigger
 } from '@/components/ui/sheet';
 import { Icons } from '@/components/Icons';
-import ThemeToggle from '@/components/layout/ThemeToggle/theme-toggle';
+import { ThemeToggle } from '@/components/layout/Theme';
 import SearchInput from '@/components/layout/Kbar/SearchInput';
-import SchemeButton from '@/components/layout/SchemeButton';
+import { SchemeButton } from '@/components/layout/Scheme';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/layout/UserMenu';
 interface RouteProps {
@@ -29,13 +29,13 @@ export function Navbar() {
   const pathname = usePathname();
   return (
     <header className='border-border/40 bg-background/80 sticky top-0 z-40 w-full border-b backdrop-blur-md'>
-      <div className='flex h-14 w-full items-center justify-between px-4 lg:px-6'>
+      <div className='grid h-14 w-full grid-cols-[1fr_auto] items-center px-4 md:grid-cols-[1fr_auto_1fr] lg:px-6'>
         <Link href='/' className='flex items-center gap-2'>
           <Icons.crown className='text-primary h-8 w-8' />
           <span className='text-lg font-bold tracking-tight'>Zugklang</span>
         </Link>
 
-        <nav className='hidden items-center gap-6 md:flex'>
+        <nav className='hidden items-center gap-6 md:flex md:justify-self-center'>
           {routeList.map(({ href, label }) => (
             <Link
               key={label}
@@ -51,14 +51,14 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className='hidden items-center gap-3 md:flex'>
+        <div className='hidden items-center gap-3 md:flex md:justify-self-end'>
           <SearchInput />
           <SchemeButton />
           <ThemeToggle />
           <UserMenu />
         </div>
 
-        <div className='flex items-center gap-2 md:hidden'>
+        <div className='flex items-center gap-2 justify-self-end md:hidden'>
           <SearchInput />
           <SchemeButton />
           <ThemeToggle />

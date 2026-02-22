@@ -8,7 +8,9 @@ import type {
   UseMultiplayerWSReturn,
   OnOpponentMoveFn,
   OnServerGameOverFn,
-  OnClockSyncFn
+  OnClockSyncFn,
+  OnSyncDiceFn,
+  OnSyncCardFn
 } from '../types';
 const SESSION_KEY = 'zugklang_mp_session';
 const LS_ACTIVE_KEY = 'zugklang_mp_active';
@@ -85,6 +87,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       drawOffered: false,
       opponentDisconnected: false,
       opponentDisconnectedAt: null,
+      abortStartedAt: null,
       errorMessage: null,
       pendingChallengeId: null,
       movesToReplay: null,
@@ -106,6 +109,8 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const onOpponentMoveRef = useRef<OnOpponentMoveFn | null>(null);
   const onServerGameOverRef = useRef<OnServerGameOverFn | null>(null);
   const onClockSyncRef = useRef<OnClockSyncFn | null>(null);
+  const onSyncDiceRef = useRef<OnSyncDiceFn | null>(null);
+  const onSyncCardRef = useRef<OnSyncCardFn | null>(null);
   const roomIdRef = useRef<string | null>(null);
   const isPrimaryRef = useRef(false);
   const latestStateRef = useRef<MultiplayerWSState>(state);
@@ -301,6 +306,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           drawOffered: false,
           opponentDisconnected: false,
           opponentDisconnectedAt: null,
+          abortStartedAt: msg.abortStartedAt,
           pendingChallengeId: null,
           movesToReplay: null,
           rematchOffered: false,
@@ -335,8 +341,9 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           startingFen: msg.startingFen,
           timeControl: msg.timeControl,
           drawOffered: false,
-          opponentDisconnected: false,
-          opponentDisconnectedAt: null,
+          opponentDisconnected: msg.opponentDisconnectedAt !== null,
+          opponentDisconnectedAt: msg.opponentDisconnectedAt,
+          abortStartedAt: msg.abortStartedAt,
           pendingChallengeId: null,
           movesToReplay: msg.moves.length > 0 ? msg.moves : null,
           opponentLatencyMs: msg.opponentLatencyMs,
@@ -365,6 +372,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           ...s,
           status: 'game_over',
           drawOffered: false,
+          abortStartedAt: null,
           whiteUserId: msg.whiteUserId,
           blackUserId: msg.blackUserId
         }));
@@ -388,11 +396,14 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       case 'draw_declined':
         setState((s) => ({ ...s, drawOffered: false }));
         break;
+      case 'abort_window':
+        setState((s) => ({ ...s, abortStartedAt: msg.startedAt }));
+        break;
       case 'opponent_disconnected':
         setState((s) => ({
           ...s,
           opponentDisconnected: true,
-          opponentDisconnectedAt: Date.now()
+          opponentDisconnectedAt: msg.disconnectedAt
         }));
         break;
       case 'opponent_reconnected':
@@ -426,6 +437,12 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           rematchDeclined: true,
           rematchOffered: false
         }));
+        break;
+      case 'dice_synced':
+        onSyncDiceRef.current?.(msg.pieces);
+        break;
+      case 'card_synced':
+        onSyncCardRef.current?.(msg.rank, msg.suit);
         break;
       case 'error':
         setState((s) => ({ ...s, errorMessage: msg.message }));
@@ -623,6 +640,28 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const setOnClockSync = useCallback((fn: OnClockSyncFn | null) => {
     onClockSyncRef.current = fn;
   }, []);
+  const sendDiceSync = useCallback(
+    (pieces: [string, string, string]) => {
+      const roomId = roomIdRef.current;
+      if (!roomId) return;
+      sendRaw({ type: 'sync_dice', roomId, pieces });
+    },
+    [sendRaw]
+  );
+  const sendCardSync = useCallback(
+    (rank: string, suit: string) => {
+      const roomId = roomIdRef.current;
+      if (!roomId) return;
+      sendRaw({ type: 'sync_card', roomId, rank, suit });
+    },
+    [sendRaw]
+  );
+  const setOnSyncDice = useCallback((fn: OnSyncDiceFn | null) => {
+    onSyncDiceRef.current = fn;
+  }, []);
+  const setOnSyncCard = useCallback((fn: OnSyncCardFn | null) => {
+    onSyncCardRef.current = fn;
+  }, []);
   const disconnect = useCallback(() => {
     clearSession();
     stopPing();
@@ -649,6 +688,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       drawOffered: false,
       opponentDisconnected: false,
       opponentDisconnectedAt: null,
+      abortStartedAt: null,
       errorMessage: null,
       pendingChallengeId: null,
       movesToReplay: null,
@@ -714,6 +754,10 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     setOnOpponentMove,
     setOnServerGameOver,
     setOnClockSync,
+    sendDiceSync,
+    sendCardSync,
+    setOnSyncDice,
+    setOnSyncCard,
     disconnect
   };
 }

@@ -64,6 +64,35 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('offer_rematch') }),
   z.object({ type: z.literal('accept_rematch') }),
-  z.object({ type: z.literal('decline_rematch') })
+  z.object({ type: z.literal('decline_rematch') }),
+  z.object({
+    type: z.literal('sync_dice'),
+    roomId: z.string().uuid(),
+    pieces: z.tuple([
+      z.enum(['k', 'q', 'b', 'n', 'r', 'p']),
+      z.enum(['k', 'q', 'b', 'n', 'r', 'p']),
+      z.enum(['k', 'q', 'b', 'n', 'r', 'p'])
+    ])
+  }),
+  z.object({
+    type: z.literal('sync_card'),
+    roomId: z.string().uuid(),
+    rank: z.enum([
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9',
+      '10',
+      'J',
+      'Q',
+      'K',
+      'A'
+    ]),
+    suit: z.enum(['H', 'D', 'C', 'S'])
+  })
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;

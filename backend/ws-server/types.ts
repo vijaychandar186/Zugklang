@@ -40,6 +40,9 @@ export interface Room {
   status: 'active' | 'ended';
   createdAt: number;
   abortTimer: ReturnType<typeof setTimeout> | null;
+  abortTimerStartedAt: number | null;
+  whiteDisconnectedAt: number | null;
+  blackDisconnectedAt: number | null;
   whiteLatencyMs: number | null;
   blackLatencyMs: number | null;
   whiteDisplayName: string | null;

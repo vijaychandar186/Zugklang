@@ -20,6 +20,11 @@ import {
 } from '@/features/chess/stores/useAnalysisStore';
 import { useSession } from 'next-auth/react';
 import { useMultiplayerWS, loadSession } from '../hooks/useMultiplayerWS';
+import {
+  ABORT_TIMEOUT_MS,
+  ABANDON_TIMEOUT_MS,
+  ABORT_COUNTDOWN_VISIBILITY_DELAY_MS
+} from '../config';
 import { Icons } from '@/components/Icons';
 import type { ChessVariant } from '@/features/chess/config/variants';
 import type { TimeControl } from '@/features/game/types/rules';
@@ -74,8 +79,6 @@ function SignalIndicator({
     />
   );
 }
-const ABANDON_TIMEOUT_MS = 30000;
-const ABORT_TIMEOUT_MS = 60000;
 function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
   const [secsLeft, setSecsLeft] = useState(() =>
     Math.max(
@@ -477,25 +480,36 @@ export function MultiplayerGameView({
   const handleMovesReplayed = useCallback(() => {
     setPendingMoves(null);
   }, []);
-  const [abortWindowStart, setAbortWindowStart] = useState<number | null>(null);
+  const abortStartedAt = ws.abortStartedAt;
   const [abortVisible, setAbortVisible] = useState(false);
   useEffect(() => {
-    if (!gameStarted || gameOver || movesCount >= 2) {
-      setAbortWindowStart(null);
+    if (!gameStarted || gameOver || movesCount >= 2 || !abortStartedAt) {
       setAbortVisible(false);
       return;
     }
-    const start = Date.now();
-    setAbortWindowStart(start);
+    const elapsed = Date.now() - abortStartedAt;
+    const remaining = Math.max(
+      0,
+      ABORT_COUNTDOWN_VISIBILITY_DELAY_MS - elapsed
+    );
+    if (remaining === 0) {
+      setAbortVisible(true);
+      return;
+    }
     setAbortVisible(false);
-    const t = setTimeout(() => setAbortVisible(true), 20000);
+    const t = setTimeout(() => setAbortVisible(true), remaining);
     return () => clearTimeout(t);
-  }, [gameStarted, gameOver, movesCount]);
+  }, [abortStartedAt, gameStarted, gameOver, movesCount]);
   const showOpponentAbortCountdown =
     abortVisible &&
-    abortWindowStart !== null &&
+    abortStartedAt !== null &&
     ((movesCount === 0 && playAs === 'black') ||
       (movesCount === 1 && playAs === 'white'));
+  const showMyAbortCountdown =
+    abortVisible &&
+    abortStartedAt !== null &&
+    ((movesCount === 0 && playAs === 'white') ||
+      (movesCount === 1 && playAs === 'black'));
   const isMe = (color: 'white' | 'black') => color === (ws.myColor ?? playAs);
   const getPlayerName = (color: 'white' | 'black') => {
     if (isMe(color)) return session?.user?.name ?? 'You';
@@ -540,8 +554,13 @@ export function MultiplayerGameView({
                     />
                     {topColor !== playAs &&
                       showOpponentAbortCountdown &&
-                      abortWindowStart !== null && (
-                        <AbortCountdown startedAt={abortWindowStart} />
+                      abortStartedAt !== null && (
+                        <AbortCountdown startedAt={abortStartedAt} />
+                      )}
+                    {topColor === playAs &&
+                      showMyAbortCountdown &&
+                      abortStartedAt !== null && (
+                        <AbortCountdown startedAt={abortStartedAt} />
                       )}
                   </>
                 )
@@ -601,8 +620,13 @@ export function MultiplayerGameView({
                     />
                     {bottomColor !== playAs &&
                       showOpponentAbortCountdown &&
-                      abortWindowStart !== null && (
-                        <AbortCountdown startedAt={abortWindowStart} />
+                      abortStartedAt !== null && (
+                        <AbortCountdown startedAt={abortStartedAt} />
+                      )}
+                    {bottomColor === playAs &&
+                      showMyAbortCountdown &&
+                      abortStartedAt !== null && (
+                        <AbortCountdown startedAt={abortStartedAt} />
                       )}
                   </>
                 )

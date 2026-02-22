@@ -1,16 +1,32 @@
 'use client';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 import { Icons } from '@/components/Icons';
 import { CardDisplay } from './CardDisplay';
 import { useCardChessStore } from '../stores/useCardChessStore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useChessStore } from '@/features/chess/stores/useChessStore';
+import { playRawSound } from '@/features/game/utils/sounds';
 interface CardPanelProps {
   turnColor: 'w' | 'b';
 }
 export function CardPanel({ turnColor }: CardPanelProps) {
   const { drawnCard, isDrawing, needsDraw, drawCard, drawCount, game } =
     useCardChessStore();
+  const soundEnabled = useChessStore((s) => s.soundEnabled);
+
+  const prevDrawnCardRef = useRef(drawnCard);
+  useEffect(() => {
+    if (
+      prevDrawnCardRef.current === null &&
+      drawnCard !== null &&
+      soundEnabled
+    ) {
+      playRawSound('/custom/sounds/cards.mp3');
+    }
+    prevDrawnCardRef.current = drawnCard;
+  }, [drawnCard, soundEnabled]);
+
   const handleDraw = useCallback(() => {
     if (!needsDraw || isDrawing) return;
     drawCard(turnColor);

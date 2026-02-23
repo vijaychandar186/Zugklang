@@ -30,6 +30,10 @@ import type { ChessVariant } from '@/features/chess/config/variants';
 import type { TimeControl } from '@/features/game/types/rules';
 import type { ChallengeColor } from '../types';
 import { getTimeCategory } from '@/lib/ratings/timeCategory';
+import {
+  DEFAULT_FLAG_CODE,
+  normalizeFlagCode
+} from '@/features/settings/flags';
 const VARIANT_LABELS: Record<string, string> = {
   standard: 'Standard Chess',
   fischerRandom: 'Fischer Random',
@@ -197,7 +201,21 @@ export function MultiplayerGameView({
       )
       .catch(() => {});
   }, [session?.user?.id, ratingCategory]);
+  const [myFlagCode, setMyFlagCode] = useState(DEFAULT_FLAG_CODE);
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setMyFlagCode(DEFAULT_FLAG_CODE);
+      return;
+    }
+    fetch('/api/user/settings')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { flagCode?: string | null } | null) =>
+        setMyFlagCode(normalizeFlagCode(data?.flagCode))
+      )
+      .catch(() => setMyFlagCode(DEFAULT_FLAG_CODE));
+  }, [session?.user?.id]);
   const [opponentRating, setOpponentRating] = useState<number | null>(null);
+  const [opponentFlagCode, setOpponentFlagCode] = useState(DEFAULT_FLAG_CODE);
   const opponentUserId = useMemo(() => {
     const me = session?.user?.id ?? null;
     if (me) {
@@ -210,15 +228,17 @@ export function MultiplayerGameView({
   useEffect(() => {
     if (!opponentUserId || !ratingCategory) {
       setOpponentRating(null);
+      setOpponentFlagCode(DEFAULT_FLAG_CODE);
       return;
     }
     setOpponentRating(null);
     fetch(`/api/users/${opponentUserId}?category=${ratingCategory}`)
       .then((r) => (r.ok ? r.json() : { rating: 700 }))
-      .then((data: { rating: number | null }) =>
-        setOpponentRating(data.rating ?? 700)
-      )
-      .catch(() => {});
+      .then((data: { rating: number | null; flagCode?: string | null }) => {
+        setOpponentRating(data.rating ?? 700);
+        setOpponentFlagCode(normalizeFlagCode(data.flagCode));
+      })
+      .catch(() => setOpponentFlagCode(DEFAULT_FLAG_CODE));
   }, [opponentUserId, ratingCategory]);
   const savedRoomIdRef = useRef<string | null>(null);
   const saveMultiplayerGame = useCallback(
@@ -523,6 +543,10 @@ export function MultiplayerGameView({
     if (isMe(color)) return myRating;
     return opponentRating;
   };
+  const getPlayerFlagCode = (color: 'white' | 'black') => {
+    if (isMe(color)) return myFlagCode;
+    return opponentFlagCode;
+  };
   const showIndicator = gameStarted && !gameOver;
   return (
     <>
@@ -534,6 +558,7 @@ export function MultiplayerGameView({
                 name={getPlayerName(topColor)}
                 image={getPlayerImage(topColor)}
                 rating={getPlayerRating(topColor)}
+                flagCode={getPlayerFlagCode(topColor)}
               />
               {showIndicator &&
               topColor !== playAs &&
@@ -600,6 +625,7 @@ export function MultiplayerGameView({
                 name={getPlayerName(bottomColor)}
                 image={getPlayerImage(bottomColor)}
                 rating={getPlayerRating(bottomColor)}
+                flagCode={getPlayerFlagCode(bottomColor)}
               />
               {showIndicator &&
               bottomColor !== playAs &&

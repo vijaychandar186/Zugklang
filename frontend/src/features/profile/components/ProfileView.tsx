@@ -2,6 +2,7 @@ import { ProfileHeader } from './ProfileHeader';
 import { StatsGrid } from './StatsGrid';
 import { RatingsTable } from './RatingsTable';
 import { RecentGamesTable } from './RecentGamesTable';
+import { PassportCollection } from './PassportCollection';
 interface ProfileViewProps {
   user: {
     name: string | null;
@@ -40,6 +41,9 @@ interface ProfileViewProps {
     blackRatingDelta: number | null;
   }[];
   userId: string;
+  passportFlags: {
+    flagCode: string;
+  }[];
 }
 function computeStats(userId: string, games: ProfileViewProps['recentGames']) {
   let wins = 0,
@@ -71,7 +75,8 @@ export function ProfileView({
   ratings,
   puzzleRating,
   recentGames,
-  userId
+  userId,
+  passportFlags
 }: ProfileViewProps) {
   const stats = computeStats(userId, recentGames);
   return (
@@ -87,6 +92,9 @@ export function ProfileView({
         losses={stats.losses}
         draws={stats.draws}
         total={stats.total}
+      />
+      <PassportCollection
+        collectedFlagCodes={passportFlags.map((entry) => entry.flagCode)}
       />
       <RatingsTable ratings={ratings} puzzleRating={puzzleRating} />
       <RecentGamesTable games={recentGames} userId={userId} />

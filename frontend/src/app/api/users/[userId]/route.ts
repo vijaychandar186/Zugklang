@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db/db';
 import { NextRequest } from 'next/server';
 import type { TimeCategory } from '@/lib/ratings/timeCategory';
+import { DEFAULT_FLAG_CODE } from '@/features/settings/flags';
 
 export async function GET(
   req: NextRequest,
@@ -14,7 +15,7 @@ export async function GET(
   const [user, ratingRow] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { name: true, image: true }
+      select: { name: true, image: true, flagCode: true }
     }),
     category
       ? prisma.rating.findUnique({
@@ -29,11 +30,17 @@ export async function GET(
   ]);
 
   if (!user)
-    return Response.json({ name: 'Opponent', image: null, rating: 700 });
+    return Response.json({
+      name: 'Opponent',
+      image: null,
+      rating: 700,
+      flagCode: DEFAULT_FLAG_CODE
+    });
 
   return Response.json({
     name: user.name ?? 'Opponent',
     image: user.image ?? null,
-    rating: ratingRow?.rating ?? 700
+    rating: ratingRow?.rating ?? 700,
+    flagCode: user.flagCode ?? DEFAULT_FLAG_CODE
   });
 }

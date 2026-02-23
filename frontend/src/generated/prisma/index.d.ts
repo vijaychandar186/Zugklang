@@ -17,6 +17,12 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>;
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>;
 /**
+ * Model PassportFlag
+ *
+ */
+export type PassportFlag =
+  $Result.DefaultSelection<Prisma.$PassportFlagPayload>;
+/**
  * Model Account
  *
  */
@@ -253,6 +259,16 @@ export class PrismaClient<
    * ```
    */
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.passportFlag`: Exposes CRUD operations for the **PassportFlag** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more PassportFlags
+   * const passportFlags = await prisma.passportFlag.findMany()
+   * ```
+   */
+  get passportFlag(): Prisma.PassportFlagDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.account`: Exposes CRUD operations for the **Account** model.
@@ -829,6 +845,7 @@ export namespace Prisma {
 
   export const ModelName: {
     User: 'User';
+    PassportFlag: 'PassportFlag';
     Account: 'Account';
     Session: 'Session';
     VerificationToken: 'VerificationToken';
@@ -866,6 +883,7 @@ export namespace Prisma {
     meta: {
       modelProps:
         | 'user'
+        | 'passportFlag'
         | 'account'
         | 'session'
         | 'verificationToken'
@@ -952,6 +970,82 @@ export namespace Prisma {
           count: {
             args: Prisma.UserCountArgs<ExtArgs>;
             result: $Utils.Optional<UserCountAggregateOutputType> | number;
+          };
+        };
+      };
+      PassportFlag: {
+        payload: Prisma.$PassportFlagPayload<ExtArgs>;
+        fields: Prisma.PassportFlagFieldRefs;
+        operations: {
+          findUnique: {
+            args: Prisma.PassportFlagFindUniqueArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload> | null;
+          };
+          findUniqueOrThrow: {
+            args: Prisma.PassportFlagFindUniqueOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>;
+          };
+          findFirst: {
+            args: Prisma.PassportFlagFindFirstArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload> | null;
+          };
+          findFirstOrThrow: {
+            args: Prisma.PassportFlagFindFirstOrThrowArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>;
+          };
+          findMany: {
+            args: Prisma.PassportFlagFindManyArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>[];
+          };
+          create: {
+            args: Prisma.PassportFlagCreateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>;
+          };
+          createMany: {
+            args: Prisma.PassportFlagCreateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          createManyAndReturn: {
+            args: Prisma.PassportFlagCreateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>[];
+          };
+          delete: {
+            args: Prisma.PassportFlagDeleteArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>;
+          };
+          update: {
+            args: Prisma.PassportFlagUpdateArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>;
+          };
+          deleteMany: {
+            args: Prisma.PassportFlagDeleteManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateMany: {
+            args: Prisma.PassportFlagUpdateManyArgs<ExtArgs>;
+            result: BatchPayload;
+          };
+          updateManyAndReturn: {
+            args: Prisma.PassportFlagUpdateManyAndReturnArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>[];
+          };
+          upsert: {
+            args: Prisma.PassportFlagUpsertArgs<ExtArgs>;
+            result: $Utils.PayloadToResult<Prisma.$PassportFlagPayload>;
+          };
+          aggregate: {
+            args: Prisma.PassportFlagAggregateArgs<ExtArgs>;
+            result: $Utils.Optional<AggregatePassportFlag>;
+          };
+          groupBy: {
+            args: Prisma.PassportFlagGroupByArgs<ExtArgs>;
+            result: $Utils.Optional<PassportFlagGroupByOutputType>[];
+          };
+          count: {
+            args: Prisma.PassportFlagCountArgs<ExtArgs>;
+            result:
+              | $Utils.Optional<PassportFlagCountAggregateOutputType>
+              | number;
           };
         };
       };
@@ -1972,6 +2066,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     user?: UserOmit;
+    passportFlag?: PassportFlagOmit;
     account?: AccountOmit;
     session?: SessionOmit;
     verificationToken?: VerificationTokenOmit;
@@ -2077,6 +2172,7 @@ export namespace Prisma {
     puzzleRushScores: number;
     memorySessions: number;
     visionSessions: number;
+    passportFlags: number;
   };
 
   export type UserCountOutputTypeSelect<
@@ -2093,6 +2189,7 @@ export namespace Prisma {
     puzzleRushScores?: boolean | UserCountOutputTypeCountPuzzleRushScoresArgs;
     memorySessions?: boolean | UserCountOutputTypeCountMemorySessionsArgs;
     visionSessions?: boolean | UserCountOutputTypeCountVisionSessionsArgs;
+    passportFlags?: boolean | UserCountOutputTypeCountPassportFlagsArgs;
   };
 
   // Custom InputTypes
@@ -2208,6 +2305,15 @@ export namespace Prisma {
   };
 
   /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountPassportFlagsArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: PassportFlagWhereInput;
+  };
+
+  /**
    * Models
    */
 
@@ -2227,6 +2333,7 @@ export namespace Prisma {
     email: string | null;
     emailVerified: Date | null;
     image: string | null;
+    flagCode: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
   };
@@ -2237,6 +2344,7 @@ export namespace Prisma {
     email: string | null;
     emailVerified: Date | null;
     image: string | null;
+    flagCode: string | null;
     createdAt: Date | null;
     updatedAt: Date | null;
   };
@@ -2247,6 +2355,7 @@ export namespace Prisma {
     email: number;
     emailVerified: number;
     image: number;
+    flagCode: number;
     createdAt: number;
     updatedAt: number;
     _all: number;
@@ -2258,6 +2367,7 @@ export namespace Prisma {
     email?: true;
     emailVerified?: true;
     image?: true;
+    flagCode?: true;
     createdAt?: true;
     updatedAt?: true;
   };
@@ -2268,6 +2378,7 @@ export namespace Prisma {
     email?: true;
     emailVerified?: true;
     image?: true;
+    flagCode?: true;
     createdAt?: true;
     updatedAt?: true;
   };
@@ -2278,6 +2389,7 @@ export namespace Prisma {
     email?: true;
     emailVerified?: true;
     image?: true;
+    flagCode?: true;
     createdAt?: true;
     updatedAt?: true;
     _all?: true;
@@ -2364,6 +2476,7 @@ export namespace Prisma {
     email: string;
     emailVerified: Date | null;
     image: string | null;
+    flagCode: string;
     createdAt: Date;
     updatedAt: Date;
     _count: UserCountAggregateOutputType | null;
@@ -2392,6 +2505,7 @@ export namespace Prisma {
       email?: boolean;
       emailVerified?: boolean;
       image?: boolean;
+      flagCode?: boolean;
       createdAt?: boolean;
       updatedAt?: boolean;
       accounts?: boolean | User$accountsArgs<ExtArgs>;
@@ -2406,6 +2520,7 @@ export namespace Prisma {
       puzzleRushScores?: boolean | User$puzzleRushScoresArgs<ExtArgs>;
       memorySessions?: boolean | User$memorySessionsArgs<ExtArgs>;
       visionSessions?: boolean | User$visionSessionsArgs<ExtArgs>;
+      passportFlags?: boolean | User$passportFlagsArgs<ExtArgs>;
       _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
     },
     ExtArgs['result']['user']
@@ -2420,6 +2535,7 @@ export namespace Prisma {
       email?: boolean;
       emailVerified?: boolean;
       image?: boolean;
+      flagCode?: boolean;
       createdAt?: boolean;
       updatedAt?: boolean;
     },
@@ -2435,6 +2551,7 @@ export namespace Prisma {
       email?: boolean;
       emailVerified?: boolean;
       image?: boolean;
+      flagCode?: boolean;
       createdAt?: boolean;
       updatedAt?: boolean;
     },
@@ -2447,6 +2564,7 @@ export namespace Prisma {
     email?: boolean;
     emailVerified?: boolean;
     image?: boolean;
+    flagCode?: boolean;
     createdAt?: boolean;
     updatedAt?: boolean;
   };
@@ -2459,6 +2577,7 @@ export namespace Prisma {
     | 'email'
     | 'emailVerified'
     | 'image'
+    | 'flagCode'
     | 'createdAt'
     | 'updatedAt',
     ExtArgs['result']['user']
@@ -2478,6 +2597,7 @@ export namespace Prisma {
     puzzleRushScores?: boolean | User$puzzleRushScoresArgs<ExtArgs>;
     memorySessions?: boolean | User$memorySessionsArgs<ExtArgs>;
     visionSessions?: boolean | User$visionSessionsArgs<ExtArgs>;
+    passportFlags?: boolean | User$passportFlagsArgs<ExtArgs>;
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>;
   };
   export type UserIncludeCreateManyAndReturn<
@@ -2504,6 +2624,7 @@ export namespace Prisma {
       puzzleRushScores: Prisma.$PuzzleRushScorePayload<ExtArgs>[];
       memorySessions: Prisma.$MemorySessionPayload<ExtArgs>[];
       visionSessions: Prisma.$VisionSessionPayload<ExtArgs>[];
+      passportFlags: Prisma.$PassportFlagPayload<ExtArgs>[];
     };
     scalars: $Extensions.GetPayloadResult<
       {
@@ -2512,6 +2633,7 @@ export namespace Prisma {
         email: string;
         emailVerified: Date | null;
         image: string | null;
+        flagCode: string;
         createdAt: Date;
         updatedAt: Date;
       },
@@ -3193,6 +3315,17 @@ export namespace Prisma {
         >
       | Null
     >;
+    passportFlags<T extends User$passportFlagsArgs<ExtArgs> = {}>(
+      args?: Subset<T, User$passportFlagsArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      | $Result.GetResult<
+          Prisma.$PassportFlagPayload<ExtArgs>,
+          T,
+          'findMany',
+          GlobalOmitOptions
+        >
+      | Null
+    >;
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3238,6 +3371,7 @@ export namespace Prisma {
     readonly email: FieldRef<'User', 'String'>;
     readonly emailVerified: FieldRef<'User', 'DateTime'>;
     readonly image: FieldRef<'User', 'String'>;
+    readonly flagCode: FieldRef<'User', 'String'>;
     readonly createdAt: FieldRef<'User', 'DateTime'>;
     readonly updatedAt: FieldRef<'User', 'DateTime'>;
   }
@@ -3980,6 +4114,34 @@ export namespace Prisma {
   };
 
   /**
+   * User.passportFlags
+   */
+  export type User$passportFlagsArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    where?: PassportFlagWhereInput;
+    orderBy?:
+      | PassportFlagOrderByWithRelationInput
+      | PassportFlagOrderByWithRelationInput[];
+    cursor?: PassportFlagWhereUniqueInput;
+    take?: number;
+    skip?: number;
+    distinct?: PassportFlagScalarFieldEnum | PassportFlagScalarFieldEnum[];
+  };
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<
@@ -3997,6 +4159,1306 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: UserInclude<ExtArgs> | null;
+  };
+
+  /**
+   * Model PassportFlag
+   */
+
+  export type AggregatePassportFlag = {
+    _count: PassportFlagCountAggregateOutputType | null;
+    _min: PassportFlagMinAggregateOutputType | null;
+    _max: PassportFlagMaxAggregateOutputType | null;
+  };
+
+  export type PassportFlagMinAggregateOutputType = {
+    id: string | null;
+    userId: string | null;
+    flagCode: string | null;
+    createdAt: Date | null;
+  };
+
+  export type PassportFlagMaxAggregateOutputType = {
+    id: string | null;
+    userId: string | null;
+    flagCode: string | null;
+    createdAt: Date | null;
+  };
+
+  export type PassportFlagCountAggregateOutputType = {
+    id: number;
+    userId: number;
+    flagCode: number;
+    createdAt: number;
+    _all: number;
+  };
+
+  export type PassportFlagMinAggregateInputType = {
+    id?: true;
+    userId?: true;
+    flagCode?: true;
+    createdAt?: true;
+  };
+
+  export type PassportFlagMaxAggregateInputType = {
+    id?: true;
+    userId?: true;
+    flagCode?: true;
+    createdAt?: true;
+  };
+
+  export type PassportFlagCountAggregateInputType = {
+    id?: true;
+    userId?: true;
+    flagCode?: true;
+    createdAt?: true;
+    _all?: true;
+  };
+
+  export type PassportFlagAggregateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Filter which PassportFlag to aggregate.
+     */
+    where?: PassportFlagWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PassportFlags to fetch.
+     */
+    orderBy?:
+      | PassportFlagOrderByWithRelationInput
+      | PassportFlagOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
+    cursor?: PassportFlagWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PassportFlags from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PassportFlags.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned PassportFlags
+     **/
+    _count?: true | PassportFlagCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
+    _min?: PassportFlagMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
+    _max?: PassportFlagMaxAggregateInputType;
+  };
+
+  export type GetPassportFlagAggregateType<
+    T extends PassportFlagAggregateArgs
+  > = {
+    [P in keyof T & keyof AggregatePassportFlag]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePassportFlag[P]>
+      : GetScalarType<T[P], AggregatePassportFlag[P]>;
+  };
+
+  export type PassportFlagGroupByArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    where?: PassportFlagWhereInput;
+    orderBy?:
+      | PassportFlagOrderByWithAggregationInput
+      | PassportFlagOrderByWithAggregationInput[];
+    by: PassportFlagScalarFieldEnum[] | PassportFlagScalarFieldEnum;
+    having?: PassportFlagScalarWhereWithAggregatesInput;
+    take?: number;
+    skip?: number;
+    _count?: PassportFlagCountAggregateInputType | true;
+    _min?: PassportFlagMinAggregateInputType;
+    _max?: PassportFlagMaxAggregateInputType;
+  };
+
+  export type PassportFlagGroupByOutputType = {
+    id: string;
+    userId: string;
+    flagCode: string;
+    createdAt: Date;
+    _count: PassportFlagCountAggregateOutputType | null;
+    _min: PassportFlagMinAggregateOutputType | null;
+    _max: PassportFlagMaxAggregateOutputType | null;
+  };
+
+  type GetPassportFlagGroupByPayload<T extends PassportFlagGroupByArgs> =
+    Prisma.PrismaPromise<
+      Array<
+        PickEnumerable<PassportFlagGroupByOutputType, T['by']> & {
+          [P in keyof T &
+            keyof PassportFlagGroupByOutputType]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PassportFlagGroupByOutputType[P]>
+            : GetScalarType<T[P], PassportFlagGroupByOutputType[P]>;
+        }
+      >
+    >;
+
+  export type PassportFlagSelect<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      userId?: boolean;
+      flagCode?: boolean;
+      createdAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['passportFlag']
+  >;
+
+  export type PassportFlagSelectCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      userId?: boolean;
+      flagCode?: boolean;
+      createdAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['passportFlag']
+  >;
+
+  export type PassportFlagSelectUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetSelect<
+    {
+      id?: boolean;
+      userId?: boolean;
+      flagCode?: boolean;
+      createdAt?: boolean;
+      user?: boolean | UserDefaultArgs<ExtArgs>;
+    },
+    ExtArgs['result']['passportFlag']
+  >;
+
+  export type PassportFlagSelectScalar = {
+    id?: boolean;
+    userId?: boolean;
+    flagCode?: boolean;
+    createdAt?: boolean;
+  };
+
+  export type PassportFlagOmit<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = $Extensions.GetOmit<
+    'id' | 'userId' | 'flagCode' | 'createdAt',
+    ExtArgs['result']['passportFlag']
+  >;
+  export type PassportFlagInclude<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type PassportFlagIncludeCreateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+  export type PassportFlagIncludeUpdateManyAndReturn<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    user?: boolean | UserDefaultArgs<ExtArgs>;
+  };
+
+  export type $PassportFlagPayload<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    name: 'PassportFlag';
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>;
+    };
+    scalars: $Extensions.GetPayloadResult<
+      {
+        id: string;
+        userId: string;
+        flagCode: string;
+        createdAt: Date;
+      },
+      ExtArgs['result']['passportFlag']
+    >;
+    composites: {};
+  };
+
+  type PassportFlagGetPayload<
+    S extends boolean | null | undefined | PassportFlagDefaultArgs
+  > = $Result.GetResult<Prisma.$PassportFlagPayload, S>;
+
+  type PassportFlagCountArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = Omit<
+    PassportFlagFindManyArgs,
+    'select' | 'include' | 'distinct' | 'omit'
+  > & {
+    select?: PassportFlagCountAggregateInputType | true;
+  };
+
+  export interface PassportFlagDelegate<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {}
+  > {
+    [K: symbol]: {
+      types: Prisma.TypeMap<ExtArgs>['model']['PassportFlag'];
+      meta: { name: 'PassportFlag' };
+    };
+    /**
+     * Find zero or one PassportFlag that matches the filter.
+     * @param {PassportFlagFindUniqueArgs} args - Arguments to find a PassportFlag
+     * @example
+     * // Get one PassportFlag
+     * const passportFlag = await prisma.passportFlag.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PassportFlagFindUniqueArgs>(
+      args: SelectSubset<T, PassportFlagFindUniqueArgs<ExtArgs>>
+    ): Prisma__PassportFlagClient<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'findUnique',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find one PassportFlag that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PassportFlagFindUniqueOrThrowArgs} args - Arguments to find a PassportFlag
+     * @example
+     * // Get one PassportFlag
+     * const passportFlag = await prisma.passportFlag.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PassportFlagFindUniqueOrThrowArgs>(
+      args: SelectSubset<T, PassportFlagFindUniqueOrThrowArgs<ExtArgs>>
+    ): Prisma__PassportFlagClient<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'findUniqueOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first PassportFlag that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagFindFirstArgs} args - Arguments to find a PassportFlag
+     * @example
+     * // Get one PassportFlag
+     * const passportFlag = await prisma.passportFlag.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PassportFlagFindFirstArgs>(
+      args?: SelectSubset<T, PassportFlagFindFirstArgs<ExtArgs>>
+    ): Prisma__PassportFlagClient<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'findFirst',
+        GlobalOmitOptions
+      > | null,
+      null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find the first PassportFlag that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagFindFirstOrThrowArgs} args - Arguments to find a PassportFlag
+     * @example
+     * // Get one PassportFlag
+     * const passportFlag = await prisma.passportFlag.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PassportFlagFindFirstOrThrowArgs>(
+      args?: SelectSubset<T, PassportFlagFindFirstOrThrowArgs<ExtArgs>>
+    ): Prisma__PassportFlagClient<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'findFirstOrThrow',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Find zero or more PassportFlags that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PassportFlags
+     * const passportFlags = await prisma.passportFlag.findMany()
+     *
+     * // Get first 10 PassportFlags
+     * const passportFlags = await prisma.passportFlag.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const passportFlagWithIdOnly = await prisma.passportFlag.findMany({ select: { id: true } })
+     *
+     */
+    findMany<T extends PassportFlagFindManyArgs>(
+      args?: SelectSubset<T, PassportFlagFindManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'findMany',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create a PassportFlag.
+     * @param {PassportFlagCreateArgs} args - Arguments to create a PassportFlag.
+     * @example
+     * // Create one PassportFlag
+     * const PassportFlag = await prisma.passportFlag.create({
+     *   data: {
+     *     // ... data to create a PassportFlag
+     *   }
+     * })
+     *
+     */
+    create<T extends PassportFlagCreateArgs>(
+      args: SelectSubset<T, PassportFlagCreateArgs<ExtArgs>>
+    ): Prisma__PassportFlagClient<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'create',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Create many PassportFlags.
+     * @param {PassportFlagCreateManyArgs} args - Arguments to create many PassportFlags.
+     * @example
+     * // Create many PassportFlags
+     * const passportFlag = await prisma.passportFlag.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
+    createMany<T extends PassportFlagCreateManyArgs>(
+      args?: SelectSubset<T, PassportFlagCreateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many PassportFlags and returns the data saved in the database.
+     * @param {PassportFlagCreateManyAndReturnArgs} args - Arguments to create many PassportFlags.
+     * @example
+     * // Create many PassportFlags
+     * const passportFlag = await prisma.passportFlag.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many PassportFlags and only return the `id`
+     * const passportFlagWithIdOnly = await prisma.passportFlag.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    createManyAndReturn<T extends PassportFlagCreateManyAndReturnArgs>(
+      args?: SelectSubset<T, PassportFlagCreateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'createManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Delete a PassportFlag.
+     * @param {PassportFlagDeleteArgs} args - Arguments to delete one PassportFlag.
+     * @example
+     * // Delete one PassportFlag
+     * const PassportFlag = await prisma.passportFlag.delete({
+     *   where: {
+     *     // ... filter to delete one PassportFlag
+     *   }
+     * })
+     *
+     */
+    delete<T extends PassportFlagDeleteArgs>(
+      args: SelectSubset<T, PassportFlagDeleteArgs<ExtArgs>>
+    ): Prisma__PassportFlagClient<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'delete',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Update one PassportFlag.
+     * @param {PassportFlagUpdateArgs} args - Arguments to update one PassportFlag.
+     * @example
+     * // Update one PassportFlag
+     * const passportFlag = await prisma.passportFlag.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    update<T extends PassportFlagUpdateArgs>(
+      args: SelectSubset<T, PassportFlagUpdateArgs<ExtArgs>>
+    ): Prisma__PassportFlagClient<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'update',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Delete zero or more PassportFlags.
+     * @param {PassportFlagDeleteManyArgs} args - Arguments to filter PassportFlags to delete.
+     * @example
+     * // Delete a few PassportFlags
+     * const { count } = await prisma.passportFlag.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
+    deleteMany<T extends PassportFlagDeleteManyArgs>(
+      args?: SelectSubset<T, PassportFlagDeleteManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PassportFlags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PassportFlags
+     * const passportFlag = await prisma.passportFlag.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
+    updateMany<T extends PassportFlagUpdateManyArgs>(
+      args: SelectSubset<T, PassportFlagUpdateManyArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PassportFlags and returns the data updated in the database.
+     * @param {PassportFlagUpdateManyAndReturnArgs} args - Arguments to update many PassportFlags.
+     * @example
+     * // Update many PassportFlags
+     * const passportFlag = await prisma.passportFlag.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more PassportFlags and only return the `id`
+     * const passportFlagWithIdOnly = await prisma.passportFlag.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
+    updateManyAndReturn<T extends PassportFlagUpdateManyAndReturnArgs>(
+      args: SelectSubset<T, PassportFlagUpdateManyAndReturnArgs<ExtArgs>>
+    ): Prisma.PrismaPromise<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'updateManyAndReturn',
+        GlobalOmitOptions
+      >
+    >;
+
+    /**
+     * Create or update one PassportFlag.
+     * @param {PassportFlagUpsertArgs} args - Arguments to update or create a PassportFlag.
+     * @example
+     * // Update or create a PassportFlag
+     * const passportFlag = await prisma.passportFlag.upsert({
+     *   create: {
+     *     // ... data to create a PassportFlag
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PassportFlag we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PassportFlagUpsertArgs>(
+      args: SelectSubset<T, PassportFlagUpsertArgs<ExtArgs>>
+    ): Prisma__PassportFlagClient<
+      $Result.GetResult<
+        Prisma.$PassportFlagPayload<ExtArgs>,
+        T,
+        'upsert',
+        GlobalOmitOptions
+      >,
+      never,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+
+    /**
+     * Count the number of PassportFlags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagCountArgs} args - Arguments to filter PassportFlags to count.
+     * @example
+     * // Count the number of PassportFlags
+     * const count = await prisma.passportFlag.count({
+     *   where: {
+     *     // ... the filter for the PassportFlags we want to count
+     *   }
+     * })
+     **/
+    count<T extends PassportFlagCountArgs>(
+      args?: Subset<T, PassportFlagCountArgs>
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PassportFlagCountAggregateOutputType>
+        : number
+    >;
+
+    /**
+     * Allows you to perform aggregations operations on a PassportFlag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
+    aggregate<T extends PassportFlagAggregateArgs>(
+      args: Subset<T, PassportFlagAggregateArgs>
+    ): Prisma.PrismaPromise<GetPassportFlagAggregateType<T>>;
+
+    /**
+     * Group by PassportFlag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
+    groupBy<
+      T extends PassportFlagGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PassportFlagGroupByArgs['orderBy'] }
+        : { orderBy?: PassportFlagGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<
+        Keys<MaybeTupleToUnion<T['orderBy']>>
+      >,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+        ? `Error: "by" must not be empty.`
+        : HavingValid extends False
+          ? {
+              [P in HavingFields]: P extends ByFields
+                ? never
+                : P extends string
+                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+                  : [
+                      Error,
+                      'Field ',
+                      P,
+                      ` in "having" needs to be provided in "by"`
+                    ];
+            }[HavingFields]
+          : 'take' extends Keys<T>
+            ? 'orderBy' extends Keys<T>
+              ? ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+              : 'Error: If you provide "take", you also need to provide "orderBy"'
+            : 'skip' extends Keys<T>
+              ? 'orderBy' extends Keys<T>
+                ? ByValid extends True
+                  ? {}
+                  : {
+                      [P in OrderFields]: P extends ByFields
+                        ? never
+                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                    }[OrderFields]
+                : 'Error: If you provide "skip", you also need to provide "orderBy"'
+              : ByValid extends True
+                ? {}
+                : {
+                    [P in OrderFields]: P extends ByFields
+                      ? never
+                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`;
+                  }[OrderFields]
+    >(
+      args: SubsetIntersection<T, PassportFlagGroupByArgs, OrderByArg> &
+        InputErrors
+    ): {} extends InputErrors
+      ? GetPassportFlagGroupByPayload<T>
+      : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the PassportFlag model
+     */
+    readonly fields: PassportFlagFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PassportFlag.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PassportFlagClient<
+    T,
+    Null = never,
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+    GlobalOmitOptions = {}
+  > extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: 'PrismaPromise';
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(
+      args?: Subset<T, UserDefaultArgs<ExtArgs>>
+    ): Prisma__UserClient<
+      | $Result.GetResult<
+          Prisma.$UserPayload<ExtArgs>,
+          T,
+          'findUniqueOrThrow',
+          GlobalOmitOptions
+        >
+      | Null,
+      Null,
+      ExtArgs,
+      GlobalOmitOptions
+    >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?:
+        | ((value: T) => TResult1 | PromiseLike<TResult1>)
+        | undefined
+        | null,
+      onrejected?:
+        | ((reason: any) => TResult2 | PromiseLike<TResult2>)
+        | undefined
+        | null
+    ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(
+      onrejected?:
+        | ((reason: any) => TResult | PromiseLike<TResult>)
+        | undefined
+        | null
+    ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
+  }
+
+  /**
+   * Fields of the PassportFlag model
+   */
+  interface PassportFlagFieldRefs {
+    readonly id: FieldRef<'PassportFlag', 'String'>;
+    readonly userId: FieldRef<'PassportFlag', 'String'>;
+    readonly flagCode: FieldRef<'PassportFlag', 'String'>;
+    readonly createdAt: FieldRef<'PassportFlag', 'DateTime'>;
+  }
+
+  // Custom InputTypes
+  /**
+   * PassportFlag findUnique
+   */
+  export type PassportFlagFindUniqueArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlag to fetch.
+     */
+    where: PassportFlagWhereUniqueInput;
+  };
+
+  /**
+   * PassportFlag findUniqueOrThrow
+   */
+  export type PassportFlagFindUniqueOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlag to fetch.
+     */
+    where: PassportFlagWhereUniqueInput;
+  };
+
+  /**
+   * PassportFlag findFirst
+   */
+  export type PassportFlagFindFirstArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlag to fetch.
+     */
+    where?: PassportFlagWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PassportFlags to fetch.
+     */
+    orderBy?:
+      | PassportFlagOrderByWithRelationInput
+      | PassportFlagOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PassportFlags.
+     */
+    cursor?: PassportFlagWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PassportFlags from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PassportFlags.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PassportFlags.
+     */
+    distinct?: PassportFlagScalarFieldEnum | PassportFlagScalarFieldEnum[];
+  };
+
+  /**
+   * PassportFlag findFirstOrThrow
+   */
+  export type PassportFlagFindFirstOrThrowArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlag to fetch.
+     */
+    where?: PassportFlagWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PassportFlags to fetch.
+     */
+    orderBy?:
+      | PassportFlagOrderByWithRelationInput
+      | PassportFlagOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PassportFlags.
+     */
+    cursor?: PassportFlagWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PassportFlags from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PassportFlags.
+     */
+    skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PassportFlags.
+     */
+    distinct?: PassportFlagScalarFieldEnum | PassportFlagScalarFieldEnum[];
+  };
+
+  /**
+   * PassportFlag findMany
+   */
+  export type PassportFlagFindManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlags to fetch.
+     */
+    where?: PassportFlagWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PassportFlags to fetch.
+     */
+    orderBy?:
+      | PassportFlagOrderByWithRelationInput
+      | PassportFlagOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing PassportFlags.
+     */
+    cursor?: PassportFlagWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PassportFlags from the position of the cursor.
+     */
+    take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PassportFlags.
+     */
+    skip?: number;
+    distinct?: PassportFlagScalarFieldEnum | PassportFlagScalarFieldEnum[];
+  };
+
+  /**
+   * PassportFlag create
+   */
+  export type PassportFlagCreateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a PassportFlag.
+     */
+    data: XOR<PassportFlagCreateInput, PassportFlagUncheckedCreateInput>;
+  };
+
+  /**
+   * PassportFlag createMany
+   */
+  export type PassportFlagCreateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * The data used to create many PassportFlags.
+     */
+    data: PassportFlagCreateManyInput | PassportFlagCreateManyInput[];
+    skipDuplicates?: boolean;
+  };
+
+  /**
+   * PassportFlag createManyAndReturn
+   */
+  export type PassportFlagCreateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * The data used to create many PassportFlags.
+     */
+    data: PassportFlagCreateManyInput | PassportFlagCreateManyInput[];
+    skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagIncludeCreateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * PassportFlag update
+   */
+  export type PassportFlagUpdateArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a PassportFlag.
+     */
+    data: XOR<PassportFlagUpdateInput, PassportFlagUncheckedUpdateInput>;
+    /**
+     * Choose, which PassportFlag to update.
+     */
+    where: PassportFlagWhereUniqueInput;
+  };
+
+  /**
+   * PassportFlag updateMany
+   */
+  export type PassportFlagUpdateManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * The data used to update PassportFlags.
+     */
+    data: XOR<
+      PassportFlagUpdateManyMutationInput,
+      PassportFlagUncheckedUpdateManyInput
+    >;
+    /**
+     * Filter which PassportFlags to update
+     */
+    where?: PassportFlagWhereInput;
+    /**
+     * Limit how many PassportFlags to update.
+     */
+    limit?: number;
+  };
+
+  /**
+   * PassportFlag updateManyAndReturn
+   */
+  export type PassportFlagUpdateManyAndReturnArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * The data used to update PassportFlags.
+     */
+    data: XOR<
+      PassportFlagUpdateManyMutationInput,
+      PassportFlagUncheckedUpdateManyInput
+    >;
+    /**
+     * Filter which PassportFlags to update
+     */
+    where?: PassportFlagWhereInput;
+    /**
+     * Limit how many PassportFlags to update.
+     */
+    limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagIncludeUpdateManyAndReturn<ExtArgs> | null;
+  };
+
+  /**
+   * PassportFlag upsert
+   */
+  export type PassportFlagUpsertArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the PassportFlag to update in case it exists.
+     */
+    where: PassportFlagWhereUniqueInput;
+    /**
+     * In case the PassportFlag found by the `where` argument doesn't exist, create a new PassportFlag with this data.
+     */
+    create: XOR<PassportFlagCreateInput, PassportFlagUncheckedCreateInput>;
+    /**
+     * In case the PassportFlag was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PassportFlagUpdateInput, PassportFlagUncheckedUpdateInput>;
+  };
+
+  /**
+   * PassportFlag delete
+   */
+  export type PassportFlagDeleteArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter which PassportFlag to delete.
+     */
+    where: PassportFlagWhereUniqueInput;
+  };
+
+  /**
+   * PassportFlag deleteMany
+   */
+  export type PassportFlagDeleteManyArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Filter which PassportFlags to delete
+     */
+    where?: PassportFlagWhereInput;
+    /**
+     * Limit how many PassportFlags to delete.
+     */
+    limit?: number;
+  };
+
+  /**
+   * PassportFlag without action
+   */
+  export type PassportFlagDefaultArgs<
+    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
+  > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
+    select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
+    omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PassportFlagInclude<ExtArgs> | null;
   };
 
   /**
@@ -20830,12 +22292,23 @@ export namespace Prisma {
     email: 'email';
     emailVerified: 'emailVerified';
     image: 'image';
+    flagCode: 'flagCode';
     createdAt: 'createdAt';
     updatedAt: 'updatedAt';
   };
 
   export type UserScalarFieldEnum =
     (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
+
+  export const PassportFlagScalarFieldEnum: {
+    id: 'id';
+    userId: 'userId';
+    flagCode: 'flagCode';
+    createdAt: 'createdAt';
+  };
+
+  export type PassportFlagScalarFieldEnum =
+    (typeof PassportFlagScalarFieldEnum)[keyof typeof PassportFlagScalarFieldEnum];
 
   export const AccountScalarFieldEnum: {
     userId: 'userId';
@@ -21156,6 +22629,7 @@ export namespace Prisma {
     email?: StringFilter<'User'> | string;
     emailVerified?: DateTimeNullableFilter<'User'> | Date | string | null;
     image?: StringNullableFilter<'User'> | string | null;
+    flagCode?: StringFilter<'User'> | string;
     createdAt?: DateTimeFilter<'User'> | Date | string;
     updatedAt?: DateTimeFilter<'User'> | Date | string;
     accounts?: AccountListRelationFilter;
@@ -21173,6 +22647,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreListRelationFilter;
     memorySessions?: MemorySessionListRelationFilter;
     visionSessions?: VisionSessionListRelationFilter;
+    passportFlags?: PassportFlagListRelationFilter;
   };
 
   export type UserOrderByWithRelationInput = {
@@ -21181,6 +22656,7 @@ export namespace Prisma {
     email?: SortOrder;
     emailVerified?: SortOrderInput | SortOrder;
     image?: SortOrderInput | SortOrder;
+    flagCode?: SortOrder;
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
     accounts?: AccountOrderByRelationAggregateInput;
@@ -21195,6 +22671,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreOrderByRelationAggregateInput;
     memorySessions?: MemorySessionOrderByRelationAggregateInput;
     visionSessions?: VisionSessionOrderByRelationAggregateInput;
+    passportFlags?: PassportFlagOrderByRelationAggregateInput;
   };
 
   export type UserWhereUniqueInput = Prisma.AtLeast<
@@ -21207,6 +22684,7 @@ export namespace Prisma {
       name?: StringNullableFilter<'User'> | string | null;
       emailVerified?: DateTimeNullableFilter<'User'> | Date | string | null;
       image?: StringNullableFilter<'User'> | string | null;
+      flagCode?: StringFilter<'User'> | string;
       createdAt?: DateTimeFilter<'User'> | Date | string;
       updatedAt?: DateTimeFilter<'User'> | Date | string;
       accounts?: AccountListRelationFilter;
@@ -21224,6 +22702,7 @@ export namespace Prisma {
       puzzleRushScores?: PuzzleRushScoreListRelationFilter;
       memorySessions?: MemorySessionListRelationFilter;
       visionSessions?: VisionSessionListRelationFilter;
+      passportFlags?: PassportFlagListRelationFilter;
     },
     'id' | 'email'
   >;
@@ -21234,6 +22713,7 @@ export namespace Prisma {
     email?: SortOrder;
     emailVerified?: SortOrderInput | SortOrder;
     image?: SortOrderInput | SortOrder;
+    flagCode?: SortOrder;
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
     _count?: UserCountOrderByAggregateInput;
@@ -21258,8 +22738,67 @@ export namespace Prisma {
       | string
       | null;
     image?: StringNullableWithAggregatesFilter<'User'> | string | null;
+    flagCode?: StringWithAggregatesFilter<'User'> | string;
     createdAt?: DateTimeWithAggregatesFilter<'User'> | Date | string;
     updatedAt?: DateTimeWithAggregatesFilter<'User'> | Date | string;
+  };
+
+  export type PassportFlagWhereInput = {
+    AND?: PassportFlagWhereInput | PassportFlagWhereInput[];
+    OR?: PassportFlagWhereInput[];
+    NOT?: PassportFlagWhereInput | PassportFlagWhereInput[];
+    id?: StringFilter<'PassportFlag'> | string;
+    userId?: StringFilter<'PassportFlag'> | string;
+    flagCode?: StringFilter<'PassportFlag'> | string;
+    createdAt?: DateTimeFilter<'PassportFlag'> | Date | string;
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>;
+  };
+
+  export type PassportFlagOrderByWithRelationInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    flagCode?: SortOrder;
+    createdAt?: SortOrder;
+    user?: UserOrderByWithRelationInput;
+  };
+
+  export type PassportFlagWhereUniqueInput = Prisma.AtLeast<
+    {
+      id?: string;
+      userId_flagCode?: PassportFlagUserIdFlagCodeCompoundUniqueInput;
+      AND?: PassportFlagWhereInput | PassportFlagWhereInput[];
+      OR?: PassportFlagWhereInput[];
+      NOT?: PassportFlagWhereInput | PassportFlagWhereInput[];
+      userId?: StringFilter<'PassportFlag'> | string;
+      flagCode?: StringFilter<'PassportFlag'> | string;
+      createdAt?: DateTimeFilter<'PassportFlag'> | Date | string;
+      user?: XOR<UserScalarRelationFilter, UserWhereInput>;
+    },
+    'id' | 'userId_flagCode'
+  >;
+
+  export type PassportFlagOrderByWithAggregationInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    flagCode?: SortOrder;
+    createdAt?: SortOrder;
+    _count?: PassportFlagCountOrderByAggregateInput;
+    _max?: PassportFlagMaxOrderByAggregateInput;
+    _min?: PassportFlagMinOrderByAggregateInput;
+  };
+
+  export type PassportFlagScalarWhereWithAggregatesInput = {
+    AND?:
+      | PassportFlagScalarWhereWithAggregatesInput
+      | PassportFlagScalarWhereWithAggregatesInput[];
+    OR?: PassportFlagScalarWhereWithAggregatesInput[];
+    NOT?:
+      | PassportFlagScalarWhereWithAggregatesInput
+      | PassportFlagScalarWhereWithAggregatesInput[];
+    id?: StringWithAggregatesFilter<'PassportFlag'> | string;
+    userId?: StringWithAggregatesFilter<'PassportFlag'> | string;
+    flagCode?: StringWithAggregatesFilter<'PassportFlag'> | string;
+    createdAt?: DateTimeWithAggregatesFilter<'PassportFlag'> | Date | string;
   };
 
   export type AccountWhereInput = {
@@ -22298,6 +23837,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -22312,6 +23852,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateInput = {
@@ -22320,6 +23861,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -22334,6 +23876,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserUpdateInput = {
@@ -22346,6 +23889,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -22360,6 +23904,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateInput = {
@@ -22372,6 +23917,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -22386,6 +23932,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateManyInput = {
@@ -22394,6 +23941,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
@@ -22408,6 +23956,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
@@ -22422,8 +23971,57 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type PassportFlagCreateInput = {
+    id?: string;
+    flagCode: string;
+    createdAt?: Date | string;
+    user: UserCreateNestedOneWithoutPassportFlagsInput;
+  };
+
+  export type PassportFlagUncheckedCreateInput = {
+    id?: string;
+    userId: string;
+    flagCode: string;
+    createdAt?: Date | string;
+  };
+
+  export type PassportFlagUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    flagCode?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    user?: UserUpdateOneRequiredWithoutPassportFlagsNestedInput;
+  };
+
+  export type PassportFlagUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    flagCode?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type PassportFlagCreateManyInput = {
+    id?: string;
+    userId: string;
+    flagCode: string;
+    createdAt?: Date | string;
+  };
+
+  export type PassportFlagUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    flagCode?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type PassportFlagUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    userId?: StringFieldUpdateOperationsInput | string;
+    flagCode?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
   export type AccountCreateInput = {
@@ -23521,6 +25119,12 @@ export namespace Prisma {
     none?: VisionSessionWhereInput;
   };
 
+  export type PassportFlagListRelationFilter = {
+    every?: PassportFlagWhereInput;
+    some?: PassportFlagWhereInput;
+    none?: PassportFlagWhereInput;
+  };
+
   export type SortOrderInput = {
     sort: SortOrder;
     nulls?: NullsOrder;
@@ -23566,12 +25170,17 @@ export namespace Prisma {
     _count?: SortOrder;
   };
 
+  export type PassportFlagOrderByRelationAggregateInput = {
+    _count?: SortOrder;
+  };
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder;
     name?: SortOrder;
     email?: SortOrder;
     emailVerified?: SortOrder;
     image?: SortOrder;
+    flagCode?: SortOrder;
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
@@ -23582,6 +25191,7 @@ export namespace Prisma {
     email?: SortOrder;
     emailVerified?: SortOrder;
     image?: SortOrder;
+    flagCode?: SortOrder;
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
@@ -23592,6 +25202,7 @@ export namespace Prisma {
     email?: SortOrder;
     emailVerified?: SortOrder;
     image?: SortOrder;
+    flagCode?: SortOrder;
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
@@ -23667,6 +25278,37 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>;
   };
 
+  export type UserScalarRelationFilter = {
+    is?: UserWhereInput;
+    isNot?: UserWhereInput;
+  };
+
+  export type PassportFlagUserIdFlagCodeCompoundUniqueInput = {
+    userId: string;
+    flagCode: string;
+  };
+
+  export type PassportFlagCountOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    flagCode?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type PassportFlagMaxOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    flagCode?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
+  export type PassportFlagMinOrderByAggregateInput = {
+    id?: SortOrder;
+    userId?: SortOrder;
+    flagCode?: SortOrder;
+    createdAt?: SortOrder;
+  };
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null;
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
@@ -23676,11 +25318,6 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>;
     gte?: number | IntFieldRefInput<$PrismaModel>;
     not?: NestedIntNullableFilter<$PrismaModel> | number | null;
-  };
-
-  export type UserScalarRelationFilter = {
-    is?: UserWhereInput;
-    isNot?: UserWhereInput;
   };
 
   export type AccountProviderProviderAccountIdCompoundUniqueInput = {
@@ -24581,6 +26218,21 @@ export namespace Prisma {
     connect?: VisionSessionWhereUniqueInput | VisionSessionWhereUniqueInput[];
   };
 
+  export type PassportFlagCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<
+          PassportFlagCreateWithoutUserInput,
+          PassportFlagUncheckedCreateWithoutUserInput
+        >
+      | PassportFlagCreateWithoutUserInput[]
+      | PassportFlagUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | PassportFlagCreateOrConnectWithoutUserInput
+      | PassportFlagCreateOrConnectWithoutUserInput[];
+    createMany?: PassportFlagCreateManyUserInputEnvelope;
+    connect?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+  };
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -24746,6 +26398,21 @@ export namespace Prisma {
       | VisionSessionCreateOrConnectWithoutUserInput[];
     createMany?: VisionSessionCreateManyUserInputEnvelope;
     connect?: VisionSessionWhereUniqueInput | VisionSessionWhereUniqueInput[];
+  };
+
+  export type PassportFlagUncheckedCreateNestedManyWithoutUserInput = {
+    create?:
+      | XOR<
+          PassportFlagCreateWithoutUserInput,
+          PassportFlagUncheckedCreateWithoutUserInput
+        >
+      | PassportFlagCreateWithoutUserInput[]
+      | PassportFlagUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | PassportFlagCreateOrConnectWithoutUserInput
+      | PassportFlagCreateOrConnectWithoutUserInput[];
+    createMany?: PassportFlagCreateManyUserInputEnvelope;
+    connect?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
   };
 
   export type StringFieldUpdateOperationsInput = {
@@ -25106,6 +26773,34 @@ export namespace Prisma {
       | VisionSessionScalarWhereInput[];
   };
 
+  export type PassportFlagUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<
+          PassportFlagCreateWithoutUserInput,
+          PassportFlagUncheckedCreateWithoutUserInput
+        >
+      | PassportFlagCreateWithoutUserInput[]
+      | PassportFlagUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | PassportFlagCreateOrConnectWithoutUserInput
+      | PassportFlagCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | PassportFlagUpsertWithWhereUniqueWithoutUserInput
+      | PassportFlagUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: PassportFlagCreateManyUserInputEnvelope;
+    set?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+    disconnect?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+    delete?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+    connect?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+    update?:
+      | PassportFlagUpdateWithWhereUniqueWithoutUserInput
+      | PassportFlagUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | PassportFlagUpdateManyWithWhereWithoutUserInput
+      | PassportFlagUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: PassportFlagScalarWhereInput | PassportFlagScalarWhereInput[];
+  };
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -25446,6 +27141,60 @@ export namespace Prisma {
     deleteMany?:
       | VisionSessionScalarWhereInput
       | VisionSessionScalarWhereInput[];
+  };
+
+  export type PassportFlagUncheckedUpdateManyWithoutUserNestedInput = {
+    create?:
+      | XOR<
+          PassportFlagCreateWithoutUserInput,
+          PassportFlagUncheckedCreateWithoutUserInput
+        >
+      | PassportFlagCreateWithoutUserInput[]
+      | PassportFlagUncheckedCreateWithoutUserInput[];
+    connectOrCreate?:
+      | PassportFlagCreateOrConnectWithoutUserInput
+      | PassportFlagCreateOrConnectWithoutUserInput[];
+    upsert?:
+      | PassportFlagUpsertWithWhereUniqueWithoutUserInput
+      | PassportFlagUpsertWithWhereUniqueWithoutUserInput[];
+    createMany?: PassportFlagCreateManyUserInputEnvelope;
+    set?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+    disconnect?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+    delete?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+    connect?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
+    update?:
+      | PassportFlagUpdateWithWhereUniqueWithoutUserInput
+      | PassportFlagUpdateWithWhereUniqueWithoutUserInput[];
+    updateMany?:
+      | PassportFlagUpdateManyWithWhereWithoutUserInput
+      | PassportFlagUpdateManyWithWhereWithoutUserInput[];
+    deleteMany?: PassportFlagScalarWhereInput | PassportFlagScalarWhereInput[];
+  };
+
+  export type UserCreateNestedOneWithoutPassportFlagsInput = {
+    create?: XOR<
+      UserCreateWithoutPassportFlagsInput,
+      UserUncheckedCreateWithoutPassportFlagsInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutPassportFlagsInput;
+    connect?: UserWhereUniqueInput;
+  };
+
+  export type UserUpdateOneRequiredWithoutPassportFlagsNestedInput = {
+    create?: XOR<
+      UserCreateWithoutPassportFlagsInput,
+      UserUncheckedCreateWithoutPassportFlagsInput
+    >;
+    connectOrCreate?: UserCreateOrConnectWithoutPassportFlagsInput;
+    upsert?: UserUpsertWithoutPassportFlagsInput;
+    connect?: UserWhereUniqueInput;
+    update?: XOR<
+      XOR<
+        UserUpdateToOneWithWhereWithoutPassportFlagsInput,
+        UserUpdateWithoutPassportFlagsInput
+      >,
+      UserUncheckedUpdateWithoutPassportFlagsInput
+    >;
   };
 
   export type UserCreateNestedOneWithoutAccountsInput = {
@@ -26587,6 +28336,31 @@ export namespace Prisma {
     skipDuplicates?: boolean;
   };
 
+  export type PassportFlagCreateWithoutUserInput = {
+    id?: string;
+    flagCode: string;
+    createdAt?: Date | string;
+  };
+
+  export type PassportFlagUncheckedCreateWithoutUserInput = {
+    id?: string;
+    flagCode: string;
+    createdAt?: Date | string;
+  };
+
+  export type PassportFlagCreateOrConnectWithoutUserInput = {
+    where: PassportFlagWhereUniqueInput;
+    create: XOR<
+      PassportFlagCreateWithoutUserInput,
+      PassportFlagUncheckedCreateWithoutUserInput
+    >;
+  };
+
+  export type PassportFlagCreateManyUserInputEnvelope = {
+    data: PassportFlagCreateManyUserInput | PassportFlagCreateManyUserInput[];
+    skipDuplicates?: boolean;
+  };
+
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput;
     update: XOR<
@@ -27089,14 +28863,54 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'VisionSession'> | Date | string;
   };
 
-  export type UserCreateWithoutAccountsInput = {
+  export type PassportFlagUpsertWithWhereUniqueWithoutUserInput = {
+    where: PassportFlagWhereUniqueInput;
+    update: XOR<
+      PassportFlagUpdateWithoutUserInput,
+      PassportFlagUncheckedUpdateWithoutUserInput
+    >;
+    create: XOR<
+      PassportFlagCreateWithoutUserInput,
+      PassportFlagUncheckedCreateWithoutUserInput
+    >;
+  };
+
+  export type PassportFlagUpdateWithWhereUniqueWithoutUserInput = {
+    where: PassportFlagWhereUniqueInput;
+    data: XOR<
+      PassportFlagUpdateWithoutUserInput,
+      PassportFlagUncheckedUpdateWithoutUserInput
+    >;
+  };
+
+  export type PassportFlagUpdateManyWithWhereWithoutUserInput = {
+    where: PassportFlagScalarWhereInput;
+    data: XOR<
+      PassportFlagUpdateManyMutationInput,
+      PassportFlagUncheckedUpdateManyWithoutUserInput
+    >;
+  };
+
+  export type PassportFlagScalarWhereInput = {
+    AND?: PassportFlagScalarWhereInput | PassportFlagScalarWhereInput[];
+    OR?: PassportFlagScalarWhereInput[];
+    NOT?: PassportFlagScalarWhereInput | PassportFlagScalarWhereInput[];
+    id?: StringFilter<'PassportFlag'> | string;
+    userId?: StringFilter<'PassportFlag'> | string;
+    flagCode?: StringFilter<'PassportFlag'> | string;
+    createdAt?: DateTimeFilter<'PassportFlag'> | Date | string;
+  };
+
+  export type UserCreateWithoutPassportFlagsInput = {
     id?: string;
     name?: string | null;
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
+    accounts?: AccountCreateNestedManyWithoutUserInput;
     sessions?: SessionCreateNestedManyWithoutUserInput;
     Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
     whiteGames?: GameCreateNestedManyWithoutWhiteInput;
@@ -27110,12 +28924,141 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
   };
 
+  export type UserUncheckedCreateWithoutPassportFlagsInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    flagCode?: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
+    sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorUncheckedCreateNestedManyWithoutUserInput;
+    whiteGames?: GameUncheckedCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameUncheckedCreateNestedManyWithoutBlackInput;
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput;
+    puzzleRating?: PuzzleRatingUncheckedCreateNestedOneWithoutUserInput;
+    analyses?: GameAnalysisUncheckedCreateNestedManyWithoutUserInput;
+    puzzleAttempts?: PuzzleAttemptUncheckedCreateNestedManyWithoutUserInput;
+    puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
+    memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
+    visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+  };
+
+  export type UserCreateOrConnectWithoutPassportFlagsInput = {
+    where: UserWhereUniqueInput;
+    create: XOR<
+      UserCreateWithoutPassportFlagsInput,
+      UserUncheckedCreateWithoutPassportFlagsInput
+    >;
+  };
+
+  export type UserUpsertWithoutPassportFlagsInput = {
+    update: XOR<
+      UserUpdateWithoutPassportFlagsInput,
+      UserUncheckedUpdateWithoutPassportFlagsInput
+    >;
+    create: XOR<
+      UserCreateWithoutPassportFlagsInput,
+      UserUncheckedCreateWithoutPassportFlagsInput
+    >;
+    where?: UserWhereInput;
+  };
+
+  export type UserUpdateToOneWithWhereWithoutPassportFlagsInput = {
+    where?: UserWhereInput;
+    data: XOR<
+      UserUpdateWithoutPassportFlagsInput,
+      UserUncheckedUpdateWithoutPassportFlagsInput
+    >;
+  };
+
+  export type UserUpdateWithoutPassportFlagsInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUpdateManyWithoutUserNestedInput;
+    puzzleRating?: PuzzleRatingUpdateOneWithoutUserNestedInput;
+    analyses?: GameAnalysisUpdateManyWithoutUserNestedInput;
+    puzzleAttempts?: PuzzleAttemptUpdateManyWithoutUserNestedInput;
+    puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
+    memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
+    visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserUncheckedUpdateWithoutPassportFlagsInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    name?: NullableStringFieldUpdateOperationsInput | string | null;
+    email?: StringFieldUpdateOperationsInput | string;
+    emailVerified?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
+    image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+    accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
+    sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
+    Authenticator?: AuthenticatorUncheckedUpdateManyWithoutUserNestedInput;
+    whiteGames?: GameUncheckedUpdateManyWithoutWhiteNestedInput;
+    blackGames?: GameUncheckedUpdateManyWithoutBlackNestedInput;
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput;
+    puzzleRating?: PuzzleRatingUncheckedUpdateOneWithoutUserNestedInput;
+    analyses?: GameAnalysisUncheckedUpdateManyWithoutUserNestedInput;
+    puzzleAttempts?: PuzzleAttemptUncheckedUpdateManyWithoutUserNestedInput;
+    puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
+    memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
+    visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+  };
+
+  export type UserCreateWithoutAccountsInput = {
+    id?: string;
+    name?: string | null;
+    email: string;
+    emailVerified?: Date | string | null;
+    image?: string | null;
+    flagCode?: string;
+    createdAt?: Date | string;
+    updatedAt?: Date | string;
+    sessions?: SessionCreateNestedManyWithoutUserInput;
+    Authenticator?: AuthenticatorCreateNestedManyWithoutUserInput;
+    whiteGames?: GameCreateNestedManyWithoutWhiteInput;
+    blackGames?: GameCreateNestedManyWithoutBlackInput;
+    ratings?: RatingCreateNestedManyWithoutUserInput;
+    puzzleRating?: PuzzleRatingCreateNestedOneWithoutUserInput;
+    analyses?: GameAnalysisCreateNestedManyWithoutUserInput;
+    puzzleAttempts?: PuzzleAttemptCreateNestedManyWithoutUserInput;
+    puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
+    memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
+    visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
+  };
+
   export type UserUncheckedCreateWithoutAccountsInput = {
     id?: string;
     name?: string | null;
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     sessions?: SessionUncheckedCreateNestedManyWithoutUserInput;
@@ -27129,6 +29072,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutAccountsInput = {
@@ -27169,6 +29113,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     sessions?: SessionUpdateManyWithoutUserNestedInput;
@@ -27182,6 +29127,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -27194,6 +29140,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     sessions?: SessionUncheckedUpdateManyWithoutUserNestedInput;
@@ -27207,6 +29154,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutSessionsInput = {
@@ -27215,6 +29163,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -27228,6 +29177,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutSessionsInput = {
@@ -27236,6 +29186,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -27249,6 +29200,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutSessionsInput = {
@@ -27289,6 +29241,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -27302,6 +29255,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -27314,6 +29268,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -27327,6 +29282,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutAuthenticatorInput = {
@@ -27335,6 +29291,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -27348,6 +29305,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutAuthenticatorInput = {
@@ -27356,6 +29314,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -27369,6 +29328,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutAuthenticatorInput = {
@@ -27409,6 +29369,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -27422,6 +29383,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutAuthenticatorInput = {
@@ -27434,6 +29396,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -27447,6 +29410,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutWhiteGamesInput = {
@@ -27455,6 +29419,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -27468,6 +29433,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutWhiteGamesInput = {
@@ -27476,6 +29442,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -27489,6 +29456,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutWhiteGamesInput = {
@@ -27505,6 +29473,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -27518,6 +29487,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutBlackGamesInput = {
@@ -27526,6 +29496,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -27539,6 +29510,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutBlackGamesInput = {
@@ -27601,6 +29573,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -27614,6 +29587,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutWhiteGamesInput = {
@@ -27626,6 +29600,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -27639,6 +29614,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUpsertWithoutBlackGamesInput = {
@@ -27671,6 +29647,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -27684,6 +29661,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutBlackGamesInput = {
@@ -27696,6 +29674,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -27709,6 +29688,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type GameAnalysisUpsertWithoutGameInput = {
@@ -27799,6 +29779,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -27812,6 +29793,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutAnalysesInput = {
@@ -27820,6 +29802,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -27833,6 +29816,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutAnalysesInput = {
@@ -27933,6 +29917,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -27946,6 +29931,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutAnalysesInput = {
@@ -27958,6 +29944,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -27971,6 +29958,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutRatingsInput = {
@@ -27979,6 +29967,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -27992,6 +29981,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutRatingsInput = {
@@ -28000,6 +29990,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -28013,6 +30004,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutRatingsInput = {
@@ -28053,6 +30045,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -28066,6 +30059,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutRatingsInput = {
@@ -28078,6 +30072,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -28091,6 +30086,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutPuzzleRatingInput = {
@@ -28099,6 +30095,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -28112,6 +30109,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutPuzzleRatingInput = {
@@ -28120,6 +30118,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -28133,6 +30132,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutPuzzleRatingInput = {
@@ -28173,6 +30173,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -28186,6 +30187,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutPuzzleRatingInput = {
@@ -28198,6 +30200,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -28211,6 +30214,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutPuzzleAttemptsInput = {
@@ -28219,6 +30223,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -28232,6 +30237,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutPuzzleAttemptsInput = {
@@ -28240,6 +30246,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -28253,6 +30260,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutPuzzleAttemptsInput = {
@@ -28293,6 +30301,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -28306,6 +30315,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutPuzzleAttemptsInput = {
@@ -28318,6 +30328,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -28331,6 +30342,7 @@ export namespace Prisma {
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutPuzzleRushScoresInput = {
@@ -28339,6 +30351,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -28352,6 +30365,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutPuzzleRushScoresInput = {
@@ -28360,6 +30374,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -28373,6 +30388,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutPuzzleRushScoresInput = {
@@ -28413,6 +30429,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -28426,6 +30443,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutPuzzleRushScoresInput = {
@@ -28438,6 +30456,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -28451,6 +30470,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutMemorySessionsInput = {
@@ -28459,6 +30479,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -28472,6 +30493,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptCreateNestedManyWithoutUserInput;
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutMemorySessionsInput = {
@@ -28480,6 +30502,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -28493,6 +30516,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUncheckedCreateNestedManyWithoutUserInput;
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutMemorySessionsInput = {
@@ -28533,6 +30557,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -28546,6 +30571,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUpdateManyWithoutUserNestedInput;
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutMemorySessionsInput = {
@@ -28558,6 +30584,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -28571,6 +30598,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUncheckedUpdateManyWithoutUserNestedInput;
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type UserCreateWithoutVisionSessionsInput = {
@@ -28579,6 +30607,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountCreateNestedManyWithoutUserInput;
@@ -28592,6 +30621,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptCreateNestedManyWithoutUserInput;
     puzzleRushScores?: PuzzleRushScoreCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
 
   export type UserUncheckedCreateWithoutVisionSessionsInput = {
@@ -28600,6 +30630,7 @@ export namespace Prisma {
     email: string;
     emailVerified?: Date | string | null;
     image?: string | null;
+    flagCode?: string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
     accounts?: AccountUncheckedCreateNestedManyWithoutUserInput;
@@ -28613,6 +30644,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUncheckedCreateNestedManyWithoutUserInput;
     puzzleRushScores?: PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput;
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
+    passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
 
   export type UserCreateOrConnectWithoutVisionSessionsInput = {
@@ -28653,6 +30685,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUpdateManyWithoutUserNestedInput;
@@ -28666,6 +30699,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUpdateManyWithoutUserNestedInput;
     puzzleRushScores?: PuzzleRushScoreUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
 
   export type UserUncheckedUpdateWithoutVisionSessionsInput = {
@@ -28678,6 +30712,7 @@ export namespace Prisma {
       | string
       | null;
     image?: NullableStringFieldUpdateOperationsInput | string | null;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     accounts?: AccountUncheckedUpdateManyWithoutUserNestedInput;
@@ -28691,6 +30726,7 @@ export namespace Prisma {
     puzzleAttempts?: PuzzleAttemptUncheckedUpdateManyWithoutUserNestedInput;
     puzzleRushScores?: PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput;
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
+    passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
 
   export type AccountCreateManyUserInput = {
@@ -28823,6 +30859,12 @@ export namespace Prisma {
     totalAttempts: number;
     accuracy: number;
     avgResponseTimeMs: number;
+    createdAt?: Date | string;
+  };
+
+  export type PassportFlagCreateManyUserInput = {
+    id?: string;
+    flagCode: string;
     createdAt?: Date | string;
   };
 
@@ -29226,6 +31268,24 @@ export namespace Prisma {
     totalAttempts?: IntFieldUpdateOperationsInput | number;
     accuracy?: FloatFieldUpdateOperationsInput | number;
     avgResponseTimeMs?: IntFieldUpdateOperationsInput | number;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type PassportFlagUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    flagCode?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type PassportFlagUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    flagCode?: StringFieldUpdateOperationsInput | string;
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
+  };
+
+  export type PassportFlagUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string;
+    flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 

@@ -74,6 +74,10 @@ import {
 import { DiceRollChart } from './DiceRollChart';
 import type { ChallengeColor } from '@/features/multiplayer/types';
 import { ABANDON_TIMEOUT_MS } from '@/features/multiplayer/config';
+import {
+  DEFAULT_FLAG_CODE,
+  normalizeFlagCode
+} from '@/features/settings/flags';
 
 const VARIANT = 'dice-chess';
 const ALL_PIECES: DicePiece[] = ['k', 'q', 'b', 'n', 'r', 'p'];
@@ -607,6 +611,8 @@ export function DiceChessMultiplayerView({
 }: DiceChessMultiplayerViewProps) {
   const ws = useMultiplayerWS();
   const { data: session } = useSession();
+  const [myFlagCode, setMyFlagCode] = useState(DEFAULT_FLAG_CODE);
+  const [opponentFlagCode, setOpponentFlagCode] = useState(DEFAULT_FLAG_CODE);
 
   // Chess state (self-managed, not via useChessStore)
   const chessRef = useRef(new Chess());
@@ -643,6 +649,42 @@ export function DiceChessMultiplayerView({
   const [matchmakingOpen, setMatchmakingOpen] = useState(false);
   const [sessionRestorePending, setSessionRestorePending] = useState(true);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
+
+  const opponentUserId = useMemo(() => {
+    const me = session?.user?.id ?? null;
+    if (me) {
+      if (ws.whiteUserId === me) return ws.blackUserId;
+      if (ws.blackUserId === me) return ws.whiteUserId;
+    }
+    if (!ws.myColor) return null;
+    return ws.myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
+  }, [session?.user?.id, ws.myColor, ws.whiteUserId, ws.blackUserId]);
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setMyFlagCode(DEFAULT_FLAG_CODE);
+      return;
+    }
+    fetch('/api/user/settings')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { flagCode?: string | null } | null) =>
+        setMyFlagCode(normalizeFlagCode(data?.flagCode))
+      )
+      .catch(() => setMyFlagCode(DEFAULT_FLAG_CODE));
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    if (!opponentUserId) {
+      setOpponentFlagCode(DEFAULT_FLAG_CODE);
+      return;
+    }
+    fetch(`/api/users/${opponentUserId}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { flagCode?: string | null } | null) =>
+        setOpponentFlagCode(normalizeFlagCode(data?.flagCode))
+      )
+      .catch(() => setOpponentFlagCode(DEFAULT_FLAG_CODE));
+  }, [opponentUserId]);
 
   // Board settings from global store
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
@@ -1139,6 +1181,7 @@ export function DiceChessMultiplayerView({
               <PlayerInfo
                 name={ws.opponentName ?? 'Opponent'}
                 image={ws.opponentImage ?? null}
+                flagCode={opponentFlagCode}
               />
               {showIndicator &&
                 (ws.opponentDisconnected ? (
@@ -1215,6 +1258,7 @@ export function DiceChessMultiplayerView({
               <PlayerInfo
                 name={session?.user?.name ?? 'You'}
                 image={session?.user?.image ?? null}
+                flagCode={myFlagCode}
               />
               {showIndicator && (
                 <SignalIndicator

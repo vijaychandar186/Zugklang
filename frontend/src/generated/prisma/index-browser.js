@@ -122,8 +122,16 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   emailVerified: 'emailVerified',
   image: 'image',
+  flagCode: 'flagCode',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PassportFlagScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  flagCode: 'flagCode',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.AccountScalarFieldEnum = {
@@ -294,6 +302,7 @@ exports.Prisma.JsonNullValueFilter = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  PassportFlag: 'PassportFlag',
   Account: 'Account',
   Session: 'Session',
   VerificationToken: 'VerificationToken',

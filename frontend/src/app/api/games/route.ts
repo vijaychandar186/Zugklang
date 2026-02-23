@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth/auth';
 import { prisma } from '@/lib/db/db';
 import { updateRatings, type GlickoPlayer } from '@/lib/ratings/glicko2';
 import { getTimeCategory } from '@/lib/ratings/timeCategory';
+import { normalizeFlagCode } from '@/features/settings/flags';
 interface SaveGameBody {
   roomId?: string;
   moves: string[];
@@ -155,6 +156,39 @@ export async function POST(req: NextRequest) {
         moveCount: moves.length
       }
     });
+    if (gameType === 'multiplayer' && whiteUserId && blackUserId) {
+      try {
+        const users = await prisma.user.findMany({
+          where: { id: { in: [whiteUserId, blackUserId] } },
+          select: { id: true, flagCode: true }
+        });
+        const whiteUser = users.find((u) => u.id === whiteUserId);
+        const blackUser = users.find((u) => u.id === blackUserId);
+        if (whiteUser && blackUser) {
+          const whiteFlag = normalizeFlagCode(whiteUser.flagCode);
+          const blackFlag = normalizeFlagCode(blackUser.flagCode);
+          await prisma.$transaction([
+            prisma.passportFlag.upsert({
+              where: {
+                userId_flagCode: { userId: whiteUserId, flagCode: blackFlag }
+              },
+              update: {},
+              create: { userId: whiteUserId, flagCode: blackFlag }
+            }),
+            prisma.passportFlag.upsert({
+              where: {
+                userId_flagCode: { userId: blackUserId, flagCode: whiteFlag }
+              },
+              update: {},
+              create: { userId: blackUserId, flagCode: whiteFlag }
+            })
+          ]);
+        }
+      } catch (passportErr) {
+        // Keep game saving resilient if passport collection update fails.
+        console.error('Failed to update passport flags:', passportErr);
+      }
+    }
     let whitePregameRating: number | null = null;
     let blackPregameRating: number | null = null;
     let whiteRatingDelta: number | null = null;

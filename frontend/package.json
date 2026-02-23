@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
+    "@base-ui/react": "^1.2.0",
     "@letele/playing-cards": "^0.1.0",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
@@ -48,6 +49,7 @@
     "chessops": "^0.15.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "country-flag-icons": "^1.6.13",
     "dotenv": "^17.3.1",
     "fairy-stockfish-nnue.wasm": "1.1.9",
     "kbar": "0.1.0-beta.48",

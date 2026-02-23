@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { ChevronUp, History, User } from 'lucide-react';
+import { ChevronUp, History, Settings, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -112,6 +112,12 @@ export default function SidebarUserMenu() {
               <Link href='/games'>
                 <History className='mr-2 h-4 w-4' />
                 History
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className='cursor-pointer'>
+              <Link href='/settings'>
+                <Settings className='mr-2 h-4 w-4' />
+                Settings
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

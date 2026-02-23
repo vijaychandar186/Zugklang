@@ -185,6 +185,41 @@ function getGameResult(game: Chess): string | null {
   return null;
 }
 
+function toResultReason(result: string | null): string {
+  if (!result) return 'unknown';
+  const lower = result.toLowerCase();
+  if (lower.includes('abort')) return 'abort';
+  if (lower.includes('checkmate')) return 'checkmate';
+  if (lower.includes('resign')) return 'resign';
+  if (lower.includes('time') || lower.includes('timeout')) return 'timeout';
+  if (lower.includes('draw') && lower.includes('agreement'))
+    return 'draw_agreement';
+  if (lower.includes('stalemate')) return 'stalemate';
+  if (lower.includes('insufficient')) return 'insufficient_material';
+  return 'unknown';
+}
+
+function toResultCode(
+  result: string | null,
+  playAs: 'white' | 'black'
+): '1-0' | '0-1' | '1/2-1/2' | '*' {
+  if (!result) return '*';
+  const lower = result.toLowerCase();
+  if (lower.includes('white wins') || lower.startsWith('1-0')) return '1-0';
+  if (lower.includes('black wins') || lower.startsWith('0-1')) return '0-1';
+  if (lower.includes('you win')) return playAs === 'white' ? '1-0' : '0-1';
+  if (lower.includes('you resigned')) return playAs === 'white' ? '0-1' : '1-0';
+  if (
+    lower.includes('opponent wins') ||
+    lower.includes('opponent resigned') ||
+    lower.includes('opponent abandoned')
+  ) {
+    return playAs === 'white' ? '1-0' : '0-1';
+  }
+  if (lower.includes('draw')) return '1/2-1/2';
+  return '*';
+}
+
 function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
   const [secsLeft, setSecsLeft] = useState(() =>
     Math.max(
@@ -867,6 +902,7 @@ export function CardChessMultiplayerView({
   const [matchmakingOpen, setMatchmakingOpen] = useState(false);
   const [sessionRestorePending, setSessionRestorePending] = useState(true);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
+  const savedRoomIdRef = useRef<string | null>(null);
 
   const opponentUserId = useMemo(() => {
     const me = session?.user?.id ?? null;
@@ -1141,6 +1177,53 @@ export function CardChessMultiplayerView({
     });
     return () => ws.setOnServerGameOver(null);
   }, [ws.setOnServerGameOver]);
+
+  useEffect(() => {
+    const roomId = ws.roomId;
+    const myColor = ws.myColor ?? 'white';
+    if (!roomId || savedRoomIdRef.current === roomId) return;
+    if (!session?.user?.id || !gameOver || !gameResult) return;
+
+    savedRoomIdRef.current = roomId;
+    const resultCode = toResultCode(gameResult, myColor);
+    const resultReason = toResultReason(gameResult);
+    const opponentUserId =
+      myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
+
+    fetch('/api/games', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roomId,
+        moves,
+        variant: VARIANT,
+        gameType: 'multiplayer',
+        result: resultCode,
+        resultReason,
+        myColor,
+        opponentUserId,
+        timeControl: ws.timeControl ?? {
+          mode: 'unlimited',
+          minutes: 0,
+          increment: 0
+        },
+        startingFen: positionHistory[0] ?? STARTING_FEN
+      })
+    }).catch((err) => {
+      console.error('Failed to save card multiplayer game:', err);
+    });
+  }, [
+    ws.roomId,
+    ws.myColor,
+    ws.whiteUserId,
+    ws.blackUserId,
+    ws.timeControl,
+    session?.user?.id,
+    gameOver,
+    gameResult,
+    moves,
+    positionHistory
+  ]);
 
   // ---------------------------------------------------------------------------
   // Clock sync

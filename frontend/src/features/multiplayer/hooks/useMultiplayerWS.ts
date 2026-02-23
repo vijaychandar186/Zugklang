@@ -10,9 +10,15 @@ import type {
   OnServerGameOverFn,
   OnClockSyncFn,
   OnSyncDiceFn,
-  OnSyncCardFn
+  OnSyncCardFn,
+  OnFourPlayerLobbyStateFn,
+  OnFourPlayerLobbyStartedFn,
+  OnFourPlayerLobbyRejoinedFn,
+  OnFourPlayerPlayerReconnectedFn,
+  OnFourPlayerStateSyncFn
 } from '../types';
 const SESSION_KEY = 'zugklang_mp_session';
+const FP_SESSION_KEY = 'zugklang_4p_session';
 const LS_ACTIVE_KEY = 'zugklang_mp_active';
 const BC_CHANNEL = 'zugklang_mp_state';
 type TabBroadcast =
@@ -49,6 +55,35 @@ export function loadSession(): {
 } | null {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+function saveFourPlayerSession(
+  lobbyId: string,
+  playerId: string,
+  rejoinToken: string
+): void {
+  try {
+    sessionStorage.setItem(
+      FP_SESSION_KEY,
+      JSON.stringify({ lobbyId, playerId, rejoinToken })
+    );
+  } catch {}
+}
+export function clearFourPlayerSession(): void {
+  try {
+    sessionStorage.removeItem(FP_SESSION_KEY);
+  } catch {}
+}
+export function loadFourPlayerSession(): {
+  lobbyId: string;
+  playerId: string;
+  rejoinToken: string;
+} | null {
+  try {
+    const raw = sessionStorage.getItem(FP_SESSION_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -111,6 +146,17 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const onClockSyncRef = useRef<OnClockSyncFn | null>(null);
   const onSyncDiceRef = useRef<OnSyncDiceFn | null>(null);
   const onSyncCardRef = useRef<OnSyncCardFn | null>(null);
+  const onFourPlayerLobbyStateRef = useRef<OnFourPlayerLobbyStateFn | null>(
+    null
+  );
+  const onFourPlayerLobbyStartedRef = useRef<OnFourPlayerLobbyStartedFn | null>(
+    null
+  );
+  const onFourPlayerLobbyRejoinedRef =
+    useRef<OnFourPlayerLobbyRejoinedFn | null>(null);
+  const onFourPlayerPlayerReconnectedRef =
+    useRef<OnFourPlayerPlayerReconnectedFn | null>(null);
+  const onFourPlayerStateSyncRef = useRef<OnFourPlayerStateSyncFn | null>(null);
   const roomIdRef = useRef<string | null>(null);
   const isPrimaryRef = useRef(false);
   const latestStateRef = useRef<MultiplayerWSState>(state);
@@ -444,6 +490,55 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       case 'card_synced':
         onSyncCardRef.current?.(msg.rank, msg.suit);
         break;
+      case 'four_player_lobby_created':
+      case 'four_player_lobby_updated':
+        onFourPlayerLobbyStateRef.current?.({
+          lobbyId: msg.lobbyId,
+          leaderId: msg.leaderId,
+          started: msg.started,
+          timeControl: msg.timeControl,
+          players: msg.players
+        });
+        break;
+      case 'four_player_lobby_started':
+        saveFourPlayerSession(
+          msg.lobbyId,
+          latestStateRef.current.playerId ?? '',
+          msg.rejoinToken
+        );
+        onFourPlayerLobbyStartedRef.current?.(
+          msg.lobbyId,
+          msg.startedAt,
+          msg.timeControl
+        );
+        break;
+      case 'four_player_lobby_rejoined':
+        setState((s) => ({ ...s, playerId: msg.myPlayerId }));
+        saveFourPlayerSession(msg.lobbyId, msg.myPlayerId, msg.rejoinToken);
+        onFourPlayerLobbyRejoinedRef.current?.(
+          {
+            lobbyId: msg.lobbyId,
+            leaderId: msg.leaderId,
+            started: msg.started,
+            timeControl: msg.timeControl,
+            players: msg.players
+          },
+          msg.rejoinToken
+        );
+        break;
+      case 'four_player_player_disconnected':
+        // No WS state change needed — view can handle UX if desired
+        break;
+      case 'four_player_player_reconnected':
+        onFourPlayerPlayerReconnectedRef.current?.(msg.playerId);
+        break;
+      case 'four_player_state_synced':
+        onFourPlayerStateSyncRef.current?.(
+          msg.lobbyId,
+          msg.fromPlayerId,
+          msg.state
+        );
+        break;
       case 'error':
         setState((s) => ({ ...s, errorMessage: msg.message }));
         break;
@@ -662,6 +757,118 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const setOnSyncCard = useCallback((fn: OnSyncCardFn | null) => {
     onSyncCardRef.current = fn;
   }, []);
+  const createFourPlayerLobby = useCallback(
+    async (
+      displayName?: string,
+      userImage?: string | null,
+      timeControl?: TimeControl
+    ) => {
+      try {
+        await connect();
+      } catch {
+        return;
+      }
+      sendRaw({
+        type: 'create_four_player_lobby',
+        displayName,
+        userImage,
+        ...(timeControl ? { timeControl } : {})
+      });
+    },
+    [connect, sendRaw]
+  );
+  const joinFourPlayerLobby = useCallback(
+    async (
+      lobbyId: string,
+      displayName?: string,
+      userImage?: string | null
+    ) => {
+      try {
+        await connect();
+      } catch {
+        return;
+      }
+      sendRaw({
+        type: 'join_four_player_lobby',
+        lobbyId,
+        displayName,
+        userImage
+      });
+    },
+    [connect, sendRaw]
+  );
+  const leaveFourPlayerLobby = useCallback(
+    (lobbyId: string) => {
+      sendRaw({ type: 'leave_four_player_lobby', lobbyId });
+      clearFourPlayerSession();
+    },
+    [sendRaw]
+  );
+  const startFourPlayerLobby = useCallback(
+    (lobbyId: string) => {
+      sendRaw({ type: 'start_four_player_lobby', lobbyId });
+    },
+    [sendRaw]
+  );
+  const shuffleFourPlayerLobby = useCallback(
+    (lobbyId: string) => {
+      sendRaw({ type: 'shuffle_four_player_lobby', lobbyId });
+    },
+    [sendRaw]
+  );
+  const assignFourPlayerTeam = useCallback(
+    (lobbyId: string, playerId: string, team: 'r' | 'b' | 'y' | 'g') => {
+      sendRaw({ type: 'assign_four_player_team', lobbyId, playerId, team });
+    },
+    [sendRaw]
+  );
+  const sendFourPlayerStateSync = useCallback(
+    (lobbyId: string, state: string) => {
+      sendRaw({ type: 'sync_four_player_state', lobbyId, state });
+    },
+    [sendRaw]
+  );
+  const rejoinFourPlayerLobby = useCallback(
+    async (lobbyId: string, rejoinToken: string) => {
+      try {
+        await connect();
+      } catch {
+        return;
+      }
+      sendRaw({ type: 'rejoin_four_player_lobby', lobbyId, rejoinToken });
+    },
+    [connect, sendRaw]
+  );
+  const setOnFourPlayerLobbyState = useCallback(
+    (fn: OnFourPlayerLobbyStateFn | null) => {
+      onFourPlayerLobbyStateRef.current = fn;
+    },
+    []
+  );
+  const setOnFourPlayerLobbyStarted = useCallback(
+    (fn: OnFourPlayerLobbyStartedFn | null) => {
+      onFourPlayerLobbyStartedRef.current = fn;
+    },
+    []
+  );
+  const setOnFourPlayerLobbyRejoined = useCallback(
+    (fn: OnFourPlayerLobbyRejoinedFn | null) => {
+      onFourPlayerLobbyRejoinedRef.current = fn;
+    },
+    []
+  );
+  const setOnFourPlayerPlayerReconnected = useCallback(
+    (fn: OnFourPlayerPlayerReconnectedFn | null) => {
+      onFourPlayerPlayerReconnectedRef.current = fn;
+    },
+    []
+  );
+  const setOnFourPlayerStateSync = useCallback(
+    (fn: OnFourPlayerStateSyncFn | null) => {
+      onFourPlayerStateSyncRef.current = fn;
+    },
+    []
+  );
   const disconnect = useCallback(() => {
     clearSession();
     stopPing();
@@ -758,6 +965,19 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     sendCardSync,
     setOnSyncDice,
     setOnSyncCard,
+    createFourPlayerLobby,
+    joinFourPlayerLobby,
+    leaveFourPlayerLobby,
+    startFourPlayerLobby,
+    shuffleFourPlayerLobby,
+    assignFourPlayerTeam,
+    sendFourPlayerStateSync,
+    rejoinFourPlayerLobby,
+    setOnFourPlayerLobbyState,
+    setOnFourPlayerLobbyStarted,
+    setOnFourPlayerLobbyRejoined,
+    setOnFourPlayerPlayerReconnected,
+    setOnFourPlayerStateSync,
     disconnect
   };
 }

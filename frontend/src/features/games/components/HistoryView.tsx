@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   ColumnDef,
+  Column,
   ColumnFiltersState,
   SortingState,
   flexRender,
@@ -33,6 +34,7 @@ import {
 } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Icons } from '@/components/Icons';
+import { formatVariantLabel } from '@/lib/chess/variantLabels';
 export interface GameRow {
   id: string;
   variant: string;
@@ -124,17 +126,6 @@ function HistoryContentSkeleton() {
     </div>
   );
 }
-const VARIANT_LABELS: Record<string, string> = {
-  standard: 'Standard',
-  fischerRandom: '960',
-  atomic: 'Atomic',
-  racingKings: 'Racing Kings',
-  horde: 'Horde',
-  threeCheck: '3-Check',
-  antichess: 'Antichess',
-  kingOfTheHill: 'KOTH',
-  crazyhouse: 'Crazyhouse'
-};
 function formatDate(date: Date) {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
@@ -301,7 +292,13 @@ function DataTable<TData, TValue>({
     </div>
   );
 }
-function SortHeader({ label, column }: { label: string; column: any }) {
+function SortHeader({
+  label,
+  column
+}: {
+  label: string;
+  column: Column<unknown, unknown>;
+}) {
   return (
     <button
       className='flex items-center gap-1 font-medium'
@@ -364,8 +361,7 @@ function makeGameColumns(userId: string): ColumnDef<GameRow>[] {
     {
       accessorKey: 'variant',
       header: ({ column }) => <SortHeader label='Variant' column={column} />,
-      cell: ({ row }) =>
-        VARIANT_LABELS[row.original.variant] ?? row.original.variant
+      cell: ({ row }) => formatVariantLabel(row.original.variant)
     },
     {
       accessorKey: 'gameType',
@@ -708,7 +704,26 @@ export function HistoryView({
   const router = useRouter();
   const [isRefreshing, startRefresh] = React.useTransition();
   const [activeTab, setActiveTab] = React.useState<Tab>('games');
+  const [variantFilter, setVariantFilter] = React.useState('all');
+  const [typeFilter, setTypeFilter] = React.useState('all');
   const gameColumns = React.useMemo(() => makeGameColumns(userId), [userId]);
+  const availableVariants = React.useMemo(
+    () =>
+      Array.from(new Set(games.map((game) => game.variant))).sort((a, b) =>
+        formatVariantLabel(a).localeCompare(formatVariantLabel(b))
+      ),
+    [games]
+  );
+  const filteredGames = React.useMemo(
+    () =>
+      games.filter((game) => {
+        if (variantFilter !== 'all' && game.variant !== variantFilter)
+          return false;
+        if (typeFilter !== 'all' && game.gameType !== typeFilter) return false;
+        return true;
+      }),
+    [games, variantFilter, typeFilter]
+  );
   const tabs: {
     id: Tab;
     label: string;
@@ -782,9 +797,45 @@ export function HistoryView({
 
           {activeTab === 'games' && (
             <div className='space-y-4'>
+              <div className='grid gap-3 md:grid-cols-2'>
+                <div className='space-y-1.5'>
+                  <label className='text-sm font-medium'>Variant</label>
+                  <Select
+                    value={variantFilter}
+                    onValueChange={setVariantFilter}
+                  >
+                    <SelectTrigger className='w-full'>
+                      <SelectValue placeholder='All variants' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All variants</SelectItem>
+                      {availableVariants.map((variant) => (
+                        <SelectItem key={variant} value={variant}>
+                          {formatVariantLabel(variant)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className='space-y-1.5'>
+                  <label className='text-sm font-medium'>Game Type</label>
+                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                    <SelectTrigger className='w-full'>
+                      <SelectValue placeholder='All game types' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All game types</SelectItem>
+                      <SelectItem value='multiplayer'>Multiplayer</SelectItem>
+                      <SelectItem value='computer'>Computer</SelectItem>
+                      <SelectItem value='local'>Local</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               <DataTable
                 columns={gameColumns}
-                data={games}
+                data={filteredGames}
                 filterColumn='opponent'
                 filterPlaceholder='Filter by opponent...'
               />

@@ -3,6 +3,14 @@ import { memo, useCallback, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
 import { Icons } from '@/components/Icons';
 import {
   Dialog,
@@ -38,6 +46,7 @@ import { playSound } from '@/features/game/utils/sounds';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { cn } from '@/lib/utils';
 import type { Team, MoveRecord } from '../engine';
+import type { FourPlayerLobbyPlayer } from '@/features/multiplayer/types';
 const TEAM_INFO: Record<
   Team,
   {
@@ -172,31 +181,15 @@ function FourPlayerMoveHistory({
     </ol>
   );
 }
-function PlayerButton({
-  team,
-  isActive,
-  onClick
+export function FourPlayerSidebar({
+  lobbyPlayers,
+  myTeam,
+  onNewGame
 }: {
-  team: Team;
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  const info = TEAM_INFO[team];
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium transition-all ${isActive ? 'bg-foreground/10' : 'hover:bg-muted'}`}
-      style={isActive ? { boxShadow: `0 0 0 2px ${info.cssVar}` } : undefined}
-    >
-      <div
-        className='h-2.5 w-2.5 rounded-full'
-        style={{ backgroundColor: info.cssVar }}
-      />
-      {info.label}
-    </button>
-  );
-}
-export function FourPlayerSidebar() {
+  lobbyPlayers?: FourPlayerLobbyPlayer[];
+  myTeam?: Team | null;
+  onNewGame?: () => void;
+} = {}) {
   const router = useRouter();
   const {
     moves,
@@ -221,6 +214,7 @@ export function FourPlayerSidebar() {
   } = useFourPlayerStore();
   const { hasTimer, teamTimes, activeTimer } = useFourPlayerTimer();
   const soundEnabled = useChessStore((s) => s.soundEnabled);
+  const isMultiplayer = lobbyPlayers !== undefined;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const canGoBack = viewingMoveIndex > -1;
   const canGoForward = viewingMoveIndex < moves.length - 1;
@@ -350,6 +344,104 @@ export function FourPlayerSidebar() {
           </div>
         </div>
 
+        <div className='border-b px-2 py-1.5'>
+          <Table className='text-xs'>
+            <TableHeader>
+              <TableRow className='hover:bg-transparent'>
+                <TableHead className='h-7 px-2 text-[10px]'>Team</TableHead>
+                <TableHead className='h-7 px-2 text-center text-[10px]'>
+                  Pts
+                </TableHead>
+                <TableHead className='h-7 px-2 text-center text-[10px]'>
+                  Time
+                </TableHead>
+                <TableHead className='h-7 px-2 text-right text-[10px]'>
+                  View
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {TEAMS.map((team) => {
+                const info = TEAM_INFO[team];
+                const time = teamTimes[team];
+                const isTimerActive = activeTimer === team;
+                const isLow = time !== null && time <= 30;
+                const isCritical = time !== null && time <= 10;
+                const isOrientationActive =
+                  orientation === TEAM_ROTATIONS[team];
+                const lobbyPlayer = lobbyPlayers?.find((p) => p.team === team);
+                const playerName = lobbyPlayer?.displayName?.trim() || null;
+                return (
+                  <TableRow
+                    key={team}
+                    className={cn(isOrientationActive && 'bg-muted/60')}
+                  >
+                    <TableCell className='max-w-[118px] px-2 py-1.5'>
+                      <div className='flex items-center gap-1.5'>
+                        <span
+                          className='h-2.5 w-2.5 shrink-0 rounded-full'
+                          style={{ backgroundColor: info.cssVar }}
+                        />
+                        <span className='truncate font-medium'>
+                          {info.label}
+                        </span>
+                        {myTeam === team && (
+                          <span className='text-muted-foreground text-[10px]'>
+                            (you)
+                          </span>
+                        )}
+                      </div>
+                      {playerName && (
+                        <p className='text-muted-foreground truncate text-[10px]'>
+                          {playerName}
+                        </p>
+                      )}
+                    </TableCell>
+                    <TableCell className='px-2 py-1.5 text-center font-medium'>
+                      {points[team]}
+                    </TableCell>
+                    <TableCell className='px-2 py-1.5 text-center'>
+                      {hasTimer && time !== null ? (
+                        <span
+                          className={cn(
+                            'inline-flex rounded px-1.5 py-0.5 font-mono text-[10px] font-semibold tabular-nums',
+                            isTimerActive
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted text-muted-foreground',
+                            isLow &&
+                              isTimerActive &&
+                              'text-background bg-[color:var(--classification-inaccuracy)]',
+                            isCritical &&
+                              isTimerActive &&
+                              'bg-destructive text-destructive-foreground animate-pulse'
+                          )}
+                        >
+                          {formatTime(time)}
+                        </span>
+                      ) : (
+                        <span className='text-muted-foreground text-[10px]'>
+                          -
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className='px-2 py-1.5 text-right'>
+                      <Button
+                        type='button'
+                        variant={isOrientationActive ? 'default' : 'ghost'}
+                        size='sm'
+                        className='h-6 px-2 text-[10px]'
+                        onClick={() => setOrientation(TEAM_ROTATIONS[team])}
+                      >
+                        {isOrientationActive ? 'Active' : 'View'}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </div>
+
         <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
           <div className='px-4 py-2'>
             <FourPlayerMoveHistory
@@ -405,22 +497,26 @@ export function FourPlayerSidebar() {
                 </>
               ) : (
                 <p className='text-center text-sm font-medium'>
-                  No active game
+                  {isMultiplayer
+                    ? 'Waiting for game to start…'
+                    : 'No active game'}
                 </p>
               )}
-              <Button
-                variant='default'
-                size='sm'
-                className='w-full'
-                onClick={resetGame}
-              >
-                <Icons.newGame className='mr-2 h-4 w-4' />
-                New Game
-              </Button>
+              {!isMultiplayer && (
+                <Button
+                  variant='default'
+                  size='sm'
+                  className='w-full'
+                  onClick={onNewGame ?? resetGame}
+                >
+                  <Icons.newGame className='mr-2 h-4 w-4' />
+                  New Game
+                </Button>
+              )}
             </div>
           )}
 
-          {!isGameOver && (
+          {!isGameOver && gameStarted && (
             <div className='flex flex-col gap-2'>
               <div className='flex items-center justify-center gap-2'>
                 <div
@@ -453,47 +549,7 @@ export function FourPlayerSidebar() {
             </div>
           )}
 
-          <div className='flex flex-wrap items-center justify-center gap-1'>
-            {TEAMS.map((team) => {
-              const time = teamTimes[team];
-              const isActive = activeTimer === team;
-              const isLow = time !== null && time <= 30;
-              const isCritical = time !== null && time <= 10;
-              return (
-                <div key={team} className='flex flex-col items-center gap-0.5'>
-                  <span className='text-muted-foreground text-[10px]'>
-                    {points[team]}pts
-                  </span>
-                  {hasTimer && time !== null && (
-                    <div
-                      className={cn(
-                        'rounded px-1.5 py-0.5 font-mono text-[10px] font-bold tabular-nums transition-colors',
-                        isActive
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted',
-                        !isActive && 'opacity-70',
-                        isLow &&
-                          isActive &&
-                          'text-background bg-[color:var(--classification-inaccuracy)]',
-                        isCritical &&
-                          isActive &&
-                          'bg-destructive text-destructive-foreground animate-pulse'
-                      )}
-                    >
-                      {formatTime(time)}
-                    </div>
-                  )}
-                  <PlayerButton
-                    team={team}
-                    isActive={orientation === TEAM_ROTATIONS[team]}
-                    onClick={() => setOrientation(TEAM_ROTATIONS[team])}
-                  />
-                </div>
-              );
-            })}
-          </div>
-
-          {gameStarted && !isGameOver && (
+          {gameStarted && !isGameOver && !isMultiplayer && (
             <div className='flex justify-center gap-1'>
               <AlertDialog>
                 <Tooltip>

@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
+import { formatVariantLabel } from '@/lib/chess/variantLabels';
 interface GameRow {
   id: string;
   variant: string;
@@ -27,17 +28,6 @@ interface GameRow {
   whiteRatingDelta: number | null;
   blackRatingDelta: number | null;
 }
-const VARIANT_LABELS: Record<string, string> = {
-  standard: 'Standard',
-  fischerRandom: '960',
-  atomic: 'Atomic',
-  racingKings: 'Racing Kings',
-  horde: 'Horde',
-  threeCheck: '3-Check',
-  antichess: 'Antichess',
-  kingOfTheHill: 'KOTH',
-  crazyhouse: 'Crazyhouse'
-};
 function ResultBadge({
   result,
   isWhite
@@ -128,7 +118,7 @@ export function RecentGamesTable({
                     {date}
                   </TableCell>
                   <TableCell className='px-4 py-2'>
-                    {VARIANT_LABELS[game.variant] ?? game.variant}
+                    {formatVariantLabel(game.variant)}
                   </TableCell>
                   <TableCell className='text-muted-foreground px-4 py-2 text-xs capitalize'>
                     {game.gameType}

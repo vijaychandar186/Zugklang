@@ -76,6 +76,19 @@ export const navItems: NavItem[] = [
           { title: 'Dice Chess', url: '/play/custom/dice-chess' },
           { title: 'Four Player', url: '/play/custom/four-player' }
         ]
+      },
+      {
+        title: 'Custom Multiplayer',
+        url: '/play/custom-multiplayer',
+        shortcut: ['c', 'm'],
+        items: [
+          {
+            title: 'Four Player Chess',
+            url: '/play/custom-multiplayer/four-player'
+          },
+          { title: 'Dice Chess', url: '/play/custom-multiplayer/dice-chess' },
+          { title: 'Card Chess', url: '/play/custom-multiplayer/card-chess' }
+        ]
       }
     ]
   },
@@ -103,10 +116,16 @@ export const navItems: NavItem[] = [
     ]
   },
   {
-    title: 'Games',
+    title: 'History',
     url: '/games',
     icon: 'book',
     shortcut: ['g', 'g']
+  },
+  {
+    title: 'Settings',
+    url: '/settings',
+    icon: 'settings',
+    shortcut: ['s', 's']
   },
   {
     title: 'Profile',

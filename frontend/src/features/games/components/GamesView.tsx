@@ -10,17 +10,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
-const VARIANT_LABELS: Record<string, string> = {
-  standard: 'Standard',
-  fischerRandom: '960',
-  atomic: 'Atomic',
-  racingKings: 'Racing Kings',
-  horde: 'Horde',
-  threeCheck: '3-Check',
-  antichess: 'Antichess',
-  kingOfTheHill: 'KOTH',
-  crazyhouse: 'Crazyhouse'
-};
+import { formatVariantLabel } from '@/lib/chess/variantLabels';
 function buildPgn(moves: string[]): string {
   return moves
     .map((move, i) => {
@@ -161,7 +151,7 @@ export function GamesView({
                         {date}
                       </TableCell>
                       <TableCell className='px-4 py-2'>
-                        {VARIANT_LABELS[game.variant] ?? game.variant}
+                        {formatVariantLabel(game.variant)}
                       </TableCell>
                       <TableCell className='text-muted-foreground px-4 py-2 text-xs capitalize'>
                         {game.gameType}

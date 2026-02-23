@@ -124,7 +124,7 @@ function AbortCountdown({ startedAt }: { startedAt: number }) {
   }, [startedAt]);
   return (
     <span className='animate-pulse text-xs text-yellow-500'>
-      Auto-abort in {secsLeft}s
+      Auto-abandon in {secsLeft}s
     </span>
   );
 }

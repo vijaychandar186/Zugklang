@@ -61,6 +61,7 @@ export function FourPlayerView() {
     hasHydrated,
     isGameOver,
     moves,
+    resetGame,
     startGame
   } = useFourPlayerStore();
   const [newGameOpen, setNewGameOpen] = useState(false);
@@ -70,7 +71,11 @@ export function FourPlayerView() {
     }
   }, [hasHydrated, gameStarted, isGameOver, moves.length]);
   const handleStartGame = () => {
+    resetGame();
     startGame();
+  };
+  const handleNewGame = () => {
+    setNewGameOpen(true);
   };
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
@@ -82,7 +87,7 @@ export function FourPlayerView() {
 
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(calc(100dvh-120px),calc(100vw-clamp(20rem,24vw,30rem)-6rem))] lg:min-h-0 lg:w-[clamp(20rem,24vw,30rem)] lg:shrink-0 lg:overflow-hidden'>
         <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
-          <FourPlayerSidebar />
+          <FourPlayerSidebar onNewGame={handleNewGame} />
         </div>
       </div>
 

@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -30,9 +31,11 @@ import {
 } from '@/components/ui/chart';
 import { StatsGrid } from './StatsGrid';
 import { RatingsTable } from './RatingsTable';
+import { formatVariantLabel } from '@/lib/chess/variantLabels';
 
 type SpeedFilter = 'all' | 'bullet' | 'blitz' | 'rapid' | 'classical';
 type DatePreset = 'all' | 'today' | 'week' | 'month' | 'year' | 'custom';
+type ResultFilter = 'all' | 'wins' | 'losses' | 'draws';
 
 type GameForInsights = {
   variant: string;
@@ -145,9 +148,18 @@ export function ProfileInsightsPanel({
   puzzleRating
 }: ProfileInsightsPanelProps) {
   const [speedFilter, setSpeedFilter] = useState<SpeedFilter>('all');
+  const [variantFilter, setVariantFilter] = useState('all');
+  const [resultFilter, setResultFilter] = useState<ResultFilter>('all');
   const [datePreset, setDatePreset] = useState<DatePreset>('all');
   const [customFrom, setCustomFrom] = useState('');
   const [customTo, setCustomTo] = useState('');
+  const variantOptions = useMemo(
+    () =>
+      Array.from(new Set(games.map((game) => game.variant))).sort((a, b) =>
+        formatVariantLabel(a).localeCompare(formatVariantLabel(b))
+      ),
+    [games]
+  );
 
   const { start, end } = useMemo(
     () => normalizeRange(datePreset, customFrom, customTo),
@@ -174,6 +186,17 @@ export function ProfileInsightsPanel({
         ) {
           return false;
         }
+        if (variantFilter !== 'all' && game.variant !== variantFilter) {
+          return false;
+        }
+        const isWhite = game.whiteUserId === userId;
+        const isWin =
+          (game.result === '1-0' && isWhite) ||
+          (game.result === '0-1' && !isWhite);
+        const isDraw = game.result === '1/2-1/2';
+        if (resultFilter === 'wins' && !isWin) return false;
+        if (resultFilter === 'losses' && (isWin || isDraw)) return false;
+        if (resultFilter === 'draws' && !isDraw) return false;
 
         const playedDate = getPlayedDate(game);
         if (!playedDate) return false;
@@ -182,7 +205,7 @@ export function ProfileInsightsPanel({
 
         return true;
       }),
-    [games, userId, speedFilter, start, end]
+    [games, userId, speedFilter, variantFilter, resultFilter, start, end]
   );
 
   const stats = useMemo(() => {
@@ -244,6 +267,55 @@ export function ProfileInsightsPanel({
 
   const speedLabel =
     speedFilter === 'all' ? 'All speeds' : TIME_CATEGORY_LABELS[speedFilter];
+  const variantLabel =
+    variantFilter === 'all'
+      ? 'All variants'
+      : formatVariantLabel(variantFilter);
+
+  const variantRecords = useMemo(() => {
+    const completedGames = games.filter(
+      (game) =>
+        (game.result === '1-0' ||
+          game.result === '0-1' ||
+          game.result === '1/2-1/2') &&
+        (game.whiteUserId === userId || game.blackUserId === userId)
+    );
+    const recordByVariant = new Map<
+      string,
+      { games: number; wins: number; losses: number; draws: number }
+    >();
+
+    for (const game of completedGames) {
+      const isWhite = game.whiteUserId === userId;
+      const existing = recordByVariant.get(game.variant) ?? {
+        games: 0,
+        wins: 0,
+        losses: 0,
+        draws: 0
+      };
+      existing.games += 1;
+      if (game.result === '1/2-1/2') {
+        existing.draws += 1;
+      } else if (
+        (game.result === '1-0' && isWhite) ||
+        (game.result === '0-1' && !isWhite)
+      ) {
+        existing.wins += 1;
+      } else {
+        existing.losses += 1;
+      }
+      recordByVariant.set(game.variant, existing);
+    }
+
+    return Array.from(recordByVariant.entries())
+      .map(([variant, record]) => ({
+        variant,
+        ...record,
+        winRate:
+          record.games > 0 ? Math.round((record.wins / record.games) * 100) : 0
+      }))
+      .sort((a, b) => b.games - a.games);
+  }, [games, userId]);
 
   return (
     <div className='grid gap-4 lg:grid-cols-2 lg:items-stretch'>
@@ -277,6 +349,23 @@ export function ProfileInsightsPanel({
             </div>
 
             <div className='space-y-1.5'>
+              <Label htmlFor='variant-filter'>Variant</Label>
+              <Select value={variantFilter} onValueChange={setVariantFilter}>
+                <SelectTrigger id='variant-filter' className='w-full'>
+                  <SelectValue placeholder='Select variant' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='all'>All variants</SelectItem>
+                  {variantOptions.map((variant) => (
+                    <SelectItem key={variant} value={variant}>
+                      {formatVariantLabel(variant)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className='space-y-1.5'>
               <Label htmlFor='date-range'>Date Range</Label>
               <Select
                 value={datePreset}
@@ -292,6 +381,25 @@ export function ProfileInsightsPanel({
                   <SelectItem value='month'>Past month</SelectItem>
                   <SelectItem value='year'>Past year</SelectItem>
                   <SelectItem value='custom'>Custom</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className='space-y-1.5'>
+              <Label htmlFor='result-filter'>Result</Label>
+              <Select
+                value={resultFilter}
+                onValueChange={(value) =>
+                  setResultFilter(value as ResultFilter)
+                }
+              >
+                <SelectTrigger id='result-filter' className='w-full'>
+                  <SelectValue placeholder='Select result' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='all'>All results</SelectItem>
+                  <SelectItem value='wins'>Wins</SelectItem>
+                  <SelectItem value='losses'>Losses</SelectItem>
+                  <SelectItem value='draws'>Draws</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -322,7 +430,7 @@ export function ProfileInsightsPanel({
         </CardHeader>
         <CardContent className='flex flex-1 flex-col'>
           <div className='text-muted-foreground mb-2 text-xs'>
-            {speedLabel} · {stats.total} completed games
+            {speedLabel} · {variantLabel} · {stats.total} completed games
           </div>
           <ChartContainer
             config={chartConfig}
@@ -366,6 +474,41 @@ export function ProfileInsightsPanel({
           puzzleRating={puzzleRating}
           className='flex-1'
         />
+        <Card>
+          <CardHeader className='pb-3'>
+            <CardTitle className='text-base'>Variant Performance</CardTitle>
+            <CardDescription>
+              Completed results by variant, including custom modes.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-2'>
+            {variantRecords.length === 0 ? (
+              <p className='text-muted-foreground text-sm'>
+                No completed games yet.
+              </p>
+            ) : (
+              variantRecords.map((record) => (
+                <div
+                  key={record.variant}
+                  className='flex items-center justify-between rounded-md border px-3 py-2'
+                >
+                  <div className='flex flex-col gap-1'>
+                    <span className='text-sm font-medium'>
+                      {formatVariantLabel(record.variant)}
+                    </span>
+                    <span className='text-muted-foreground text-xs'>
+                      {record.games} games · {record.wins}W/{record.losses}L/
+                      {record.draws}D
+                    </span>
+                  </div>
+                  <Badge variant='outline' className='font-mono'>
+                    {record.winRate}% WR
+                  </Badge>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

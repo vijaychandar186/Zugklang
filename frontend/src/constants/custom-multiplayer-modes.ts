@@ -3,6 +3,14 @@ import type { MenuCardItem } from './play-modes';
 
 export const customMultiplayerModes: MenuCardItem[] = [
   {
+    href: '/play/custom-multiplayer/four-player',
+    icon: Icons.users,
+    title: 'Four Player Chess',
+    description:
+      'Multiplayer 4-Player Chess — share a 4-seat lobby and let the leader start once all players join.',
+    actionText: 'Play Multiplayer'
+  },
+  {
     href: '/play/custom-multiplayer/dice-chess',
     icon: Icons.dices,
     title: 'Dice Chess',

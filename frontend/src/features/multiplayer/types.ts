@@ -1,4 +1,5 @@
 import type { TimeControl } from '@/features/game/types/rules';
+import type { Team } from '@/features/custom/four-player/engine';
 export type MultiplayerStatus =
   | 'idle'
   | 'connecting'
@@ -8,6 +9,23 @@ export type MultiplayerStatus =
   | 'playing'
   | 'game_over'
   | 'error';
+
+export interface FourPlayerLobbyPlayer {
+  playerId: string;
+  userId: string | null;
+  displayName: string | null;
+  userImage: string | null;
+  team: Team;
+  isLeader: boolean;
+}
+
+export interface FourPlayerLobbyState {
+  lobbyId: string;
+  leaderId: string;
+  started: boolean;
+  timeControl: TimeControl;
+  players: FourPlayerLobbyPlayer[];
+}
 export type ServerMessage =
   | {
       type: 'connected';
@@ -128,6 +146,38 @@ export type ServerMessage =
       type: 'card_synced';
       rank: string;
       suit: string;
+    }
+  | ({
+      type: 'four_player_lobby_created';
+    } & FourPlayerLobbyState)
+  | ({
+      type: 'four_player_lobby_updated';
+    } & FourPlayerLobbyState)
+  | {
+      type: 'four_player_lobby_started';
+      lobbyId: string;
+      startedAt: number;
+      timeControl: TimeControl;
+      rejoinToken: string;
+    }
+  | ({
+      type: 'four_player_lobby_rejoined';
+      myPlayerId: string;
+      rejoinToken: string;
+    } & FourPlayerLobbyState)
+  | {
+      type: 'four_player_player_disconnected';
+      playerId: string;
+    }
+  | {
+      type: 'four_player_player_reconnected';
+      playerId: string;
+    }
+  | {
+      type: 'four_player_state_synced';
+      lobbyId: string;
+      fromPlayerId: string;
+      state: string;
     };
 export type ChallengeColor = 'white' | 'black' | 'random';
 export type ClientMessage =
@@ -211,6 +261,46 @@ export type ClientMessage =
     }
   | {
       type: 'decline_rematch';
+    }
+  | {
+      type: 'create_four_player_lobby';
+      timeControl?: TimeControl;
+      displayName?: string;
+      userImage?: string | null;
+    }
+  | {
+      type: 'join_four_player_lobby';
+      lobbyId: string;
+      displayName?: string;
+      userImage?: string | null;
+    }
+  | {
+      type: 'leave_four_player_lobby';
+      lobbyId: string;
+    }
+  | {
+      type: 'start_four_player_lobby';
+      lobbyId: string;
+    }
+  | {
+      type: 'shuffle_four_player_lobby';
+      lobbyId: string;
+    }
+  | {
+      type: 'assign_four_player_team';
+      lobbyId: string;
+      playerId: string;
+      team: Team;
+    }
+  | {
+      type: 'sync_four_player_state';
+      lobbyId: string;
+      state: string;
+    }
+  | {
+      type: 'rejoin_four_player_lobby';
+      lobbyId: string;
+      rejoinToken: string;
     };
 export interface MultiplayerWSState {
   status: MultiplayerStatus;
@@ -255,6 +345,22 @@ export type OnClockSyncFn = (
 ) => void;
 export type OnSyncDiceFn = (pieces: [string, string, string]) => void;
 export type OnSyncCardFn = (rank: string, suit: string) => void;
+export type OnFourPlayerLobbyStateFn = (state: FourPlayerLobbyState) => void;
+export type OnFourPlayerLobbyStartedFn = (
+  lobbyId: string,
+  startedAt: number,
+  timeControl: TimeControl
+) => void;
+export type OnFourPlayerLobbyRejoinedFn = (
+  state: FourPlayerLobbyState,
+  rejoinToken: string
+) => void;
+export type OnFourPlayerPlayerReconnectedFn = (playerId: string) => void;
+export type OnFourPlayerStateSyncFn = (
+  lobbyId: string,
+  fromPlayerId: string,
+  state: string
+) => void;
 export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   joinQueue: (
     variant: string,
@@ -294,6 +400,31 @@ export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   sendCardSync: (rank: string, suit: string) => void;
   setOnSyncDice: (fn: OnSyncDiceFn | null) => void;
   setOnSyncCard: (fn: OnSyncCardFn | null) => void;
+  createFourPlayerLobby: (
+    displayName?: string,
+    userImage?: string | null,
+    timeControl?: TimeControl
+  ) => void;
+  joinFourPlayerLobby: (
+    lobbyId: string,
+    displayName?: string,
+    userImage?: string | null
+  ) => void;
+  leaveFourPlayerLobby: (lobbyId: string) => void;
+  startFourPlayerLobby: (lobbyId: string) => void;
+  shuffleFourPlayerLobby: (lobbyId: string) => void;
+  assignFourPlayerTeam: (lobbyId: string, playerId: string, team: Team) => void;
+  sendFourPlayerStateSync: (lobbyId: string, state: string) => void;
+  rejoinFourPlayerLobby: (lobbyId: string, rejoinToken: string) => void;
+  setOnFourPlayerLobbyState: (fn: OnFourPlayerLobbyStateFn | null) => void;
+  setOnFourPlayerLobbyStarted: (fn: OnFourPlayerLobbyStartedFn | null) => void;
+  setOnFourPlayerLobbyRejoined: (
+    fn: OnFourPlayerLobbyRejoinedFn | null
+  ) => void;
+  setOnFourPlayerPlayerReconnected: (
+    fn: OnFourPlayerPlayerReconnectedFn | null
+  ) => void;
+  setOnFourPlayerStateSync: (fn: OnFourPlayerStateSyncFn | null) => void;
   offerRematch: () => void;
   acceptRematch: () => void;
   declineRematch: () => void;

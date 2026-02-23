@@ -42,10 +42,15 @@ function toPgnResult(
     return '1/2-1/2';
   return '*';
 }
-function isAbortedGame(result: string, reason: string): boolean {
+function isAbortedGame(
+  result: string,
+  reason: string,
+  movesCount: number
+): boolean {
   const normalizedReason = reason.trim().toLowerCase();
   if (normalizedReason === 'abort' || normalizedReason.includes('aborted'))
     return true;
+  if (normalizedReason === 'abandoned' && movesCount < 2) return true;
   const normalizedResult = result.trim().toLowerCase();
   return normalizedResult.includes('abort');
 }
@@ -86,7 +91,7 @@ export const gamesRouter = router({
         timeControl,
         startingFen
       } = input;
-      if (isAbortedGame(result, resultReason)) {
+      if (isAbortedGame(result, resultReason, moves.length)) {
         return {
           skipped: true,
           reason: 'abort',

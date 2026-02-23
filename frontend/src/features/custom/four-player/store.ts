@@ -37,6 +37,21 @@ interface TeamTimes {
   y: number | null;
   g: number | null;
 }
+
+export interface FourPlayerSyncSnapshot {
+  moves: MoveRecord[];
+  viewingMoveIndex: number;
+  isGameOver: boolean;
+  winner: Team | null;
+  loseOrder: Team[];
+  gameStarted: boolean;
+  gameResult: string | null;
+  points: TeamPoints;
+  timeControl: TimeControl;
+  teamTimes: TeamTimes;
+  activeTimer: Team | null;
+  lastActiveTimestamp: number | null;
+}
 const DEFAULT_TIME_CONTROL: TimeControl = {
   mode: 'unlimited',
   minutes: 0,
@@ -70,6 +85,7 @@ interface FourPlayerStore {
   activeTimer: Team | null;
   lastActiveTimestamp: number | null;
   autoRotateBoard: boolean;
+  restrictedTeam: Team | null;
   selectSquare: (square: string) => void;
   movePiece: (from: string, to: string) => boolean;
   completePromotion: (piece: PieceType) => void;
@@ -89,6 +105,9 @@ interface FourPlayerStore {
   stopTimer: () => void;
   onTimeout: (team: Team) => void;
   setAutoRotateBoard: (enabled: boolean) => void;
+  setRestrictedTeam: (team: Team | null) => void;
+  createSyncSnapshot: () => FourPlayerSyncSnapshot;
+  applySyncSnapshot: (snapshot: FourPlayerSyncSnapshot) => void;
 }
 function syncFromGame(game: FourPlayerGame) {
   return {
@@ -160,9 +179,16 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
         activeTimer: null,
         lastActiveTimestamp: null,
         autoRotateBoard: false,
+        restrictedTeam: null,
         selectSquare: (square) => {
           const state = get();
           const { game } = state;
+          if (
+            state.restrictedTeam !== null &&
+            game.currentTeam !== state.restrictedTeam
+          ) {
+            return;
+          }
           if (state.selectedSquare && state.validMoves.includes(square)) {
             state.movePiece(state.selectedSquare, square);
             return;
@@ -181,9 +207,13 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             points,
             loseOrder: oldLoseOrder,
             timeControl,
-            autoRotateBoard
+            autoRotateBoard,
+            restrictedTeam
           } = get();
           if (!gameStarted) return false;
+          if (restrictedTeam !== null && game.currentTeam !== restrictedTeam) {
+            return false;
+          }
           const lastMoveIndex = game.moveHistory.length;
           const success = game.playMove(from, to);
           if (!success) return false;
@@ -434,7 +464,59 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             lastActiveTimestamp: null
           });
         },
-        setAutoRotateBoard: (enabled) => set({ autoRotateBoard: enabled })
+        setAutoRotateBoard: (enabled) => set({ autoRotateBoard: enabled }),
+        setRestrictedTeam: (team) => set({ restrictedTeam: team }),
+        createSyncSnapshot: () => {
+          const state = get();
+          return {
+            moves: [...state.moves],
+            viewingMoveIndex: state.viewingMoveIndex,
+            isGameOver: state.isGameOver,
+            winner: state.winner,
+            loseOrder: [...state.loseOrder],
+            gameStarted: state.gameStarted,
+            gameResult: state.gameResult,
+            points: { ...state.points },
+            timeControl: state.timeControl,
+            teamTimes: { ...state.teamTimes },
+            activeTimer: state.activeTimer,
+            lastActiveTimestamp: state.lastActiveTimestamp
+          };
+        },
+        applySyncSnapshot: (snapshot) => {
+          const newGame = new FourPlayerGame();
+          for (const move of snapshot.moves) {
+            const success = newGame.playMove(move.from, move.to);
+            if (success && newGame.pendingPromotion) {
+              const promotionMatch = move.notation.match(/=([QRBN])/);
+              if (promotionMatch) {
+                const promotionPiece = promotionMatch[1] as PieceType;
+                newGame.completePromotion(promotionPiece);
+              }
+            }
+          }
+          set((state) => ({
+            game: newGame,
+            position: newGame.toPosition(),
+            currentTeam: newGame.currentTeam,
+            pendingPromotion: !!newGame.pendingPromotion,
+            moves: [...snapshot.moves],
+            viewingMoveIndex: snapshot.viewingMoveIndex,
+            isGameOver: snapshot.isGameOver,
+            winner: snapshot.winner,
+            loseOrder: [...snapshot.loseOrder],
+            gameStarted: snapshot.gameStarted,
+            gameResult: snapshot.gameResult,
+            points: { ...snapshot.points },
+            timeControl: snapshot.timeControl,
+            teamTimes: { ...snapshot.teamTimes },
+            activeTimer: snapshot.activeTimer,
+            lastActiveTimestamp: snapshot.lastActiveTimestamp,
+            selectedSquare: null,
+            validMoves: [],
+            restrictedTeam: state.restrictedTeam
+          }));
+        }
       };
     },
     {

@@ -42,10 +42,15 @@ function toPgnResult(
     return '1/2-1/2';
   return '*';
 }
-function isAbortedGame(result: string, reason: string): boolean {
+function isAbortedGame(
+  result: string,
+  reason: string,
+  movesCount: number
+): boolean {
   const normalizedReason = reason.trim().toLowerCase();
   if (normalizedReason === 'abort' || normalizedReason.includes('aborted'))
     return true;
+  if (normalizedReason === 'abandoned' && movesCount < 2) return true;
   const normalizedResult = result.trim().toLowerCase();
   return normalizedResult.includes('abort');
 }
@@ -94,7 +99,7 @@ export async function POST(req: NextRequest) {
       timeControl,
       startingFen
     } = body;
-    if (isAbortedGame(result, resultReason)) {
+    if (isAbortedGame(result, resultReason, moves.length)) {
       return NextResponse.json({ skipped: true, reason: 'abort' });
     }
     // If this game has already been saved (by the other player), return the

@@ -29,7 +29,6 @@ export function CountryFlag({ code, className, title }: CountryFlagProps) {
         height={100}
         className={className}
         alt={title ?? 'International'}
-        title={title ?? 'International'}
       />
     );
   }

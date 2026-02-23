@@ -35,6 +35,7 @@ import { FourPlayerSidebar } from './FourPlayerSidebar';
 import type { Team } from '../engine';
 import {
   useFourPlayerStore,
+  setFourPlayerStorageMode,
   TEAM_ROTATIONS,
   type FourPlayerSyncSnapshot
 } from '../store';
@@ -88,6 +89,27 @@ function formatTimeControl(tc: TimeControl): string {
   return time;
 }
 
+function toResultReason(result: string | null): string {
+  if (!result) return 'elimination';
+  const lower = result.toLowerCase();
+  if (lower.includes('abort')) return 'abort';
+  if (lower.includes('resign')) return 'resign';
+  if (lower.includes('draw') && lower.includes('agreement'))
+    return 'draw_agreement';
+  if (lower.includes('time') || lower.includes('timeout')) return 'timeout';
+  return 'elimination';
+}
+
+function toResultCode(
+  winner: Team | null,
+  myTeam: Team,
+  result: string | null
+): '1-0' | '0-1' | '1/2-1/2' | '*' {
+  if (winner) return winner === myTeam ? '1-0' : '0-1';
+  if (result?.toLowerCase().includes('draw')) return '1/2-1/2';
+  return '*';
+}
+
 export function FourPlayerMultiplayerView({
   lobbyId: initialLobbyId
 }: FourPlayerMultiplayerViewProps) {
@@ -111,6 +133,9 @@ export function FourPlayerMultiplayerView({
     setOnFourPlayerStateSync
   } = useMultiplayerWS();
   const [lobby, setLobby] = useState<FourPlayerLobbyState | null>(null);
+  const [stablePlayersByTeam, setStablePlayersByTeam] = useState<
+    Partial<Record<Team, FourPlayerLobbyPlayer>>
+  >({});
   const [lobbyDialogOpen, setLobbyDialogOpen] = useState(true);
   const [joinAttempted, setJoinAttempted] = useState(false);
   const [rejoinAttempted, setRejoinAttempted] = useState(false);
@@ -134,6 +159,7 @@ export function FourPlayerMultiplayerView({
   const activeTimer = useFourPlayerStore((s) => s.activeTimer);
   const gameResult = useFourPlayerStore((s) => s.gameResult);
   const winner = useFourPlayerStore((s) => s.winner);
+  const gameId = useFourPlayerStore((s) => s.gameId);
 
   const lobbyStarted = lobby?.started ?? false;
   const lobbyId = lobby?.lobbyId ?? null;
@@ -146,6 +172,27 @@ export function FourPlayerMultiplayerView({
   const isLeader = !!(me && lobby && lobby.leaderId === me.playerId);
 
   useEffect(() => {
+    if (!lobby?.players?.length) return;
+    setStablePlayersByTeam((prev) => {
+      const next = { ...prev };
+      for (const player of lobby.players) {
+        next[player.team] = player;
+      }
+      return next;
+    });
+  }, [lobby?.players]);
+
+  useEffect(() => {
+    if (lobby) return;
+    setStablePlayersByTeam({});
+  }, [lobby]);
+
+  useEffect(() => {
+    // Switch storage to multiplayer mode so the local game's localStorage key is
+    // never read from or written to while this view is active.
+    setFourPlayerStorageMode(true);
+    useFourPlayerStore.persist.rehydrate();
+
     const fpSession = loadFourPlayerSession();
     const storeState = useFourPlayerStore.getState();
     // Check BEFORE resetting — determines whether to hide the dialog for a rejoin attempt
@@ -171,6 +218,7 @@ export function FourPlayerMultiplayerView({
       }
     }
     return () => {
+      setFourPlayerStorageMode(false);
       useFourPlayerStore.getState().setRestrictedTeam(null);
     };
   }, []);
@@ -285,14 +333,15 @@ export function FourPlayerMultiplayerView({
   }, [isGameOver]);
 
   // Save 4-player game to history when game ends
-  const savedFourPlayerLobbyRef = useRef<string | null>(null);
+  const savedFourPlayerGameRef = useRef<string | null>(null);
   useEffect(() => {
     if (!isGameOver || !currentLobbyId || !session?.user?.id || !myTeam) return;
-    if (winner === null) return;
-    if (savedFourPlayerLobbyRef.current === currentLobbyId) return;
-    savedFourPlayerLobbyRef.current = currentLobbyId;
+    const saveKey = `${currentLobbyId}:${gameId}`;
+    if (savedFourPlayerGameRef.current === saveKey) return;
+    savedFourPlayerGameRef.current = saveKey;
 
-    const result = winner === myTeam ? '1-0' : '0-1';
+    const result = toResultCode(winner, myTeam, gameResult);
+    const resultReason = toResultReason(gameResult);
     const tc = lobby?.timeControl ?? {
       mode: 'unlimited',
       minutes: 0,
@@ -308,7 +357,7 @@ export function FourPlayerMultiplayerView({
         variant: 'four-player',
         gameType: 'multiplayer',
         result,
-        resultReason: 'elimination',
+        resultReason,
         myColor: 'white',
         opponentUserId: null,
         timeControl: tc,
@@ -324,7 +373,9 @@ export function FourPlayerMultiplayerView({
     myTeam,
     playerId,
     winner,
-    lobby
+    gameResult,
+    lobby,
+    gameId
   ]);
 
   useEffect(() => {
@@ -441,6 +492,19 @@ export function FourPlayerMultiplayerView({
   }, [inviteCopied]);
 
   const lobbyPlayers = lobby?.players ?? [];
+  const sidebarPlayers = useMemo(() => {
+    if (!lobby) return undefined;
+    const byTeam = new Map<Team, FourPlayerLobbyPlayer>();
+    for (const player of lobby.players) {
+      byTeam.set(player.team, player);
+    }
+    for (const team of Object.keys(stablePlayersByTeam) as Team[]) {
+      if (byTeam.has(team)) continue;
+      const cached = stablePlayersByTeam[team];
+      if (cached) byTeam.set(team, cached);
+    }
+    return Array.from(byTeam.values());
+  }, [lobby, stablePlayersByTeam]);
   const filledSeats = lobbyPlayers.length;
   const startDisabled = !isLeader || filledSeats !== 4 || !!lobby?.started;
   const randomizeDisabled = !isLeader || !!lobby?.started || filledSeats < 2;
@@ -457,7 +521,7 @@ export function FourPlayerMultiplayerView({
       <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(calc(100dvh-120px),calc(100vw-clamp(20rem,24vw,30rem)-6rem))] lg:min-h-0 lg:w-[clamp(20rem,24vw,30rem)] lg:shrink-0 lg:overflow-hidden'>
         <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
           <FourPlayerSidebar
-            lobbyPlayers={lobby?.players}
+            lobbyPlayers={sidebarPlayers}
             myTeam={myTeam}
             onNewGame={() => setLobbyDialogOpen(true)}
           />

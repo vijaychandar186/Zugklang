@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { GAME_FOUR_PLAYER_KEY } from '@/lib/storage/keys';
-import { createLazyStorage, hasGameStarted } from '@/lib/storage/lazyStorage';
+import { hasGameStarted } from '@/lib/storage/lazyStorage';
 import {
   FourPlayerGame,
   type Team,
@@ -11,6 +11,48 @@ import {
 import { playSound } from '@/features/game/utils/sounds';
 import type { SoundType } from '@/features/game/utils/sounds';
 import { TimeControl } from '@/features/game/types/rules';
+
+// Tracks whether the store is currently being used by the multiplayer view.
+// When true, no game state is read from or written to localStorage — the server
+// is the source of truth for multiplayer games, so local persistence would only
+// cause state pollution when switching back to the local game.
+let fourPlayerIsMultiplayer = false;
+export function setFourPlayerStorageMode(isMultiplayer: boolean): void {
+  fourPlayerIsMultiplayer = isMultiplayer;
+}
+function createFourPlayerStorage() {
+  return createJSONStorage(() => ({
+    getItem: (name: string): string | null => {
+      if (typeof localStorage === 'undefined') return null;
+      if (fourPlayerIsMultiplayer) return null;
+      return localStorage.getItem(name);
+    },
+    setItem: (name: string, value: string): void => {
+      if (typeof localStorage === 'undefined') return;
+      if (fourPlayerIsMultiplayer) return;
+      try {
+        const parsed = JSON.parse(value) as { state?: unknown };
+        const s = parsed?.state as
+          | { moves?: unknown[]; gameStarted?: boolean }
+          | undefined;
+        if (
+          s &&
+          hasGameStarted({ moves: s.moves, gameStarted: s.gameStarted })
+        ) {
+          localStorage.setItem(name, value);
+        } else {
+          localStorage.removeItem(name);
+        }
+      } catch {
+        localStorage.removeItem(name);
+      }
+    },
+    removeItem: (name: string): void => {
+      if (typeof localStorage === 'undefined') return;
+      localStorage.removeItem(name);
+    }
+  }));
+}
 const TEAM_ROTATIONS: Record<Team, number> = {
   r: 0,
   b: 270,
@@ -51,6 +93,9 @@ export interface FourPlayerSyncSnapshot {
   teamTimes: TeamTimes;
   activeTimer: Team | null;
   lastActiveTimestamp: number | null;
+  drawOfferedBy: Team | null;
+  rematchOfferedBy: Team | null;
+  rematchDeclined: boolean;
 }
 const DEFAULT_TIME_CONTROL: TimeControl = {
   mode: 'unlimited',
@@ -84,6 +129,9 @@ interface FourPlayerStore {
   teamTimes: TeamTimes;
   activeTimer: Team | null;
   lastActiveTimestamp: number | null;
+  drawOfferedBy: Team | null;
+  rematchOfferedBy: Team | null;
+  rematchDeclined: boolean;
   autoRotateBoard: boolean;
   restrictedTeam: Team | null;
   selectSquare: (square: string) => void;
@@ -92,6 +140,13 @@ interface FourPlayerStore {
   resetGame: () => void;
   startGame: () => void;
   abortGame: () => void;
+  resignGame: (team: Team) => void;
+  offerDraw: (team: Team) => void;
+  acceptDraw: () => void;
+  declineDraw: () => void;
+  offerRematch: (team: Team) => void;
+  acceptRematch: () => void;
+  declineRematch: () => void;
   setOrientation: (degrees: number) => void;
   goToMove: (index: number) => void;
   goToStart: () => void;
@@ -178,6 +233,9 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
         teamTimes: { r: null, b: null, y: null, g: null },
         activeTimer: null,
         lastActiveTimestamp: null,
+        drawOfferedBy: null,
+        rematchOfferedBy: null,
+        rematchDeclined: false,
         autoRotateBoard: false,
         restrictedTeam: null,
         selectSquare: (square) => {
@@ -313,7 +371,10 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             points: calculateInitialPoints(),
             teamTimes: timers,
             activeTimer: null,
-            lastActiveTimestamp: null
+            lastActiveTimestamp: null,
+            drawOfferedBy: null,
+            rematchOfferedBy: null,
+            rematchDeclined: false
           });
         },
         startGame: () => {
@@ -323,14 +384,86 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             gameStarted: true,
             gameResult: null,
             activeTimer: shouldStartTimer ? 'r' : null,
-            lastActiveTimestamp: shouldStartTimer ? Date.now() : null
+            lastActiveTimestamp: shouldStartTimer ? Date.now() : null,
+            drawOfferedBy: null,
+            rematchOfferedBy: null,
+            rematchDeclined: false
           });
         },
         abortGame: () => {
           set({
             isGameOver: true,
             gameStarted: false,
-            gameResult: 'Game Ended'
+            gameResult: 'Game Aborted',
+            activeTimer: null,
+            lastActiveTimestamp: null,
+            drawOfferedBy: null,
+            rematchOfferedBy: null,
+            rematchDeclined: false
+          });
+        },
+        resignGame: (team) => {
+          set({
+            isGameOver: true,
+            gameStarted: false,
+            gameResult: `${team.toUpperCase()} resigned`,
+            activeTimer: null,
+            lastActiveTimestamp: null,
+            drawOfferedBy: null,
+            rematchOfferedBy: null,
+            rematchDeclined: false
+          });
+        },
+        offerDraw: (team) => {
+          set({ drawOfferedBy: team });
+        },
+        acceptDraw: () => {
+          set({
+            isGameOver: true,
+            gameStarted: false,
+            winner: null,
+            gameResult: 'Draw by agreement',
+            activeTimer: null,
+            lastActiveTimestamp: null,
+            drawOfferedBy: null,
+            rematchOfferedBy: null,
+            rematchDeclined: false
+          });
+        },
+        declineDraw: () => {
+          set({ drawOfferedBy: null });
+        },
+        offerRematch: (team) => {
+          set({
+            rematchOfferedBy: team,
+            rematchDeclined: false
+          });
+        },
+        acceptRematch: () => {
+          const state = get();
+          const newGame = new FourPlayerGame();
+          const timers = initializeTeamTimers(state.timeControl);
+          const shouldStartTimer = hasTimer(state.timeControl);
+          set({
+            ...syncFromGame(newGame),
+            selectedSquare: null,
+            validMoves: [],
+            gameId: state.gameId + 1,
+            gameStarted: true,
+            gameResult: null,
+            points: calculateInitialPoints(),
+            teamTimes: timers,
+            activeTimer: shouldStartTimer ? 'r' : null,
+            lastActiveTimestamp: shouldStartTimer ? Date.now() : null,
+            drawOfferedBy: null,
+            rematchOfferedBy: null,
+            rematchDeclined: false
+          });
+        },
+        declineRematch: () => {
+          set({
+            rematchDeclined: true,
+            rematchOfferedBy: null
           });
         },
         setOrientation: (degrees) => {
@@ -480,7 +613,10 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             timeControl: state.timeControl,
             teamTimes: { ...state.teamTimes },
             activeTimer: state.activeTimer,
-            lastActiveTimestamp: state.lastActiveTimestamp
+            lastActiveTimestamp: state.lastActiveTimestamp,
+            drawOfferedBy: state.drawOfferedBy,
+            rematchOfferedBy: state.rematchOfferedBy,
+            rematchDeclined: state.rematchDeclined
           };
         },
         applySyncSnapshot: (snapshot) => {
@@ -512,6 +648,9 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
             teamTimes: { ...snapshot.teamTimes },
             activeTimer: snapshot.activeTimer,
             lastActiveTimestamp: snapshot.lastActiveTimestamp,
+            drawOfferedBy: snapshot.drawOfferedBy ?? null,
+            rematchOfferedBy: snapshot.rematchOfferedBy ?? null,
+            rematchDeclined: snapshot.rematchDeclined ?? false,
             selectedSquare: null,
             validMoves: [],
             restrictedTeam: state.restrictedTeam
@@ -521,16 +660,7 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
     },
     {
       name: GAME_FOUR_PLAYER_KEY,
-      storage: createLazyStorage((state: unknown) => {
-        const s = state as {
-          moves?: unknown[];
-          gameStarted?: boolean;
-        };
-        return hasGameStarted({
-          moves: s.moves,
-          gameStarted: s.gameStarted
-        });
-      }),
+      storage: createFourPlayerStorage(),
       partialize: (state) => ({
         moves: state.moves,
         viewingMoveIndex: state.viewingMoveIndex,
@@ -545,6 +675,9 @@ export const useFourPlayerStore = create<FourPlayerStore>()(
         teamTimes: state.teamTimes,
         activeTimer: state.activeTimer,
         lastActiveTimestamp: state.lastActiveTimestamp,
+        drawOfferedBy: state.drawOfferedBy,
+        rematchOfferedBy: state.rematchOfferedBy,
+        rematchDeclined: state.rematchDeclined,
         autoRotateBoard: state.autoRotateBoard
       }),
       onRehydrateStorage: () => (state) => {

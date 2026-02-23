@@ -460,13 +460,31 @@ function makeGameColumns(userId: string): ColumnDef<GameRow>[] {
       cell: ({ row }) => {
         if (row.original.moves.length === 0) return null;
         const pgn = buildPgn(row.original.moves);
+        const analysisHref = `/tools/analysis?pgn=${encodeURIComponent(pgn)}`;
         const href = `/tools/game-review?pgn=${encodeURIComponent(pgn)}`;
         return (
-          <Link href={href}>
-            <Button variant='outline' size='sm'>
-              Review
-            </Button>
-          </Link>
+          <div className='flex items-center justify-end gap-2'>
+            <Link href={analysisHref}>
+              <Button
+                variant='outline'
+                size='icon'
+                aria-label='Open analysis board'
+                title='Open analysis board'
+              >
+                <Icons.microscope className='h-4 w-4' />
+              </Button>
+            </Link>
+            <Link href={href}>
+              <Button
+                variant='outline'
+                size='icon'
+                aria-label='Open game review'
+                title='Open game review'
+              >
+                <Icons.circlestar className='h-4 w-4' />
+              </Button>
+            </Link>
+          </div>
         );
       }
     }

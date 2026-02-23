@@ -30,7 +30,7 @@ export default async function GamesPage({
 
   const baseWhere = {
     OR: [{ whiteUserId: userId }, { blackUserId: userId }]
-  } as const;
+  };
 
   const gameWhere = {
     OR: [{ whiteUserId: userId }, { blackUserId: userId }],

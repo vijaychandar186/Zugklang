@@ -55,9 +55,11 @@ import {
 } from '../stores/useBoardEditorStore';
 interface AnalysisViewProps {
   initialBoard3dEnabled?: boolean;
+  initialPgn?: string;
 }
 export function AnalysisView({
-  initialBoard3dEnabled
+  initialBoard3dEnabled,
+  initialPgn
 }: AnalysisViewProps = {}) {
   const router = useRouter();
   const [importDialogOpen, setImportDialogOpen] = useState(false);
@@ -116,6 +118,13 @@ export function AnalysisView({
     onMove: makeMove
   });
   useEngineInit();
+  useEffect(() => {
+    if (!initialPgn) return;
+    const success = loadPGN(initialPgn);
+    if (!success) {
+      toast.error('Invalid PGN provided for analysis');
+    }
+  }, [initialPgn, loadPGN]);
   useEffect(() => {
     if (!currentFEN || isEditorMode) return;
     const turn = currentFEN.split(' ')[1] as 'w' | 'b';

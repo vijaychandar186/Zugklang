@@ -4,7 +4,7 @@ import { defaultPieces } from 'react-chessboard';
 import { FourPlayerBoard } from './FourPlayerBoard';
 import { FourPlayerSidebar } from './FourPlayerSidebar';
 import { FourPlayerGameDialog } from './FourPlayerGameDialog';
-import { useFourPlayerStore } from '../store';
+import { useFourPlayerStore, setFourPlayerStorageMode } from '../store';
 import type { Team, PieceType } from '../engine';
 const TEAM_INFO: Record<
   Team,
@@ -65,6 +65,12 @@ export function FourPlayerView() {
     startGame
   } = useFourPlayerStore();
   const [newGameOpen, setNewGameOpen] = useState(false);
+  useEffect(() => {
+    // Ensure local storage mode is active (in case we navigated from the
+    // multiplayer view) and reload persisted state from the local game key.
+    setFourPlayerStorageMode(false);
+    useFourPlayerStore.persist.rehydrate();
+  }, []);
   useEffect(() => {
     if (hasHydrated && !gameStarted && !isGameOver && moves.length === 0) {
       setNewGameOpen(true);

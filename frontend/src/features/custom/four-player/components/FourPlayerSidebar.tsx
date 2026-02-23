@@ -1,5 +1,5 @@
 'use client';
-import { memo, useCallback, useState } from 'react';
+import { memo, useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,16 @@ const TEAM_INFO: Record<
   g: { label: 'Green', cssVar: 'var(--four-player-green)', short: 'G' }
 };
 const TEAMS: Team[] = ['r', 'b', 'y', 'g'];
+
+function getLobbyPlayerName(
+  player: FourPlayerLobbyPlayer | undefined
+): string | null {
+  if (!player) return null;
+  const trimmed = player.displayName?.trim();
+  if (trimmed) return trimmed;
+  return `Player ${player.playerId.slice(0, 6)}`;
+}
+
 function useClipboard({
   resetDelay = 2000
 }: {
@@ -203,6 +213,9 @@ export function FourPlayerSidebar({
     gameStarted,
     gameResult,
     points,
+    drawOfferedBy,
+    rematchOfferedBy,
+    rematchDeclined,
     goToMove,
     goToStart,
     goToEnd,
@@ -210,6 +223,13 @@ export function FourPlayerSidebar({
     goToNext,
     resetGame,
     abortGame,
+    resignGame,
+    offerDraw,
+    acceptDraw,
+    declineDraw,
+    offerRematch,
+    acceptRematch,
+    declineRematch,
     setOrientation
   } = useFourPlayerStore();
   const { hasTimer, teamTimes, activeTimer } = useFourPlayerTimer();
@@ -218,27 +238,50 @@ export function FourPlayerSidebar({
   const [settingsOpen, setSettingsOpen] = useState(false);
   const canGoBack = viewingMoveIndex > -1;
   const canGoForward = viewingMoveIndex < moves.length - 1;
-  const { isPlaying, togglePlay } = usePlayback({
+  const canAbort = moves.length < 4;
+  const isPlaying = gameStarted && !isGameOver;
+  const { isPlaying: isPlaybackActive, togglePlay } = usePlayback({
     currentIndex: viewingMoveIndex + 1,
     totalItems: moves.length + 1,
     onNext: goToNext
   });
+  const [rematchSent, setRematchSent] = useState(false);
   const { copy, isCopied } = useClipboard();
   const currentInfo = TEAM_INFO[currentTeam];
   const isChecked = !isGameOver && game.isChecked;
+  useEffect(() => {
+    if (rematchDeclined) setRematchSent(false);
+  }, [rematchDeclined]);
+  useEffect(() => {
+    if (!isGameOver) setRematchSent(false);
+  }, [isGameOver]);
   const handleAbort = () => {
+    if (soundEnabled) playSound('game-end');
     abortGame();
+  };
+  const handleResign = () => {
+    if (soundEnabled) playSound('game-end');
+    resignGame(myTeam ?? currentTeam);
   };
   const handleOfferDraw = () => {
     if (soundEnabled) playSound('draw-offer');
+    offerDraw(myTeam ?? currentTeam);
   };
   const handleAcceptDraw = () => {
     if (soundEnabled) playSound('game-end');
-    useFourPlayerStore.setState({
-      isGameOver: true,
-      gameStarted: false,
-      gameResult: 'Draw by agreement'
-    });
+    acceptDraw();
+  };
+  const handleDeclineDraw = () => {
+    declineDraw();
+  };
+  const handleOfferRematch = () => {
+    offerRematch(myTeam ?? currentTeam);
+  };
+  const handleAcceptRematch = () => {
+    acceptRematch();
+  };
+  const handleDeclineRematch = () => {
+    declineRematch();
   };
   const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
   const handleCopyGameState = () => {
@@ -373,10 +416,11 @@ export function FourPlayerSidebar({
                 const isTimerActive = activeTimer === team;
                 const isLow = time !== null && time <= 30;
                 const isCritical = time !== null && time <= 10;
+                const isEliminated = loseOrder.includes(team);
                 const isOrientationActive =
                   orientation === TEAM_ROTATIONS[team];
                 const lobbyPlayer = lobbyPlayers?.find((p) => p.team === team);
-                const playerName = lobbyPlayer?.displayName?.trim() || null;
+                const playerName = getLobbyPlayerName(lobbyPlayer);
                 return (
                   <TableRow
                     key={team}
@@ -398,7 +442,12 @@ export function FourPlayerSidebar({
                         )}
                       </div>
                       {playerName && (
-                        <p className='text-muted-foreground truncate text-[10px]'>
+                        <p
+                          className={cn(
+                            'text-muted-foreground truncate text-[10px]',
+                            isEliminated && 'line-through opacity-70'
+                          )}
+                        >
                           {playerName}
                         </p>
                       )}
@@ -448,6 +497,33 @@ export function FourPlayerSidebar({
           </Table>
         </div>
 
+        {drawOfferedBy &&
+          (!myTeam || drawOfferedBy !== myTeam) &&
+          !isGameOver && (
+            <div className='shrink-0 space-y-2 border-b bg-blue-500/10 px-4 py-3'>
+              <p className='text-center text-sm font-medium text-blue-600 dark:text-blue-400'>
+                {TEAM_INFO[drawOfferedBy].label} offers a draw
+              </p>
+              <div className='flex gap-2'>
+                <Button
+                  size='sm'
+                  className='flex-1 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                  onClick={handleAcceptDraw}
+                >
+                  Accept
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  className='flex-1'
+                  onClick={handleDeclineDraw}
+                >
+                  Decline
+                </Button>
+              </div>
+            </div>
+          )}
+
         <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
           <div className='px-4 py-2'>
             <FourPlayerMoveHistory
@@ -463,7 +539,7 @@ export function FourPlayerSidebar({
           totalPositions={moves.length + 1}
           canGoBack={canGoBack}
           canGoForward={canGoForward}
-          isPlaying={isPlaying}
+          isPlaying={isPlaybackActive}
           onTogglePlay={togglePlay}
           onGoToStart={goToStart}
           onGoToEnd={goToEnd}
@@ -522,6 +598,58 @@ export function FourPlayerSidebar({
             </div>
           )}
 
+          {isMultiplayer &&
+            isGameOver &&
+            rematchOfferedBy &&
+            (!myTeam || rematchOfferedBy !== myTeam) && (
+              <div className='space-y-2 rounded-md border bg-purple-500/10 px-3 py-2'>
+                <p className='text-center text-sm font-medium text-purple-600 dark:text-purple-400'>
+                  {TEAM_INFO[rematchOfferedBy].label} wants a rematch
+                </p>
+                <div className='flex gap-2'>
+                  <Button
+                    size='sm'
+                    className='flex-1 bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600'
+                    onClick={handleAcceptRematch}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    className='flex-1'
+                    onClick={handleDeclineRematch}
+                  >
+                    Decline
+                  </Button>
+                </div>
+              </div>
+            )}
+
+          {isMultiplayer &&
+            isGameOver &&
+            !rematchOfferedBy &&
+            !rematchDeclined && (
+              <Button
+                size='sm'
+                variant={rematchSent ? 'default' : 'outline'}
+                className='w-full'
+                disabled={rematchSent}
+                onClick={() => {
+                  setRematchSent(true);
+                  handleOfferRematch();
+                }}
+              >
+                {rematchSent ? 'Rematch Sent ✓' : 'Rematch'}
+              </Button>
+            )}
+
+          {isMultiplayer && isGameOver && rematchDeclined && (
+            <p className='text-muted-foreground text-center text-xs'>
+              A player declined the rematch
+            </p>
+          )}
+
           {!isGameOver && gameStarted && (
             <div className='flex flex-col gap-2'>
               <div className='flex items-center justify-center gap-2'>
@@ -555,7 +683,7 @@ export function FourPlayerSidebar({
             </div>
           )}
 
-          {gameStarted && !isGameOver && !isMultiplayer && (
+          {gameStarted && !isGameOver && (
             <div className='flex justify-center gap-1'>
               <AlertDialog>
                 <Tooltip>
@@ -565,7 +693,7 @@ export function FourPlayerSidebar({
                         variant='ghost'
                         size='icon'
                         className='bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-400'
-                        onClick={handleOfferDraw}
+                        disabled={isGameOver || !gameStarted || !isPlaying}
                       >
                         <Icons.handshake className='h-4 w-4' />
                       </Button>
@@ -576,18 +704,18 @@ export function FourPlayerSidebar({
 
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Declare Draw</AlertDialogTitle>
+                    <AlertDialogTitle>Offer Draw</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Do all players agree to a draw?
+                      Send a draw offer to the other players?
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>No</AlertDialogCancel>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={handleAcceptDraw}
+                      onClick={handleOfferDraw}
                       className='bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
                     >
-                      Yes, Draw
+                      Offer Draw
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -601,29 +729,39 @@ export function FourPlayerSidebar({
                         variant='ghost'
                         size='icon'
                         className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive'
+                        disabled={isGameOver || !gameStarted}
                       >
-                        <Icons.flag className='h-4 w-4' />
+                        {canAbort ? (
+                          <Icons.abort className='h-4 w-4' />
+                        ) : (
+                          <Icons.flag className='h-4 w-4' />
+                        )}
                       </Button>
                     </AlertDialogTrigger>
                   </TooltipTrigger>
-                  <TooltipContent>End Game</TooltipContent>
+                  <TooltipContent>
+                    {canAbort ? 'Abort Game' : 'Resign Game'}
+                  </TooltipContent>
                 </Tooltip>
 
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>End Game?</AlertDialogTitle>
+                    <AlertDialogTitle>
+                      {canAbort ? 'Abort Game?' : 'Resign Game?'}
+                    </AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure you want to end the game? The current
-                      progress will be saved.
+                      {canAbort
+                        ? 'Are you sure you want to abort?'
+                        : 'Are you sure you want to resign? Other players win.'}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={handleAbort}
+                      onClick={canAbort ? handleAbort : handleResign}
                       className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
                     >
-                      End Game
+                      {canAbort ? 'Abort' : 'Resign'}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

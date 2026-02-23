@@ -192,6 +192,7 @@ exports.Prisma.GameScalarFieldEnum = {
   whiteRatingDelta: 'whiteRatingDelta',
   blackRatingDelta: 'blackRatingDelta',
   moveCount: 'moveCount',
+  playedAt: 'playedAt',
   createdAt: 'createdAt'
 };
 

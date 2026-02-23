@@ -74,7 +74,10 @@ import {
   CARD_TO_PIECE,
   PIECE_NAMES
 } from '../stores/useCardChessStore';
-import type { ChallengeColor } from '@/features/multiplayer/types';
+import type {
+  ChallengeColor,
+  MultiplayerStatus
+} from '@/features/multiplayer/types';
 import { ABANDON_TIMEOUT_MS } from '@/features/multiplayer/config';
 import {
   DEFAULT_FLAG_CODE,
@@ -404,6 +407,10 @@ function CardMultiplayerPanel({
 // Minimal sidebar
 // ---------------------------------------------------------------------------
 interface CustomMultiplayerSidebarProps {
+  status: MultiplayerStatus;
+  drawOffered: boolean;
+  rematchOffered: boolean;
+  rematchDeclined: boolean;
   moves: string[];
   viewingIndex: number;
   positionHistory: string[];
@@ -416,6 +423,12 @@ interface CustomMultiplayerSidebarProps {
   statsTitle?: string;
   onResign: () => void;
   onAbort: () => void;
+  onOfferDraw: () => void;
+  onAcceptDraw: () => void;
+  onDeclineDraw: () => void;
+  onOfferRematch: () => void;
+  onAcceptRematch: () => void;
+  onDeclineRematch: () => void;
   onFindNewGame: () => void;
   onGoToStart: () => void;
   onGoToEnd: () => void;
@@ -425,6 +438,10 @@ interface CustomMultiplayerSidebarProps {
 }
 
 function CustomMultiplayerSidebar({
+  status,
+  drawOffered,
+  rematchOffered,
+  rematchDeclined,
   moves,
   viewingIndex,
   positionHistory,
@@ -437,6 +454,12 @@ function CustomMultiplayerSidebar({
   statsTitle,
   onResign,
   onAbort,
+  onOfferDraw,
+  onAcceptDraw,
+  onDeclineDraw,
+  onOfferRematch,
+  onAcceptRematch,
+  onDeclineRematch,
   onFindNewGame,
   onGoToStart,
   onGoToEnd,
@@ -447,10 +470,18 @@ function CustomMultiplayerSidebar({
   const router = useRouter();
   const flipBoard = useChessStore((s) => s.flipBoard);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [rematchSent, setRematchSent] = useState(false);
   const { copy, isCopied } = useClipboard();
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
   const canAbort = movesCount < 4;
+  const isPlaying = status === 'playing' || (gameStarted && !gameOver);
+  useEffect(() => {
+    if (rematchDeclined) setRematchSent(false);
+  }, [rematchDeclined]);
+  useEffect(() => {
+    if (!gameOver) setRematchSent(false);
+  }, [gameOver]);
 
   const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
   const handleCopyPGN = () =>
@@ -560,6 +591,31 @@ function CustomMultiplayerSidebar({
 
         {activePanel}
 
+        {drawOffered && !gameOver && (
+          <div className='shrink-0 space-y-2 border-b bg-blue-500/10 px-4 py-3'>
+            <p className='text-center text-sm font-medium text-blue-600 dark:text-blue-400'>
+              Opponent offers a draw
+            </p>
+            <div className='flex gap-2'>
+              <Button
+                size='sm'
+                className='flex-1 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                onClick={onAcceptDraw}
+              >
+                Accept
+              </Button>
+              <Button
+                size='sm'
+                variant='outline'
+                className='flex-1'
+                onClick={onDeclineDraw}
+              >
+                Decline
+              </Button>
+            </div>
+          </div>
+        )}
+
         <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
           <div className='px-4 py-2'>
             <MoveHistory
@@ -594,6 +650,56 @@ function CustomMultiplayerSidebar({
             />
           )}
 
+          {gameOver && rematchOffered && (
+            <div className='space-y-2 rounded-md border bg-purple-500/10 px-3 py-2'>
+              <p className='text-center text-sm font-medium text-purple-600 dark:text-purple-400'>
+                Opponent wants a rematch
+              </p>
+              <div className='flex gap-2'>
+                <Button
+                  size='sm'
+                  className='flex-1 bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600'
+                  onClick={onAcceptRematch}
+                >
+                  Accept
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  className='flex-1'
+                  onClick={onDeclineRematch}
+                >
+                  Decline
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {gameOver &&
+            !rematchOffered &&
+            !rematchDeclined &&
+            status !== 'matched' &&
+            status !== 'rejoined' && (
+              <Button
+                size='sm'
+                variant={rematchSent ? 'default' : 'outline'}
+                className='w-full'
+                disabled={rematchSent}
+                onClick={() => {
+                  setRematchSent(true);
+                  onOfferRematch();
+                }}
+              >
+                {rematchSent ? 'Rematch Sent ✓' : 'Rematch'}
+              </Button>
+            )}
+
+          {gameOver && rematchDeclined && (
+            <p className='text-muted-foreground text-center text-xs'>
+              Opponent declined the rematch
+            </p>
+          )}
+
           <div className='flex items-center gap-1'>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -618,6 +724,41 @@ function CustomMultiplayerSidebar({
             </Tooltip>
 
             <div className='ml-auto flex items-center gap-1'>
+              <AlertDialog>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant='ghost'
+                        size='icon'
+                        className='bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-400'
+                        disabled={gameOver || !gameStarted || !isPlaying}
+                      >
+                        <Icons.handshake className='h-4 w-4' />
+                      </Button>
+                    </AlertDialogTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Offer Draw</TooltipContent>
+                </Tooltip>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Offer Draw</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Send a draw offer to your opponent?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onOfferDraw}
+                      className='bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                    >
+                      Offer Draw
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+
               <AlertDialog>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -766,11 +907,17 @@ export function CardChessMultiplayerView({
   // Board settings from global store
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
   const soundEnabled = useChessStore((s) => s.soundEnabled);
+  const boardFlipped = useChessStore((s) => s.boardFlipped);
+  const setBoardFlipped = useChessStore((s) => s.setBoardFlipped);
   const theme = useBoardTheme();
 
   const myColor = ws.myColor;
-  const boardOrientation =
-    myColor === 'black' ? ('black' as const) : ('white' as const);
+  const serverOrientation = myColor === 'black' ? 'black' : 'white';
+  const boardOrientation = boardFlipped
+    ? serverOrientation === 'white'
+      ? 'black'
+      : 'white'
+    : serverOrientation;
   const isMyTurn =
     gameStarted &&
     !gameOver &&
@@ -787,10 +934,9 @@ export function CardChessMultiplayerView({
     [capturedPieces]
   );
 
-  // Orientation helpers (my color at bottom)
-  const boardFlipped = myColor === 'black';
-  const topColor = boardFlipped ? 'white' : 'black';
-  const bottomColor = boardFlipped ? 'black' : 'white';
+  // Orientation helpers
+  const topColor = boardOrientation === 'white' ? 'black' : 'white';
+  const bottomColor = boardOrientation === 'white' ? 'white' : 'black';
 
   // Stable ref so doDrawCard (with [] deps) can call the latest sendCardSync
   const sendCardSyncRef = useRef(ws.sendCardSync);
@@ -1054,50 +1200,54 @@ export function CardChessMultiplayerView({
   // ---------------------------------------------------------------------------
   // Start game helper
   // ---------------------------------------------------------------------------
-  const startGameFromFresh = useCallback((replayMoves?: string[]) => {
-    const chess = new Chess();
-    const history: string[] = [STARTING_FEN];
-    const sanMoves: string[] = [];
+  const startGameFromFresh = useCallback(
+    (replayMoves?: string[]) => {
+      const chess = new Chess();
+      const history: string[] = [STARTING_FEN];
+      const sanMoves: string[] = [];
 
-    if (replayMoves) {
-      for (const uci of replayMoves) {
-        const from = uci.slice(0, 2);
-        const to = uci.slice(2, 4);
-        const promotion = uci[4] || undefined;
-        const mo = chess.move({ from, to, promotion }) as ChessJSMove | null;
-        if (mo) {
-          sanMoves.push(mo.san);
-          history.push(chess.fen());
+      if (replayMoves) {
+        for (const uci of replayMoves) {
+          const from = uci.slice(0, 2);
+          const to = uci.slice(2, 4);
+          const promotion = uci[4] || undefined;
+          const mo = chess.move({ from, to, promotion }) as ChessJSMove | null;
+          if (mo) {
+            sanMoves.push(mo.san);
+            history.push(chess.fen());
+          }
         }
       }
-    }
 
-    chessRef.current = chess;
-    positionHistoryRef.current = history;
-    deckRef.current = shuffleDeck(createDeck());
-    discardPileRef.current = [];
-    drawCountRef.current = 0;
+      chessRef.current = chess;
+      positionHistoryRef.current = history;
+      deckRef.current = shuffleDeck(createDeck());
+      discardPileRef.current = [];
+      drawCountRef.current = 0;
 
-    const fen = chess.fen();
-    const isOver = chess.isGameOver();
+      const fen = chess.fen();
+      const isOver = chess.isGameOver();
 
-    setCurrentFEN(fen);
-    setTurn(chess.turn());
-    setMoves(sanMoves);
-    setPositionHistory(history);
-    setViewingIndex(history.length - 1);
-    setGameStarted(true);
-    setGameOver(isOver);
-    setGameResult(isOver ? getGameResult(chess) : null);
-    setDrawnCard(null);
-    setNeedsDraw(!isOver);
-    setDrawCount(0);
-    setIsDrawing(false);
-    setIsInCheck(chess.isCheck());
-    setCardDrawHistory([]);
-    setLoserColor(null);
-    setHighlightedSquares({});
-  }, []);
+      setCurrentFEN(fen);
+      setTurn(chess.turn());
+      setMoves(sanMoves);
+      setPositionHistory(history);
+      setViewingIndex(history.length - 1);
+      setGameStarted(true);
+      setGameOver(isOver);
+      setGameResult(isOver ? getGameResult(chess) : null);
+      setDrawnCard(null);
+      setNeedsDraw(!isOver);
+      setDrawCount(0);
+      setIsDrawing(false);
+      setIsInCheck(chess.isCheck());
+      setCardDrawHistory([]);
+      setLoserColor(null);
+      setHighlightedSquares({});
+      setBoardFlipped(false);
+    },
+    [setBoardFlipped]
+  );
 
   // ---------------------------------------------------------------------------
   // React to WebSocket status changes
@@ -1257,6 +1407,18 @@ export function CardChessMultiplayerView({
     setGameOver(true);
     ws.abort();
   }, [soundEnabled, ws.abort]); // eslint-disable-line react-hooks/exhaustive-deps
+  const handleOfferDraw = useCallback(() => {
+    ws.offerDraw();
+  }, [ws.offerDraw]);
+  const handleAcceptDraw = useCallback(() => {
+    if (soundEnabled) playSound('game-end');
+    setGameResult('Draw by agreement');
+    setGameOver(true);
+    ws.acceptDraw();
+  }, [soundEnabled, ws.acceptDraw]);
+  const handleDeclineDraw = useCallback(() => {
+    ws.declineDraw();
+  }, [ws.declineDraw]);
 
   // ---------------------------------------------------------------------------
   // Navigation (position history)
@@ -1295,10 +1457,23 @@ export function CardChessMultiplayerView({
 
   const showIndicator = gameStarted && !gameOver;
   const hasTimer = whiteTimeSecs !== null || blackTimeSecs !== null;
-  const topTime = boardFlipped ? whiteTimeSecs : blackTimeSecs;
-  const bottomTime = boardFlipped ? blackTimeSecs : whiteTimeSecs;
+  const topTime = topColor === 'white' ? whiteTimeSecs : blackTimeSecs;
+  const bottomTime = bottomColor === 'white' ? whiteTimeSecs : blackTimeSecs;
   const topTimerActive = activeClock === topColor && !gameOver;
   const bottomTimerActive = activeClock === bottomColor && !gameOver;
+  const isMe = (color: 'white' | 'black') => color === (ws.myColor ?? 'white');
+  const getPlayerName = (color: 'white' | 'black') => {
+    if (isMe(color)) return session?.user?.name ?? 'You';
+    return ws.opponentName ?? 'Opponent';
+  };
+  const getPlayerImage = (color: 'white' | 'black') => {
+    if (isMe(color)) return session?.user?.image ?? null;
+    return ws.opponentImage ?? null;
+  };
+  const getPlayerFlagCode = (color: 'white' | 'black') => {
+    if (isMe(color)) return myFlagCode;
+    return opponentFlagCode;
+  };
 
   // ---------------------------------------------------------------------------
   // Render
@@ -1312,30 +1487,37 @@ export function CardChessMultiplayerView({
           <div className='flex w-full items-center justify-between py-2'>
             <div className='flex items-center gap-2'>
               <PlayerInfo
-                name={ws.opponentName ?? 'Opponent'}
-                image={ws.opponentImage ?? null}
-                flagCode={opponentFlagCode}
+                name={getPlayerName(topColor)}
+                image={getPlayerImage(topColor)}
+                flagCode={getPlayerFlagCode(topColor)}
               />
               {showIndicator &&
-                (ws.opponentDisconnected ? (
+                (topColor !== (ws.myColor ?? 'white') &&
+                ws.opponentDisconnected ? (
                   <AbandonCountdown
                     disconnectedAt={ws.opponentDisconnectedAt ?? Date.now()}
                   />
                 ) : (
                   <SignalIndicator
                     wsStatus={ws.status}
-                    latencyMs={ws.opponentLatencyMs}
+                    latencyMs={
+                      topColor !== (ws.myColor ?? 'white')
+                        ? ws.opponentLatencyMs
+                        : ws.latencyMs
+                    }
                   />
                 ))}
             </div>
             <div className='flex items-center gap-2'>
               <CapturedPiecesDisplay
                 pieces={
-                  boardFlipped ? capturedPieces.black : capturedPieces.white
+                  topColor === 'white'
+                    ? capturedPieces.black
+                    : capturedPieces.white
                 }
-                pieceColor={boardFlipped ? 'white' : 'black'}
+                pieceColor={topColor}
                 advantage={
-                  boardFlipped
+                  topColor === 'white'
                     ? materialAdvantage > 0
                       ? materialAdvantage
                       : undefined
@@ -1389,30 +1571,36 @@ export function CardChessMultiplayerView({
           <div className='flex w-full items-center justify-between py-2'>
             <div className='flex items-center gap-2'>
               <PlayerInfo
-                name={session?.user?.name ?? 'You'}
-                image={session?.user?.image ?? null}
-                flagCode={myFlagCode}
+                name={getPlayerName(bottomColor)}
+                image={getPlayerImage(bottomColor)}
+                flagCode={getPlayerFlagCode(bottomColor)}
               />
               {showIndicator && (
                 <SignalIndicator
                   wsStatus={ws.status}
-                  latencyMs={ws.latencyMs}
+                  latencyMs={
+                    bottomColor !== (ws.myColor ?? 'white')
+                      ? ws.opponentLatencyMs
+                      : ws.latencyMs
+                  }
                 />
               )}
             </div>
             <div className='flex items-center gap-2'>
               <CapturedPiecesDisplay
                 pieces={
-                  boardFlipped ? capturedPieces.white : capturedPieces.black
+                  bottomColor === 'white'
+                    ? capturedPieces.black
+                    : capturedPieces.white
                 }
-                pieceColor={boardFlipped ? 'black' : 'white'}
+                pieceColor={bottomColor}
                 advantage={
-                  boardFlipped
-                    ? materialAdvantage < 0
-                      ? Math.abs(materialAdvantage)
-                      : undefined
-                    : materialAdvantage > 0
+                  bottomColor === 'white'
+                    ? materialAdvantage > 0
                       ? materialAdvantage
+                      : undefined
+                    : materialAdvantage < 0
+                      ? Math.abs(materialAdvantage)
                       : undefined
                 }
               />
@@ -1437,6 +1625,10 @@ export function CardChessMultiplayerView({
         <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>
           <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
             <CustomMultiplayerSidebar
+              status={ws.status}
+              drawOffered={ws.drawOffered}
+              rematchOffered={ws.rematchOffered}
+              rematchDeclined={ws.rematchDeclined}
               moves={moves}
               viewingIndex={viewingIndex}
               positionHistory={positionHistory}
@@ -1460,6 +1652,12 @@ export function CardChessMultiplayerView({
               }
               onResign={handleResign}
               onAbort={handleAbort}
+              onOfferDraw={handleOfferDraw}
+              onAcceptDraw={handleAcceptDraw}
+              onDeclineDraw={handleDeclineDraw}
+              onOfferRematch={ws.offerRematch}
+              onAcceptRematch={ws.acceptRematch}
+              onDeclineRematch={ws.declineRematch}
               onFindNewGame={handleFindNewGame}
               onGoToStart={goToStart}
               onGoToEnd={goToEnd}

@@ -54,12 +54,12 @@ export function FlagPicker({
       autoHighlight={true}
     >
       <ComboboxInput
-        className='w-full'
+        className='w-full [&_[data-slot=input-group-control]]:pl-11'
         placeholder='Search country or code...'
         disabled={disabled}
         showClear={true}
       >
-        <div className='absolute top-1/2 left-3 -translate-y-1/2'>
+        <div className='pointer-events-none absolute top-1/2 left-3 -translate-y-1/2'>
           {selectedItem && (
             <CountryFlag
               code={selectedItem.code}

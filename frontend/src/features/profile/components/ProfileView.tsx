@@ -1,8 +1,6 @@
 import { ProfileHeader } from './ProfileHeader';
-import { StatsGrid } from './StatsGrid';
-import { RatingsTable } from './RatingsTable';
-import { RecentGamesTable } from './RecentGamesTable';
 import { PassportCollection } from './PassportCollection';
+import { ProfileInsightsPanel } from './ProfileInsightsPanel';
 interface ProfileViewProps {
   user: {
     name: string | null;
@@ -21,83 +19,58 @@ interface ProfileViewProps {
     rd: number;
     gameCount: number;
   } | null;
-  recentGames: {
-    id: string;
+  games: {
     variant: string;
-    gameType: string;
     result: string;
-    resultReason: string;
-    moveCount: number;
-    createdAt: Date;
+    timeControl: unknown;
     whiteUserId: string | null;
     blackUserId: string | null;
-    white: {
-      name: string | null;
-    } | null;
-    black: {
-      name: string | null;
-    } | null;
-    whiteRatingDelta: number | null;
-    blackRatingDelta: number | null;
+    createdAt: Date;
+    playedAt: Date | null;
   }[];
   userId: string;
   passportFlags: {
     flagCode: string;
   }[];
 }
-function computeStats(userId: string, games: ProfileViewProps['recentGames']) {
-  let wins = 0,
-    losses = 0,
-    draws = 0;
-  for (const game of games) {
-    if (game.result === '*') continue;
-    const isWhite = game.whiteUserId === userId;
-    if (game.result === '1/2-1/2') {
-      draws++;
-    } else if (
-      (game.result === '1-0' && isWhite) ||
-      (game.result === '0-1' && !isWhite)
-    ) {
-      wins++;
-    } else {
-      losses++;
-    }
-  }
-  return {
-    wins,
-    losses,
-    draws,
-    total: games.filter((g) => g.result !== '*').length
-  };
-}
 export function ProfileView({
   user,
   ratings,
   puzzleRating,
-  recentGames,
+  games,
   userId,
   passportFlags
 }: ProfileViewProps) {
-  const stats = computeStats(userId, recentGames);
   return (
-    <div className='mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-8'>
+    <div className='mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8'>
+      <div className='space-y-1'>
+        <h1 className='text-2xl font-bold tracking-tight'>Profile</h1>
+        <p className='text-muted-foreground text-sm'>
+          Track your progress, ratings, and performance in one place.
+        </p>
+      </div>
+
       <ProfileHeader
         name={user.name}
         email={user.email}
         image={user.image}
         createdAt={user.createdAt}
       />
-      <StatsGrid
-        wins={stats.wins}
-        losses={stats.losses}
-        draws={stats.draws}
-        total={stats.total}
+
+      <ProfileInsightsPanel
+        games={games.map((game) => ({
+          ...game,
+          createdAt: game.createdAt.toISOString(),
+          playedAt: game.playedAt ? game.playedAt.toISOString() : null
+        }))}
+        userId={userId}
+        ratings={ratings}
+        puzzleRating={puzzleRating}
       />
+
       <PassportCollection
         collectedFlagCodes={passportFlags.map((entry) => entry.flagCode)}
       />
-      <RatingsTable ratings={ratings} puzzleRating={puzzleRating} />
-      <RecentGamesTable games={recentGames} userId={userId} />
     </div>
   );
 }

@@ -7,14 +7,14 @@ import { Navbar } from '@/components/layout/Navbar';
 import { ProfileView } from '@/features/profile/components/ProfileView';
 export const metadata: Metadata = {
   title: 'Profile | Zugklang',
-  description: 'Your chess profile, ratings, and game history.'
+  description: 'Your chess profile, ratings, and performance stats.'
 };
 export default async function ProfilePage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/signin');
   const userId = session.user.id;
-  const [user, ratings, puzzleRating, recentGames, passportFlags] =
-    await Promise.all([
+  const [user, ratings, puzzleRating, games, passportFlags] = await Promise.all(
+    [
       prisma.user.findUnique({
         where: { id: userId },
         select: {
@@ -42,22 +42,15 @@ export default async function ProfilePage() {
         where: {
           OR: [{ whiteUserId: userId }, { blackUserId: userId }]
         },
-        orderBy: { createdAt: 'desc' },
-        take: 20,
+        orderBy: { createdAt: 'asc' },
         select: {
-          id: true,
           variant: true,
-          gameType: true,
           result: true,
-          resultReason: true,
-          moveCount: true,
-          createdAt: true,
+          timeControl: true,
           whiteUserId: true,
           blackUserId: true,
-          whiteRatingDelta: true,
-          blackRatingDelta: true,
-          white: { select: { name: true } },
-          black: { select: { name: true } }
+          createdAt: true,
+          playedAt: true
         }
       }),
       prisma.passportFlag.findMany({
@@ -65,8 +58,10 @@ export default async function ProfilePage() {
         orderBy: { createdAt: 'desc' },
         select: { flagCode: true }
       })
-    ]);
+    ]
+  );
   if (!user) redirect('/signin');
+
   return (
     <PageContainer scrollable={true}>
       <Navbar />
@@ -74,7 +69,7 @@ export default async function ProfilePage() {
         user={user}
         ratings={ratings}
         puzzleRating={puzzleRating}
-        recentGames={recentGames}
+        games={games}
         userId={userId}
         passportFlags={passportFlags}
       />

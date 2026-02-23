@@ -10876,6 +10876,7 @@ export namespace Prisma {
     whiteRatingDelta: number | null;
     blackRatingDelta: number | null;
     moveCount: number | null;
+    playedAt: Date | null;
     createdAt: Date | null;
   };
 
@@ -10894,6 +10895,7 @@ export namespace Prisma {
     whiteRatingDelta: number | null;
     blackRatingDelta: number | null;
     moveCount: number | null;
+    playedAt: Date | null;
     createdAt: Date | null;
   };
 
@@ -10914,6 +10916,7 @@ export namespace Prisma {
     whiteRatingDelta: number;
     blackRatingDelta: number;
     moveCount: number;
+    playedAt: number;
     createdAt: number;
     _all: number;
   };
@@ -10949,6 +10952,7 @@ export namespace Prisma {
     whiteRatingDelta?: true;
     blackRatingDelta?: true;
     moveCount?: true;
+    playedAt?: true;
     createdAt?: true;
   };
 
@@ -10967,6 +10971,7 @@ export namespace Prisma {
     whiteRatingDelta?: true;
     blackRatingDelta?: true;
     moveCount?: true;
+    playedAt?: true;
     createdAt?: true;
   };
 
@@ -10987,6 +10992,7 @@ export namespace Prisma {
     whiteRatingDelta?: true;
     blackRatingDelta?: true;
     moveCount?: true;
+    playedAt?: true;
     createdAt?: true;
     _all?: true;
   };
@@ -11097,6 +11103,7 @@ export namespace Prisma {
     whiteRatingDelta: number | null;
     blackRatingDelta: number | null;
     moveCount: number;
+    playedAt: Date | null;
     createdAt: Date;
     _count: GameCountAggregateOutputType | null;
     _avg: GameAvgAggregateOutputType | null;
@@ -11137,6 +11144,7 @@ export namespace Prisma {
       whiteRatingDelta?: boolean;
       blackRatingDelta?: boolean;
       moveCount?: boolean;
+      playedAt?: boolean;
       createdAt?: boolean;
       white?: boolean | Game$whiteArgs<ExtArgs>;
       black?: boolean | Game$blackArgs<ExtArgs>;
@@ -11165,6 +11173,7 @@ export namespace Prisma {
       whiteRatingDelta?: boolean;
       blackRatingDelta?: boolean;
       moveCount?: boolean;
+      playedAt?: boolean;
       createdAt?: boolean;
       white?: boolean | Game$whiteArgs<ExtArgs>;
       black?: boolean | Game$blackArgs<ExtArgs>;
@@ -11192,6 +11201,7 @@ export namespace Prisma {
       whiteRatingDelta?: boolean;
       blackRatingDelta?: boolean;
       moveCount?: boolean;
+      playedAt?: boolean;
       createdAt?: boolean;
       white?: boolean | Game$whiteArgs<ExtArgs>;
       black?: boolean | Game$blackArgs<ExtArgs>;
@@ -11216,6 +11226,7 @@ export namespace Prisma {
     whiteRatingDelta?: boolean;
     blackRatingDelta?: boolean;
     moveCount?: boolean;
+    playedAt?: boolean;
     createdAt?: boolean;
   };
 
@@ -11238,6 +11249,7 @@ export namespace Prisma {
     | 'whiteRatingDelta'
     | 'blackRatingDelta'
     | 'moveCount'
+    | 'playedAt'
     | 'createdAt',
     ExtArgs['result']['game']
   >;
@@ -11288,6 +11300,7 @@ export namespace Prisma {
         whiteRatingDelta: number | null;
         blackRatingDelta: number | null;
         moveCount: number;
+        playedAt: Date | null;
         createdAt: Date;
       },
       ExtArgs['result']['game']
@@ -11929,6 +11942,7 @@ export namespace Prisma {
     readonly whiteRatingDelta: FieldRef<'Game', 'Int'>;
     readonly blackRatingDelta: FieldRef<'Game', 'Int'>;
     readonly moveCount: FieldRef<'Game', 'Int'>;
+    readonly playedAt: FieldRef<'Game', 'DateTime'>;
     readonly createdAt: FieldRef<'Game', 'DateTime'>;
   }
 
@@ -22380,6 +22394,7 @@ export namespace Prisma {
     whiteRatingDelta: 'whiteRatingDelta';
     blackRatingDelta: 'blackRatingDelta';
     moveCount: 'moveCount';
+    playedAt: 'playedAt';
     createdAt: 'createdAt';
   };
 
@@ -23130,6 +23145,7 @@ export namespace Prisma {
     whiteRatingDelta?: IntNullableFilter<'Game'> | number | null;
     blackRatingDelta?: IntNullableFilter<'Game'> | number | null;
     moveCount?: IntFilter<'Game'> | number;
+    playedAt?: DateTimeNullableFilter<'Game'> | Date | string | null;
     createdAt?: DateTimeFilter<'Game'> | Date | string;
     white?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null;
     black?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null;
@@ -23156,6 +23172,7 @@ export namespace Prisma {
     whiteRatingDelta?: SortOrderInput | SortOrder;
     blackRatingDelta?: SortOrderInput | SortOrder;
     moveCount?: SortOrder;
+    playedAt?: SortOrderInput | SortOrder;
     createdAt?: SortOrder;
     white?: UserOrderByWithRelationInput;
     black?: UserOrderByWithRelationInput;
@@ -23183,6 +23200,7 @@ export namespace Prisma {
       whiteRatingDelta?: IntNullableFilter<'Game'> | number | null;
       blackRatingDelta?: IntNullableFilter<'Game'> | number | null;
       moveCount?: IntFilter<'Game'> | number;
+      playedAt?: DateTimeNullableFilter<'Game'> | Date | string | null;
       createdAt?: DateTimeFilter<'Game'> | Date | string;
       white?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null;
       black?: XOR<UserNullableScalarRelationFilter, UserWhereInput> | null;
@@ -23211,6 +23229,7 @@ export namespace Prisma {
     whiteRatingDelta?: SortOrderInput | SortOrder;
     blackRatingDelta?: SortOrderInput | SortOrder;
     moveCount?: SortOrder;
+    playedAt?: SortOrderInput | SortOrder;
     createdAt?: SortOrder;
     _count?: GameCountOrderByAggregateInput;
     _avg?: GameAvgOrderByAggregateInput;
@@ -23249,6 +23268,11 @@ export namespace Prisma {
     whiteRatingDelta?: IntNullableWithAggregatesFilter<'Game'> | number | null;
     blackRatingDelta?: IntNullableWithAggregatesFilter<'Game'> | number | null;
     moveCount?: IntWithAggregatesFilter<'Game'> | number;
+    playedAt?:
+      | DateTimeNullableWithAggregatesFilter<'Game'>
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeWithAggregatesFilter<'Game'> | Date | string;
   };
 
@@ -24323,6 +24347,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
     white?: UserCreateNestedOneWithoutWhiteGamesInput;
     black?: UserCreateNestedOneWithoutBlackGamesInput;
@@ -24346,6 +24371,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
     analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
   };
@@ -24365,6 +24391,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     white?: UserUpdateOneWithoutWhiteGamesNestedInput;
     black?: UserUpdateOneWithoutBlackGamesNestedInput;
@@ -24388,6 +24419,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
   };
@@ -24409,6 +24445,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
   };
 
@@ -24427,6 +24464,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
@@ -24447,6 +24489,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
@@ -25597,6 +25644,7 @@ export namespace Prisma {
     whiteRatingDelta?: SortOrder;
     blackRatingDelta?: SortOrder;
     moveCount?: SortOrder;
+    playedAt?: SortOrder;
     createdAt?: SortOrder;
   };
 
@@ -25623,6 +25671,7 @@ export namespace Prisma {
     whiteRatingDelta?: SortOrder;
     blackRatingDelta?: SortOrder;
     moveCount?: SortOrder;
+    playedAt?: SortOrder;
     createdAt?: SortOrder;
   };
 
@@ -25641,6 +25690,7 @@ export namespace Prisma {
     whiteRatingDelta?: SortOrder;
     blackRatingDelta?: SortOrder;
     moveCount?: SortOrder;
+    playedAt?: SortOrder;
     createdAt?: SortOrder;
   };
 
@@ -28011,6 +28061,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
     black?: UserCreateNestedOneWithoutBlackGamesInput;
     analysis?: GameAnalysisCreateNestedOneWithoutGameInput;
@@ -28032,6 +28083,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
     analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
   };
@@ -28064,6 +28116,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
     white?: UserCreateNestedOneWithoutWhiteGamesInput;
     analysis?: GameAnalysisCreateNestedOneWithoutGameInput;
@@ -28085,6 +28138,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
     analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
   };
@@ -28537,6 +28591,7 @@ export namespace Prisma {
     whiteRatingDelta?: IntNullableFilter<'Game'> | number | null;
     blackRatingDelta?: IntNullableFilter<'Game'> | number | null;
     moveCount?: IntFilter<'Game'> | number;
+    playedAt?: DateTimeNullableFilter<'Game'> | Date | string | null;
     createdAt?: DateTimeFilter<'Game'> | Date | string;
   };
 
@@ -29740,6 +29795,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
     white?: UserCreateNestedOneWithoutWhiteGamesInput;
     black?: UserCreateNestedOneWithoutBlackGamesInput;
@@ -29762,6 +29818,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
   };
 
@@ -29862,6 +29919,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     white?: UserUpdateOneWithoutWhiteGamesNestedInput;
     black?: UserUpdateOneWithoutBlackGamesNestedInput;
@@ -29884,6 +29946,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
@@ -30777,6 +30844,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
   };
 
@@ -30796,6 +30864,7 @@ export namespace Prisma {
     whiteRatingDelta?: number | null;
     blackRatingDelta?: number | null;
     moveCount: number;
+    playedAt?: Date | string | null;
     createdAt?: Date | string;
   };
 
@@ -30979,6 +31048,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     black?: UserUpdateOneWithoutBlackGamesNestedInput;
     analysis?: GameAnalysisUpdateOneWithoutGameNestedInput;
@@ -31000,6 +31074,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
   };
@@ -31020,6 +31099,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 
@@ -31038,6 +31122,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     white?: UserUpdateOneWithoutWhiteGamesNestedInput;
     analysis?: GameAnalysisUpdateOneWithoutGameNestedInput;
@@ -31059,6 +31148,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
   };
@@ -31079,6 +31173,11 @@ export namespace Prisma {
     whiteRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     blackRatingDelta?: NullableIntFieldUpdateOperationsInput | number | null;
     moveCount?: IntFieldUpdateOperationsInput | number;
+    playedAt?:
+      | NullableDateTimeFieldUpdateOperationsInput
+      | Date
+      | string
+      | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
 

@@ -34,5 +34,11 @@ export function CountryFlag({ code, className, title }: CountryFlagProps) {
     );
   }
 
-  return <Flag className={className} title={title ?? normalizedCode} />;
+  return (
+    <Flag
+      className={className}
+      aria-label={title ?? normalizedCode}
+      role='img'
+    />
+  );
 }

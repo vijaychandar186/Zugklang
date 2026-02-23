@@ -1,4 +1,8 @@
+'use client';
+
+import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { CountryFlag } from '@/components/ui/country-flag';
 import { FLAG_OPTIONS, normalizeFlagCode } from '@/features/settings/flags';
 import { cn } from '@/lib/utils';
@@ -22,11 +26,20 @@ function resolveCountryName(
 export function PassportCollection({
   collectedFlagCodes
 }: PassportCollectionProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const collected = new Set(
     collectedFlagCodes.map((code) => normalizeFlagCode(code))
   );
   const max = FLAG_OPTIONS.length;
   const count = collected.size;
+  const initialVisibleCount = 10;
+  const visibleOptions = useMemo(
+    () =>
+      isExpanded ? FLAG_OPTIONS : FLAG_OPTIONS.slice(0, initialVisibleCount),
+    [isExpanded]
+  );
+  const hiddenCount = Math.max(0, FLAG_OPTIONS.length - visibleOptions.length);
+  const canExpand = FLAG_OPTIONS.length > initialVisibleCount;
   const regionNames = (() => {
     try {
       return new Intl.DisplayNames(['en'], { type: 'region' });
@@ -39,7 +52,10 @@ export function PassportCollection({
     <section className='space-y-4 rounded-xl border p-4'>
       <div className='flex items-center justify-between gap-3'>
         <h2 className='text-lg font-semibold'>Passport Collection</h2>
-        <Badge variant='secondary'>
+        <Badge
+          variant='secondary'
+          className='border-border/60 bg-muted text-zinc-700 dark:text-zinc-200'
+        >
           {count}/{max} collected
         </Badge>
       </div>
@@ -47,7 +63,7 @@ export function PassportCollection({
         Flags from opponents you have played in multiplayer games.
       </p>
       <div className='grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5'>
-        {FLAG_OPTIONS.map((code) => {
+        {visibleOptions.map((code) => {
           const hasFlag = collected.has(code);
           return (
             <div
@@ -73,6 +89,21 @@ export function PassportCollection({
           );
         })}
       </div>
+      {canExpand && (
+        <div className='flex justify-center pt-1'>
+          <Button
+            type='button'
+            variant='outline'
+            size='sm'
+            className='text-muted-foreground hover:text-foreground active:text-foreground transition-colors'
+            onClick={() => setIsExpanded((prev) => !prev)}
+          >
+            {isExpanded
+              ? 'Show less'
+              : `Show more${hiddenCount > 0 ? ` (${hiddenCount})` : ''}`}
+          </Button>
+        </div>
+      )}
     </section>
   );
 }

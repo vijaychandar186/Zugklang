@@ -32,7 +32,10 @@ export function ProfileHeader({
       <div className='flex flex-col gap-1'>
         <h1 className='text-xl font-bold'>{name ?? 'Anonymous'}</h1>
         <p className='text-muted-foreground text-sm'>{email}</p>
-        <Badge variant='secondary' className='w-fit text-xs'>
+        <Badge
+          variant='secondary'
+          className='border-border/60 bg-muted w-fit text-xs text-zinc-700 dark:text-zinc-200'
+        >
           Member since {memberSince}
         </Badge>
       </div>

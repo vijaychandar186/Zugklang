@@ -113,8 +113,10 @@ export function SettingsPageView() {
   })();
 
   const navButtonClass = (pane: 'game' | 'personal') =>
-    `w-full justify-start ${
-      activePane === pane ? '' : 'text-muted-foreground'
+    `w-full justify-start transition-colors ${
+      activePane === pane
+        ? 'text-foreground'
+        : 'text-muted-foreground hover:text-foreground active:text-foreground'
     }`;
 
   return (

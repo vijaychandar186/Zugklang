@@ -153,7 +153,8 @@ export async function POST(req: NextRequest) {
         blackPregameRating: null,
         whiteRatingDelta: null,
         blackRatingDelta: null,
-        moveCount: moves.length
+        moveCount: moves.length,
+        playedAt: new Date()
       }
     });
     if (gameType === 'multiplayer' && whiteUserId && blackUserId) {

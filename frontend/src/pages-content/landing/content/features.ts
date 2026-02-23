@@ -7,15 +7,17 @@ export const FEATURE_HEADING = 'Powerful Chess Features';
 export const featureList: string[] = [
   'Stockfish 16',
   'Fairy-Stockfish',
-  '10 Chess Variants',
+  '10 Standard Variants',
   '4-Player Chess',
   'Dice Chess',
   'Card Chess',
+  'Custom Multiplayer',
   'Probabilistic AI',
   'Online Multiplayer',
   'Puzzles & Puzzle Rush',
   'Opening Explorer',
-  'Move Analysis',
+  'Game Review & Analysis',
+  'Profile & Rating History',
   'Audio Feedback',
   'Dark Mode',
   'Multiple Themes',
@@ -85,8 +87,14 @@ export const features: FeatureProps[] = [
   {
     title: 'Online Multiplayer',
     description:
-      'Get matched with a random opponent instantly across all 10 variants. No account needed — just pick a variant and find a game.',
+      'Get matched with a random opponent instantly across all 10 standard variants. Includes challenge links, reconnect support, rematches, and live latency indicators.',
     href: '/play/multiplayer'
+  },
+  {
+    title: 'Custom Multiplayer Modes',
+    description:
+      'Play Dice Chess, Card Chess, and Four-Player Chess online with dedicated lobbies, invite links, and synchronized custom mechanics.',
+    href: '/play/custom-multiplayer'
   },
   {
     title: 'Checkers Chess',
@@ -104,5 +112,11 @@ export const features: FeatureProps[] = [
     title: 'Immersive Audio',
     description:
       'Experience chess like never before with dynamic soundscapes. Every move, capture, and checkmate comes alive with carefully crafted audio feedback.'
+  },
+  {
+    title: 'Profile & History',
+    description:
+      'Track your games, ratings, and results over time. Review past games and monitor improvement across your play and training sessions.',
+    href: '/games'
   }
 ];

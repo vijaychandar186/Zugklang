@@ -30,6 +30,8 @@ Real-time WebSocket server for Zugklang multiplayer chess. Built with [Bun](http
 - **Matchmaking** — players join queues by variant + time control and are paired automatically
 - **Challenge links** — create a shareable link to play with a friend
 - **Game state** — moves, draw offers, resignations, rematches, disconnection recovery
+- **Custom multiplayer sync** — server relays Dice/Card turn constraints and validates room ownership
+- **4-Player lobbies** — create/join/start/shuffle/assign-team flows with state sync + reconnect tokens
 - **Auto-abort** — games abort if no move is made within 1 minute of starting
 - **Rejoin tokens** — seamless reconnection after disconnects (30-second window)
 
@@ -76,6 +78,7 @@ Create a `.env.local` file (for local dev) or `.env.production` (for production)
 |-------------------|----------|----------------|-----------------------------------------------------------------------------|
 | `PORT`            | No       | `8080`         | Port the server listens on                                                  |
 | `ALLOWED_ORIGINS` | No       | *(allow all)*  | Comma-separated list of allowed WebSocket origins. Leave unset for local dev |
+| `NEXT_APP_URL`    | No       | `http://localhost:3000` | Frontend base URL used for WS token introspection (`/api/ws-token`) |
 | `ADMIN_KEY`       | Yes      | —              | Bearer token for the `/admin` endpoint. Server returns 503 if not set       |
 
 **`.env.local` example:**
@@ -83,6 +86,7 @@ Create a `.env.local` file (for local dev) or `.env.production` (for production)
 ```env
 PORT=8080
 ALLOWED_ORIGINS="http://localhost:3000"
+NEXT_APP_URL="http://localhost:3000"
 ADMIN_KEY="your-secret-key-here"
 ```
 
@@ -91,6 +95,7 @@ ADMIN_KEY="your-secret-key-here"
 ```env
 PORT=8080
 ALLOWED_ORIGINS="https://yourdomain.com,https://www.yourdomain.com"
+NEXT_APP_URL="https://yourdomain.com"
 ADMIN_KEY="your-secret-key-here"
 ```
 
@@ -237,7 +242,11 @@ Replace the token value with whatever is set in your `.env.local` or `.env.produ
 
 ## WebSocket Protocol
 
-Connect to `ws://localhost:8080` (or `wss://` in production).
+Connect to `ws://localhost:8080` (or `wss://` in production) with a short-lived token:
+
+`ws://localhost:8080?token=<ws-token>`
+
+The token is issued by the frontend endpoint `GET /api/ws-token`.
 
 All messages are JSON strings.
 
@@ -286,6 +295,50 @@ All messages are JSON strings.
 
 ```json
 { "type": "cancel_challenge" }
+```
+
+#### Custom Multiplayer Sync
+
+**Sync dice result to opponent (Dice Chess):**
+
+```json
+{ "type": "sync_dice", "roomId": "uuid", "pieces": ["q", "n", "b"] }
+```
+
+**Sync card draw to opponent (Card Chess):**
+
+```json
+{ "type": "sync_card", "roomId": "uuid", "rank": "K", "suit": "H" }
+```
+
+#### Four-Player Lobby
+
+**Create lobby:**
+
+```json
+{ "type": "create_four_player_lobby", "timeControl": { "mode": "unlimited", "minutes": 0, "increment": 0 } }
+```
+
+**Join / leave:**
+
+```json
+{ "type": "join_four_player_lobby", "lobbyId": "uuid" }
+{ "type": "leave_four_player_lobby", "lobbyId": "uuid" }
+```
+
+**Leader controls:**
+
+```json
+{ "type": "start_four_player_lobby", "lobbyId": "uuid" }
+{ "type": "shuffle_four_player_lobby", "lobbyId": "uuid" }
+{ "type": "assign_four_player_team", "lobbyId": "uuid", "playerId": "uuid", "team": "r" }
+```
+
+**State sync + rejoin:**
+
+```json
+{ "type": "sync_four_player_state", "lobbyId": "uuid", "state": "{...json...}" }
+{ "type": "rejoin_four_player_lobby", "lobbyId": "uuid", "rejoinToken": "uuid" }
 ```
 
 #### In-Game Actions
@@ -386,6 +439,13 @@ All messages are JSON strings.
 { "type": "challenge_joined" }
 ```
 
+#### Custom Multiplayer Sync
+
+```json
+{ "type": "dice_synced", "pieces": ["q", "n", "b"] }
+{ "type": "card_synced", "rank": "K", "suit": "H" }
+```
+
 #### In-Game
 
 ```json
@@ -441,6 +501,17 @@ All messages are JSON strings.
 
 `reason` can be `"invalid_token"`, `"game_over"`, or `"not_in_room"`.
 
+#### Four-Player Lobby
+
+```json
+{ "type": "four_player_lobby_created", "lobbyId": "uuid", "leaderId": "uuid", "started": false, "timeControl": { "mode": "unlimited", "minutes": 0, "increment": 0 }, "players": [] }
+{ "type": "four_player_lobby_updated", "lobbyId": "uuid", "leaderId": "uuid", "started": false, "timeControl": { "mode": "unlimited", "minutes": 0, "increment": 0 }, "players": [] }
+{ "type": "four_player_lobby_started", "lobbyId": "uuid", "startedAt": 1708351200000, "timeControl": { "mode": "timed", "minutes": 10, "increment": 0 }, "rejoinToken": "uuid" }
+{ "type": "four_player_state_synced", "lobbyId": "uuid", "fromPlayerId": "uuid", "state": "{...json...}" }
+{ "type": "four_player_lobby_rejoined", "lobbyId": "uuid", "myPlayerId": "uuid", "rejoinToken": "uuid", "leaderId": "uuid", "started": true, "timeControl": { "mode": "timed", "minutes": 10, "increment": 0 }, "players": [] }
+{ "type": "four_player_player_reconnected", "playerId": "uuid" }
+```
+
 #### Other
 
 ```json
@@ -475,7 +546,7 @@ Each WebSocket client is limited to **30 messages per 3 seconds**. Exceeding thi
 | Variant        | Key              |
 |----------------|------------------|
 | Standard       | `standard`       |
-| Fischer Random | `chess960`       |
+| Fischer Random | `fischerRandom`  |
 | Atomic         | `atomic`         |
 | Antichess      | `antichess`      |
 | Racing Kings   | `racingKings`    |

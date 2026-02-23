@@ -15,13 +15,13 @@ export const FAQList: FAQProps[] = [
   {
     question: 'What chess variants are available?',
     answer:
-      'Zugklang supports 10 variants: Standard, Fischer Random (Chess960), Atomic, Racing Kings, Horde, Three-Check, Antichess, King of the Hill, Crazyhouse, and Chess with Checkers. You can play all of them against the AI, locally with a friend, or online against a random opponent. There is also a 4-Player Chess mode.',
+      'Zugklang supports 10 standard variants: Standard, Fischer Random (Chess960), Atomic, Racing Kings, Horde, Three-Check, Antichess, King of the Hill, Crazyhouse, and Chess with Checkers. It also includes custom modes: 4-Player Chess, Dice Chess, and Card Chess.',
     value: 'item-2'
   },
   {
     question: 'Can I play against a friend?',
     answer:
-      'Yes! You can challenge a friend locally on the same device across all variants, or play online and get matched with a random opponent instantly — no account needed. There is also a 4-Player Chess mode for even more players.',
+      'Yes. You can play locally on the same device, create online challenge links for standard multiplayer, and also use custom multiplayer lobbies for 4-Player, Dice Chess, and Card Chess.',
     value: 'item-3'
   },
   {
@@ -45,7 +45,7 @@ export const FAQList: FAQProps[] = [
   {
     question: 'Can I analyze and review my games?',
     answer:
-      'Yes! The Analysis Board lets you analyze positions with Stockfish, import PGNs, and explore variations. Game Review provides accuracy scores and best move suggestions so you can learn from your games.',
+      'Yes. The Analysis Board lets you analyze positions with Stockfish, import PGNs, and explore variations. Game Review provides accuracy scores and best move suggestions, and the History section helps you revisit past games and results.',
     value: 'item-7'
   },
   {

@@ -42,7 +42,7 @@ docker run -d --name zugklang-postgres \
 * [ ] Elo calculation adjustment
 * [x] ~~Validate abandon~~
 * [x] ~~Auto abort~~
-* [ ] 4p Chess Multiplayer
+* [x] ~~4p Chess Multiplayer~~
 * [x] ~~Stats for Dice and Card Chess~~
 * [x] ~~Config for auto abort and WS-server states~~
 * [x] ~~Dice and card pick sound assets~~

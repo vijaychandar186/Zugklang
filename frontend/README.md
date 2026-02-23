@@ -2,7 +2,7 @@
 
 > Where Strategy Meets Symphony
 
-Play standard chess and 9 variants against Stockfish and Fairy-Stockfish, solve puzzles, explore openings, and train your board vision — all with immersive audio and premium aesthetics.
+Play standard chess and 9 variants against Stockfish and Fairy-Stockfish, plus custom modes like 4-Player, Dice, and Card Chess (local + multiplayer). Solve puzzles, explore openings, review games, and train board vision with immersive audio and premium aesthetics.
 
 ---
 
@@ -41,13 +41,22 @@ Real-time WebSocket-based online play:
 
 - Instant matchmaking queue
 - Challenge links (play with a friend)
-- No account required to play
+- Account-backed sessions with secure WebSocket tokens
 - Draw offer / decline
 - Rematch system
 - Latency monitoring
 - Opponent disconnect & reconnect handling
 - Rejoin after page refresh
 - Supports all 10 standard variants
+
+#### Custom Multiplayer
+
+Real-time custom mode matchmaking/lobbies:
+
+- **Four-Player Chess** — 4-seat lobby with leader controls (start, shuffle colors, assign teams)
+- **Dice Chess** — synchronized dice constraints across players
+- **Card Chess** — synchronized card-draw constraints across players
+- Invite links and reconnect support
 
 #### Custom Game Modes
 
@@ -67,6 +76,7 @@ Real-time WebSocket-based online play:
 
 - **Analysis Board** — Analyze any position with Stockfish; import PGNs, set up positions, and explore variations
 - **Game Review** — Review full games move-by-move with accuracy scores and best move suggestions
+- **Game History & Profile** — Track results, rating deltas, and long-term progress
 
 ### UI & Experience
 
@@ -175,12 +185,13 @@ frontend/
 │   │   │   ├── computer/     # vs Stockfish (10 variants)
 │   │   │   ├── local/        # Local multiplayer
 │   │   │   ├── multiplayer/  # Online WebSocket play
-│   │   │   └── custom/       # 4-Player, Dice, Card chess
+│   │   │   ├── custom/       # 4-Player, Dice, Card chess
+│   │   │   └── custom-multiplayer/ # Online custom multiplayer
 │   │   ├── practice/         # Training tools
 │   │   │   ├── learn/openings/
 │   │   │   ├── puzzles/
-│   │   │   ├── memory/
-│   │   │   └── vision/
+│   │   │   ├── cognitive/memory/
+│   │   │   └── cognitive/vision/
 │   │   └── tools/            # Analysis board, game review
 │   ├── features/             # Feature modules
 │   │   ├── chess/            # Core board, engine, state
@@ -192,6 +203,8 @@ frontend/
 │   │   ├── custom/           # Custom variants (4P, Dice, Card)
 │   │   ├── memory/           # Memory training
 │   │   ├── vision/           # Vision training
+│   │   ├── games/            # Game history
+│   │   ├── profile/          # Profile and insights
 │   │   ├── engine/           # WASM engine hooks
 │   │   └── settings/         # User preferences
 │   ├── components/           # Shared UI components

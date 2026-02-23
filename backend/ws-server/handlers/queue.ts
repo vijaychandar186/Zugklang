@@ -6,7 +6,31 @@ import { getStartingFen } from '../utils/fen';
 import { buildPosition } from '../utils/chess';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
-import { ABORT_TIMEOUT_MS } from '../config';
+import {
+  ABORT_TIMEOUT_MS,
+  ELO_QUEUE_ENABLED,
+  RATING_BAND_BASE,
+  RATING_BAND_EXPAND_PER_SEC
+} from '../config';
+
+/** Current effective rating band (±) for a queued player. */
+function ratingBand(queuedAt: number): number {
+  const secsWaiting = (Date.now() - queuedAt) / 1000;
+  return RATING_BAND_BASE + RATING_BAND_EXPAND_PER_SEC * secsWaiting;
+}
+
+/** Returns true when the two players are close enough in rating to match. */
+function eloCompatible(a: BunWS, b: BunWS): boolean {
+  if (!ELO_QUEUE_ENABLED) return true;
+  const ratingA = a.data.rating ?? 700;
+  const ratingB = b.data.rating ?? 700;
+  const bandA = ratingBand(a.data.queuedAt ?? Date.now());
+  const bandB = ratingBand(b.data.queuedAt ?? Date.now());
+  // Use the wider of the two bands so a long-waiting player can still match.
+  const effectiveBand = Math.max(bandA, bandB);
+  return Math.abs(ratingA - ratingB) <= effectiveBand;
+}
+
 function timeControlKey(tc: TimeControl): string {
   return `${tc.mode}:${String(tc.minutes)}:${String(tc.increment)}`;
 }
@@ -192,11 +216,15 @@ export function handleJoinQueue(
     timeControl: TimeControl;
     displayName?: string | undefined;
     userImage?: string | null | undefined;
+    rating?: number | undefined;
   }
 ): void {
   const { variant, timeControl } = msg;
   if (msg.displayName !== undefined) ws.data.displayName = msg.displayName;
   if (msg.userImage !== undefined) ws.data.userImage = msg.userImage;
+  // Store the player's rating and record when they joined the queue.
+  ws.data.rating = msg.rating ?? 700;
+  ws.data.queuedAt = Date.now();
   removeFromQueues(ws);
   if (ws.data.roomId) {
     const room = rooms.get(ws.data.roomId);
@@ -214,6 +242,7 @@ export function handleJoinQueue(
   for (let i = 0; i < queue.length; i++) {
     const candidate = queue[i];
     if (!candidate) continue;
+    // Never match a player against themselves (multi-tab).
     if (
       ws.data.userId &&
       candidate.data.userId &&
@@ -221,6 +250,8 @@ export function handleJoinQueue(
     ) {
       continue;
     }
+    // ELO band check — skip candidates that are too far apart in rating.
+    if (!eloCompatible(ws, candidate)) continue;
     opponentIdx = i;
     break;
   }

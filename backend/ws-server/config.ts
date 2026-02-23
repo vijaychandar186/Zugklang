@@ -23,3 +23,20 @@ export const GC_INTERVAL_MS = 5 * 60 * 1_000;
 
 /** Ended rooms older than this (milliseconds) are removed by the GC. */
 export const GC_ROOM_MAX_AGE_MS = 30 * 60 * 1_000;
+
+// ---------------------------------------------------------------------------
+// ELO-based matchmaking
+// ---------------------------------------------------------------------------
+
+/** When true, the queue only pairs players whose rating bands overlap.
+ *  When false, the first available opponent is always accepted (original
+ *  behaviour). Applies to every 2-player game mode / variant. */
+export const ELO_QUEUE_ENABLED = true;
+
+/** Starting rating window on each side (±points) when a player first enters
+ *  the queue. */
+export const RATING_BAND_BASE = 200;
+
+/** How many rating points the window expands per second of waiting.
+ *  After 30 s the band is ±350, after 60 s it is ±500, etc. */
+export const RATING_BAND_EXPAND_PER_SEC = 5;

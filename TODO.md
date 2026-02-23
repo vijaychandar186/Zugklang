@@ -38,7 +38,7 @@ docker run -d --name zugklang-postgres \
 * [ ] Guest mode
 * [x] ~~Theme and Audio Settings~~
 * [ ] Invite through email
-* [ ] ELO-wise queue logic
+* [ ] ELO-wise queue logic toggle where it can be enabled or disabled
 * [ ] Elo calculation adjustment
 * [ ] Three Dimensional Chess
 * [x] ~~Validate abandon~~

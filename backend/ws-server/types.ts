@@ -17,6 +17,12 @@ export interface SocketData {
   variant?: string;
   challengeId?: string;
   fourPlayerLobbyId?: string;
+  /** Player's current rating for the variant+category being queued.
+   *  Used for ELO-based matchmaking when ELO_QUEUE_ENABLED is true. */
+  rating?: number;
+  /** Unix ms timestamp when the player entered the current queue slot.
+   *  Used to expand the rating band the longer they wait. */
+  queuedAt?: number;
 }
 export type BunWS = ServerWebSocket<SocketData>;
 export interface Challenge {

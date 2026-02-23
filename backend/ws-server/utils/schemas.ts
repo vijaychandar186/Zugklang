@@ -18,6 +18,7 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('join_queue'),
     variant: z.string().min(1).max(32),
     timeControl: TimeControlSchema,
+    rating: z.number().int().min(0).max(4000).optional(),
     ...DisplayInfoSchema
   }),
   z.object({ type: z.literal('leave_queue') }),

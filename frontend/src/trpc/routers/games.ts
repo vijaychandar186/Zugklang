@@ -56,6 +56,7 @@ function isAbortedGame(
 }
 async function getOrCreateRating(
   userId: string,
+  variant: string,
   category: string
 ): Promise<
   GlickoPlayer & {
@@ -63,9 +64,9 @@ async function getOrCreateRating(
   }
 > {
   const record = await prisma.rating.upsert({
-    where: { userId_category: { userId, category } },
+    where: { userId_variant_category: { userId, variant, category } },
     update: {},
-    create: { userId, category }
+    create: { userId, variant, category }
   });
   return {
     id: record.id,
@@ -105,10 +106,11 @@ export const gamesRouter = router({
       const blackUserId =
         myColor === 'black' ? userId : (opponentUserId ?? null);
       const pgnResult = toPgnResult(result, resultReason);
-      const category =
-        variant === 'standard' && timeControl.mode === 'timed'
-          ? getTimeCategory(timeControl.minutes, timeControl.increment)
-          : null;
+      const category = (() => {
+        if (timeControl.mode === 'unlimited') return 'classical' as const;
+        if (timeControl.mode !== 'timed') return null;
+        return getTimeCategory(timeControl.minutes, timeControl.increment);
+      })();
       const isRated =
         category !== null &&
         pgnResult !== '*' &&
@@ -143,8 +145,8 @@ export const gamesRouter = router({
         if (isRated && category) {
           try {
             const [whiteRating, blackRating] = await Promise.all([
-              getOrCreateRating(whiteUserId!, category),
-              getOrCreateRating(blackUserId!, category)
+              getOrCreateRating(whiteUserId!, variant, category),
+              getOrCreateRating(blackUserId!, variant, category)
             ]);
             whitePregameRating = whiteRating.rating;
             blackPregameRating = blackRating.rating;
@@ -157,7 +159,13 @@ export const gamesRouter = router({
             blackRatingDelta = updated.blackDelta;
             await prisma.$transaction([
               prisma.rating.update({
-                where: { userId_category: { userId: whiteUserId!, category } },
+                where: {
+                  userId_variant_category: {
+                    userId: whiteUserId!,
+                    variant,
+                    category
+                  }
+                },
                 data: {
                   rating: updated.white.rating,
                   rd: updated.white.rd,
@@ -166,7 +174,13 @@ export const gamesRouter = router({
                 }
               }),
               prisma.rating.update({
-                where: { userId_category: { userId: blackUserId!, category } },
+                where: {
+                  userId_variant_category: {
+                    userId: blackUserId!,
+                    variant,
+                    category
+                  }
+                },
                 data: {
                   rating: updated.black.rating,
                   rd: updated.black.rd,

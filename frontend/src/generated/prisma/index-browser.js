@@ -207,6 +207,7 @@ exports.Prisma.GameAnalysisScalarFieldEnum = {
 exports.Prisma.RatingScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  variant: 'variant',
   category: 'category',
   rating: 'rating',
   rd: 'rd',

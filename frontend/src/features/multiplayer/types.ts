@@ -185,6 +185,9 @@ export type ClientMessage =
       type: 'join_queue';
       variant: string;
       timeControl: TimeControl;
+      /** Player's current rating for this variant+category.
+       *  Forwarded to the server for ELO-based matchmaking. */
+      rating?: number;
       displayName?: string;
       userImage?: string | null;
     }
@@ -366,7 +369,8 @@ export interface UseMultiplayerWSReturn extends MultiplayerWSState {
     variant: string,
     timeControl: TimeControl,
     displayName?: string,
-    userImage?: string | null
+    userImage?: string | null,
+    rating?: number
   ) => void;
   leaveQueue: () => void;
   preConnect: () => void;

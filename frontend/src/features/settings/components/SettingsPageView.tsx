@@ -155,6 +155,7 @@ export function SettingsPageView() {
               <SettingsContent
                 show3dToggle={true}
                 showThemeAssetSelectors={true}
+                showExtendedBoardThemes={true}
               />
             </>
           ) : (

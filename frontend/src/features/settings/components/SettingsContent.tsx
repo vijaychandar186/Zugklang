@@ -21,12 +21,14 @@ type SettingsContentProps = {
   show3dToggle?: boolean;
   hideFullscreenOnMobile?: boolean;
   showThemeAssetSelectors?: boolean;
+  showExtendedBoardThemes?: boolean;
 };
 
 export function SettingsContent({
   show3dToggle = true,
   hideFullscreenOnMobile = false,
-  showThemeAssetSelectors = false
+  showThemeAssetSelectors = false,
+  showExtendedBoardThemes = false
 }: SettingsContentProps) {
   const setBoardTheme = useChessStore((s) => s.setBoardTheme);
   const currentBoardTheme = useChessStore((s) => s.boardThemeName);
@@ -58,6 +60,7 @@ export function SettingsContent({
       <BoardThemeSelector
         currentTheme={currentBoardTheme}
         onThemeChange={handleBoardThemeChange}
+        showExtendedThemes={showExtendedBoardThemes}
       />
       {showThemeAssetSelectors && (
         <PieceThemeSelector

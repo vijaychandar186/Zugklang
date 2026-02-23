@@ -66,6 +66,55 @@
   --board-mono-dark: oklch(0.45 0 0);
   --board-mono-light: oklch(0.82 0 0);
 
+  --board-walnut-dark: #8b6b4a;
+  --board-walnut-light: #c6a983;
+  --board-fog-dark: #b8c7d1;
+  --board-fog-light: #eceff2;
+  --board-granite-dark: #b7b8b9;
+  --board-granite-light: #e9ebec;
+  --board-charcoal-dark: #555555;
+  --board-charcoal-light: #9a9a9a;
+  --board-maple-dark: #d68548;
+  --board-maple-light: #f2c68e;
+  --board-olive-dark: #5d8e37;
+  --board-olive-light: #e7e8e5;
+  --board-stone-dark: #9a9585;
+  --board-stone-light: #d9d4c5;
+  --board-violet-dark: #7c68ac;
+  --board-violet-light: #e0dde6;
+  --board-graphite-dark: #676767;
+  --board-graphite-light: #8f8f8f;
+  --board-steel-dark: #9a9b9d;
+  --board-steel-light: #d4d5d7;
+  --board-forest-dark: #236341;
+  --board-forest-light: #e5e7e4;
+  --board-mahogany-dark: #8b4a2b;
+  --board-mahogany-light: #d1a66f;
+  --board-navy-dark: #4e6e9f;
+  --board-navy-light: #dfdfcf;
+  --board-rose-dark: #f0d8df;
+  --board-rose-light: #f7ecef;
+  --board-coral-dark: #cf5863;
+  --board-coral-light: #c4aa61;
+  --board-bronze-dark: #c28c3c;
+  --board-bronze-light: #a5a5a5;
+  --board-ash-dark: #b5b5b5;
+  --board-ash-light: #dedede;
+  --board-mist-dark: #8e8985;
+  --board-mist-light: #d2d5d5;
+  --board-amber-dark: #d59618;
+  --board-amber-light: #f2ddad;
+  --board-slate-dark: #7a7a7a;
+  --board-slate-light: #9b9b9b;
+  --board-sand-dark: #c95b49;
+  --board-sand-light: #ebd2ba;
+  --board-cobalt-dark: #5a8fe6;
+  --board-cobalt-light: #d5e0f6;
+  --board-blossom-dark: #dc8ba2;
+  --board-blossom-light: #f1e4e8;
+  --board-pewter-dark: #88807a;
+  --board-pewter-light: #cbc9c8;
+
   --board-square-dark: var(--board-default-dark);
   --board-square-light: var(--board-default-light);
 
@@ -104,6 +153,126 @@
 [data-board-scheme='mono'] {
   --board-square-dark: var(--board-mono-dark);
   --board-square-light: var(--board-mono-light);
+}
+
+[data-board-scheme='walnut'] {
+  --board-square-dark: var(--board-walnut-dark);
+  --board-square-light: var(--board-walnut-light);
+}
+
+[data-board-scheme='fog'] {
+  --board-square-dark: var(--board-fog-dark);
+  --board-square-light: var(--board-fog-light);
+}
+
+[data-board-scheme='granite'] {
+  --board-square-dark: var(--board-granite-dark);
+  --board-square-light: var(--board-granite-light);
+}
+
+[data-board-scheme='charcoal'] {
+  --board-square-dark: var(--board-charcoal-dark);
+  --board-square-light: var(--board-charcoal-light);
+}
+
+[data-board-scheme='maple'] {
+  --board-square-dark: var(--board-maple-dark);
+  --board-square-light: var(--board-maple-light);
+}
+
+[data-board-scheme='olive'] {
+  --board-square-dark: var(--board-olive-dark);
+  --board-square-light: var(--board-olive-light);
+}
+
+[data-board-scheme='stone'] {
+  --board-square-dark: var(--board-stone-dark);
+  --board-square-light: var(--board-stone-light);
+}
+
+[data-board-scheme='violet'] {
+  --board-square-dark: var(--board-violet-dark);
+  --board-square-light: var(--board-violet-light);
+}
+
+[data-board-scheme='graphite'] {
+  --board-square-dark: var(--board-graphite-dark);
+  --board-square-light: var(--board-graphite-light);
+}
+
+[data-board-scheme='steel'] {
+  --board-square-dark: var(--board-steel-dark);
+  --board-square-light: var(--board-steel-light);
+}
+
+[data-board-scheme='forest'] {
+  --board-square-dark: var(--board-forest-dark);
+  --board-square-light: var(--board-forest-light);
+}
+
+[data-board-scheme='mahogany'] {
+  --board-square-dark: var(--board-mahogany-dark);
+  --board-square-light: var(--board-mahogany-light);
+}
+
+[data-board-scheme='navy'] {
+  --board-square-dark: var(--board-navy-dark);
+  --board-square-light: var(--board-navy-light);
+}
+
+[data-board-scheme='rose'] {
+  --board-square-dark: var(--board-rose-dark);
+  --board-square-light: var(--board-rose-light);
+}
+
+[data-board-scheme='coral'] {
+  --board-square-dark: var(--board-coral-dark);
+  --board-square-light: var(--board-coral-light);
+}
+
+[data-board-scheme='bronze'] {
+  --board-square-dark: var(--board-bronze-dark);
+  --board-square-light: var(--board-bronze-light);
+}
+
+[data-board-scheme='ash'] {
+  --board-square-dark: var(--board-ash-dark);
+  --board-square-light: var(--board-ash-light);
+}
+
+[data-board-scheme='mist'] {
+  --board-square-dark: var(--board-mist-dark);
+  --board-square-light: var(--board-mist-light);
+}
+
+[data-board-scheme='amber'] {
+  --board-square-dark: var(--board-amber-dark);
+  --board-square-light: var(--board-amber-light);
+}
+
+[data-board-scheme='slate'] {
+  --board-square-dark: var(--board-slate-dark);
+  --board-square-light: var(--board-slate-light);
+}
+
+[data-board-scheme='sand'] {
+  --board-square-dark: var(--board-sand-dark);
+  --board-square-light: var(--board-sand-light);
+}
+
+[data-board-scheme='cobalt'] {
+  --board-square-dark: var(--board-cobalt-dark);
+  --board-square-light: var(--board-cobalt-light);
+}
+
+[data-board-scheme='blossom'] {
+  --board-square-dark: var(--board-blossom-dark);
+  --board-square-light: var(--board-blossom-light);
+}
+
+[data-board-scheme='pewter'] {
+  --board-square-dark: var(--board-pewter-dark);
+  --board-square-light: var(--board-pewter-light);
 }
 
 .dark {

@@ -28,6 +28,7 @@ export default async function ProfilePage() {
         where: { userId },
         orderBy: { gameCount: 'desc' },
         select: {
+          variant: true,
           category: true,
           rating: true,
           rd: true,

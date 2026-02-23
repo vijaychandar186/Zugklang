@@ -12,6 +12,7 @@ export async function GET(
     'category'
   ) as TimeCategory | null;
 
+  const variant = req.nextUrl.searchParams.get('variant') ?? 'standard';
   const [user, ratingRow] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
@@ -19,11 +20,11 @@ export async function GET(
     }),
     category
       ? prisma.rating.findUnique({
-          where: { userId_category: { userId, category } },
+          where: { userId_variant_category: { userId, variant, category } },
           select: { rating: true }
         })
       : prisma.rating.findFirst({
-          where: { userId },
+          where: { userId, variant },
           orderBy: { gameCount: 'desc' },
           select: { rating: true }
         })

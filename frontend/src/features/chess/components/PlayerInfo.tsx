@@ -17,6 +17,7 @@ type PlayerInfoProps = {
   isStockfish?: boolean;
   image?: string | null;
   rating?: number | null;
+  ratingDelta?: number | null;
   flagCode?: string | null;
 };
 export function PlayerInfo({
@@ -25,6 +26,7 @@ export function PlayerInfo({
   isStockfish = false,
   image,
   rating,
+  ratingDelta,
   flagCode
 }: PlayerInfoProps) {
   const initials =
@@ -74,6 +76,14 @@ export function PlayerInfo({
           {rating != null && (
             <span className='text-muted-foreground font-mono text-xs'>
               ({rating})
+            </span>
+          )}
+          {ratingDelta != null && (
+            <span
+              className={`font-mono text-xs ${ratingDelta >= 0 ? 'text-green-500' : 'text-red-500'}`}
+            >
+              {ratingDelta >= 0 ? '+' : ''}
+              {ratingDelta}
             </span>
           )}
         </div>

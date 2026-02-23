@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import { getTimeCategory } from '@/lib/ratings/timeCategory';
 import { Chess } from '@/lib/chess/chess';
 import type { ChessJSMove } from '@/lib/chess/chess';
 import { STARTING_FEN } from '@/features/chess/config/constants';
@@ -793,6 +794,12 @@ export function DiceChessMultiplayerView({
 }: DiceChessMultiplayerViewProps) {
   const ws = useMultiplayerWS();
   const { data: session } = useSession();
+  const [myRating, setMyRating] = useState<number | null>(null);
+  const [opponentRating, setOpponentRating] = useState<number | null>(null);
+  const [myRatingDelta, setMyRatingDelta] = useState<number | null>(null);
+  const [opponentRatingDelta, setOpponentRatingDelta] = useState<number | null>(
+    null
+  );
   const [myFlagCode, setMyFlagCode] = useState(DEFAULT_FLAG_CODE);
   const [opponentFlagCode, setOpponentFlagCode] = useState(DEFAULT_FLAG_CODE);
 
@@ -843,6 +850,31 @@ export function DiceChessMultiplayerView({
     return ws.myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
   }, [session?.user?.id, ws.myColor, ws.whiteUserId, ws.blackUserId]);
 
+  const ratingCategory = useMemo(() => {
+    const tc = ws.timeControl;
+    if (!tc) return null;
+    if (tc.mode === 'unlimited') return 'classical' as const;
+    if (tc.mode !== 'timed') return null;
+    return getTimeCategory(tc.minutes, tc.increment);
+  }, [ws.timeControl]);
+
+  useEffect(() => {
+    if (!session?.user?.id) {
+      setMyRating(null);
+      return;
+    }
+    const params = new URLSearchParams({ variant: VARIANT });
+    if (ratingCategory) {
+      params.set('category', ratingCategory);
+    }
+    fetch(`/api/user/rating?${params.toString()}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data: { rating: number | null } | null) =>
+        setMyRating(data?.rating ?? 700)
+      )
+      .catch(() => setMyRating(700));
+  }, [session?.user?.id, ratingCategory]);
+
   useEffect(() => {
     if (!session?.user?.id) {
       setMyFlagCode(DEFAULT_FLAG_CODE);
@@ -858,16 +890,25 @@ export function DiceChessMultiplayerView({
 
   useEffect(() => {
     if (!opponentUserId) {
+      setOpponentRating(null);
       setOpponentFlagCode(DEFAULT_FLAG_CODE);
       return;
     }
-    fetch(`/api/users/${opponentUserId}`)
+    setOpponentRating(null);
+    const params = new URLSearchParams({ variant: VARIANT });
+    if (ratingCategory) {
+      params.set('category', ratingCategory);
+    }
+    fetch(`/api/users/${opponentUserId}?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then((data: { flagCode?: string | null } | null) =>
-        setOpponentFlagCode(normalizeFlagCode(data?.flagCode))
+      .then(
+        (data: { rating?: number | null; flagCode?: string | null } | null) => {
+          setOpponentRating(data?.rating ?? 700);
+          setOpponentFlagCode(normalizeFlagCode(data?.flagCode));
+        }
       )
       .catch(() => setOpponentFlagCode(DEFAULT_FLAG_CODE));
-  }, [opponentUserId]);
+  }, [opponentUserId, ratingCategory]);
 
   // Board settings from global store
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
@@ -1081,28 +1122,81 @@ export function DiceChessMultiplayerView({
     const opponentUserId =
       myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
 
+    const payload = {
+      roomId,
+      moves,
+      variant: VARIANT,
+      gameType: 'multiplayer',
+      result: resultCode,
+      resultReason,
+      myColor,
+      opponentUserId,
+      timeControl: ws.timeControl ?? {
+        mode: 'unlimited',
+        minutes: 0,
+        increment: 0
+      },
+      startingFen: positionHistory[0] ?? STARTING_FEN
+    };
+
     fetch('/api/games', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        roomId,
-        moves,
-        variant: VARIANT,
-        gameType: 'multiplayer',
-        result: resultCode,
-        resultReason,
-        myColor,
-        opponentUserId,
-        timeControl: ws.timeControl ?? {
-          mode: 'unlimited',
-          minutes: 0,
-          increment: 0
-        },
-        startingFen: positionHistory[0] ?? STARTING_FEN
-      })
-    }).catch((err) => {
-      console.error('Failed to save dice multiplayer game:', err);
-    });
+      body: JSON.stringify(payload)
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .then(
+        (
+          data: {
+            whiteRatingDelta?: number | null;
+            blackRatingDelta?: number | null;
+          } | null
+        ) => {
+          if (!data) return;
+          const myDelta =
+            myColor === 'white' ? data.whiteRatingDelta : data.blackRatingDelta;
+          const theirDelta =
+            myColor === 'white' ? data.blackRatingDelta : data.whiteRatingDelta;
+          if (myDelta != null) setMyRatingDelta(myDelta);
+          if (theirDelta != null) setOpponentRatingDelta(theirDelta);
+
+          if (myDelta == null) {
+            setTimeout(() => {
+              fetch('/api/games', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+              })
+                .then((r) => (r.ok ? r.json() : null))
+                .then(
+                  (
+                    retryData: {
+                      whiteRatingDelta?: number | null;
+                      blackRatingDelta?: number | null;
+                    } | null
+                  ) => {
+                    if (!retryData) return;
+                    const retryMyDelta =
+                      myColor === 'white'
+                        ? retryData.whiteRatingDelta
+                        : retryData.blackRatingDelta;
+                    const retryTheirDelta =
+                      myColor === 'white'
+                        ? retryData.blackRatingDelta
+                        : retryData.whiteRatingDelta;
+                    if (retryMyDelta != null) setMyRatingDelta(retryMyDelta);
+                    if (retryTheirDelta != null)
+                      setOpponentRatingDelta(retryTheirDelta);
+                  }
+                )
+                .catch(() => {});
+            }, 700);
+          }
+        }
+      )
+      .catch((err) => {
+        console.error('Failed to save dice multiplayer game:', err);
+      });
   }, [
     ws.roomId,
     ws.myColor,
@@ -1299,12 +1393,29 @@ export function DiceChessMultiplayerView({
   // Handlers passed to MatchmakingDialog
   // ---------------------------------------------------------------------------
   const handleFindGame = useCallback(
-    (timeControl: Parameters<typeof ws.joinQueue>[1]) => {
+    async (timeControl: Parameters<typeof ws.joinQueue>[1]) => {
+      let rating = 700;
+      try {
+        const category =
+          timeControl.mode === 'unlimited'
+            ? 'classical'
+            : timeControl.mode === 'timed'
+              ? getTimeCategory(timeControl.minutes, timeControl.increment)
+              : 'classical';
+        const res = await fetch(
+          `/api/user/rating?variant=${encodeURIComponent(VARIANT)}&category=${encodeURIComponent(category)}`
+        );
+        if (res.ok) {
+          const data = (await res.json()) as { rating: number };
+          rating = data.rating;
+        }
+      } catch {}
       ws.joinQueue(
         VARIANT,
         timeControl,
         session?.user?.name ?? undefined,
-        session?.user?.image ?? undefined
+        session?.user?.image ?? undefined,
+        rating
       );
     },
     [ws.joinQueue, session]
@@ -1342,6 +1453,8 @@ export function DiceChessMultiplayerView({
     setDice(null);
     setNeedsRoll(true);
     setDiceRollHistory([]);
+    setMyRatingDelta(null);
+    setOpponentRatingDelta(null);
     setLoserColor(null);
     setHighlightedSquares({});
     setMatchmakingOpen(true);
@@ -1426,6 +1539,14 @@ export function DiceChessMultiplayerView({
     if (isMe(color)) return session?.user?.image ?? null;
     return ws.opponentImage ?? null;
   };
+  const getPlayerRating = (color: 'white' | 'black') => {
+    if (isMe(color)) return myRating;
+    return opponentRating;
+  };
+  const getPlayerRatingDelta = (color: 'white' | 'black') => {
+    if (isMe(color)) return myRatingDelta;
+    return opponentRatingDelta;
+  };
   const getPlayerFlagCode = (color: 'white' | 'black') => {
     if (isMe(color)) return myFlagCode;
     return opponentFlagCode;
@@ -1445,6 +1566,8 @@ export function DiceChessMultiplayerView({
               <PlayerInfo
                 name={getPlayerName(topColor)}
                 image={getPlayerImage(topColor)}
+                rating={getPlayerRating(topColor)}
+                ratingDelta={getPlayerRatingDelta(topColor)}
                 flagCode={getPlayerFlagCode(topColor)}
               />
               {showIndicator &&
@@ -1529,6 +1652,8 @@ export function DiceChessMultiplayerView({
               <PlayerInfo
                 name={getPlayerName(bottomColor)}
                 image={getPlayerImage(bottomColor)}
+                rating={getPlayerRating(bottomColor)}
+                ratingDelta={getPlayerRatingDelta(bottomColor)}
                 flagCode={getPlayerFlagCode(bottomColor)}
               />
               {showIndicator && (

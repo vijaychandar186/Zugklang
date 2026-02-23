@@ -9,15 +9,16 @@ export async function GET(req: NextRequest) {
   const category = req.nextUrl.searchParams.get(
     'category'
   ) as TimeCategory | null;
+  const variant = req.nextUrl.searchParams.get('variant') ?? 'standard';
   if (category) {
     const ratingRow = await prisma.rating.findUnique({
-      where: { userId_category: { userId, category } },
+      where: { userId_variant_category: { userId, variant, category } },
       select: { rating: true }
     });
     return Response.json({ rating: ratingRow?.rating ?? 700 });
   }
   const best = await prisma.rating.findFirst({
-    where: { userId },
+    where: { userId, variant },
     orderBy: { gameCount: 'desc' },
     select: { rating: true }
   });

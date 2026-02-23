@@ -13808,6 +13808,7 @@ export namespace Prisma {
   export type RatingMinAggregateOutputType = {
     id: string | null;
     userId: string | null;
+    variant: string | null;
     category: string | null;
     rating: number | null;
     rd: number | null;
@@ -13820,6 +13821,7 @@ export namespace Prisma {
   export type RatingMaxAggregateOutputType = {
     id: string | null;
     userId: string | null;
+    variant: string | null;
     category: string | null;
     rating: number | null;
     rd: number | null;
@@ -13832,6 +13834,7 @@ export namespace Prisma {
   export type RatingCountAggregateOutputType = {
     id: number;
     userId: number;
+    variant: number;
     category: number;
     rating: number;
     rd: number;
@@ -13859,6 +13862,7 @@ export namespace Prisma {
   export type RatingMinAggregateInputType = {
     id?: true;
     userId?: true;
+    variant?: true;
     category?: true;
     rating?: true;
     rd?: true;
@@ -13871,6 +13875,7 @@ export namespace Prisma {
   export type RatingMaxAggregateInputType = {
     id?: true;
     userId?: true;
+    variant?: true;
     category?: true;
     rating?: true;
     rd?: true;
@@ -13883,6 +13888,7 @@ export namespace Prisma {
   export type RatingCountAggregateInputType = {
     id?: true;
     userId?: true;
+    variant?: true;
     category?: true;
     rating?: true;
     rd?: true;
@@ -13985,6 +13991,7 @@ export namespace Prisma {
   export type RatingGroupByOutputType = {
     id: string;
     userId: string;
+    variant: string;
     category: string;
     rating: number;
     rd: number;
@@ -14018,6 +14025,7 @@ export namespace Prisma {
     {
       id?: boolean;
       userId?: boolean;
+      variant?: boolean;
       category?: boolean;
       rating?: boolean;
       rd?: boolean;
@@ -14036,6 +14044,7 @@ export namespace Prisma {
     {
       id?: boolean;
       userId?: boolean;
+      variant?: boolean;
       category?: boolean;
       rating?: boolean;
       rd?: boolean;
@@ -14054,6 +14063,7 @@ export namespace Prisma {
     {
       id?: boolean;
       userId?: boolean;
+      variant?: boolean;
       category?: boolean;
       rating?: boolean;
       rd?: boolean;
@@ -14069,6 +14079,7 @@ export namespace Prisma {
   export type RatingSelectScalar = {
     id?: boolean;
     userId?: boolean;
+    variant?: boolean;
     category?: boolean;
     rating?: boolean;
     rd?: boolean;
@@ -14083,6 +14094,7 @@ export namespace Prisma {
   > = $Extensions.GetOmit<
     | 'id'
     | 'userId'
+    | 'variant'
     | 'category'
     | 'rating'
     | 'rd'
@@ -14119,6 +14131,7 @@ export namespace Prisma {
       {
         id: string;
         userId: string;
+        variant: string;
         category: string;
         rating: number;
         rd: number;
@@ -14728,6 +14741,7 @@ export namespace Prisma {
   interface RatingFieldRefs {
     readonly id: FieldRef<'Rating', 'String'>;
     readonly userId: FieldRef<'Rating', 'String'>;
+    readonly variant: FieldRef<'Rating', 'String'>;
     readonly category: FieldRef<'Rating', 'String'>;
     readonly rating: FieldRef<'Rating', 'Int'>;
     readonly rd: FieldRef<'Rating', 'Float'>;
@@ -22415,6 +22429,7 @@ export namespace Prisma {
   export const RatingScalarFieldEnum: {
     id: 'id';
     userId: 'userId';
+    variant: 'variant';
     category: 'category';
     rating: 'rating';
     rd: 'rd';
@@ -23347,6 +23362,7 @@ export namespace Prisma {
     NOT?: RatingWhereInput | RatingWhereInput[];
     id?: StringFilter<'Rating'> | string;
     userId?: StringFilter<'Rating'> | string;
+    variant?: StringFilter<'Rating'> | string;
     category?: StringFilter<'Rating'> | string;
     rating?: IntFilter<'Rating'> | number;
     rd?: FloatFilter<'Rating'> | number;
@@ -23360,6 +23376,7 @@ export namespace Prisma {
   export type RatingOrderByWithRelationInput = {
     id?: SortOrder;
     userId?: SortOrder;
+    variant?: SortOrder;
     category?: SortOrder;
     rating?: SortOrder;
     rd?: SortOrder;
@@ -23373,11 +23390,12 @@ export namespace Prisma {
   export type RatingWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
-      userId_category?: RatingUserIdCategoryCompoundUniqueInput;
+      userId_variant_category?: RatingUserIdVariantCategoryCompoundUniqueInput;
       AND?: RatingWhereInput | RatingWhereInput[];
       OR?: RatingWhereInput[];
       NOT?: RatingWhereInput | RatingWhereInput[];
       userId?: StringFilter<'Rating'> | string;
+      variant?: StringFilter<'Rating'> | string;
       category?: StringFilter<'Rating'> | string;
       rating?: IntFilter<'Rating'> | number;
       rd?: FloatFilter<'Rating'> | number;
@@ -23387,12 +23405,13 @@ export namespace Prisma {
       updatedAt?: DateTimeFilter<'Rating'> | Date | string;
       user?: XOR<UserScalarRelationFilter, UserWhereInput>;
     },
-    'id' | 'userId_category'
+    'id' | 'userId_variant_category'
   >;
 
   export type RatingOrderByWithAggregationInput = {
     id?: SortOrder;
     userId?: SortOrder;
+    variant?: SortOrder;
     category?: SortOrder;
     rating?: SortOrder;
     rd?: SortOrder;
@@ -23417,6 +23436,7 @@ export namespace Prisma {
       | RatingScalarWhereWithAggregatesInput[];
     id?: StringWithAggregatesFilter<'Rating'> | string;
     userId?: StringWithAggregatesFilter<'Rating'> | string;
+    variant?: StringWithAggregatesFilter<'Rating'> | string;
     category?: StringWithAggregatesFilter<'Rating'> | string;
     rating?: IntWithAggregatesFilter<'Rating'> | number;
     rd?: FloatWithAggregatesFilter<'Rating'> | number;
@@ -24553,6 +24573,7 @@ export namespace Prisma {
 
   export type RatingCreateInput = {
     id?: string;
+    variant?: string;
     category: string;
     rating?: number;
     rd?: number;
@@ -24566,6 +24587,7 @@ export namespace Prisma {
   export type RatingUncheckedCreateInput = {
     id?: string;
     userId: string;
+    variant?: string;
     category: string;
     rating?: number;
     rd?: number;
@@ -24577,6 +24599,7 @@ export namespace Prisma {
 
   export type RatingUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
     category?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
     rd?: FloatFieldUpdateOperationsInput | number;
@@ -24590,6 +24613,7 @@ export namespace Prisma {
   export type RatingUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
     category?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
     rd?: FloatFieldUpdateOperationsInput | number;
@@ -24602,6 +24626,7 @@ export namespace Prisma {
   export type RatingCreateManyInput = {
     id?: string;
     userId: string;
+    variant?: string;
     category: string;
     rating?: number;
     rd?: number;
@@ -24613,6 +24638,7 @@ export namespace Prisma {
 
   export type RatingUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
     category?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
     rd?: FloatFieldUpdateOperationsInput | number;
@@ -24625,6 +24651,7 @@ export namespace Prisma {
   export type RatingUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
     category?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
     rd?: FloatFieldUpdateOperationsInput | number;
@@ -25780,14 +25807,16 @@ export namespace Prisma {
     not?: NestedFloatFilter<$PrismaModel> | number;
   };
 
-  export type RatingUserIdCategoryCompoundUniqueInput = {
+  export type RatingUserIdVariantCategoryCompoundUniqueInput = {
     userId: string;
+    variant: string;
     category: string;
   };
 
   export type RatingCountOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
+    variant?: SortOrder;
     category?: SortOrder;
     rating?: SortOrder;
     rd?: SortOrder;
@@ -25807,6 +25836,7 @@ export namespace Prisma {
   export type RatingMaxOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
+    variant?: SortOrder;
     category?: SortOrder;
     rating?: SortOrder;
     rd?: SortOrder;
@@ -25819,6 +25849,7 @@ export namespace Prisma {
   export type RatingMinOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
+    variant?: SortOrder;
     category?: SortOrder;
     rating?: SortOrder;
     rd?: SortOrder;
@@ -28158,6 +28189,7 @@ export namespace Prisma {
 
   export type RatingCreateWithoutUserInput = {
     id?: string;
+    variant?: string;
     category: string;
     rating?: number;
     rd?: number;
@@ -28169,6 +28201,7 @@ export namespace Prisma {
 
   export type RatingUncheckedCreateWithoutUserInput = {
     id?: string;
+    variant?: string;
     category: string;
     rating?: number;
     rd?: number;
@@ -28657,6 +28690,7 @@ export namespace Prisma {
     NOT?: RatingScalarWhereInput | RatingScalarWhereInput[];
     id?: StringFilter<'Rating'> | string;
     userId?: StringFilter<'Rating'> | string;
+    variant?: StringFilter<'Rating'> | string;
     category?: StringFilter<'Rating'> | string;
     rating?: IntFilter<'Rating'> | number;
     rd?: FloatFilter<'Rating'> | number;
@@ -30870,6 +30904,7 @@ export namespace Prisma {
 
   export type RatingCreateManyUserInput = {
     id?: string;
+    variant?: string;
     category: string;
     rating?: number;
     rd?: number;
@@ -31183,6 +31218,7 @@ export namespace Prisma {
 
   export type RatingUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
     category?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
     rd?: FloatFieldUpdateOperationsInput | number;
@@ -31194,6 +31230,7 @@ export namespace Prisma {
 
   export type RatingUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
     category?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
     rd?: FloatFieldUpdateOperationsInput | number;
@@ -31205,6 +31242,7 @@ export namespace Prisma {
 
   export type RatingUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
+    variant?: StringFieldUpdateOperationsInput | string;
     category?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
     rd?: FloatFieldUpdateOperationsInput | number;

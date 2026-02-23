@@ -9,6 +9,7 @@ interface ProfileViewProps {
     createdAt: Date;
   };
   ratings: {
+    variant: string;
     category: string;
     rating: number;
     rd: number;

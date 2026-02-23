@@ -177,20 +177,26 @@ export function MultiplayerGameView({
   const currentFEN = useChessStore((s) => s.currentFEN);
   const [myRating, setMyRating] = useState<number | null>(null);
   const [myRatingDelta, setMyRatingDelta] = useState<number | null>(null);
+  const [opponentRatingDelta, setOpponentRatingDelta] = useState<number | null>(
+    null
+  );
   const ratingCategory = useMemo(() => {
-    if (variant !== 'standard') return null;
     const tc = ws.timeControl;
     if (!tc) return null;
     if (tc.mode === 'unlimited') return 'classical' as const;
     if (tc.mode !== 'timed') return null;
     return getTimeCategory(tc.minutes, tc.increment);
-  }, [variant, ws.timeControl]);
+  }, [ws.timeControl]);
   useEffect(() => {
-    if (!session?.user?.id || !ratingCategory) {
+    if (!session?.user?.id) {
       setMyRating(null);
       return;
     }
-    fetch(`/api/user/rating?category=${ratingCategory}`)
+    const params = new URLSearchParams({ variant });
+    if (ratingCategory) {
+      params.set('category', ratingCategory);
+    }
+    fetch(`/api/user/rating?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then(
         (
@@ -200,7 +206,7 @@ export function MultiplayerGameView({
         ) => data && setMyRating(data.rating)
       )
       .catch(() => {});
-  }, [session?.user?.id, ratingCategory]);
+  }, [session?.user?.id, variant, ratingCategory]);
   const [myFlagCode, setMyFlagCode] = useState(DEFAULT_FLAG_CODE);
   useEffect(() => {
     if (!session?.user?.id) {
@@ -226,20 +232,24 @@ export function MultiplayerGameView({
     return ws.myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
   }, [session?.user?.id, ws.myColor, ws.whiteUserId, ws.blackUserId]);
   useEffect(() => {
-    if (!opponentUserId || !ratingCategory) {
+    if (!opponentUserId) {
       setOpponentRating(null);
       setOpponentFlagCode(DEFAULT_FLAG_CODE);
       return;
     }
     setOpponentRating(null);
-    fetch(`/api/users/${opponentUserId}?category=${ratingCategory}`)
+    const params = new URLSearchParams({ variant });
+    if (ratingCategory) {
+      params.set('category', ratingCategory);
+    }
+    fetch(`/api/users/${opponentUserId}?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : { rating: 700 }))
       .then((data: { rating: number | null; flagCode?: string | null }) => {
         setOpponentRating(data.rating ?? 700);
         setOpponentFlagCode(normalizeFlagCode(data.flagCode));
       })
       .catch(() => setOpponentFlagCode(DEFAULT_FLAG_CODE));
-  }, [opponentUserId, ratingCategory]);
+  }, [opponentUserId, variant, ratingCategory]);
   const savedRoomIdRef = useRef<string | null>(null);
   const saveMultiplayerGame = useCallback(
     (
@@ -281,15 +291,62 @@ export function MultiplayerGameView({
               gameId?: string;
               whiteRatingDelta?: number | null;
               blackRatingDelta?: number | null;
-              duplicate?: boolean;
             } | null
           ) => {
-            if (!data || data.duplicate) return;
-            const delta =
+            if (!data) return;
+            const myDelta =
               myColor === 'white'
                 ? data.whiteRatingDelta
                 : data.blackRatingDelta;
-            if (delta != null) setMyRatingDelta(delta);
+            const theirDelta =
+              myColor === 'white'
+                ? data.blackRatingDelta
+                : data.whiteRatingDelta;
+            if (myDelta != null) setMyRatingDelta(myDelta);
+            if (theirDelta != null) setOpponentRatingDelta(theirDelta);
+            if (myDelta == null) {
+              setTimeout(() => {
+                fetch('/api/games', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    roomId,
+                    moves,
+                    variant,
+                    gameType: 'multiplayer',
+                    result,
+                    resultReason: reason,
+                    myColor,
+                    opponentUserId,
+                    timeControl,
+                    startingFen
+                  })
+                })
+                  .then((r) => (r.ok ? r.json() : null))
+                  .then(
+                    (
+                      retryData: {
+                        whiteRatingDelta?: number | null;
+                        blackRatingDelta?: number | null;
+                      } | null
+                    ) => {
+                      if (!retryData) return;
+                      const retryMyDelta =
+                        myColor === 'white'
+                          ? retryData.whiteRatingDelta
+                          : retryData.blackRatingDelta;
+                      const retryTheirDelta =
+                        myColor === 'white'
+                          ? retryData.blackRatingDelta
+                          : retryData.whiteRatingDelta;
+                      if (retryMyDelta != null) setMyRatingDelta(retryMyDelta);
+                      if (retryTheirDelta != null)
+                        setOpponentRatingDelta(retryTheirDelta);
+                    }
+                  )
+                  .catch(() => {});
+              }, 700);
+            }
           }
         )
         .catch((err) => console.error('Failed to save multiplayer game:', err));
@@ -465,12 +522,29 @@ export function MultiplayerGameView({
     }
   }, [gameOver]);
   const handleFindGame = useCallback(
-    (timeControl: TimeControl) => {
+    async (timeControl: TimeControl) => {
+      let rating = 700;
+      try {
+        const category =
+          timeControl.mode === 'unlimited'
+            ? 'classical'
+            : timeControl.mode === 'timed'
+              ? getTimeCategory(timeControl.minutes, timeControl.increment)
+              : 'classical';
+        const res = await fetch(
+          `/api/user/rating?variant=${encodeURIComponent(variant)}&category=${encodeURIComponent(category)}`
+        );
+        if (res.ok) {
+          const data = (await res.json()) as { rating: number };
+          rating = data.rating;
+        }
+      } catch {}
       ws.joinQueue(
         variant,
         timeControl,
         session?.user?.name ?? undefined,
-        session?.user?.image ?? undefined
+        session?.user?.image ?? undefined,
+        rating
       );
     },
     [ws.joinQueue, variant, session]
@@ -495,6 +569,7 @@ export function MultiplayerGameView({
     setPendingMoves(null);
     setActiveChallengeId(undefined);
     setMyRatingDelta(null);
+    setOpponentRatingDelta(null);
     setMatchmakingOpen(true);
   }, [ws.disconnect]);
   const handleMovesReplayed = useCallback(() => {
@@ -543,6 +618,10 @@ export function MultiplayerGameView({
     if (isMe(color)) return myRating;
     return opponentRating;
   };
+  const getPlayerRatingDelta = (color: 'white' | 'black') => {
+    if (isMe(color)) return myRatingDelta;
+    return opponentRatingDelta;
+  };
   const getPlayerFlagCode = (color: 'white' | 'black') => {
     if (isMe(color)) return myFlagCode;
     return opponentFlagCode;
@@ -558,6 +637,7 @@ export function MultiplayerGameView({
                 name={getPlayerName(topColor)}
                 image={getPlayerImage(topColor)}
                 rating={getPlayerRating(topColor)}
+                ratingDelta={getPlayerRatingDelta(topColor)}
                 flagCode={getPlayerFlagCode(topColor)}
               />
               {showIndicator &&
@@ -625,6 +705,7 @@ export function MultiplayerGameView({
                 name={getPlayerName(bottomColor)}
                 image={getPlayerImage(bottomColor)}
                 rating={getPlayerRating(bottomColor)}
+                ratingDelta={getPlayerRatingDelta(bottomColor)}
                 flagCode={getPlayerFlagCode(bottomColor)}
               />
               {showIndicator &&
@@ -696,7 +777,6 @@ export function MultiplayerGameView({
               onAcceptRematch={ws.acceptRematch}
               onDeclineRematch={ws.declineRematch}
               onFindNewGame={handleFindNewGame}
-              ratingDelta={myRatingDelta}
             />
           </div>
         </div>

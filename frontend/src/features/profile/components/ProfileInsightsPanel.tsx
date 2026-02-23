@@ -48,6 +48,7 @@ type GameForInsights = {
 };
 
 type RatingsRow = {
+  variant: string;
   category: string;
   rating: number;
   rd: number;

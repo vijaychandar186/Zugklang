@@ -56,6 +56,7 @@ function isAbortedGame(
 }
 async function getOrCreateRating(
   userId: string,
+  variant: string,
   category: string
 ): Promise<
   GlickoPlayer & {
@@ -63,9 +64,9 @@ async function getOrCreateRating(
   }
 > {
   const record = await prisma.rating.upsert({
-    where: { userId_category: { userId, category } },
+    where: { userId_variant_category: { userId, variant, category } },
     update: {},
-    create: { userId, category }
+    create: { userId, variant, category }
   });
   return {
     id: record.id,
@@ -130,7 +131,6 @@ export async function POST(req: NextRequest) {
     const blackUserId = myColor === 'black' ? userId : resolvedOpponentUserId;
     const pgnResult = toPgnResult(result, resultReason);
     const category = (() => {
-      if (variant !== 'standard') return null;
       if (timeControl.mode === 'unlimited') return 'classical' as const;
       if (timeControl.mode !== 'timed') return null;
       return getTimeCategory(timeControl.minutes, timeControl.increment);
@@ -202,8 +202,8 @@ export async function POST(req: NextRequest) {
     if (isRated && category) {
       try {
         const [whiteRating, blackRating] = await Promise.all([
-          getOrCreateRating(whiteUserId!, category),
-          getOrCreateRating(blackUserId!, category)
+          getOrCreateRating(whiteUserId!, variant, category),
+          getOrCreateRating(blackUserId!, variant, category)
         ]);
         whitePregameRating = whiteRating.rating;
         blackPregameRating = blackRating.rating;
@@ -216,7 +216,13 @@ export async function POST(req: NextRequest) {
         blackRatingDelta = updated.blackDelta;
         await prisma.$transaction([
           prisma.rating.update({
-            where: { userId_category: { userId: whiteUserId!, category } },
+            where: {
+              userId_variant_category: {
+                userId: whiteUserId!,
+                variant,
+                category
+              }
+            },
             data: {
               rating: updated.white.rating,
               rd: updated.white.rd,
@@ -225,7 +231,13 @@ export async function POST(req: NextRequest) {
             }
           }),
           prisma.rating.update({
-            where: { userId_category: { userId: blackUserId!, category } },
+            where: {
+              userId_variant_category: {
+                userId: blackUserId!,
+                variant,
+                category
+              }
+            },
             data: {
               rating: updated.black.rating,
               rd: updated.black.rd,

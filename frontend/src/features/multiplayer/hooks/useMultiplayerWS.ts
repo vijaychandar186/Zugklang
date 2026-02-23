@@ -596,7 +596,8 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
       variant: string,
       timeControl: TimeControl,
       displayName?: string,
-      userImage?: string | null
+      userImage?: string | null,
+      rating?: number
     ) => {
       try {
         await connect();
@@ -608,7 +609,8 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
         variant,
         timeControl,
         displayName,
-        userImage
+        userImage,
+        rating
       });
       setState((s) => ({
         ...s,

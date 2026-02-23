@@ -7,23 +7,34 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-import { BOARD_THEMES } from '@/features/chess/config/board-themes';
+import {
+  BOARD_THEMES,
+  CORE_BOARD_THEME_NAMES
+} from '@/features/chess/config/board-themes';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { cn } from '@/lib/utils';
 type ThemeSelectorProps = {
   currentTheme: BoardThemeName;
   onThemeChange: (themeName: BoardThemeName) => void;
+  showExtendedThemes?: boolean;
 };
 export function BoardThemeSelector({
   currentTheme,
-  onThemeChange
+  onThemeChange,
+  showExtendedThemes = false
 }: ThemeSelectorProps) {
+  const visibleThemes = showExtendedThemes
+    ? BOARD_THEMES
+    : BOARD_THEMES.filter((theme) =>
+        CORE_BOARD_THEME_NAMES.includes(theme.name)
+      );
+
   return (
     <div className='space-y-3'>
       <Label>Board Theme</Label>
       <TooltipProvider>
         <div className='grid grid-cols-3 gap-2'>
-          {BOARD_THEMES.map((boardTheme) => (
+          {visibleThemes.map((boardTheme) => (
             <Tooltip key={boardTheme.name}>
               <TooltipTrigger asChild>
                 <Button

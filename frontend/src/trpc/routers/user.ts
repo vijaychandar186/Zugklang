@@ -4,11 +4,20 @@ import { z } from 'zod';
 const timeCategorySchema = z.enum(['bullet', 'blitz', 'rapid', 'classical']);
 export const userRouter = router({
   getMyRating: privateProcedure
-    .input(z.object({ category: timeCategorySchema }))
+    .input(
+      z.object({
+        category: timeCategorySchema,
+        variant: z.string().default('standard')
+      })
+    )
     .query(async ({ ctx, input }) => {
       const record = await prisma.rating.findUnique({
         where: {
-          userId_category: { userId: ctx.userId, category: input.category }
+          userId_variant_category: {
+            userId: ctx.userId,
+            variant: input.variant,
+            category: input.category
+          }
         },
         select: { rating: true, rd: true, gameCount: true }
       });
@@ -21,7 +30,13 @@ export const userRouter = router({
   getMyRatings: privateProcedure.query(async ({ ctx }) => {
     const records = await prisma.rating.findMany({
       where: { userId: ctx.userId },
-      select: { category: true, rating: true, rd: true, gameCount: true }
+      select: {
+        variant: true,
+        category: true,
+        rating: true,
+        rd: true,
+        gameCount: true
+      }
     });
     return records;
   }),
@@ -29,6 +44,7 @@ export const userRouter = router({
     .input(
       z.object({
         userId: z.string(),
+        variant: z.string().default('standard'),
         category: timeCategorySchema.optional()
       })
     )
@@ -41,8 +57,9 @@ export const userRouter = router({
         input.category
           ? prisma.rating.findUnique({
               where: {
-                userId_category: {
+                userId_variant_category: {
                   userId: input.userId,
+                  variant: input.variant,
                   category: input.category
                 }
               },

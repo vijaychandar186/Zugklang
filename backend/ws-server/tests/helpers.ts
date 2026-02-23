@@ -3,6 +3,7 @@ import type { SocketData } from '../types';
 import {
   challenges,
   connectedUserIds,
+  fourPlayerLobbies,
   queues,
   reconnectTimeouts,
   rejoinTokens,
@@ -41,6 +42,7 @@ export function resetInMemoryState(): void {
   queues.clear();
   rooms.clear();
   challenges.clear();
+  fourPlayerLobbies.clear();
   reconnectTimeouts.clear();
   connectedUserIds.clear();
   rejoinTokens.clear();
@@ -74,6 +76,9 @@ export function createTestRoom(params: {
     status: params.status ?? 'active',
     createdAt: Date.now(),
     abortTimer: null,
+    abortTimerStartedAt: null,
+    whiteDisconnectedAt: null,
+    blackDisconnectedAt: null,
     whiteLatencyMs: null,
     blackLatencyMs: null,
     whiteDisplayName: null,

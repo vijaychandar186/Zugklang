@@ -5,7 +5,9 @@ import {
   reconnectTimeouts,
   rejoinTokens,
   issueRejoinToken,
-  revokeRoomTokens
+  revokeRoomTokens,
+  fourPlayerLobbies,
+  fourPlayerReconnectTimeouts
 } from '../state';
 import { send, removeFromQueues, getOpponent } from '../utils/socket';
 import { broadcastClock, stopRoomClock } from '../utils/clock';
@@ -13,6 +15,7 @@ import { clearRateLimit } from '../utils/rateLimit';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
 import { ABANDON_TIMEOUT_MS } from '../config';
+import { leaveFourPlayerLobby } from './fourPlayer';
 export function handleRejoinRoom(
   ws: BunWS,
   msg: {
@@ -79,6 +82,31 @@ export function handleRejoinRoom(
   logger.info('player_rejoined', { roomId: roomId.slice(0, 8), color });
 }
 export function handleDisconnect(ws: BunWS): void {
+  // Handle 4-player lobby: give a grace period to reconnect if the game has started
+  const fourPlayerLobbyId = ws.data.fourPlayerLobbyId;
+  if (fourPlayerLobbyId) {
+    const lobby = fourPlayerLobbies.get(fourPlayerLobbyId);
+    if (lobby?.started) {
+      const playerId = ws.data.id;
+      // Cancel any existing reconnect timeout for this player
+      const existing = fourPlayerReconnectTimeouts.get(playerId);
+      if (existing) clearTimeout(existing);
+      // Notify other connected players that this player disconnected
+      for (const player of lobby.players) {
+        if (player.data.id !== playerId) {
+          send(player, { type: 'four_player_player_disconnected', playerId });
+        }
+      }
+      // Set abandon timeout — if they don't rejoin in time, remove them
+      const timeout = setTimeout(() => {
+        fourPlayerReconnectTimeouts.delete(playerId);
+        leaveFourPlayerLobby(ws);
+      }, ABANDON_TIMEOUT_MS);
+      fourPlayerReconnectTimeouts.set(playerId, timeout);
+    } else {
+      leaveFourPlayerLobby(ws);
+    }
+  }
   removeFromQueues(ws);
   clearRateLimit(ws.data.id);
   if (ws.data.challengeId) {

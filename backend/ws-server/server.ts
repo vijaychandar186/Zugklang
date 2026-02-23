@@ -2,7 +2,13 @@ import type { SocketData } from './types';
 import type { BunWS } from './types';
 import { verifyWsToken } from './utils/auth';
 import { ClientMessageSchema } from './utils/schemas';
-import { rooms, queues, challenges, connectedUserIds } from './state';
+import {
+  rooms,
+  queues,
+  challenges,
+  connectedUserIds,
+  fourPlayerLobbies
+} from './state';
 import { send } from './utils/socket';
 import { isRateLimited } from './utils/rateLimit';
 import { logger } from './utils/logger';
@@ -27,6 +33,16 @@ import {
 } from './handlers/game';
 import { handleRejoinRoom, handleDisconnect } from './handlers/connection';
 import { handleSyncDice, handleSyncCard } from './handlers/sync';
+import {
+  handleCreateFourPlayerLobby,
+  handleJoinFourPlayerLobby,
+  handleLeaveFourPlayerLobby,
+  handleStartFourPlayerLobby,
+  handleShuffleFourPlayerLobby,
+  handleAssignFourPlayerTeam,
+  handleSyncFourPlayerState,
+  handleRejoinFourPlayerLobby
+} from './handlers/fourPlayer';
 import { GC_INTERVAL_MS, GC_ROOM_MAX_AGE_MS } from './config';
 const PORT = parseInt(process.env['PORT'] ?? '8080', 10);
 const ALLOWED_ORIGINS =
@@ -195,6 +211,30 @@ Bun.serve<SocketData>({
         case 'sync_card':
           handleSyncCard(ws, msg);
           break;
+        case 'create_four_player_lobby':
+          handleCreateFourPlayerLobby(ws, msg);
+          break;
+        case 'join_four_player_lobby':
+          handleJoinFourPlayerLobby(ws, msg);
+          break;
+        case 'leave_four_player_lobby':
+          handleLeaveFourPlayerLobby(ws, msg);
+          break;
+        case 'start_four_player_lobby':
+          handleStartFourPlayerLobby(ws, msg);
+          break;
+        case 'shuffle_four_player_lobby':
+          handleShuffleFourPlayerLobby(ws, msg);
+          break;
+        case 'assign_four_player_team':
+          handleAssignFourPlayerTeam(ws, msg);
+          break;
+        case 'sync_four_player_state':
+          handleSyncFourPlayerState(ws, msg);
+          break;
+        case 'rejoin_four_player_lobby':
+          handleRejoinFourPlayerLobby(ws, msg);
+          break;
         case 'ping':
           send(ws, { type: 'pong' });
           break;
@@ -234,6 +274,7 @@ setInterval(() => {
   const threshold = Date.now() - GC_ROOM_MAX_AGE_MS;
   let roomsCleaned = 0;
   let challengesCleaned = 0;
+  let lobbiesCleaned = 0;
   for (const [id, room] of rooms) {
     if (room.status === 'ended' && room.createdAt < threshold) {
       rooms.delete(id);
@@ -246,7 +287,13 @@ setInterval(() => {
       challengesCleaned++;
     }
   }
-  if (roomsCleaned > 0 || challengesCleaned > 0) {
-    logger.info('gc_ran', { roomsCleaned, challengesCleaned });
+  for (const [id, lobby] of fourPlayerLobbies) {
+    if (lobby.createdAt < threshold) {
+      fourPlayerLobbies.delete(id);
+      lobbiesCleaned++;
+    }
+  }
+  if (roomsCleaned > 0 || challengesCleaned > 0 || lobbiesCleaned > 0) {
+    logger.info('gc_ran', { roomsCleaned, challengesCleaned, lobbiesCleaned });
   }
 }, GC_INTERVAL_MS);

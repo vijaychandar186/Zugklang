@@ -88,10 +88,13 @@ export function handleMove(
       r.status = 'ended';
       stopRoomClock(r);
       revokeRoomTokens(r);
+      const abandonedColor = r.position.turn;
+      const winner = abandonedColor === 'white' ? 'Black' : 'White';
       const payload = {
         type: 'game_over',
-        result: 'Game Aborted',
-        reason: 'abort',
+        result: `${winner} wins — opponent abandoned`,
+        reason: 'abandoned',
+        winner: winner.toLowerCase(),
         whiteUserId: r.white.data.userId ?? null,
         blackUserId: r.black.data.userId ?? null
       };
@@ -186,6 +189,11 @@ export function handleAbort(ws: BunWS): void {
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status === 'ended') return;
+  // Abort is only valid during the opening window before each side has moved.
+  if (room.moves.length >= 2) {
+    handleResign(ws);
+    return;
+  }
   if (room.abortTimer !== null) {
     clearTimeout(room.abortTimer);
     room.abortTimer = null;

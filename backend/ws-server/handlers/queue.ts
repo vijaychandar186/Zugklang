@@ -63,10 +63,13 @@ export function createRoom(
     r.status = 'ended';
     stopRoomClock(r);
     revokeRoomTokens(r);
+    const abandonedColor = r.position.turn;
+    const winner = abandonedColor === 'white' ? 'Black' : 'White';
     const payload = {
       type: 'game_over',
-      result: 'Game Aborted',
-      reason: 'abort',
+      result: `${winner} wins — opponent abandoned`,
+      reason: 'abandoned',
+      winner: winner.toLowerCase(),
       whiteUserId: r.white.data.userId ?? null,
       blackUserId: r.black.data.userId ?? null
     };

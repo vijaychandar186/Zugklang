@@ -161,6 +161,27 @@ describe('game handler integration', () => {
     expect(room.status).toBe('ended');
   });
 
+  test('abort after opening window is treated as resignation', () => {
+    const { white, black, room } = setupRoom(
+      '67676767-6767-6767-6767-676767676767'
+    );
+    room.moves = ['e2e4', 'e7e5'];
+
+    handleAbort(asBunWs(white));
+
+    expect(room.status).toBe('ended');
+    const whiteMsg = findMessage<{ type: 'game_over'; reason: string }>(
+      white.sent,
+      'game_over'
+    );
+    const blackMsg = findMessage<{ type: 'game_over'; reason: string }>(
+      black.sent,
+      'game_over'
+    );
+    expect(whiteMsg?.reason).toBe('resign');
+    expect(blackMsg?.reason).toBe('resign');
+  });
+
   test('game_over_notify is ignored when room is already ended', () => {
     const { white, black, room } = setupRoom(
       '77777777-7777-7777-7777-777777777777'

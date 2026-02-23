@@ -115,7 +115,7 @@ async function matchTwoPlayers(
   ]);
 
   const roomId = matchedA['roomId'] as string;
-  expect(roomId).toBe(matchedB['roomId']);
+  expect(roomId).toBe(matchedB['roomId'] as string);
   return { wsA, wsB, roomId, matchedA, matchedB };
 }
 

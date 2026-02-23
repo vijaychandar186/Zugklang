@@ -16,6 +16,7 @@ export interface SocketData {
   roomId?: string;
   variant?: string;
   challengeId?: string;
+  fourPlayerLobbyId?: string;
 }
 export type BunWS = ServerWebSocket<SocketData>;
 export interface Challenge {
@@ -54,4 +55,14 @@ export interface Room {
   activeClock: Color | null;
   clockLastUpdatedAt: number | null;
   clockInterval: ReturnType<typeof setInterval> | null;
+}
+
+export interface FourPlayerLobby {
+  id: string;
+  leaderId: string;
+  players: BunWS[];
+  teamAssignments: Map<string, 'r' | 'b' | 'y' | 'g'>;
+  started: boolean;
+  timeControl: TimeControl;
+  createdAt: number;
 }

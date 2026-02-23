@@ -93,6 +93,44 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
       'A'
     ]),
     suit: z.enum(['H', 'D', 'C', 'S'])
+  }),
+  z.object({
+    type: z.literal('create_four_player_lobby'),
+    timeControl: TimeControlSchema.optional(),
+    ...DisplayInfoSchema
+  }),
+  z.object({
+    type: z.literal('join_four_player_lobby'),
+    lobbyId: z.string().uuid(),
+    ...DisplayInfoSchema
+  }),
+  z.object({
+    type: z.literal('leave_four_player_lobby'),
+    lobbyId: z.string().uuid()
+  }),
+  z.object({
+    type: z.literal('start_four_player_lobby'),
+    lobbyId: z.string().uuid()
+  }),
+  z.object({
+    type: z.literal('shuffle_four_player_lobby'),
+    lobbyId: z.string().uuid()
+  }),
+  z.object({
+    type: z.literal('assign_four_player_team'),
+    lobbyId: z.string().uuid(),
+    playerId: z.string().uuid(),
+    team: z.enum(['r', 'b', 'y', 'g'])
+  }),
+  z.object({
+    type: z.literal('sync_four_player_state'),
+    lobbyId: z.string().uuid(),
+    state: z.string().max(100000)
+  }),
+  z.object({
+    type: z.literal('rejoin_four_player_lobby'),
+    lobbyId: z.string().uuid(),
+    rejoinToken: z.string().uuid()
   })
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;

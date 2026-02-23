@@ -81,8 +81,8 @@ importers:
         specifier: 19.1.0
         version: 19.1.0
       react-chessboard:
-        specifier: ^5.8.6
-        version: 5.8.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        specifier: ^5.10.0
+        version: 5.10.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-dom:
         specifier: 19.1.0
         version: 19.1.0(react@19.1.0)
@@ -2475,8 +2475,8 @@ packages:
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
-  react-chessboard@5.8.6:
-    resolution: {integrity: sha512-K4I6eWQJODIQlgdDu8uOl9EuwpBbaHPceT42cyAWw2VO9ODAm2GxqVfRZjTpOV74B3YCe7iNFA+z7IIIS4D7/A==}
+  react-chessboard@5.10.0:
+    resolution: {integrity: sha512-Y3PgaCVhnDG3IaQfu86OzTSEIEAUtuU5XwmHWnx3tcFOX7lSoAq81ZFX3MBj6y5a6FzDMTczMVmkkrV2CzTrIw==}
     engines: {node: '>=20.11.0', pnpm: '>=9.4.0'}
     peerDependencies:
       react: ^19.0.0
@@ -5263,7 +5263,7 @@ snapshots:
 
   queue-microtask@1.2.3: {}
 
-  react-chessboard@5.8.6(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+  react-chessboard@5.10.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
       '@dnd-kit/core': 6.3.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@dnd-kit/modifiers': 9.0.0(@dnd-kit/core@6.3.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)

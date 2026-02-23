@@ -14,6 +14,8 @@ export default async function GamesPage({
 }: {
   searchParams: Promise<{
     page?: string;
+    variant?: string;
+    type?: string;
   }>;
 }) {
   const session = await auth();
@@ -21,20 +23,32 @@ export default async function GamesPage({
   const userId = session.user.id;
   const params = await searchParams;
   const page = Math.max(1, parseInt(params.page ?? '1', 10));
+  const variantFilter = params.variant ?? 'all';
+  const typeFilter = params.type ?? 'all';
   const pageSize = 25;
   const skip = (page - 1) * pageSize;
+
+  const baseWhere = {
+    OR: [{ whiteUserId: userId }, { blackUserId: userId }]
+  } as const;
+
+  const gameWhere = {
+    OR: [{ whiteUserId: userId }, { blackUserId: userId }],
+    ...(variantFilter !== 'all' && { variant: variantFilter }),
+    ...(typeFilter !== 'all' && { gameType: typeFilter })
+  };
+
   const [
     games,
     totalCount,
+    allVariantRows,
     puzzleAttempts,
     puzzleRush,
     memorySessions,
     visionSessions
   ] = await Promise.all([
     prisma.game.findMany({
-      where: {
-        OR: [{ whiteUserId: userId }, { blackUserId: userId }]
-      },
+      where: gameWhere,
       orderBy: { createdAt: 'desc' },
       skip,
       take: pageSize,
@@ -55,10 +69,13 @@ export default async function GamesPage({
         black: { select: { name: true } }
       }
     }),
-    prisma.game.count({
-      where: {
-        OR: [{ whiteUserId: userId }, { blackUserId: userId }]
-      }
+    prisma.game.count({ where: gameWhere }),
+    // Fetch all distinct variants across ALL user games (not just current page)
+    prisma.game.findMany({
+      where: baseWhere,
+      select: { variant: true },
+      distinct: ['variant'],
+      orderBy: { variant: 'asc' }
     }),
     prisma.puzzleAttempt.findMany({
       where: { userId },
@@ -122,7 +139,10 @@ export default async function GamesPage({
       }
     })
   ]);
+
   const totalPages = Math.ceil(totalCount / pageSize);
+  const availableVariants = allVariantRows.map((r) => r.variant);
+
   return (
     <PageContainer scrollable={true}>
       <Navbar />
@@ -132,6 +152,9 @@ export default async function GamesPage({
         page={page}
         totalPages={totalPages}
         userId={userId}
+        variantFilter={variantFilter}
+        typeFilter={typeFilter}
+        availableVariants={availableVariants}
         puzzleAttempts={puzzleAttempts}
         puzzleRush={puzzleRush}
         memorySessions={memorySessions}

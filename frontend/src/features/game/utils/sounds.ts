@@ -1,3 +1,6 @@
+import { useChessStore } from '@/features/chess/stores/useChessStore';
+import { DEFAULT_SOUND_THEME } from '@/features/chess/config/media-themes';
+
 export type SoundType =
   | 'game-start'
   | 'game-end'
@@ -13,39 +16,62 @@ export type SoundType =
   | 'tenseconds'
   | 'draw-offer';
 const SOUND_FILES: Record<SoundType, string> = {
-  'game-start': '/audio/sounds/game-start.mp3',
-  'game-end': '/audio/sounds/game-end.mp3',
-  'move-self': '/audio/sounds/move-self.mp3',
-  'move-opponent': '/audio/sounds/move-opponent.mp3',
-  capture: '/audio/sounds/capture.mp3',
-  check: '/audio/sounds/move-check.mp3',
-  castle: '/audio/sounds/castle.mp3',
-  promote: '/audio/sounds/promote.mp3',
-  premove: '/audio/sounds/pre-move.mp3',
-  notify: '/audio/sounds/notify.mp3',
-  illegal: '/audio/sounds/illegal.mp3',
-  tenseconds: '/audio/sounds/ten-seconds.mp3',
-  'draw-offer': '/audio/sounds/draw-offer.mp3'
+  'game-start': 'game-start.mp3',
+  'game-end': 'game-end.mp3',
+  'move-self': 'move-self.mp3',
+  'move-opponent': 'move-opponent.mp3',
+  capture: 'capture.mp3',
+  check: 'move-check.mp3',
+  castle: 'castle.mp3',
+  promote: 'promote.mp3',
+  premove: 'pre-move.mp3',
+  notify: 'notify.mp3',
+  illegal: 'illegal.mp3',
+  tenseconds: 'ten-seconds.mp3',
+  'draw-offer': 'draw-offer.mp3'
 };
-const audioCache: Partial<Record<SoundType, HTMLAudioElement>> = {};
-let preloaded = false;
+const audioCache: Record<string, HTMLAudioElement> = {};
+
+function getSoundThemeName() {
+  if (typeof window === 'undefined') return DEFAULT_SOUND_THEME;
+  return useChessStore.getState().soundThemeName ?? DEFAULT_SOUND_THEME;
+}
+
+function getThemedSoundPath(type: SoundType) {
+  if (type === 'notify') return '/audio/sounds/notify.mp3';
+  return `/theme/assets/${getSoundThemeName()}/${SOUND_FILES[type]}`;
+}
+
 function preloadSounds() {
-  if (preloaded || typeof window === 'undefined') return;
+  if (typeof window === 'undefined') return;
+  const themeName = getSoundThemeName();
   (Object.keys(SOUND_FILES) as SoundType[]).forEach((type) => {
-    const audio = new Audio(SOUND_FILES[type]);
+    const path =
+      type === 'notify'
+        ? '/audio/sounds/notify.mp3'
+        : `/theme/assets/${themeName}/${SOUND_FILES[type]}`;
+    if (audioCache[path]) return;
+    const audio = new Audio(path);
     audio.preload = 'auto';
     audio.load();
-    audioCache[type] = audio;
+    audioCache[path] = audio;
   });
-  preloaded = true;
 }
 if (typeof window !== 'undefined') {
   preloadSounds();
 }
 export function playSound(type: SoundType) {
   try {
-    if (!preloaded) preloadSounds();
-    const audio = audioCache[type];
+    const path = getThemedSoundPath(type);
+    const audio =
+      audioCache[path] ??
+      (() => {
+        const created = new Audio(path);
+        created.preload = 'auto';
+        created.load();
+        audioCache[path] = created;
+        return created;
+      })();
     if (!audio) return;
     const clone = audio.cloneNode() as HTMLAudioElement;
     clone.volume = audio.volume;

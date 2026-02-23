@@ -9,6 +9,12 @@ import {
 } from '@/lib/chess/chess';
 import { BoardThemeName } from '@/features/chess/types/theme';
 import { DEFAULT_BOARD_THEME } from '@/features/chess/config/board-themes';
+import {
+  PieceThemeName,
+  SoundThemeName,
+  normalizePieceThemeName,
+  normalizeSoundThemeName
+} from '@/features/chess/config/media-themes';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
 import { TimeControl } from '@/features/game/types/rules';
@@ -30,7 +36,7 @@ import {
   createBoardOrientationSlice,
   BoardOrientationSlice
 } from './slices';
-import { setCookie, getBooleanCookie } from '@/lib/storage/settings';
+import { setCookie, getBooleanCookie, getCookie } from '@/lib/storage/settings';
 import {
   initializeTimers,
   hasTimer,
@@ -40,6 +46,8 @@ import * as gameLoader from '@/lib/chess/gameLoader';
 import { EngineConfig } from '@/features/chess/types/engine';
 const BOARD_SCHEME_COOKIE = 'boardScheme';
 const SOUND_ENABLED_COOKIE = 'soundEnabled';
+const PIECE_THEME_COOKIE = 'pieceTheme';
+const SOUND_THEME_COOKIE = 'soundTheme';
 const PLAY_AS_COOKIE = 'playAs';
 type PlayMode = 'computer' | 'local' | 'multiplayer';
 type PersistedPlayState = {
@@ -73,6 +81,12 @@ function getInitialSoundEnabled(): boolean {
 function getInitialBoard3dEnabled(): boolean {
   return getBooleanCookie(BOARD_3D_ENABLED_COOKIE, false);
 }
+function getInitialPieceTheme(): PieceThemeName {
+  return normalizePieceThemeName(getCookie(PIECE_THEME_COOKIE));
+}
+function getInitialSoundTheme(): SoundThemeName {
+  return normalizeSoundThemeName(getCookie(SOUND_THEME_COOKIE));
+}
 interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   mode: ChessMode;
   gameType: GameType;
@@ -95,6 +109,8 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   playingAgainstStockfish: boolean;
   playerColor: 'white' | 'black';
   boardThemeName: BoardThemeName;
+  pieceThemeName: PieceThemeName;
+  soundThemeName: SoundThemeName;
   soundEnabled: boolean;
   board3dEnabled: boolean;
   autoFlipBoard: boolean;
@@ -104,6 +120,8 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   onNewGame: () => void;
   setMode: (mode: ChessMode) => void;
   setBoardTheme: (name: BoardThemeName) => void;
+  setPieceTheme: (name: PieceThemeName) => void;
+  setSoundTheme: (name: SoundThemeName) => void;
   setSoundEnabled: (enabled: boolean) => void;
   setBoard3dEnabled: (enabled: boolean) => void;
   setFullscreenEnabled: (enabled: boolean) => void;
@@ -190,6 +208,8 @@ export const useChessStore = create<ChessStore>()(
       playingAgainstStockfish: false,
       playerColor: 'white',
       boardThemeName: DEFAULT_BOARD_THEME,
+      pieceThemeName: getInitialPieceTheme(),
+      soundThemeName: getInitialSoundTheme(),
       soundEnabled: getInitialSoundEnabled(),
       board3dEnabled: getInitialBoard3dEnabled(),
       autoFlipBoard: false,
@@ -213,6 +233,14 @@ export const useChessStore = create<ChessStore>()(
       setBoardTheme: (name) => {
         setCookie(BOARD_SCHEME_COOKIE, name);
         set({ boardThemeName: name });
+      },
+      setPieceTheme: (name) => {
+        setCookie(PIECE_THEME_COOKIE, name);
+        set({ pieceThemeName: name });
+      },
+      setSoundTheme: (name) => {
+        setCookie(SOUND_THEME_COOKIE, name);
+        set({ soundThemeName: name });
       },
       setSoundEnabled: (enabled) => {
         setCookie(SOUND_ENABLED_COOKIE, String(enabled));
@@ -789,6 +817,8 @@ export const useChessState = () =>
       playingAgainstStockfish: s.playingAgainstStockfish,
       playerColor: s.playerColor,
       soundEnabled: s.soundEnabled,
+      pieceThemeName: s.pieceThemeName,
+      soundThemeName: s.soundThemeName,
       board3dEnabled: s.board3dEnabled,
       boardFlipped: s.boardFlipped,
       autoFlipBoard: s.autoFlipBoard,
@@ -800,10 +830,14 @@ export const useChessSettings = () =>
   useChessStore(
     useShallow((s) => ({
       boardThemeName: s.boardThemeName,
+      pieceThemeName: s.pieceThemeName,
+      soundThemeName: s.soundThemeName,
       soundEnabled: s.soundEnabled,
       boardFlipped: s.boardFlipped,
       fullscreenEnabled: s.fullscreenEnabled,
       setBoardTheme: s.setBoardTheme,
+      setPieceTheme: s.setPieceTheme,
+      setSoundTheme: s.setSoundTheme,
       setSoundEnabled: s.setSoundEnabled,
       setFullscreenEnabled: s.setFullscreenEnabled,
       flipBoard: s.flipBoard

@@ -573,7 +573,9 @@ function CustomMultiplayerSidebar({
                     className='h-auto justify-between py-3'
                   >
                     <div className='flex flex-col items-start'>
-                      <span className='font-medium'>Copy FEN</span>
+                      <span className='font-medium'>
+                        {isCopied('fen') ? 'Copied FEN' : 'Copy FEN'}
+                      </span>
                       <span className='text-muted-foreground text-xs'>
                         Current position
                       </span>
@@ -590,7 +592,9 @@ function CustomMultiplayerSidebar({
                     className='h-auto justify-between py-3'
                   >
                     <div className='flex flex-col items-start'>
-                      <span className='font-medium'>Copy PGN</span>
+                      <span className='font-medium'>
+                        {isCopied('pgn') ? 'Copied PGN' : 'Copy PGN'}
+                      </span>
                       <span className='text-muted-foreground text-xs'>
                         Standard PGN format
                       </span>
@@ -607,7 +611,9 @@ function CustomMultiplayerSidebar({
                     className='h-auto justify-between py-3'
                   >
                     <div className='flex flex-col items-start'>
-                      <span className='font-medium'>Copy Moves</span>
+                      <span className='font-medium'>
+                        {isCopied('moves') ? 'Copied Moves' : 'Copy Moves'}
+                      </span>
                       <span className='text-muted-foreground text-xs'>
                         Simple move list
                       </span>

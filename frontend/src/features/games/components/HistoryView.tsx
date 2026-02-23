@@ -102,6 +102,9 @@ export interface HistoryViewProps {
   page: number;
   totalPages: number;
   userId: string;
+  variantFilter: string;
+  typeFilter: string;
+  availableVariants: string[];
   puzzleAttempts: PuzzleAttemptRow[];
   puzzleRush: PuzzleRushRow[];
   memorySessions: MemorySessionRow[];
@@ -292,12 +295,13 @@ function DataTable<TData, TValue>({
     </div>
   );
 }
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SortHeader({
   label,
   column
 }: {
   label: string;
-  column: Column<unknown, unknown>;
+  column: Column<any, any>;
 }) {
   return (
     <button
@@ -391,6 +395,7 @@ function makeGameColumns(userId: string): ColumnDef<GameRow>[] {
         const opponent = isWhite ? game.black : game.white;
         if (game.gameType === 'computer') return 'Stockfish';
         if (game.gameType === 'local') return 'Local';
+        if (game.variant === 'four-player') return 'Multiplayer (4P)';
         return opponent?.name ?? 'Opponent';
       },
       filterFn: (row, _colId, filterValue) => {
@@ -402,7 +407,9 @@ function makeGameColumns(userId: string): ColumnDef<GameRow>[] {
             ? 'Stockfish'
             : game.gameType === 'local'
               ? 'Local'
-              : (opponent?.name ?? 'Opponent');
+              : game.variant === 'four-player'
+                ? 'Multiplayer (4P)'
+                : (opponent?.name ?? 'Opponent');
         return name.toLowerCase().includes(filterValue.toLowerCase());
       }
     },
@@ -696,6 +703,9 @@ export function HistoryView({
   page,
   totalPages,
   userId,
+  variantFilter,
+  typeFilter,
+  availableVariants,
   puzzleAttempts,
   puzzleRush,
   memorySessions,
@@ -704,26 +714,25 @@ export function HistoryView({
   const router = useRouter();
   const [isRefreshing, startRefresh] = React.useTransition();
   const [activeTab, setActiveTab] = React.useState<Tab>('games');
-  const [variantFilter, setVariantFilter] = React.useState('all');
-  const [typeFilter, setTypeFilter] = React.useState('all');
   const gameColumns = React.useMemo(() => makeGameColumns(userId), [userId]);
-  const availableVariants = React.useMemo(
-    () =>
-      Array.from(new Set(games.map((game) => game.variant))).sort((a, b) =>
-        formatVariantLabel(a).localeCompare(formatVariantLabel(b))
-      ),
-    [games]
-  );
-  const filteredGames = React.useMemo(
-    () =>
-      games.filter((game) => {
-        if (variantFilter !== 'all' && game.variant !== variantFilter)
-          return false;
-        if (typeFilter !== 'all' && game.gameType !== typeFilter) return false;
-        return true;
-      }),
-    [games, variantFilter, typeFilter]
-  );
+
+  function buildFilterUrl(newVariant: string, newType: string, newPage = 1) {
+    const params = new URLSearchParams();
+    if (newVariant !== 'all') params.set('variant', newVariant);
+    if (newType !== 'all') params.set('type', newType);
+    if (newPage > 1) params.set('page', String(newPage));
+    const qs = params.toString();
+    return qs ? `/games?${qs}` : '/games';
+  }
+
+  const handleVariantChange = (value: string) => {
+    router.push(buildFilterUrl(value, typeFilter));
+  };
+
+  const handleTypeChange = (value: string) => {
+    router.push(buildFilterUrl(variantFilter, value));
+  };
+
   const tabs: {
     id: Tab;
     label: string;
@@ -802,7 +811,7 @@ export function HistoryView({
                   <label className='text-sm font-medium'>Variant</label>
                   <Select
                     value={variantFilter}
-                    onValueChange={setVariantFilter}
+                    onValueChange={handleVariantChange}
                   >
                     <SelectTrigger className='w-full'>
                       <SelectValue placeholder='All variants' />
@@ -819,7 +828,7 @@ export function HistoryView({
                 </div>
                 <div className='space-y-1.5'>
                   <label className='text-sm font-medium'>Game Type</label>
-                  <Select value={typeFilter} onValueChange={setTypeFilter}>
+                  <Select value={typeFilter} onValueChange={handleTypeChange}>
                     <SelectTrigger className='w-full'>
                       <SelectValue placeholder='All game types' />
                     </SelectTrigger>
@@ -835,7 +844,7 @@ export function HistoryView({
 
               <DataTable
                 columns={gameColumns}
-                data={filteredGames}
+                data={games}
                 filterColumn='opponent'
                 filterPlaceholder='Filter by opponent...'
               />
@@ -843,7 +852,9 @@ export function HistoryView({
               {totalPages > 1 && (
                 <div className='flex items-center justify-center gap-2'>
                   {page > 1 && (
-                    <Link href={`/games?page=${page - 1}`}>
+                    <Link
+                      href={buildFilterUrl(variantFilter, typeFilter, page - 1)}
+                    >
                       <Button variant='outline' size='sm'>
                         Previous
                       </Button>
@@ -853,7 +864,9 @@ export function HistoryView({
                     Page {page} of {totalPages}
                   </span>
                   {page < totalPages && (
-                    <Link href={`/games?page=${page + 1}`}>
+                    <Link
+                      href={buildFilterUrl(variantFilter, typeFilter, page + 1)}
+                    >
                       <Button variant='outline' size='sm'>
                         Next
                       </Button>

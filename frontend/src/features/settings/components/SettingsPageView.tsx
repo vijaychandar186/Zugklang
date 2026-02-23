@@ -152,7 +152,10 @@ export function SettingsPageView() {
           {activePane === 'game' ? (
             <>
               <h2 className='text-lg font-semibold'>Game Settings</h2>
-              <SettingsContent show3dToggle={true} />
+              <SettingsContent
+                show3dToggle={true}
+                showThemeAssetSelectors={true}
+              />
             </>
           ) : (
             <>

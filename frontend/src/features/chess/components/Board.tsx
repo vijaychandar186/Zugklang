@@ -1,10 +1,12 @@
 'use client';
 import { useMemo } from 'react';
-import { Chessboard, defaultPieces } from 'react-chessboard';
+import { Chessboard } from 'react-chessboard';
+import Image from 'next/image';
 import type { CSSProperties } from 'react';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
+import { useChessStore } from '@/features/chess/stores/useChessStore';
 type PositionObject = Record<
   string,
   {
@@ -31,25 +33,37 @@ export type UnifiedChessBoardProps = {
 };
 const PIECE_KEYS = ['P', 'R', 'N', 'B', 'Q', 'K'] as const;
 const COLORS = ['w', 'b'] as const;
-function buildPiecesWithGrayed(loserColor: 'w' | 'b') {
+
+function buildThemedPieces(
+  pieceThemeName: string,
+  loserColor: 'w' | 'b' | null
+): Record<string, () => React.JSX.Element> {
   const pieces: Record<string, () => React.JSX.Element> = {};
   for (const color of COLORS) {
     for (const key of PIECE_KEYS) {
       const pieceKey = `${color}${key}`;
-      const OriginalPiece = defaultPieces[pieceKey];
-      if (color === loserColor) {
-        pieces[pieceKey] = () => (
-          <div style={{ filter: 'grayscale(100%)', opacity: 0.45 }}>
-            <OriginalPiece />
-          </div>
-        );
-      } else {
-        pieces[pieceKey] = OriginalPiece;
-      }
+      const fileName = `${color}${key.toLowerCase()}`;
+      const src = `/theme/pieces/${pieceThemeName}/${fileName}.png`;
+      const isLoserPiece = loserColor === color;
+      pieces[pieceKey] = () => (
+        <Image
+          src={src}
+          alt={pieceKey}
+          width={64}
+          height={64}
+          unoptimized
+          draggable={false}
+          className='h-full w-full object-contain'
+          style={
+            isLoserPiece ? { filter: 'grayscale(100%)', opacity: 0.45 } : {}
+          }
+        />
+      );
     }
   }
   return pieces;
 }
+
 export function UnifiedChessBoard({
   position,
   boardOrientation = 'white',
@@ -65,11 +79,12 @@ export function UnifiedChessBoard({
   loserColor = null,
   pieces
 }: UnifiedChessBoardProps) {
-  const grayedPieces = useMemo(
-    () => (loserColor ? buildPiecesWithGrayed(loserColor) : undefined),
-    [loserColor]
+  const pieceThemeName = useChessStore((s) => s.pieceThemeName);
+  const themedPieces = useMemo(
+    () => buildThemedPieces(pieceThemeName, loserColor),
+    [pieceThemeName, loserColor]
   );
-  const finalPieces = pieces ?? grayedPieces;
+  const finalPieces = pieces ?? themedPieces;
   const options = useMemo(
     () => ({
       position,

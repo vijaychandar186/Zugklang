@@ -54,6 +54,7 @@ export function MatchmakingDialog({
   const [minutes, setMinutes] = useState(10);
   const [increment, setIncrement] = useState(0);
   const [color, setColor] = useState<ChallengeColor>('random');
+  const [linkCopied, setLinkCopied] = useState(false);
   const isMatched = status === 'matched';
   const isSearching = status === 'waiting';
   const isWaitingForFriend =
@@ -70,6 +71,11 @@ export function MatchmakingDialog({
       if (!initialChallengeId) setMode('random');
     }
   }, [open, initialChallengeId]);
+  useEffect(() => {
+    if (!linkCopied) return;
+    const timer = setTimeout(() => setLinkCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [linkCopied]);
   const buildTimeControl = (): TimeControl => ({
     mode: timerMode,
     minutes: timerMode === 'timed' ? minutes : 0,
@@ -91,6 +97,7 @@ export function MatchmakingDialog({
   const handleCopyLink = useCallback(() => {
     if (!shareLink) return;
     navigator.clipboard.writeText(shareLink).then(() => {
+      setLinkCopied(true);
       toast.success('Link copied!');
     });
   }, [shareLink]);
@@ -225,8 +232,12 @@ export function MatchmakingDialog({
               className='w-full gap-2'
               onClick={handleCopyLink}
             >
-              <Icons.copy className='h-4 w-4' />
-              Copy invite link
+              {linkCopied ? (
+                <Icons.check className='h-4 w-4 [color:var(--success)]' />
+              ) : (
+                <Icons.copy className='h-4 w-4' />
+              )}
+              {linkCopied ? 'Invite link copied' : 'Copy invite link'}
             </Button>
 
             <Button

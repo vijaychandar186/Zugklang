@@ -122,6 +122,7 @@ export function FourPlayerMultiplayerView({
   const [timerMode, setTimerMode] = useState<TimeControlMode>('unlimited');
   const [minutes, setMinutes] = useState(10);
   const [increment, setIncrement] = useState(0);
+  const [inviteCopied, setInviteCopied] = useState(false);
 
   const gameStarted = useFourPlayerStore((s) => s.gameStarted);
   const isGameOver = useFourPlayerStore((s) => s.isGameOver);
@@ -132,6 +133,7 @@ export function FourPlayerMultiplayerView({
   const teamTimes = useFourPlayerStore((s) => s.teamTimes);
   const activeTimer = useFourPlayerStore((s) => s.activeTimer);
   const gameResult = useFourPlayerStore((s) => s.gameResult);
+  const winner = useFourPlayerStore((s) => s.winner);
 
   const lobbyStarted = lobby?.started ?? false;
   const lobbyId = lobby?.lobbyId ?? null;
@@ -282,6 +284,49 @@ export function FourPlayerMultiplayerView({
     }
   }, [isGameOver]);
 
+  // Save 4-player game to history when game ends
+  const savedFourPlayerLobbyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!isGameOver || !currentLobbyId || !session?.user?.id || !myTeam) return;
+    if (winner === null) return;
+    if (savedFourPlayerLobbyRef.current === currentLobbyId) return;
+    savedFourPlayerLobbyRef.current = currentLobbyId;
+
+    const result = winner === myTeam ? '1-0' : '0-1';
+    const tc = lobby?.timeControl ?? {
+      mode: 'unlimited',
+      minutes: 0,
+      increment: 0
+    };
+
+    fetch('/api/games', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roomId: `${currentLobbyId}-${playerId}`,
+        moves: [],
+        variant: 'four-player',
+        gameType: 'multiplayer',
+        result,
+        resultReason: 'elimination',
+        myColor: 'white',
+        opponentUserId: null,
+        timeControl: tc,
+        startingFen: 'four-player-start'
+      })
+    }).catch((err) => {
+      console.error('Failed to save 4-player game:', err);
+    });
+  }, [
+    isGameOver,
+    currentLobbyId,
+    session?.user?.id,
+    myTeam,
+    playerId,
+    winner,
+    lobby
+  ]);
+
   useEffect(() => {
     if (!lobbyStarted || !isLeader || !lobbyId || !lobby) return;
     const state = useFourPlayerStore.getState();
@@ -385,9 +430,15 @@ export function FourPlayerMultiplayerView({
   const copyInviteLink = useCallback(() => {
     if (!inviteLink) return;
     navigator.clipboard.writeText(inviteLink).then(() => {
+      setInviteCopied(true);
       toast.success('Invite link copied');
     });
   }, [inviteLink]);
+  useEffect(() => {
+    if (!inviteCopied) return;
+    const timer = setTimeout(() => setInviteCopied(false), 2000);
+    return () => clearTimeout(timer);
+  }, [inviteCopied]);
 
   const lobbyPlayers = lobby?.players ?? [];
   const filledSeats = lobbyPlayers.length;
@@ -507,8 +558,12 @@ export function FourPlayerMultiplayerView({
                 className='w-full'
                 onClick={copyInviteLink}
               >
-                <Icons.copy className='mr-2 h-4 w-4' />
-                Copy Invite Link
+                {inviteCopied ? (
+                  <Icons.check className='mr-2 h-4 w-4 [color:var(--success)]' />
+                ) : (
+                  <Icons.copy className='mr-2 h-4 w-4' />
+                )}
+                {inviteCopied ? 'Invite Link Copied' : 'Copy Invite Link'}
               </Button>
               <Button
                 type='button'

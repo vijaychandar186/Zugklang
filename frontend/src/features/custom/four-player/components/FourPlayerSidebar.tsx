@@ -297,7 +297,9 @@ export function FourPlayerSidebar({
                     className='h-auto justify-between py-3'
                   >
                     <div className='flex flex-col items-start'>
-                      <span className='font-medium'>Copy Moves</span>
+                      <span className='font-medium'>
+                        {isCopied('moves') ? 'Copied Moves' : 'Copy Moves'}
+                      </span>
                       <span className='text-muted-foreground text-xs'>
                         Simple move list
                       </span>
@@ -314,7 +316,11 @@ export function FourPlayerSidebar({
                     className='h-auto justify-between py-3'
                   >
                     <div className='flex flex-col items-start'>
-                      <span className='font-medium'>Copy Game State</span>
+                      <span className='font-medium'>
+                        {isCopied('state')
+                          ? 'Copied Game State'
+                          : 'Copy Game State'}
+                      </span>
                       <span className='text-muted-foreground text-xs'>
                         Full game state as JSON
                       </span>

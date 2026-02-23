@@ -4,24 +4,36 @@ import { useTheme } from 'next-themes';
 import { useScheme } from '@/components/layout/Providers';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { BoardThemeName } from '@/features/chess/types/theme';
+import {
+  PieceThemeName,
+  SoundThemeName
+} from '@/features/chess/config/media-themes';
 import { BoardThemeSelector } from './ThemeSelector';
 import { AppearanceSelector } from './AppearanceSelector';
 import { SoundToggle } from './SoundToggle';
 import { Board3dToggle } from './Board3dToggle';
 import { FullscreenToggle } from './FullscreenToggle';
 import { SchemeSelector } from './SchemeSelector';
+import { PieceThemeSelector } from './PieceThemeSelector';
+import { SoundThemeSelector } from './SoundThemeSelector';
 
 type SettingsContentProps = {
   show3dToggle?: boolean;
   hideFullscreenOnMobile?: boolean;
+  showThemeAssetSelectors?: boolean;
 };
 
 export function SettingsContent({
   show3dToggle = true,
-  hideFullscreenOnMobile = false
+  hideFullscreenOnMobile = false,
+  showThemeAssetSelectors = false
 }: SettingsContentProps) {
   const setBoardTheme = useChessStore((s) => s.setBoardTheme);
   const currentBoardTheme = useChessStore((s) => s.boardThemeName);
+  const currentPieceTheme = useChessStore((s) => s.pieceThemeName);
+  const currentSoundTheme = useChessStore((s) => s.soundThemeName);
+  const setPieceTheme = useChessStore((s) => s.setPieceTheme);
+  const setSoundTheme = useChessStore((s) => s.setSoundTheme);
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const setSoundEnabled = useChessStore((s) => s.setSoundEnabled);
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
@@ -34,6 +46,12 @@ export function SettingsContent({
   const handleBoardThemeChange = (themeName: BoardThemeName) => {
     setBoardTheme(themeName);
   };
+  const handlePieceThemeChange = (themeName: PieceThemeName) => {
+    setPieceTheme(themeName);
+  };
+  const handleSoundThemeChange = (themeName: SoundThemeName) => {
+    setSoundTheme(themeName);
+  };
 
   return (
     <div className='space-y-6'>
@@ -41,6 +59,18 @@ export function SettingsContent({
         currentTheme={currentBoardTheme}
         onThemeChange={handleBoardThemeChange}
       />
+      {showThemeAssetSelectors && (
+        <PieceThemeSelector
+          currentTheme={currentPieceTheme}
+          onThemeChange={handlePieceThemeChange}
+        />
+      )}
+      {showThemeAssetSelectors && (
+        <SoundThemeSelector
+          currentTheme={currentSoundTheme}
+          onThemeChange={handleSoundThemeChange}
+        />
+      )}
       <SchemeSelector currentScheme={scheme} onSchemeChange={setScheme} />
       <SoundToggle enabled={soundEnabled} onToggle={setSoundEnabled} />
       {show3dToggle && (

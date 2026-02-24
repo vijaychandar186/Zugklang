@@ -146,7 +146,7 @@ export function ThreeDimensionalChessAttackBoardPanel() {
 
       {!selectedBoardId && (
         <p className='text-muted-foreground text-xs italic'>
-          Select an attack board above or click a board disk in the 3D view
+          Select an attack board above or click its label on the board
         </p>
       )}
     </div>

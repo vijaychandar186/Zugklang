@@ -18,10 +18,10 @@ docker run -d --name zugklang-postgres \
 
 ### Infrastructure
 
+* [x] ~~Stockfish 18 integration~~
 * [ ] Redis setup
 * [ ] BullMQ setup
 * [ ] Fix docker-compose-prod
-* [ ] Stockfish 18 integration
 
 ### Payments
 
@@ -35,18 +35,20 @@ docker run -d --name zugklang-postgres \
 ### Features
 
 * [x] ~~Flags~~
-* [ ] Guest mode
 * [x] ~~Theme and Audio Settings~~
-* [ ] Invite through email
 * [x] ~~ELO-wise queue logic toggle where it can be enabled or disabled~~
-* [ ] Elo calculation adjustment
-* [ ] Three Dimensional Chess
 * [x] ~~Validate abandon~~
 * [x] ~~Auto abort~~
 * [x] ~~4p Chess Multiplayer~~
 * [x] ~~Stats for Dice and Card Chess~~
 * [x] ~~Config for auto abort and WS-server states~~
 * [x] ~~Dice and card pick sound assets~~
+* [ ] Guest mode
+* [ ] AntiCheat validation
+* [ ] Rated/Unrated
+* [ ] Invite through email
+* [ ] Elo calculation adjustment
+* [ ] Three Dimensional Chess
 
 ### Frontend
 

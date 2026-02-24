@@ -22,18 +22,9 @@ import {
 } from '@/components/ui/alert-dialog';
 import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
 import { useGameStore } from '../store/gameStore';
-import { useCameraStore } from '../store/cameraStore';
 import { ThreeDimensionalChessAttackBoardPanel } from './ThreeDimensionalChessAttackBoardPanel';
 import { ThreeDimensionalChessSetupDialog } from './ThreeDimensionalChessSetupDialog';
-import type { CameraView } from '../store/cameraStore';
 import type { Move } from '../store/gameStore';
-
-const CAMERA_VIEWS: { view: CameraView; label: string }[] = [
-  { view: 'default', label: 'Default' },
-  { view: 'side', label: 'Side' },
-  { view: 'top', label: 'Top' },
-  { view: 'front', label: 'Front' }
-];
 
 function formatMove(move: Move): string {
   if (move.type === 'board-move') {
@@ -68,9 +59,6 @@ export function ThreeDimensionalChessSidebar() {
   const undoMove = useGameStore((s) => s.undoMove);
   const resetGame = useGameStore((s) => s.resetGame);
   const deferredPromotions = useGameStore((s) => s.deferredPromotions);
-
-  const currentView = useCameraStore((s) => s.currentView);
-  const setView = useCameraStore((s) => s.setView);
 
   const canUndo = moveHistory.length > 0 && !gameOver;
 
@@ -152,26 +140,6 @@ export function ThreeDimensionalChessSidebar() {
               </Tooltip>
             </div>
           )}
-        </div>
-
-        {/* Camera Controls */}
-        <div className='shrink-0 border-b px-4 py-2'>
-          <p className='text-muted-foreground mb-1.5 text-xs font-medium tracking-wider uppercase'>
-            Camera
-          </p>
-          <div className='flex flex-wrap gap-1'>
-            {CAMERA_VIEWS.map(({ view, label }) => (
-              <Button
-                key={view}
-                size='sm'
-                variant={currentView === view ? 'secondary' : 'ghost'}
-                className='h-6 px-2 text-xs'
-                onClick={() => setView(view)}
-              >
-                {label}
-              </Button>
-            ))}
-          </div>
         </div>
 
         {/* Attack Board Controls */}

@@ -1,2 +1,1 @@
-frontend/public/stockfish/stockfish.wasm filter=lfs diff=lfs merge=lfs -text
-frontend/public/stockfish18/stockfish-18-single.wasm filter=lfs diff=lfs merge=lfs -text
+# Keep stockfish assets as regular git files for Vercel compatibility.

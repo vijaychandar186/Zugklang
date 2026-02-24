@@ -182,6 +182,27 @@ describe('game handler integration', () => {
     expect(blackMsg?.reason).toBe('resign');
   });
 
+  test('abort is still allowed after only one player has moved', () => {
+    const { white, black, room } = setupRoom(
+      '68686868-6868-6868-6868-686868686868'
+    );
+    room.moves = ['e2e4'];
+
+    handleAbort(asBunWs(black));
+
+    expect(room.status).toBe('ended');
+    const whiteMsg = findMessage<{ type: 'game_over'; reason: string }>(
+      white.sent,
+      'game_over'
+    );
+    const blackMsg = findMessage<{ type: 'game_over'; reason: string }>(
+      black.sent,
+      'game_over'
+    );
+    expect(whiteMsg?.reason).toBe('abort');
+    expect(blackMsg?.reason).toBe('abort');
+  });
+
   test('game_over_notify is ignored when room is already ended', () => {
     const { white, black, room } = setupRoom(
       '77777777-7777-7777-7777-777777777777'

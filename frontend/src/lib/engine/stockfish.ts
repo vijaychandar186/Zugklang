@@ -1,8 +1,8 @@
+import { getStockfishWorkerPath } from './stockfishConfig';
+
 const getStockfishPath = () => {
   const supportsWasm = typeof WebAssembly === 'object';
-  return supportsWasm
-    ? '/stockfish/stockfish.wasm.js'
-    : '/stockfish/stockfish.js';
+  return getStockfishWorkerPath(supportsWasm);
 };
 export class StockfishEngine {
   private worker: Worker | null = null;

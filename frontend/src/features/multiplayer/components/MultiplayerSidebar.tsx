@@ -120,7 +120,7 @@ export function MultiplayerSidebar({
   }, [gameOver]);
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
-  const canAbort = moves.length < 4;
+  const canAbort = moves.length < 2;
   const { copy, isCopied } = useClipboard();
   const { isPlaying, togglePlay } = usePlayback({
     currentIndex: viewingIndex,

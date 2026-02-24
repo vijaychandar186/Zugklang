@@ -47,10 +47,12 @@ function isAbortedGame(
   reason: string,
   movesCount: number
 ): boolean {
+  const bothPlayersMovedAtLeastOnce = movesCount >= 2;
   const normalizedReason = reason.trim().toLowerCase();
   if (normalizedReason === 'abort' || normalizedReason.includes('aborted'))
     return true;
-  if (normalizedReason === 'abandoned' && movesCount < 2) return true;
+  if (normalizedReason === 'abandoned' && !bothPlayersMovedAtLeastOnce)
+    return true;
   const normalizedResult = result.trim().toLowerCase();
   return normalizedResult.includes('abort');
 }

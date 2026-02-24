@@ -11,6 +11,11 @@ import {
 import { logger } from '../utils/logger';
 import { createRoom } from './queue';
 import { ABORT_TIMEOUT_MS } from '../config';
+
+function bothPlayersMovedAtLeastOnce(moves: string[]): boolean {
+  return moves.length >= 2;
+}
+
 export function handleMove(
   ws: BunWS,
   msg: {
@@ -189,8 +194,8 @@ export function handleAbort(ws: BunWS): void {
   if (!roomId) return;
   const room = rooms.get(roomId);
   if (!room || room.status === 'ended') return;
-  // Abort is only valid during the opening window before each side has moved.
-  if (room.moves.length >= 2) {
+  // Abort is only valid before both players have made at least one move.
+  if (bothPlayersMovedAtLeastOnce(room.moves)) {
     handleResign(ws);
     return;
   }

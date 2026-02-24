@@ -510,7 +510,7 @@ function CustomMultiplayerSidebar({
   const { copy, isCopied } = useClipboard();
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
-  const canAbort = movesCount < 4;
+  const canAbort = movesCount < 2;
   const isPlaying = status === 'playing' || (gameStarted && !gameOver);
   useEffect(() => {
     if (rematchDeclined) setRematchSent(false);

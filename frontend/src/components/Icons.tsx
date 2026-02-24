@@ -89,6 +89,7 @@ import {
   SignalLow,
   Palette,
   BookUser,
+  Rotate3D,
   type LucideIcon,
   type LucideProps
 } from 'lucide-react';
@@ -185,6 +186,7 @@ export const Icons = {
   signalLow: SignalLow,
   palette: Palette,
   bookUser: BookUser,
+  rotate3D: Rotate3D,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'

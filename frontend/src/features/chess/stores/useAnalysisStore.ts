@@ -3,6 +3,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { useShallow } from 'zustand/shallow';
 import { STARTING_FEN } from '@/features/chess/config/constants';
 import { ANALYSIS_DEFAULTS } from '@/features/analysis/config/defaults';
+import { getStockfishWorkerPath } from '@/lib/engine/stockfishConfig';
 import { FEATURE_ANALYSIS_SETTINGS_KEY } from '@/lib/storage/keys';
 export type Advantage = 'white' | 'black' | 'equal';
 export type AnalysisLine = {
@@ -125,10 +126,9 @@ export const useAnalysisStore = create<AnalysisStore>()(
           return;
         }
         try {
-          const stockfishPath =
+          const stockfishPath = getStockfishWorkerPath(
             typeof WebAssembly === 'object'
-              ? '/stockfish/stockfish.wasm.js'
-              : '/stockfish/stockfish.js';
+          );
           const worker = new Worker(stockfishPath);
           worker.onerror = (e) => {
             console.error('Stockfish Worker Error:', e);

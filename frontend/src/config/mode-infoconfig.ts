@@ -305,6 +305,19 @@ const MODE_INFO_BY_HREF: Record<string, InfoEntry> = {
       'Card management changes strategic planning each turn.'
     ]
   },
+  '/play/custom/three-d-chess': {
+    objective:
+      'Checkmate your opponent while managing movement across multiple vertical boards.',
+    rules: [
+      'Pieces can move between board levels when their movement pattern allows it.',
+      'Attack boards can be rotated or moved, changing lanes and tactical pressure.',
+      'Promotion and check/checkmate logic still apply with 3D board constraints.'
+    ],
+    tips: [
+      'Switch camera views to inspect vertical threats and hidden lines.',
+      'Track attack-board ownership before committing to long tactical sequences.'
+    ]
+  },
   '/tools/analysis': {
     objective: 'Analyze any position with engine support and move exploration.',
     rules: [

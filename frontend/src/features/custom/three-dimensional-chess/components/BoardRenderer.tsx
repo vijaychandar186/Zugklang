@@ -1,0 +1,310 @@
+import { useGameStore } from '../store/gameStore';
+import type { BoardLayout, WorldSquare } from '../engine/world/types';
+import { THEME } from '../config/theme';
+import {
+  PIN_POSITIONS,
+  Z_WHITE_MAIN,
+  Z_NEUTRAL_MAIN,
+  Z_BLACK_MAIN
+} from '../engine/world/pinPositions';
+import { fileToWorldX, rankToWorldY } from '../engine/world/coordinates';
+
+export function BoardRenderer() {
+  const world = useGameStore((state) => state.world);
+
+  return (
+    <group>
+      {Array.from(world.boards.values()).map((board) => (
+        <SingleBoard key={board.id} board={board} />
+      ))}
+    </group>
+  );
+}
+
+function SingleBoard({ board }: { board: BoardLayout }) {
+  const world = useGameStore((state) => state.world);
+  const selectSquare = useGameStore((state) => state.selectSquare);
+  const selectBoard = useGameStore((state) => state.selectBoard);
+  const selectedSquareId = useGameStore((state) => state.selectedSquareId);
+  const highlightedSquareIds = useGameStore(
+    (state) => state.highlightedSquareIds
+  );
+  const castleDestinations = useGameStore((state) => state.castleDestinations);
+  const selectedBoardId = useGameStore((state) => state.selectedBoardId);
+  const attackBoardStates = useGameStore((state) => state.attackBoardStates);
+  const canMoveBoard = useGameStore((state) => state.canMoveBoard);
+  const setArrivalSelection = useGameStore(
+    (state) => state.setArrivalSelection
+  );
+
+  const squares = Array.from(world.squares.values()).filter(
+    (sq: WorldSquare) => sq.boardId === board.id
+  );
+
+  const eligiblePins = new Set<string>();
+  if (selectedBoardId && board.type === 'main') {
+    Object.keys(PIN_POSITIONS).forEach((pinId) => {
+      const result = canMoveBoard(selectedBoardId, pinId);
+      if (result.allowed) {
+        eligiblePins.add(pinId);
+      }
+    });
+  }
+
+  return (
+    <group>
+      {(board.type === 'main' || board.isVisible) && (
+        <group
+          position={[board.centerX, board.centerY, board.centerZ]}
+          rotation={[0, 0, (board.rotation * Math.PI) / 180]}
+        >
+          <mesh
+            position={[0, 0, -0.15]}
+            userData={{ testId: 'attack-platform' }}
+          >
+            <boxGeometry
+              args={[
+                board.size.width * 2.1,
+                board.size.height * 2.1,
+                THEME.platforms.thickness
+              ]}
+            />
+            <meshStandardMaterial
+              color={
+                board.type === 'attack'
+                  ? THEME.platforms.attack
+                  : board.id === 'WL'
+                    ? THEME.platforms.whiteMain
+                    : board.id === 'NL'
+                      ? THEME.platforms.neutralMain
+                      : THEME.platforms.blackMain
+              }
+              transparent
+              opacity={THEME.platforms.opacity}
+            />
+          </mesh>
+
+          {board.type === 'attack' &&
+            board.isVisible &&
+            (() => {
+              const activeInstanceId = selectedBoardId
+                ? attackBoardStates?.[selectedBoardId]?.activeInstanceId
+                : null;
+              const isSelected =
+                selectedBoardId && activeInstanceId === board.id;
+
+              return (
+                <mesh
+                  key={`disk-${board.id}-${isSelected ? 'selected' : 'unselected'}`}
+                  position={[0, 0, 0]}
+                  rotation={[Math.PI / 2, 0, 0]}
+                  userData={{ testId: 'selector-disk' }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    selectBoard(board.id);
+                  }}
+                >
+                  <cylinderGeometry
+                    args={[
+                      THEME.attackBoardSelector.radius,
+                      THEME.attackBoardSelector.radius,
+                      THEME.attackBoardSelector.thickness,
+                      32
+                    ]}
+                  />
+                  <meshStandardMaterial
+                    color={
+                      isSelected
+                        ? THEME.squares.selectedColor
+                        : THEME.attackBoardSelector.color
+                    }
+                  />
+                </mesh>
+              );
+            })()}
+        </group>
+      )}
+
+      {board.type === 'main' &&
+        (() => {
+          const minMainRank = Math.min(...board.ranks);
+          const maxMainRank = Math.max(...board.ranks);
+          const minMainFile = Math.min(...board.files);
+          const maxMainFile = Math.max(...board.files);
+
+          const corners = [
+            { file: minMainFile, rank: minMainRank, key: 'bottom-left' },
+            { file: maxMainFile, rank: minMainRank, key: 'bottom-right' },
+            { file: minMainFile, rank: maxMainRank, key: 'top-left' },
+            { file: maxMainFile, rank: maxMainRank, key: 'top-right' }
+          ];
+
+          const halfSquare = THEME.squares.size / 2;
+
+          return corners.map((corner) => {
+            const pinX =
+              fileToWorldX(corner.file) +
+              (corner.file === minMainFile ? -halfSquare : halfSquare);
+            const pinY =
+              rankToWorldY(corner.rank) +
+              (corner.rank === minMainRank ? -halfSquare : halfSquare);
+
+            let isEligible = false;
+            let matchingPinId: string | null = null;
+            let closestDistance = Infinity;
+
+            if (selectedBoardId) {
+              for (const pinId of Object.keys(PIN_POSITIONS)) {
+                const pin = PIN_POSITIONS[pinId];
+
+                const ATTACK_OFFSET = 4;
+                let pinMainBoardZ: number;
+                if (pin.zHeight <= Z_WHITE_MAIN + ATTACK_OFFSET + 2) {
+                  pinMainBoardZ = Z_WHITE_MAIN;
+                } else if (pin.zHeight <= Z_NEUTRAL_MAIN + ATTACK_OFFSET + 2) {
+                  pinMainBoardZ = Z_NEUTRAL_MAIN;
+                } else {
+                  pinMainBoardZ = Z_BLACK_MAIN;
+                }
+
+                if (pinMainBoardZ === board.centerZ) {
+                  const pinMinRank = pin.rankOffset;
+                  const pinMaxRank = pin.rankOffset + 1;
+                  const ranksOverlap = !(
+                    pinMaxRank < minMainRank || pinMinRank > maxMainRank
+                  );
+
+                  if (!ranksOverlap) continue;
+
+                  const result = canMoveBoard(selectedBoardId, pinId);
+                  if (result.allowed) {
+                    const pinMatchesCorner =
+                      (pin.fileOffset === 0 && corner.file === minMainFile) ||
+                      (pin.fileOffset === 4 && corner.file === maxMainFile);
+
+                    const attackBoardMidRank = pin.rankOffset + 0.5;
+                    const midMainRank = (minMainRank + maxMainRank) / 2;
+                    const rankMatchesCorner =
+                      (attackBoardMidRank < midMainRank &&
+                        corner.rank === minMainRank) ||
+                      (attackBoardMidRank >= midMainRank &&
+                        corner.rank === maxMainRank);
+
+                    if (pinMatchesCorner && rankMatchesCorner) {
+                      const pinCenterRank = pin.rankOffset + 0.5;
+                      const distance = Math.abs(pinCenterRank - corner.rank);
+
+                      if (distance < closestDistance) {
+                        closestDistance = distance;
+                        isEligible = true;
+                        matchingPinId = pinId;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            return (
+              <mesh
+                key={`${board.id}-${corner.key}`}
+                position={[pinX, pinY, board.centerZ]}
+                rotation={[Math.PI / 2, 0, 0]}
+                userData={{ testId: 'pin-marker' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (isEligible && selectedBoardId && matchingPinId) {
+                    setArrivalSelection?.(matchingPinId);
+                  }
+                }}
+              >
+                <cylinderGeometry
+                  args={[
+                    THEME.pinLocationDisk.radius,
+                    THEME.pinLocationDisk.radius,
+                    THEME.pinLocationDisk.thickness,
+                    32
+                  ]}
+                />
+                <meshStandardMaterial
+                  color={
+                    isEligible
+                      ? THEME.squares.availableMoveColor
+                      : THEME.attackBoardSelector.color
+                  }
+                />
+              </mesh>
+            );
+          });
+        })()}
+
+      {(board.type === 'main' || board.isVisible) &&
+        squares.map((square) => {
+          const isSelected = square.id === selectedSquareId;
+          const isLegalMove = highlightedSquareIds.includes(square.id);
+          const castleData = castleDestinations.find(
+            (cd) => cd.squareId === square.id
+          );
+          const isCastleDestination = !!castleData;
+
+          return (
+            <group key={square.id}>
+              <mesh
+                position={[square.worldX, square.worldY, square.worldZ]}
+                userData={{ testId: 'square' }}
+                onClick={() => {
+                  if (board.type === 'main') {
+                    selectBoard(null);
+                  }
+                  selectSquare(square.id);
+                }}
+              >
+                <boxGeometry
+                  args={[THEME.squares.size, THEME.squares.size, 0.1]}
+                />
+                <meshStandardMaterial
+                  color={
+                    isSelected
+                      ? THEME.squares.selectedColor
+                      : isCastleDestination
+                        ? '#FFD700'
+                        : isLegalMove
+                          ? THEME.squares.availableMoveColor
+                          : square.color === 'light'
+                            ? THEME.squares.light
+                            : THEME.squares.dark
+                  }
+                  transparent
+                  opacity={
+                    isCastleDestination
+                      ? 0.85
+                      : isLegalMove
+                        ? 0.7
+                        : THEME.squares.opacity
+                  }
+                  emissive={isCastleDestination ? '#FFD700' : undefined}
+                  emissiveIntensity={isCastleDestination ? 0.3 : 0}
+                />
+              </mesh>
+              {isCastleDestination && (
+                <mesh
+                  position={[square.worldX, square.worldY, square.worldZ + 0.3]}
+                  rotation={[Math.PI / 2, 0, 0]}
+                  userData={{ testId: 'castle-indicator' }}
+                >
+                  <cylinderGeometry args={[0.3, 0.3, 0.05, 32]} />
+                  <meshStandardMaterial
+                    color='#FFD700'
+                    emissive='#FFD700'
+                    emissiveIntensity={0.5}
+                    transparent
+                    opacity={0.9}
+                  />
+                </mesh>
+              )}
+            </group>
+          );
+        })}
+    </group>
+  );
+}

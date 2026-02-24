@@ -5,6 +5,9 @@
  *
  * Based on Stockfish (c) T. Romstad, M. Costalba, J. Kiiski, G. Linscott and other contributors.
  * https://github.com/official-stockfish/Stockfish
+ *
+ * Nets by Linmiao Xu (linrock)
+ * https://tests.stockfishchess.org/nns?network_name=nn-9067e33176e
  */ !(function () {
   var a, u, s, e, r, o, n;
   function t() {
@@ -283,7 +286,7 @@
         (w = 'stockfish.wasm'),
         oe() || ((o = w), (w = l.locateFile ? l.locateFile(o, p) : p + o)));
       var ae = {
-        112571496: function () {
+        6678104: function () {
           try {
             l.onDoneSearching();
           } catch (e) {}

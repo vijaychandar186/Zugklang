@@ -24,5 +24,13 @@ export const customModes: MenuCardItem[] = [
     description:
       'Draw cards to determine which pieces you can move. Each card rank corresponds to a specific piece!',
     actionText: 'Start Game'
+  },
+  {
+    href: '/play/custom/three-d-chess',
+    icon: Icons.rotate3D,
+    title: 'Three-dimensional Chess',
+    description:
+      'Play 3D chess across multiple vertical boards with movable attack boards. Inspired by Star Trek.',
+    actionText: 'Start Game'
   }
 ];

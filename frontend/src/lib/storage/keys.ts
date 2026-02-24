@@ -5,6 +5,8 @@ export const GAME_FOUR_PLAYER_KEY =
   `${PREFIX}-game-custom-four-player` as const;
 export const GAME_DICE_CHESS_KEY = `${PREFIX}-game-custom-dice-chess` as const;
 export const GAME_CARD_CHESS_KEY = `${PREFIX}-game-custom-card-chess` as const;
+export const GAME_THREE_D_CHESS_KEY =
+  `${PREFIX}-game-custom-three-d-chess` as const;
 export const FEATURE_PUZZLE_KEY = `${PREFIX}-puzzle` as const;
 export const FEATURE_OPENINGS_KEY = `${PREFIX}-openings` as const;
 export const FEATURE_GAME_REVIEW_KEY = `${PREFIX}-game-review` as const;

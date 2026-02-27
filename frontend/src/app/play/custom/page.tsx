@@ -7,7 +7,7 @@ import { customModes } from '@/constants/custom-modes';
 export const metadata: Metadata = {
   title: 'Custom Games | Zugklang',
   description:
-    'Play unique chess variants including 4-Player Chess and Dice Chess. Experience chess in exciting new ways!'
+    'Play unique chess variants including 4-Player Chess, Dice Chess, Card Chess, and Tri-Dimensional Chess.'
 };
 export default function CustomPlayMenuPage() {
   return (

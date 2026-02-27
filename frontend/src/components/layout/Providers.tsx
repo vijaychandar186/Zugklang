@@ -44,6 +44,7 @@ export function useScheme() {
 interface ProvidersProps {
   children: React.ReactNode;
   initialBoardTheme?: string;
+  initialPieceTheme?: string;
   initialPlayAs?: string;
   initialSession?: React.ComponentProps<typeof SessionProvider>['session'];
   initialScheme?: string;
@@ -58,6 +59,7 @@ function isValidHexColor(color: string | undefined): color is string {
 export function Providers({
   children,
   initialBoardTheme,
+  initialPieceTheme,
   initialPlayAs,
   initialSession,
   initialScheme,
@@ -114,6 +116,7 @@ export function Providers({
               initialBoardTheme={
                 (initialBoardTheme as BoardThemeName) || DEFAULT_BOARD_THEME
               }
+              initialPieceTheme={initialPieceTheme}
               initialPlayAs={
                 initialPlayAs === 'white' || initialPlayAs === 'black'
                   ? initialPlayAs

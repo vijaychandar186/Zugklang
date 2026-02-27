@@ -26,11 +26,11 @@ export const customModes: MenuCardItem[] = [
     actionText: 'Start Game'
   },
   {
-    href: '/play/custom/three-d-chess',
+    href: '/play/custom/tri-d',
     icon: Icons.rotate3D,
-    title: 'Three-dimensional Chess',
+    title: 'Tri-D Chess',
     description:
-      'Play 3D chess across multiple vertical boards with movable attack boards. Inspired by Star Trek.',
+      'Star Trek–inspired Tri-Dimensional Chess: three fixed 4×4 boards and four movable 2×2 attack boards, displayed flat.',
     actionText: 'Start Game'
   }
 ];

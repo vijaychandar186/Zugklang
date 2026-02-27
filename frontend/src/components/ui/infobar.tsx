@@ -24,6 +24,7 @@ import { VariantProps, cva } from 'class-variance-authority';
 import { CircleXIcon } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import * as React from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const INFOBAR_WIDTH = '22rem';
 const INFOBAR_WIDTH_MOBILE = '22rem';
@@ -445,17 +446,23 @@ function InfobarSeparator({
   );
 }
 
-function InfobarContent({ className, ...props }: React.ComponentProps<'div'>) {
+function InfobarContent({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<'div'>) {
   return (
-    <div
+    <ScrollArea
       data-slot='infobar-content'
       data-infobar='content'
       className={cn(
-        'flex min-h-0 flex-1 flex-col gap-2 overflow-auto group-data-[collapsible=icon]:overflow-hidden',
-        className
+        'min-h-0 flex-1 group-data-[collapsible=icon]:overflow-hidden'
       )}
-      {...props}
-    />
+    >
+      <div className={cn('flex min-h-0 flex-col gap-2', className)} {...props}>
+        {children}
+      </div>
+    </ScrollArea>
   );
 }
 

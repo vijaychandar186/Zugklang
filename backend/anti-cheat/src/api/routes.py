@@ -28,7 +28,7 @@ async def analyse(body: AnalyseRequest, request: Request) -> AnalyseResponse:
     log.info(f"Received analysis request for {len(body.users)} user(s)")
 
     try:
-        data_dct = build_live_dataset(settings, body.users)
+        data_dct = await build_live_dataset(settings, body.users)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=503, detail=f"Insight data unavailable: {exc}")
     except Exception as exc:

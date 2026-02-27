@@ -305,17 +305,21 @@ const MODE_INFO_BY_HREF: Record<string, InfoEntry> = {
       'Card management changes strategic planning each turn.'
     ]
   },
-  '/play/custom/three-d-chess': {
+  '/play/custom/tri-d': {
     objective:
-      'Checkmate your opponent while managing movement across multiple vertical boards.',
+      'Checkmate your opponent across three stacked boards and four movable attack boards in the Star Trek Tri-D Chess variant.',
     rules: [
-      'Pieces can move between board levels when their movement pattern allows it.',
-      'Attack boards can be rotated or moved, changing lanes and tactical pressure.',
-      'Promotion and check/checkmate logic still apply with 3D board constraints.'
+      'Seven boards total: three fixed 4×4 levels (White Home, Neutral Zone, Black Home) and four movable 2×2 attack boards.',
+      'On your turn, either move a piece OR reposition one of your movable attack boards.',
+      'An attack board may be moved only if it is empty or holds only your own pawns.',
+      'Attack boards slide to an adjacent slot along their side column (one step at a time).',
+      'Piece movement uses a top-down projection — rooks move in lines, bishops diagonally, knights in an L-shape.',
+      'A move that leaves your king in check is illegal.'
     ],
     tips: [
-      'Switch camera views to inspect vertical threats and hidden lines.',
-      'Track attack-board ownership before committing to long tactical sequences.'
+      'Repositioning attack boards can open new lines of attack for sliding pieces.',
+      'Pawns on attack boards promote when they reach the far edge of the board.',
+      'Control the Neutral Zone — pieces there project through all three board levels.'
     ]
   },
   '/tools/analysis': {

@@ -18,8 +18,8 @@ src/.env
 coverage.xml
 htmlcov/
 
-data/
-model/
+# data/
+# model/
 
 *.parquet
 *.csv

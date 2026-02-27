@@ -10,8 +10,7 @@ exact Lichess insight pages that drove the verdict.
 ## How it works
 
 1. **Data** — Lichess insight statistics (ACPL, move time, blur rate, …) are
-   exported to a MongoDB collection and pre-processed into a Parquet file for
-   training.
+   stored in PostgreSQL and pre-processed into a Parquet file for training.
 2. **Model** — One Conv2D branch per insight dimension is tuned via Keras-Tuner
    Hyperband, then combined into a single sigmoid output (cheat probability).
 3. **Explanations** — SHAP DeepExplainer attributes the score back to individual
@@ -28,7 +27,7 @@ exact Lichess insight pages that drove the verdict.
 |------|---------|
 | Python | 3.14 |
 | [uv](https://docs.astral.sh/uv/) | latest |
-| MongoDB | 6+ |
+| PostgreSQL | 14+ |
 | Docker (optional) | 24+ |
 
 ---
@@ -47,11 +46,12 @@ anti-cheat/
     ├── util.py            # logging, pickle helpers, retry decorator
     ├── start.sh           # prod / dev entrypoint
     ├── .env.base          # default configuration
+    ├── db.py              # Prisma Client Python connection helper
     ├── api/
     │   ├── routes.py      # GET /health  POST /analyse
     │   └── schemas.py     # AnalyseRequest / AnalyseResponse
     ├── data/
-    │   ├── loader.py      # parquet + MongoDB insight loader, train/test split
+    │   ├── loader.py      # parquet + PostgreSQL insight loader, train/test split
     │   └── transforms.py  # clip-and-scale, missing-value handling, array builder
     ├── model/
     │   ├── architecture.py  # multi-branch CNN HyperModel (Keras-Tuner)
@@ -73,6 +73,9 @@ Model weights are **not** committed. Mount them at runtime (see [Model weights](
 # Install dependencies
 uv sync
 
+# Generate Prisma Client Python
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/kaladin prisma generate --schema prisma/schema.prisma
+
 # Copy and edit config
 cp src/.env.base src/.env
 $EDITOR src/.env
@@ -90,20 +93,17 @@ All settings live in `src/.env.base` (defaults) and `src/.env` (local overrides)
 | `USE_EVAL` | `0` | Whether to use eval-flagged games (`0` or `1`) |
 | `TC_LIST` | `[2,6]` | Time controls to score (minutes) |
 | `DAYS_LIST` | `[180]` | Look-back window (days) |
-| `MONGODB_URI` | `mongodb://localhost:27017` | MongoDB connection string |
-| `MONGODB_DB` | `kaladin` | MongoDB database name |
-| `MONGODB_COLLECTION` | `insights` | Collection holding exported Lichess insights |
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/kaladin` | PostgreSQL connection string for Prisma |
 
 ---
 
 ## Data preparation
 
-Insight data must be exported from Lichess into MongoDB first (see the
-`mongo/` tooling in the Lichess data pipeline). Once the MongoDB collection
-is populated, build the training files:
+Insight data must be exported from Lichess into PostgreSQL first. Once the
+database is populated, build the training files:
 
 ```bash
-# Build insights.parquet + users.csv from MongoDB, then cache train/valid/test splits
+# Build insights.parquet + users.csv from PostgreSQL, then cache train/valid/test splits
 PYTHONPATH=src uv run python - <<'EOF'
 from config import settings
 from data.loader import build_training_dataset
@@ -214,11 +214,11 @@ are `null`.
 ./docker.sh dev
 ```
 
-Pass MongoDB and model-weight paths via environment variables or a `.env` file:
+Pass Postgres and model-weight paths via environment variables or a `.env` file:
 
 ```bash
 docker run --rm \
-  -e MONGODB_URI=mongodb://mongo:27017 \
+  -e DATABASE_URL=postgresql://postgres:postgres@postgres:5432/kaladin \
   -v /path/to/model/weights:/app/model/weights:ro \
   -v /path/to/data:/app/data:ro \
   -p 8000:8000 \
@@ -251,13 +251,12 @@ The directory structure is derived from `USE_EVAL`, `TC_LIST`, and
 ```bash
 # Start the server first, then:
 PYTHONPATH=src uv run python src/tests/run_tests.py \
-  --url http://localhost:8000 \
-  --mongo mongodb://localhost:27017
+  --url http://localhost:8000
 
 # Anonymise a BSON insight fixture before sharing:
 PYTHONPATH=src uv run python src/tests/anon.py insight_test_case_10.bson
 ```
 
-`run_tests.py` samples 1, 10, and 100 legit users from MongoDB, fires
+`run_tests.py` samples 1, 10, and 100 legit users from PostgreSQL, fires
 `POST /analyse` for each batch, reports runtime, and pickles results to
 `tests/test_case_{n}_result.pkl`.

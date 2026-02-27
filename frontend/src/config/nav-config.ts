@@ -74,7 +74,11 @@ export const navItems: NavItem[] = [
         items: [
           { title: 'Card Chess', url: '/play/custom/card-chess' },
           { title: 'Dice Chess', url: '/play/custom/dice-chess' },
-          { title: 'Four Player', url: '/play/custom/four-player' }
+          { title: 'Four Player', url: '/play/custom/four-player' },
+          {
+            title: 'Tri-D Chess',
+            url: '/play/custom/tri-d'
+          }
         ]
       },
       {

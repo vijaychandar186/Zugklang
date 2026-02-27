@@ -23,6 +23,7 @@ export function getAllStorageKeys(): string[] {
     GAME_FOUR_PLAYER_KEY,
     GAME_DICE_CHESS_KEY,
     GAME_CARD_CHESS_KEY,
+    GAME_THREE_D_CHESS_KEY,
     FEATURE_PUZZLE_KEY,
     FEATURE_OPENINGS_KEY,
     FEATURE_GAME_REVIEW_KEY,
@@ -53,6 +54,7 @@ export function clearGameCategoryStorage(
     localStorage.removeItem(GAME_FOUR_PLAYER_KEY);
     localStorage.removeItem(GAME_DICE_CHESS_KEY);
     localStorage.removeItem(GAME_CARD_CHESS_KEY);
+    localStorage.removeItem(GAME_THREE_D_CHESS_KEY);
     return;
   }
   const prefix = `${PREFIX}-game-${category}-`;

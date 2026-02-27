@@ -12,6 +12,7 @@ from fastapi import FastAPI
 
 from config import settings
 from api.routes import router
+from db import connect_db, disconnect_db
 from model.explainer import load_explainer
 from util import get_logger
 
@@ -22,6 +23,7 @@ log = get_logger(__name__, settings.log_level)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load every model explainer once at startup; release on shutdown."""
+    await connect_db()
     app.state.explainers = {}
     for cfg in settings.model_configs:
         use_eval, tc, days = cfg
@@ -30,6 +32,7 @@ async def lifespan(app: FastAPI):
         log.info(f"Loaded SHAP explainer  use_eval={use_eval}  tc={tc}  days={days}")
     yield
     app.state.explainers.clear()
+    await disconnect_db()
 
 
 app = FastAPI(

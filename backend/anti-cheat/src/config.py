@@ -12,14 +12,12 @@ class Settings(BaseSettings):
 
     log_level:  str  = "INFO"
     data_dir:   Path = Path("data")
-    model_dir:  Path = Path("model/weights")
+    model_dir:  Path = Path("src/model")
     use_eval:   int  = 0
     tc_list:    list[int] = [2, 6]
     days_list:  list[int] = [180]
 
-    mongodb_uri:        str = "mongodb://localhost:27017"
-    mongodb_db:         str = "kaladin"
-    mongodb_collection: str = "insights"
+    database_url: str = "postgresql://postgres:postgres@localhost:5432/kaladin"
 
     @field_validator("log_level", mode="before")
     @classmethod

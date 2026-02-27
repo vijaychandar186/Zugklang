@@ -25,14 +25,12 @@ ENV PYTHONPATH=/app/src
 # --- Runtime configuration (override via -e / docker run / compose) ---
 ENV LOG_LEVEL=INFO
 ENV DATA_DIR=/app/data
-ENV MODEL_DIR=/app/model/weights
+ENV MODEL_DIR=/app/src/model
 ENV USE_EVAL=0
 ENV TC_LIST=[2,6]
 ENV DAYS_LIST=[180]
-ENV MONGODB_URI=mongodb://mongo:27017
-ENV MONGODB_DB=kaladin
-ENV MONGODB_COLLECTION=insights
+ENV DATABASE_URL=postgresql://postgres:postgres@postgres:5432/kaladin
 
 EXPOSE 8000
 
-CMD ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uv", "run", "uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

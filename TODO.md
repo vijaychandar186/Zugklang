@@ -49,6 +49,7 @@ docker run -d --name zugklang-postgres \
 * [ ] Invite through email
 * [ ] Elo calculation adjustment
 * [ ] Three Dimensional Chess
+* [ ] Update dev dockerfile to use prisma dev postgres server
 
 ### Frontend
 

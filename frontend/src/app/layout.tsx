@@ -47,6 +47,7 @@ export default async function RootLayout({
   const [cookieStore, session] = await Promise.all([cookies(), auth()]);
   const theme = cookieStore.get('theme')?.value;
   const boardScheme = cookieStore.get('boardScheme')?.value;
+  const pieceTheme = cookieStore.get('pieceTheme')?.value;
   const scheme = cookieStore.get('scheme')?.value;
   const customColor = cookieStore.get('custom_color')?.value;
   const customForeground = cookieStore.get('custom_foreground')?.value;
@@ -81,6 +82,7 @@ export default async function RootLayout({
       <body className='overflow-hidden antialiased' data-theme={theme}>
         <Providers
           initialBoardTheme={boardScheme}
+          initialPieceTheme={pieceTheme}
           initialPlayAs={playAs}
           initialSession={session}
           initialScheme={scheme}

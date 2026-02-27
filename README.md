@@ -16,7 +16,7 @@ Zugklang combines a **Next.js frontend** with a **Bun-powered WebSocket server**
 - **Online Multiplayer** — Real-time WebSocket matchmaking, challenges, and game rooms
 - **Game Analysis** — Move-by-move engine evaluation and best move suggestions
 - **Training Tools** — Puzzles, opening explorer, vision and memory drills
-- **Auth** — GitHub OAuth via NextAuth v5
+- **Auth** — GitHub OAuth via Auth.js v5
 - **Themes** — Multiple board/piece themes, full light/dark mode
 
 ### Tech Stack
@@ -27,7 +27,7 @@ Zugklang combines a **Next.js frontend** with a **Bun-powered WebSocket server**
 | Backend | Bun, TypeScript, Zod |
 | Chess Logic | chessops, react-chessboard, Fairy Stockfish WASM |
 | Database | PostgreSQL 16 via Prisma ORM |
-| Auth | NextAuth v5 + Prisma adapter |
+| Auth | Auth.js v5 + Prisma adapter |
 | Infrastructure | Docker, Nginx, pgAdmin |
 
 ---

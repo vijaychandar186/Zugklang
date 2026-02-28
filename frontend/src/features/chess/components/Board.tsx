@@ -7,6 +7,7 @@ import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
+import { getPieceAssetPath } from '@/features/chess/config/media-themes';
 type PositionObject = Record<
   string,
   {
@@ -43,7 +44,7 @@ function buildThemedPieces(
     for (const key of PIECE_KEYS) {
       const pieceKey = `${color}${key}`;
       const fileName = `${color}${key.toLowerCase()}`;
-      const src = `/theme/pieces/${pieceThemeName}/${fileName}.png`;
+      const src = getPieceAssetPath(pieceThemeName, fileName);
       const isLoserPiece = loserColor === color;
       pieces[pieceKey] = () => (
         <Image

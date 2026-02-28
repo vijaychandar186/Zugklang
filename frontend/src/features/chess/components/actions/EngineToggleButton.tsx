@@ -10,12 +10,16 @@ export interface EngineToggleButtonProps {
   isOn: boolean;
   disabled?: boolean;
   onToggle: () => void;
+  /** Override the default tooltip text. */
+  tooltip?: string;
 }
 export function EngineToggleButton({
   isOn,
   disabled = false,
-  onToggle
+  onToggle,
+  tooltip
 }: EngineToggleButtonProps) {
+  const label = tooltip ?? (isOn ? 'Disable Engine' : 'Enable Engine');
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -28,9 +32,7 @@ export function EngineToggleButton({
           <Icons.engine className='h-4 w-4' />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>
-        {isOn ? 'Disable Engine' : 'Enable Engine'}
-      </TooltipContent>
+      <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   );
 }

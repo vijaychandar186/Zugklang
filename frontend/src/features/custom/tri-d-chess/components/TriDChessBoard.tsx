@@ -12,6 +12,7 @@ import {
   BOARD_SIZES
 } from '../engine/types';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
+import { getPieceAssetPath } from '@/features/chess/config/media-themes';
 
 // ---------------------------------------------------------------------------
 // Layout constants
@@ -41,7 +42,7 @@ function PieceImage({ type, color, pieceTheme, size }: PieceImageProps) {
   const fileName = `${color}${type}`;
   return (
     <Image
-      src={`/theme/pieces/${pieceTheme}/${fileName}.png`}
+      src={getPieceAssetPath(pieceTheme, fileName)}
       alt={`${color}${type}`}
       width={size}
       height={size}

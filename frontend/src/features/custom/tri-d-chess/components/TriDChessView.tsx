@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   Dialog,
@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/dialog';
 import { useTriDChessStore } from '../store/useTriDChessStore';
 import { TriDChessBoard } from './TriDChessBoard';
-import { TriDChessSidebar } from './TriDChessSidebar';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
+import { getPieceAssetPath } from '@/features/chess/config/media-themes';
 import { playSound, getSoundType } from '@/features/game/utils/sounds';
 import type {
   PieceType,
@@ -18,9 +18,43 @@ import type {
   AttackBoardSlot,
   TriDSquare
 } from '../engine/types';
+import { BoardContainer } from '@/features/chess/components/BoardContainer';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { PlayerClock } from '@/features/chess/components/PlayerClock';
-import { BoardContainer } from '@/features/chess/components/BoardContainer';
+import { GameShell } from '@/features/chess/components/GameShell';
+import { TwoPlayerCustomSidebar } from '@/features/custom/shared/components/TwoPlayerCustomSidebar';
+import { TwoPlayerCustomSetupDialog } from '@/features/custom/shared/components/TwoPlayerCustomSetupDialog';
+
+// ── Setup dialog ─────────────────────────────────────────────────────────────
+
+function TriDSetupDialog({
+  open,
+  onOpenChange
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
+  const startNewGame = useTriDChessStore((s) => s.startNewGame);
+  return (
+    <TwoPlayerCustomSetupDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title='Tri-Dimensional Chess'
+      onStartNewGame={startNewGame}
+      rules={
+        <p className='text-muted-foreground text-center text-sm'>
+          Star Trek&rsquo;s classic 3D variant — played flat.
+          <br />
+          Three 4×4 fixed boards + four movable 2×2 attack boards.
+          <br />
+          On your turn: move a piece OR reposition an attack board.
+        </p>
+      }
+    />
+  );
+}
+
+// ── Promotion dialog ─────────────────────────────────────────────────────────
 
 const PROMOTE_PIECES: PieceType[] = ['q', 'r', 'b', 'n'];
 
@@ -49,7 +83,7 @@ function PromotionDialog({
               onClick={() => onSelect(p)}
             >
               <Image
-                src={`/theme/pieces/${pieceTheme}/${color}${p}.png`}
+                src={getPieceAssetPath(pieceTheme, `${color}${p}`)}
                 alt={p}
                 width={48}
                 height={48}
@@ -63,6 +97,11 @@ function PromotionDialog({
   );
 }
 
+// ── Main view ────────────────────────────────────────────────────────────────
+
+const BOARD_CONTAINER_CLASS =
+  'lg:h-[min(70vw,calc(100dvh-180px),820px)] xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)] [&>[data-board-container]]:h-full';
+
 export function TriDChessView({
   initialPieceTheme = 'classic'
 }: {
@@ -70,7 +109,7 @@ export function TriDChessView({
 }) {
   const boardViewportRef = useRef<HTMLDivElement | null>(null);
   const [squareSize, setSquareSize] = useState(36);
-  const store = useTriDChessStore();
+
   const {
     gameState,
     gameStarted,
@@ -81,6 +120,7 @@ export function TriDChessView({
     highlightedSlots,
     inCheck,
     pendingPromotion,
+    pendingBoardArrival,
     whiteTime,
     blackTime,
     activeTimer,
@@ -90,15 +130,22 @@ export function TriDChessView({
     moveAttackBoard,
     completePromotion,
     cancelPromotion,
-    tickTimer
-  } = store;
+    tickTimer,
+    goToStart,
+    goToEnd,
+    goToPrev,
+    goToNext,
+    goToMove,
+    setGameOver,
+    setGameResult
+  } = useTriDChessStore();
 
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const storePieceTheme = useChessStore((s) => s.pieceThemeName);
   const soundEnabled = useChessStore((s) => s.soundEnabled);
+  const flipBoard = useChessStore((s) => s.flipBoard);
 
-  // Use server-read initial theme until mounted to avoid SSR/client mismatch.
-  // After mount, the live store value takes over (picks up mid-game theme changes).
+  // Avoid SSR/client pieceTheme mismatch
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), []);
   const pieceTheme = isMounted ? storePieceTheme : initialPieceTheme;
@@ -114,9 +161,8 @@ export function TriDChessView({
   // Game-start sound
   const prevGameStarted = useRef(false);
   useEffect(() => {
-    if (gameStarted && !prevGameStarted.current && soundEnabled) {
+    if (gameStarted && !prevGameStarted.current && soundEnabled)
       playSound('game-start');
-    }
     prevGameStarted.current = gameStarted;
   }, [gameStarted, soundEnabled]);
 
@@ -134,18 +180,47 @@ export function TriDChessView({
     }
     prevMoveCount.current = moves.length;
     if (!soundEnabled) return;
-
-    const lastMove = moves[moves.length - 1];
-    if (lastMove.type === 'board') {
+    const last = moves[moves.length - 1];
+    if (last.type === 'board') {
       playSound('move-self');
       return;
     }
-    const isCapture = !!lastMove.captured;
-    const isCheck = lastMove.san.includes('+') || lastMove.san.includes('#');
-    const isCastle = lastMove.san === '0-0' || lastMove.san === '0-0-0';
-    const isPromotion = !!lastMove.promotion;
+    const isCapture = !!last.captured;
+    const isCheck = last.san.includes('+') || last.san.includes('#');
+    const isCastle = last.san === '0-0' || last.san === '0-0-0';
+    const isPromotion = !!last.promotion;
     playSound(getSoundType(isCapture, isCheck, isCastle, isPromotion, true));
   }, [gameState.moveHistory, soundEnabled]);
+
+  // Dynamic square sizing via ResizeObserver
+  useLayoutEffect(() => {
+    const el = boardViewportRef.current;
+    if (!el) return;
+    const compute = () => {
+      const r = el.getBoundingClientRect();
+      const uw = Math.max(0, r.width - 28);
+      const uh = Math.max(0, r.height - 28);
+      if (uw < 160 || uh < 160) return;
+      const next = Math.max(
+        30,
+        Math.min(72, Math.floor((uw - 40) / 8), Math.floor((uh - 84) / 12))
+      );
+      if (Number.isFinite(next)) setSquareSize((p) => (p === next ? p : next));
+    };
+    compute();
+    if (typeof ResizeObserver === 'undefined') return;
+    let raf = 0;
+    const update = () => {
+      if (raf) cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(compute);
+    };
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   const isActive =
     gameStarted &&
@@ -153,12 +228,9 @@ export function TriDChessView({
     viewingIndex === gameState.snapshots.length - 1;
   const hasTimer = timeControl.mode === 'timed';
 
-  // Derive displayed snapshot
   const snapshot =
     gameState.snapshots[viewingIndex] ??
     gameState.snapshots[gameState.snapshots.length - 1];
-
-  // For display: use snapshot pieces/slots when reviewing history
   const displayPieces =
     viewingIndex === gameState.snapshots.length - 1
       ? gameState.pieces
@@ -170,81 +242,68 @@ export function TriDChessView({
 
   const topColor = boardFlipped ? 'white' : 'black';
   const bottomColor = boardFlipped ? 'black' : 'white';
-  const topTime = boardFlipped ? whiteTime : blackTime;
-  const bottomTime = boardFlipped ? blackTime : whiteTime;
   const topTimerActive = activeTimer === topColor && !gameState.isOver;
   const bottomTimerActive = activeTimer === bottomColor && !gameState.isOver;
-  const sharedPanelHeightClass =
-    'lg:h-[min(70vw,calc(100dvh-180px),820px)] xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]';
-  const triDBoardContainerClass = `${sharedPanelHeightClass} [&>[data-board-container]]:h-full`;
 
-  useLayoutEffect(() => {
-    const el = boardViewportRef.current;
-    if (!el) return;
+  // Sidebar data
+  const moves = useMemo(
+    () => gameState.moveHistory.map((m) => m.san),
+    [gameState.moveHistory]
+  );
+  const positionHistory = useMemo(
+    () => gameState.snapshots.map(() => ''),
+    [gameState.snapshots]
+  );
+  const infoPanel = useMemo(() => {
+    if (!gameStarted || gameState.isOver) return null;
+    return pendingBoardArrival ? (
+      <div className='bg-muted/50 text-muted-foreground rounded px-3 py-2 text-xs'>
+        <p className='font-semibold'>Choose arrival square</p>
+        <p>
+          Click one of the two highlighted squares to place the transported
+          piece.
+        </p>
+      </div>
+    ) : (
+      <div className='bg-muted/50 text-muted-foreground rounded px-3 py-2 text-xs'>
+        <p className='font-semibold'>
+          {gameState.turn === 'w' ? 'White' : 'Black'}&apos;s turn
+        </p>
+        <p>
+          Click a piece to see legal moves, or click an attack board label to
+          reposition it.
+        </p>
+      </div>
+    );
+  }, [gameStarted, gameState.isOver, gameState.turn, pendingBoardArrival]);
 
-    // Tri-D layout: ~8 squares wide, ~12 squares tall + labels/gaps.
-    const computeSquareSize = () => {
-      const rect = el.getBoundingClientRect();
-      const uw = Math.max(0, rect.width - 28);
-      const uh = Math.max(0, rect.height - 28);
-      if (uw < 160 || uh < 160) return;
-      const byW = Math.floor((uw - 40) / 8);
-      const byH = Math.floor((uh - 84) / 12);
-      const next = Math.max(30, Math.min(72, byW, byH));
-      if (Number.isFinite(next))
-        setSquareSize((prev) => (prev === next ? prev : next));
-    };
-
-    // Run synchronously before paint so the board renders at the correct size immediately.
-    computeSquareSize();
-
-    if (typeof ResizeObserver === 'undefined') return;
-    let rafId = 0;
-    const update = () => {
-      if (rafId) cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(computeSquareSize);
-    };
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
-
-  const handleSquareClick = (sq: TriDSquare) => {
-    if (!isActive) return;
-    selectSquare(sq);
-  };
-
-  const handleAttackBoardClick = (boardId: AttackBoardId) => {
-    if (!isActive) return;
-    selectAttackBoard(boardId);
-  };
-
-  const handleSlotClick = (boardId: AttackBoardId, slot: AttackBoardSlot) => {
-    if (!isActive) return;
-    moveAttackBoard(boardId, slot);
-  };
+  const topName = boardFlipped ? 'White' : 'Black';
+  const bottomName = boardFlipped ? 'Black' : 'White';
+  const topTime = boardFlipped ? whiteTime : blackTime;
+  const bottomTime = boardFlipped ? blackTime : whiteTime;
 
   return (
-    <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-      {/* Board column */}
-      <div className='flex min-w-0 flex-col items-center gap-2'>
-        {/* Top player */}
-        <div className='flex w-full items-center justify-between py-2'>
-          <div className='flex items-center gap-3'>
-            <PlayerInfo name={boardFlipped ? 'White' : 'Black'} />
-            {hasTimer && (
-              <PlayerClock time={topTime} isActive={topTimerActive} isPlayer />
-            )}
-          </div>
-        </div>
-
-        {/* The 7-board layout */}
+    <GameShell
+      topLeft={<PlayerInfo name={topName} />}
+      topRight={
+        hasTimer ? (
+          <PlayerClock time={topTime} isActive={topTimerActive} isPlayer />
+        ) : undefined
+      }
+      bottomLeft={<PlayerInfo name={bottomName} />}
+      bottomRight={
+        hasTimer ? (
+          <PlayerClock
+            time={bottomTime}
+            isActive={bottomTimerActive}
+            isPlayer
+          />
+        ) : undefined
+      }
+      boardArea={
         <BoardContainer
           showEvaluation={false}
-          className={triDBoardContainerClass}
+          className={BOARD_CONTAINER_CLASS}
         >
           <div
             ref={boardViewportRef}
@@ -260,49 +319,57 @@ export function TriDChessView({
               inCheck={inCheck && isActive}
               turn={gameState.turn}
               flipped={boardFlipped}
-              onSquareClick={handleSquareClick}
-              onAttackBoardClick={handleAttackBoardClick}
-              onSlotClick={handleSlotClick}
+              onSquareClick={(sq: TriDSquare) => isActive && selectSquare(sq)}
+              onAttackBoardClick={(id: AttackBoardId) =>
+                isActive && selectAttackBoard(id)
+              }
+              onSlotClick={(id: AttackBoardId, slot: AttackBoardSlot) =>
+                isActive && moveAttackBoard(id, slot)
+              }
               isActive={isActive}
               squareSize={squareSize}
               pieceTheme={pieceTheme}
             />
           </div>
         </BoardContainer>
-
-        {/* Bottom player */}
-        <div className='flex w-full items-center justify-between py-2'>
-          <div className='flex items-center gap-3'>
-            <PlayerInfo name={boardFlipped ? 'Black' : 'White'} />
-            {hasTimer && (
-              <PlayerClock
-                time={bottomTime}
-                isActive={bottomTimerActive}
-                isPlayer
-              />
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Sidebar */}
-      <div
-        className={`flex w-full flex-col gap-2 sm:h-[400px] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden ${sharedPanelHeightClass}`}
-      >
-        <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
-          <TriDChessSidebar />
-        </div>
-      </div>
-
-      {/* Promotion dialog */}
-      {pendingPromotion && (
-        <PromotionDialog
-          color={gameState.turn}
-          pieceTheme={pieceTheme}
-          onSelect={completePromotion}
-          onCancel={cancelPromotion}
+      }
+      sidebar={
+        <TwoPlayerCustomSidebar
+          mode='play'
+          moves={moves}
+          viewingIndex={viewingIndex}
+          positionHistory={positionHistory}
+          gameOver={gameState.isOver}
+          gameResult={gameState.result}
+          gameStarted={gameStarted}
+          turn={gameState.turn}
+          soundEnabled={soundEnabled}
+          isAnalysisOn={false}
+          isAnalysisReady={false}
+          onGoToStart={goToStart}
+          onGoToEnd={goToEnd}
+          onGoToPrev={goToPrev}
+          onGoToNext={goToNext}
+          onGoToMove={goToMove}
+          onSetGameOver={setGameOver}
+          onSetGameResult={setGameResult}
+          onFlipBoard={flipBoard}
+          onStartAnalysis={() => {}}
+          onEndAnalysis={() => {}}
+          setupDialog={TriDSetupDialog}
+          activePanel={infoPanel}
         />
-      )}
-    </div>
+      }
+      overlays={
+        pendingPromotion ? (
+          <PromotionDialog
+            color={gameState.turn}
+            pieceTheme={pieceTheme}
+            onSelect={completePromotion}
+            onCancel={cancelPromotion}
+          />
+        ) : null
+      }
+    />
   );
 }

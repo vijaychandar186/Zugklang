@@ -16,20 +16,20 @@ type DiceChessRef = {
   rollDice: (value?: DiceValue) => void;
 };
 const WHITE_FACES = [
-  '/pieces/white-king.svg',
-  '/pieces/white-queen.svg',
-  '/pieces/white-bishop.svg',
-  '/pieces/white-knight.svg',
-  '/pieces/white-rook.svg',
-  '/pieces/white-pawn.svg'
+  '/theme/pieces/staunton/white-king.svg',
+  '/theme/pieces/staunton/white-queen.svg',
+  '/theme/pieces/staunton/white-bishop.svg',
+  '/theme/pieces/staunton/white-knight.svg',
+  '/theme/pieces/staunton/white-rook.svg',
+  '/theme/pieces/staunton/white-pawn.svg'
 ];
 const BLACK_FACES = [
-  '/pieces/black-king.svg',
-  '/pieces/black-queen.svg',
-  '/pieces/black-bishop.svg',
-  '/pieces/black-knight.svg',
-  '/pieces/black-rook.svg',
-  '/pieces/black-pawn.svg'
+  '/theme/pieces/staunton/black-king.svg',
+  '/theme/pieces/staunton/black-queen.svg',
+  '/theme/pieces/staunton/black-bishop.svg',
+  '/theme/pieces/staunton/black-knight.svg',
+  '/theme/pieces/staunton/black-rook.svg',
+  '/theme/pieces/staunton/black-pawn.svg'
 ];
 const BOX_ROTATION: Record<DiceValue, string> = {
   1: 'rotateX(90deg) rotateY(0deg) rotateZ(0deg)',

@@ -1114,7 +1114,7 @@ export function DiceChessMultiplayerView({
     const roomId = ws.roomId;
     const myColor = ws.myColor ?? 'white';
     if (!roomId || savedRoomIdRef.current === roomId) return;
-    if (!session?.user?.id || !gameOver || !gameResult) return;
+    if (!gameOver || !gameResult) return;
 
     savedRoomIdRef.current = roomId;
     const resultCode = toResultCode(gameResult, myColor);
@@ -1203,7 +1203,6 @@ export function DiceChessMultiplayerView({
     ws.whiteUserId,
     ws.blackUserId,
     ws.timeControl,
-    session?.user?.id,
     gameOver,
     gameResult,
     moves,

@@ -105,22 +105,6 @@ export async function POST(req: NextRequest) {
     if (isAbortedGame(result, resultReason, moves.length)) {
       return NextResponse.json({ skipped: true, reason: 'abort' });
     }
-    // If this game has already been saved (by the other player), return the
-    // existing deltas so both players see their rating change. This also
-    // prevents the rating from being updated twice.
-    if (roomId) {
-      const existing = await prisma.game.findUnique({
-        where: { roomId },
-        select: { id: true, whiteRatingDelta: true, blackRatingDelta: true }
-      });
-      if (existing) {
-        return NextResponse.json({
-          gameId: existing.id,
-          whiteRatingDelta: existing.whiteRatingDelta,
-          blackRatingDelta: existing.blackRatingDelta
-        });
-      }
-    }
     let resolvedOpponentUserId = opponentUserId ?? null;
     if (resolvedOpponentUserId) {
       const opponentExists = await prisma.user.findUnique({
@@ -129,14 +113,133 @@ export async function POST(req: NextRequest) {
       });
       if (!opponentExists) resolvedOpponentUserId = null;
     }
-    const whiteUserId = myColor === 'white' ? userId : resolvedOpponentUserId;
-    const blackUserId = myColor === 'black' ? userId : resolvedOpponentUserId;
+    const candidateWhiteUserId =
+      myColor === 'white' ? userId : resolvedOpponentUserId;
+    const candidateBlackUserId =
+      myColor === 'black' ? userId : resolvedOpponentUserId;
     const pgnResult = toPgnResult(result, resultReason);
     const category = (() => {
       if (timeControl.mode === 'unlimited') return 'classical' as const;
       if (timeControl.mode !== 'timed') return null;
       return getTimeCategory(timeControl.minutes, timeControl.increment);
     })();
+
+    // If the row already exists, repair missing player IDs and rating deltas
+    // when possible instead of returning early with incomplete data.
+    if (roomId) {
+      const existing = await prisma.game.findUnique({
+        where: { roomId },
+        select: {
+          id: true,
+          variant: true,
+          gameType: true,
+          result: true,
+          moveCount: true,
+          whiteUserId: true,
+          blackUserId: true,
+          whiteRatingDelta: true,
+          blackRatingDelta: true
+        }
+      });
+      if (existing) {
+        const whiteUserId = existing.whiteUserId ?? candidateWhiteUserId;
+        const blackUserId = existing.blackUserId ?? candidateBlackUserId;
+
+        if (
+          whiteUserId !== existing.whiteUserId ||
+          blackUserId !== existing.blackUserId
+        ) {
+          await prisma.game.update({
+            where: { id: existing.id },
+            data: { whiteUserId, blackUserId }
+          });
+        }
+
+        let whiteRatingDelta = existing.whiteRatingDelta;
+        let blackRatingDelta = existing.blackRatingDelta;
+
+        const needsRatingBackfill =
+          whiteRatingDelta == null &&
+          blackRatingDelta == null &&
+          category !== null &&
+          existing.result !== '*' &&
+          existing.moveCount >= 2 &&
+          existing.gameType === 'multiplayer' &&
+          whiteUserId &&
+          blackUserId;
+
+        if (needsRatingBackfill && category) {
+          try {
+            const [whiteRating, blackRating] = await Promise.all([
+              getOrCreateRating(whiteUserId!, existing.variant, category),
+              getOrCreateRating(blackUserId!, existing.variant, category)
+            ]);
+            let outcome: 1 | 0 | 0.5;
+            if (existing.result === '1-0') outcome = 1;
+            else if (existing.result === '0-1') outcome = 0;
+            else outcome = 0.5;
+            const updated = updateRatings(whiteRating, blackRating, outcome);
+            whiteRatingDelta = updated.whiteDelta;
+            blackRatingDelta = updated.blackDelta;
+            await prisma.$transaction([
+              prisma.rating.update({
+                where: {
+                  userId_variant_category: {
+                    userId: whiteUserId!,
+                    variant: existing.variant,
+                    category
+                  }
+                },
+                data: {
+                  rating: updated.white.rating,
+                  rd: updated.white.rd,
+                  sigma: updated.white.sigma,
+                  gameCount: { increment: 1 }
+                }
+              }),
+              prisma.rating.update({
+                where: {
+                  userId_variant_category: {
+                    userId: blackUserId!,
+                    variant: existing.variant,
+                    category
+                  }
+                },
+                data: {
+                  rating: updated.black.rating,
+                  rd: updated.black.rd,
+                  sigma: updated.black.sigma,
+                  gameCount: { increment: 1 }
+                }
+              }),
+              prisma.game.update({
+                where: { id: existing.id },
+                data: {
+                  whitePregameRating: whiteRating.rating,
+                  blackPregameRating: blackRating.rating,
+                  whiteRatingDelta,
+                  blackRatingDelta
+                }
+              })
+            ]);
+          } catch (ratingErr) {
+            console.error(
+              'Failed to backfill ratings for existing game:',
+              ratingErr
+            );
+          }
+        }
+
+        return NextResponse.json({
+          gameId: existing.id,
+          whiteRatingDelta,
+          blackRatingDelta
+        });
+      }
+    }
+
+    const whiteUserId = candidateWhiteUserId;
+    const blackUserId = candidateBlackUserId;
     const isRated =
       category !== null &&
       pgnResult !== '*' &&

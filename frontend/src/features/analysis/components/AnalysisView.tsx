@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Chess } from '@/lib/chess/chess';
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,8 @@ import {
 } from '@/features/chess/components/sidebar';
 import { ImportDialog, ExportMenu } from '@/features/chess/components/dialogs';
 import { useChessArrows } from '@/features/chess/hooks/useChessArrows';
-import { useNavigation } from '@/features/chess/hooks/useNavigation';
+import type { UseNavigationReturn } from '@/features/chess/hooks/useNavigation';
+import { usePlayback } from '@/features/chess/hooks/usePlayback';
 import { usePromotion } from '@/features/chess/hooks/usePromotion';
 import { useEngineInit } from '@/features/chess/hooks/useEngineInit';
 import {
@@ -81,7 +82,11 @@ export function AnalysisView({
     startPlayingFromPosition,
     stopPlayingFromPosition,
     toggleBoardOrientation,
-    goToMove
+    goToMove,
+    goToStart,
+    goToEnd,
+    goToPrev,
+    goToNext
   } = useAnalysisBoardActions();
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { setPosition, startAnalysis, endAnalysis } = useAnalysisActions();
@@ -107,12 +112,40 @@ export function AnalysisView({
     gameTurn,
     analysisTurn
   });
-  const navigation = useNavigation({
-    viewingIndex,
-    totalPositions: positionHistory.length,
-    onIndexChange: goToMove,
-    playbackEnabled: !isEditorMode
+  const { isPlaying, togglePlay, play, pause } = usePlayback({
+    currentIndex: viewingIndex,
+    totalItems: positionHistory.length,
+    onNext: goToNext,
+    enabled: !isEditorMode
   });
+  const navigation = useMemo<UseNavigationReturn>(
+    () => ({
+      canGoBack: viewingIndex > 0,
+      canGoForward: viewingIndex < positionHistory.length - 1,
+      isPlaying,
+      togglePlay,
+      play,
+      pause,
+      goToStart,
+      goToEnd,
+      goToPrev,
+      goToNext,
+      goToMove
+    }),
+    [
+      viewingIndex,
+      positionHistory.length,
+      isPlaying,
+      togglePlay,
+      play,
+      pause,
+      goToStart,
+      goToEnd,
+      goToPrev,
+      goToNext,
+      goToMove
+    ]
+  );
   const promotion = usePromotion({
     fen: currentFEN,
     onMove: makeMove

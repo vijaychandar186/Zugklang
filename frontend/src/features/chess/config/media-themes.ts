@@ -39,6 +39,7 @@ export const PIECE_THEME_NAMES = [
   'ocean',
   'sky',
   'space',
+  'staunton',
   'tigers',
   'tournament',
   'vintage',
@@ -61,7 +62,7 @@ export const SOUND_THEME_NAMES = [
 
 export type SoundThemeName = (typeof SOUND_THEME_NAMES)[number];
 
-export const DEFAULT_PIECE_THEME: PieceThemeName = 'classic';
+export const DEFAULT_PIECE_THEME: PieceThemeName = 'neo';
 export const DEFAULT_SOUND_THEME: SoundThemeName = 'default';
 
 export const PIECE_THEME_OPTIONS = PIECE_THEME_NAMES.map((name) => ({
@@ -90,4 +91,33 @@ export function normalizeSoundThemeName(
   return SOUND_THEME_NAMES.includes(value as SoundThemeName)
     ? (value as SoundThemeName)
     : DEFAULT_SOUND_THEME;
+}
+
+const STAUNTON_PIECE_NAMES: Record<string, string> = {
+  p: 'pawn',
+  r: 'rook',
+  n: 'knight',
+  b: 'bishop',
+  q: 'queen',
+  k: 'king'
+};
+
+export function getPieceAssetPath(
+  themeName: string,
+  pieceCode: string
+): string {
+  const normalizedCode = pieceCode.toLowerCase();
+
+  if (themeName === 'staunton') {
+    const colorKey = normalizedCode[0];
+    const pieceKey = normalizedCode[1];
+    const color = colorKey === 'w' ? 'white' : colorKey === 'b' ? 'black' : '';
+    const piece = pieceKey ? STAUNTON_PIECE_NAMES[pieceKey] : undefined;
+
+    if (color && piece) {
+      return `/theme/pieces/staunton/${color}-${piece}.svg`;
+    }
+  }
+
+  return `/theme/pieces/${themeName}/${normalizedCode}.png`;
 }

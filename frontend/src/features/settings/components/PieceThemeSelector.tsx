@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import {
   PIECE_THEME_OPTIONS,
+  getPieceAssetPath,
   type PieceThemeName
 } from '@/features/chess/config/media-themes';
 
@@ -25,7 +26,7 @@ export function PieceThemeSelector({
   currentTheme,
   onThemeChange
 }: PieceThemeSelectorProps) {
-  const knightPreviewSrc = `/theme/pieces/${currentTheme}/wn.png`;
+  const knightPreviewSrc = getPieceAssetPath(currentTheme, 'wn');
 
   return (
     <div className='space-y-3'>

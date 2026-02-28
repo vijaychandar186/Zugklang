@@ -6,6 +6,8 @@ export { SidebarActionBar } from './SidebarActionBar';
 export type { SidebarActionBarProps } from './SidebarActionBar';
 export { StandardActionBar } from './StandardActionBar';
 export type { StandardActionBarProps } from './StandardActionBar';
+export { GameActionButtons } from './GameActionButtons';
+export type { GameActionButtonsProps } from './GameActionButtons';
 export { MoveHistorySection } from './MoveHistorySection';
 export type { MoveHistorySectionProps } from './MoveHistorySection';
 export { NavigationControls } from './NavigationControls';

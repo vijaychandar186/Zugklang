@@ -1,14 +1,16 @@
 'use client';
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import { MultiplayerChessBoard } from './MultiplayerChessBoard';
-import { MultiplayerSidebar } from './MultiplayerSidebar';
+import { ChessBoard } from '@/features/chess/components/ChessBoard';
+import { ChessSidebar } from '@/features/chess/components/ChessSidebar';
 import { MatchmakingDialog } from './MatchmakingDialog';
 import { CapturedPiecesDisplay } from '@/features/chess/components/CapturedPieces';
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { PlayerClock } from '@/features/chess/components/PlayerClock';
 import { BoardContainer } from '@/features/chess/components/BoardContainer';
+import { GameShell } from '@/features/chess/components/GameShell';
 import { useGameView } from '@/features/chess/hooks/useGameView';
 import { useGameTimer } from '@/features/chess/hooks/useGameTimer';
+import { useAnalysisSync } from '@/features/chess/hooks/useAnalysisSync';
 import {
   useChessStore,
   useTimerState
@@ -26,6 +28,7 @@ import {
   ABORT_COUNTDOWN_VISIBILITY_DELAY_MS
 } from '../config';
 import { Icons } from '@/components/Icons';
+import { formatVariantLabel } from '@/lib/chess/variantLabels';
 import type { ChessVariant } from '@/features/chess/config/variants';
 import type { TimeControl } from '@/features/game/types/rules';
 import type { ChallengeColor } from '../types';
@@ -34,18 +37,7 @@ import {
   DEFAULT_FLAG_CODE,
   normalizeFlagCode
 } from '@/features/settings/flags';
-const VARIANT_LABELS: Record<string, string> = {
-  standard: 'Standard Chess',
-  fischerRandom: 'Fischer Random',
-  atomic: 'Atomic Chess',
-  racingKings: 'Racing Kings',
-  horde: 'Horde Chess',
-  threeCheck: 'Three-Check',
-  antichess: 'Antichess',
-  kingOfTheHill: 'King of the Hill',
-  crazyhouse: 'Crazyhouse',
-  checkersChess: 'Chess with Checkers'
-};
+
 function SignalIndicator({
   wsStatus,
   latencyMs
@@ -83,6 +75,7 @@ function SignalIndicator({
     />
   );
 }
+
 function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
   const [secsLeft, setSecsLeft] = useState(() =>
     Math.max(
@@ -107,6 +100,7 @@ function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
     </span>
   );
 }
+
 function AbortCountdown({ startedAt }: { startedAt: number }) {
   const [secsLeft, setSecsLeft] = useState(() =>
     Math.max(0, Math.ceil((ABORT_TIMEOUT_MS - (Date.now() - startedAt)) / 1000))
@@ -128,11 +122,13 @@ function AbortCountdown({ startedAt }: { startedAt: number }) {
     </span>
   );
 }
+
 interface MultiplayerGameViewProps {
   variant?: ChessVariant;
   initialBoard3dEnabled?: boolean;
   challengeId?: string;
 }
+
 export function MultiplayerGameView({
   variant = 'standard',
   initialBoard3dEnabled,
@@ -144,6 +140,7 @@ export function MultiplayerGameView({
   const [sessionRestorePending, setSessionRestorePending] = useState(true);
   const [pendingMoves, setPendingMoves] = useState<string[] | null>(null);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
+
   const {
     gameId,
     topColor,
@@ -158,6 +155,7 @@ export function MultiplayerGameView({
     topTimerActive,
     bottomTimerActive
   } = useGameView();
+
   const setVariant = useChessStore((s) => s.setVariant);
   const setGameType = useChessStore((s) => s.setGameType);
   const startMultiplayerGame = useChessStore((s) => s.startMultiplayerGame);
@@ -172,14 +170,15 @@ export function MultiplayerGameView({
   const positionHistory = useChessStore((s) => s.positionHistory);
   const timeControl = useChessStore((s) => s.timeControl);
   const { isAnalysisOn } = useAnalysisState();
-  const { initializeEngine, setPosition, cleanup, endAnalysis } =
-    useAnalysisActions();
+  const { endAnalysis } = useAnalysisActions();
   const currentFEN = useChessStore((s) => s.currentFEN);
+
   const [myRating, setMyRating] = useState<number | null>(null);
   const [myRatingDelta, setMyRatingDelta] = useState<number | null>(null);
   const [opponentRatingDelta, setOpponentRatingDelta] = useState<number | null>(
     null
   );
+
   const ratingCategory = useMemo(() => {
     const tc = ws.timeControl;
     if (!tc) return null;
@@ -187,26 +186,23 @@ export function MultiplayerGameView({
     if (tc.mode !== 'timed') return null;
     return getTimeCategory(tc.minutes, tc.increment);
   }, [ws.timeControl]);
+
   useEffect(() => {
     if (!session?.user?.id) {
       setMyRating(null);
       return;
     }
     const params = new URLSearchParams({ variant });
-    if (ratingCategory) {
-      params.set('category', ratingCategory);
-    }
+    if (ratingCategory) params.set('category', ratingCategory);
     fetch(`/api/user/rating?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then(
-        (
-          data: {
-            rating: number | null;
-          } | null
-        ) => data && setMyRating(data.rating)
+        (data: { rating: number | null } | null) =>
+          data && setMyRating(data.rating)
       )
       .catch(() => {});
   }, [session?.user?.id, variant, ratingCategory]);
+
   const [myFlagCode, setMyFlagCode] = useState(DEFAULT_FLAG_CODE);
   useEffect(() => {
     if (!session?.user?.id) {
@@ -220,8 +216,10 @@ export function MultiplayerGameView({
       )
       .catch(() => setMyFlagCode(DEFAULT_FLAG_CODE));
   }, [session?.user?.id]);
+
   const [opponentRating, setOpponentRating] = useState<number | null>(null);
   const [opponentFlagCode, setOpponentFlagCode] = useState(DEFAULT_FLAG_CODE);
+
   const opponentUserId = useMemo(() => {
     const me = session?.user?.id ?? null;
     if (me) {
@@ -231,6 +229,7 @@ export function MultiplayerGameView({
     if (!ws.myColor) return null;
     return ws.myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
   }, [session?.user?.id, ws.myColor, ws.whiteUserId, ws.blackUserId]);
+
   useEffect(() => {
     if (!opponentUserId) {
       setOpponentRating(null);
@@ -239,9 +238,7 @@ export function MultiplayerGameView({
     }
     setOpponentRating(null);
     const params = new URLSearchParams({ variant });
-    if (ratingCategory) {
-      params.set('category', ratingCategory);
-    }
+    if (ratingCategory) params.set('category', ratingCategory);
     fetch(`/api/users/${opponentUserId}?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : { rating: 700 }))
       .then((data: { rating: number | null; flagCode?: string | null }) => {
@@ -250,6 +247,7 @@ export function MultiplayerGameView({
       })
       .catch(() => setOpponentFlagCode(DEFAULT_FLAG_CODE));
   }, [opponentUserId, variant, ratingCategory]);
+
   const savedRoomIdRef = useRef<string | null>(null);
   const saveMultiplayerGame = useCallback(
     (
@@ -260,7 +258,6 @@ export function MultiplayerGameView({
     ) => {
       const roomId = ws.roomId;
       if (!roomId || savedRoomIdRef.current === roomId) return;
-      if (!session?.user?.id) return;
       savedRoomIdRef.current = roomId;
       const myColor = ws.myColor ?? 'white';
       const opponentUserId =
@@ -351,37 +348,24 @@ export function MultiplayerGameView({
         )
         .catch((err) => console.error('Failed to save multiplayer game:', err));
     },
-    [
-      ws.roomId,
-      ws.myColor,
-      moves,
-      variant,
-      timeControl,
-      positionHistory,
-      session
-    ]
+    [ws.roomId, ws.myColor, moves, variant, timeControl, positionHistory]
   );
+
   useEffect(() => {
     setVariant(variant);
     setGameType('multiplayer');
   }, [variant, setVariant, setGameType]);
-  useEffect(() => {
-    initializeEngine();
-    return () => cleanup();
-  }, [initializeEngine, cleanup]);
-  useEffect(() => {
-    if (!currentFEN) return;
-    const fenTurn = currentFEN.split(' ')[1] as 'w' | 'b';
-    setPosition(currentFEN, fenTurn);
-  }, [currentFEN, setPosition]);
+
   useGameTimer();
+  useAnalysisSync(currentFEN);
+
   useEffect(() => {
     if (matchmakingOpen && !ws.isSecondaryTab) {
       ws.preConnect();
     }
   }, [matchmakingOpen, ws.isSecondaryTab]);
+
   useEffect(() => {
-    // Resolve session-backed UI only on client to avoid hydration flicker.
     if (typeof window === 'undefined') return;
     const savedSession = loadSession();
     if (savedSession && savedSession.variant === variant) {
@@ -401,6 +385,7 @@ export function MultiplayerGameView({
       );
     }
   }, []);
+
   useEffect(() => {
     if (!sessionRestorePending) return;
     if (
@@ -413,6 +398,7 @@ export function MultiplayerGameView({
       setSessionRestorePending(false);
     }
   }, [sessionRestorePending, ws.status]);
+
   useEffect(() => {
     if (ws.isSecondaryTab) return;
     if (ws.status === 'matched' && ws.myColor) {
@@ -447,6 +433,7 @@ export function MultiplayerGameView({
     ws.movesToReplay,
     startMultiplayerGame
   ]);
+
   useEffect(() => {
     if (ws.isSecondaryTab) return;
     if (ws.status === 'rejoined' && ws.myColor) {
@@ -471,6 +458,7 @@ export function MultiplayerGameView({
     ws.movesToReplay,
     startMultiplayerGame
   ]);
+
   useEffect(() => {
     if (sessionRestorePending) return;
     if (
@@ -482,6 +470,7 @@ export function MultiplayerGameView({
       setMatchmakingOpen(true);
     }
   }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
+
   useEffect(() => {
     if (sessionRestorePending) return;
     if (!ws.isSecondaryTab) return;
@@ -492,6 +481,7 @@ export function MultiplayerGameView({
       ws.status === 'error';
     setMatchmakingOpen(showDialog);
   }, [sessionRestorePending, ws.status, ws.isSecondaryTab]);
+
   useEffect(() => {
     ws.setOnServerGameOver((result, reason, whiteUserId, blackUserId) => {
       if (reason !== 'checkmate') {
@@ -502,6 +492,7 @@ export function MultiplayerGameView({
     });
     return () => ws.setOnServerGameOver(null);
   }, [ws.setOnServerGameOver, setGameResult, setGameOver, saveMultiplayerGame]);
+
   useEffect(() => {
     ws.setOnClockSync((whiteTimeMs, blackTimeMs, activeClock) => {
       const toSeconds = (ms: number | null) =>
@@ -514,6 +505,7 @@ export function MultiplayerGameView({
     });
     return () => ws.setOnClockSync(null);
   }, [ws.setOnClockSync, setTimerSnapshot]);
+
   useEffect(() => {
     if (gameOver && ws.status === 'playing') {
       const myColor = ws.myColor ?? 'white';
@@ -521,6 +513,7 @@ export function MultiplayerGameView({
       ws.notifyGameOver(pgnResult, 'checkmate');
     }
   }, [gameOver]);
+
   const handleFindGame = useCallback(
     async (timeControl: TimeControl) => {
       let rating = 700;
@@ -549,6 +542,7 @@ export function MultiplayerGameView({
     },
     [ws.joinQueue, variant, session]
   );
+
   const handleCreateChallenge = useCallback(
     (timeControl: TimeControl, color: ChallengeColor) => {
       ws.createChallenge(
@@ -561,9 +555,11 @@ export function MultiplayerGameView({
     },
     [ws.createChallenge, variant, session]
   );
+
   const handleCancelSearch = useCallback(() => {
     ws.leaveQueue();
   }, [ws.leaveQueue]);
+
   const handleFindNewGame = useCallback(() => {
     ws.disconnect();
     setPendingMoves(null);
@@ -572,9 +568,11 @@ export function MultiplayerGameView({
     setOpponentRatingDelta(null);
     setMatchmakingOpen(true);
   }, [ws.disconnect]);
+
   const handleMovesReplayed = useCallback(() => {
     setPendingMoves(null);
   }, []);
+
   const abortStartedAt = ws.abortStartedAt;
   const [abortVisible, setAbortVisible] = useState(false);
   useEffect(() => {
@@ -595,6 +593,7 @@ export function MultiplayerGameView({
     const t = setTimeout(() => setAbortVisible(true), remaining);
     return () => clearTimeout(t);
   }, [abortStartedAt, gameStarted, gameOver, movesCount]);
+
   const showOpponentAbortCountdown =
     abortVisible &&
     abortStartedAt !== null &&
@@ -605,6 +604,7 @@ export function MultiplayerGameView({
     abortStartedAt !== null &&
     ((movesCount === 0 && playAs === 'white') ||
       (movesCount === 1 && playAs === 'black'));
+
   const isMe = (color: 'white' | 'black') => color === (ws.myColor ?? playAs);
   const getPlayerName = (color: 'white' | 'black') => {
     if (isMe(color)) return session?.user?.name ?? 'You';
@@ -626,203 +626,166 @@ export function MultiplayerGameView({
     if (isMe(color)) return myFlagCode;
     return opponentFlagCode;
   };
+
   const showIndicator = gameStarted && !gameOver;
-  return (
+
+  // Build the left side of a player row (info + connection indicators).
+  const makePlayerLeft = (color: 'white' | 'black') => (
     <>
-      <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-        <div className='flex flex-col items-center gap-2'>
-          <div className='flex w-full items-center justify-between py-2'>
-            <div className='flex items-center gap-2'>
-              <PlayerInfo
-                name={getPlayerName(topColor)}
-                image={getPlayerImage(topColor)}
-                rating={getPlayerRating(topColor)}
-                ratingDelta={getPlayerRatingDelta(topColor)}
-                flagCode={getPlayerFlagCode(topColor)}
-              />
-              {showIndicator &&
-              topColor !== playAs &&
-              ws.opponentDisconnected ? (
-                <AbandonCountdown
-                  disconnectedAt={ws.opponentDisconnectedAt ?? Date.now()}
-                />
-              ) : (
-                showIndicator && (
-                  <>
-                    <SignalIndicator
-                      wsStatus={ws.status}
-                      latencyMs={
-                        topColor !== playAs
-                          ? ws.opponentLatencyMs
-                          : ws.latencyMs
-                      }
-                    />
-                    {topColor !== playAs &&
-                      showOpponentAbortCountdown &&
-                      abortStartedAt !== null && (
-                        <AbortCountdown startedAt={abortStartedAt} />
-                      )}
-                    {topColor === playAs &&
-                      showMyAbortCountdown &&
-                      abortStartedAt !== null && (
-                        <AbortCountdown startedAt={abortStartedAt} />
-                      )}
-                  </>
-                )
-              )}
-            </div>
-            <div className='flex items-center gap-2'>
-              <CapturedPiecesDisplay
-                pieces={topCaptured}
-                pieceColor={bottomColor}
-                advantage={topAdvantage}
-              />
-              {hasTimer && (
-                <PlayerClock
-                  time={topTime}
-                  isActive={topTimerActive}
-                  isPlayer={topColor === playAs}
-                />
-              )}
-            </div>
-          </div>
-
-          <BoardContainer>
-            <MultiplayerChessBoard
-              key={gameId}
-              serverOrientation={ws.myColor || 'white'}
-              initialBoard3dEnabled={initialBoard3dEnabled}
-              onPlayerMove={ws.sendMove}
-              setOnOpponentMove={ws.setOnOpponentMove}
-              movesToReplay={pendingMoves}
-              onMovesReplayed={handleMovesReplayed}
-            />
-          </BoardContainer>
-
-          <div className='flex w-full items-center justify-between py-2'>
-            <div className='flex items-center gap-2'>
-              <PlayerInfo
-                name={getPlayerName(bottomColor)}
-                image={getPlayerImage(bottomColor)}
-                rating={getPlayerRating(bottomColor)}
-                ratingDelta={getPlayerRatingDelta(bottomColor)}
-                flagCode={getPlayerFlagCode(bottomColor)}
-              />
-              {showIndicator &&
-              bottomColor !== playAs &&
-              ws.opponentDisconnected ? (
-                <AbandonCountdown
-                  disconnectedAt={ws.opponentDisconnectedAt ?? Date.now()}
-                />
-              ) : (
-                showIndicator && (
-                  <>
-                    <SignalIndicator
-                      wsStatus={ws.status}
-                      latencyMs={
-                        bottomColor !== playAs
-                          ? ws.opponentLatencyMs
-                          : ws.latencyMs
-                      }
-                    />
-                    {bottomColor !== playAs &&
-                      showOpponentAbortCountdown &&
-                      abortStartedAt !== null && (
-                        <AbortCountdown startedAt={abortStartedAt} />
-                      )}
-                    {bottomColor === playAs &&
-                      showMyAbortCountdown &&
-                      abortStartedAt !== null && (
-                        <AbortCountdown startedAt={abortStartedAt} />
-                      )}
-                  </>
-                )
-              )}
-            </div>
-            <div className='flex items-center gap-2'>
-              <CapturedPiecesDisplay
-                pieces={bottomCaptured}
-                pieceColor={topColor}
-                advantage={bottomAdvantage}
-              />
-              {hasTimer && (
-                <PlayerClock
-                  time={bottomTime}
-                  isActive={bottomTimerActive}
-                  isPlayer={bottomColor === playAs}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(70vw,calc(100dvh-180px),820px)] lg:w-[clamp(20rem,22vw,30rem)] lg:overflow-hidden xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)]'>
-          {isAnalysisOn && (
-            <div className='bg-card shrink-0 rounded-lg border'>
-              <AnalysisLines />
-            </div>
-          )}
-          <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
-            <MultiplayerSidebar
-              status={ws.status}
-              drawOffered={ws.drawOffered}
-              rematchOffered={ws.rematchOffered}
-              rematchDeclined={ws.rematchDeclined}
-              onAbort={ws.abort}
-              onResign={ws.resign}
-              onOfferDraw={ws.offerDraw}
-              onAcceptDraw={ws.acceptDraw}
-              onDeclineDraw={ws.declineDraw}
-              onOfferRematch={ws.offerRematch}
-              onAcceptRematch={ws.acceptRematch}
-              onDeclineRematch={ws.declineRematch}
-              onFindNewGame={handleFindNewGame}
-            />
-          </div>
-        </div>
-      </div>
-
-      {ws.isSecondaryTab &&
-        (ws.status === 'playing' ||
-          ws.status === 'matched' ||
-          ws.status === 'rejoined') && (
-          <div className='bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm'>
-            <div className='bg-card mx-4 flex max-w-sm flex-col items-center gap-3 rounded-xl border p-8 text-center shadow-xl'>
-              <Icons.system className='text-muted-foreground h-10 w-10' />
-              <div>
-                <p className='text-lg font-semibold'>
-                  Game in progress in another tab
-                </p>
-                <p className='text-muted-foreground mt-1 text-sm'>
-                  Switch to the other tab to continue playing.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-      <MatchmakingDialog
-        open={matchmakingOpen && !sessionRestorePending}
-        onOpenChange={(v) => {
-          if (
-            !v &&
-            (ws.status === 'idle' ||
-              ws.status === 'connecting' ||
-              ws.status === 'error')
-          ) {
-            setMatchmakingOpen(false);
-          }
-        }}
-        status={ws.status}
-        variantLabel={VARIANT_LABELS[variant] || variant}
-        errorMessage={ws.errorMessage}
-        pendingChallengeId={ws.pendingChallengeId}
-        initialChallengeId={activeChallengeId}
-        onFindGame={handleFindGame}
-        onCancel={handleCancelSearch}
-        onCreateChallenge={handleCreateChallenge}
-        onCancelChallenge={ws.cancelChallenge}
+      <PlayerInfo
+        name={getPlayerName(color)}
+        image={getPlayerImage(color)}
+        rating={getPlayerRating(color)}
+        ratingDelta={getPlayerRatingDelta(color)}
+        flagCode={getPlayerFlagCode(color)}
       />
+      {showIndicator && color !== playAs && ws.opponentDisconnected ? (
+        <AbandonCountdown
+          disconnectedAt={ws.opponentDisconnectedAt ?? Date.now()}
+        />
+      ) : (
+        showIndicator && (
+          <>
+            <SignalIndicator
+              wsStatus={ws.status}
+              latencyMs={color !== playAs ? ws.opponentLatencyMs : ws.latencyMs}
+            />
+            {color !== playAs &&
+              showOpponentAbortCountdown &&
+              abortStartedAt !== null && (
+                <AbortCountdown startedAt={abortStartedAt} />
+              )}
+            {color === playAs &&
+              showMyAbortCountdown &&
+              abortStartedAt !== null && (
+                <AbortCountdown startedAt={abortStartedAt} />
+              )}
+          </>
+        )
+      )}
     </>
+  );
+
+  // Build the right side of a player row (captured pieces + timer).
+  const makePlayerRight = (
+    captured: typeof topCaptured,
+    pieceColor: 'white' | 'black',
+    advantage: number | undefined,
+    time: number | null,
+    timerActive: boolean,
+    isPlayer: boolean
+  ) => (
+    <>
+      <CapturedPiecesDisplay
+        pieces={captured}
+        pieceColor={pieceColor}
+        advantage={advantage}
+      />
+      {hasTimer && (
+        <PlayerClock time={time} isActive={timerActive} isPlayer={isPlayer} />
+      )}
+    </>
+  );
+
+  return (
+    <GameShell
+      topLeft={makePlayerLeft(topColor)}
+      topRight={makePlayerRight(
+        topCaptured,
+        bottomColor,
+        topAdvantage,
+        topTime,
+        topTimerActive,
+        topColor === playAs
+      )}
+      bottomLeft={makePlayerLeft(bottomColor)}
+      bottomRight={makePlayerRight(
+        bottomCaptured,
+        topColor,
+        bottomAdvantage,
+        bottomTime,
+        bottomTimerActive,
+        bottomColor === playAs
+      )}
+      boardArea={
+        <BoardContainer>
+          <ChessBoard
+            key={gameId}
+            serverOrientation={ws.myColor || 'white'}
+            initialBoard3dEnabled={initialBoard3dEnabled}
+            onPlayerMove={ws.sendMove}
+            setOnOpponentMove={ws.setOnOpponentMove}
+            movesToReplay={pendingMoves}
+            onMovesReplayed={handleMovesReplayed}
+          />
+        </BoardContainer>
+      }
+      sidebar={
+        <ChessSidebar
+          mode='play'
+          multiplayer={{
+            status: ws.status,
+            drawOffered: ws.drawOffered,
+            rematchOffered: ws.rematchOffered,
+            rematchDeclined: ws.rematchDeclined,
+            onAbort: ws.abort,
+            onResign: ws.resign,
+            onOfferDraw: ws.offerDraw,
+            onAcceptDraw: ws.acceptDraw,
+            onDeclineDraw: ws.declineDraw,
+            onOfferRematch: ws.offerRematch,
+            onAcceptRematch: ws.acceptRematch,
+            onDeclineRematch: ws.declineRematch,
+            onFindNewGame: handleFindNewGame
+          }}
+        />
+      }
+      analysisBar={isAnalysisOn ? <AnalysisLines /> : undefined}
+      overlays={
+        <>
+          {ws.isSecondaryTab &&
+            (ws.status === 'playing' ||
+              ws.status === 'matched' ||
+              ws.status === 'rejoined') && (
+              <div className='bg-background/80 fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm'>
+                <div className='bg-card mx-4 flex max-w-sm flex-col items-center gap-3 rounded-xl border p-8 text-center shadow-xl'>
+                  <Icons.system className='text-muted-foreground h-10 w-10' />
+                  <div>
+                    <p className='text-lg font-semibold'>
+                      Game in progress in another tab
+                    </p>
+                    <p className='text-muted-foreground mt-1 text-sm'>
+                      Switch to the other tab to continue playing.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          <MatchmakingDialog
+            open={matchmakingOpen && !sessionRestorePending}
+            onOpenChange={(v) => {
+              if (
+                !v &&
+                (ws.status === 'idle' ||
+                  ws.status === 'connecting' ||
+                  ws.status === 'error')
+              ) {
+                setMatchmakingOpen(false);
+              }
+            }}
+            status={ws.status}
+            variantLabel={formatVariantLabel(variant)}
+            errorMessage={ws.errorMessage}
+            pendingChallengeId={ws.pendingChallengeId}
+            initialChallengeId={activeChallengeId}
+            onFindGame={handleFindGame}
+            onCancel={handleCancelSearch}
+            onCreateChallenge={handleCreateChallenge}
+            onCancelChallenge={ws.cancelChallenge}
+          />
+        </>
+      }
+    />
   );
 }

@@ -5,14 +5,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -21,25 +13,20 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger
-} from '@/components/ui/alert-dialog';
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { MoveHistory } from './sidebar/MoveHistory';
+import { ShareGameDialog } from './sidebar/ShareGameDialog';
 import { NavigationControls } from './sidebar/NavigationControls';
 import { GameOverPanel } from './sidebar/GameOverPanel';
-import { SettingsDialog } from '@/features/settings/components/SettingsDialog';
+import { SidebarPanel } from './sidebar/SidebarPanel';
+import { SidebarHeader } from './sidebar/SidebarHeader';
+import { GameActionButtons } from './sidebar/GameActionButtons';
+import { SettingsButton } from './actions/SettingsButton';
+import { FlipBoardButton } from './actions/FlipBoardButton';
+import { EngineToggleButton } from './actions/EngineToggleButton';
 import { GameSelectionDialog } from './GameSelectionDialog';
 import { LocalGameSelectionDialog } from './LocalGameSelectionDialog';
 import { PGNImportDialog } from './sidebar/PGNImportDialog';
@@ -53,18 +40,45 @@ import {
   useAnalysisActions
 } from '../stores/useAnalysisStore';
 import { usePlayback } from '../hooks/usePlayback';
-import {
-  useClipboard,
-  formatMovesText,
-  formatPGN
-} from '../hooks/useClipboard';
 import { playSound } from '@/features/game/utils/sounds';
 import { CrazyhousePocket } from './CrazyhousePocket';
 import type { PieceSymbol } from '@/lib/chess/chess';
+import type { MultiplayerStatus } from '@/features/multiplayer/types';
+
+// ── Multiplayer-specific prop bundle ────────────────────────────────────────
+
+/**
+ * When provided, enables multiplayer-specific UI: draw-offer banner, rematch
+ * flow, analysis lockout during live game, and custom new-game handler.
+ */
+export interface MultiplayerSidebarProps {
+  status: MultiplayerStatus;
+  drawOffered: boolean;
+  rematchOffered: boolean;
+  rematchDeclined: boolean;
+  onAbort: () => void;
+  onResign: () => void;
+  onOfferDraw: () => void;
+  onAcceptDraw: () => void;
+  onDeclineDraw: () => void;
+  onOfferRematch: () => void;
+  onAcceptRematch: () => void;
+  onDeclineRematch: () => void;
+  onFindNewGame: () => void;
+  /** Rating delta shown in the game-over panel after a rated game. */
+  ratingDelta?: number | null;
+}
+
 interface ChessSidebarProps {
   mode: ChessMode;
+  /**
+   * Optional multiplayer extension.  When absent the sidebar behaves as a
+   * standard local/computer game sidebar.
+   */
+  multiplayer?: MultiplayerSidebarProps;
 }
-export function ChessSidebar({ mode }: ChessSidebarProps) {
+
+export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
   const router = useRouter();
   const {
     moves,
@@ -86,7 +100,12 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     selectedDropPiece,
     engineConfig
   } = useChessState();
+
   const isLocalGame = gameType === 'local';
+  const isPlayMode = mode === 'play';
+  const isAnalysisMode = mode === 'analysis';
+  const isMultiplayer = !!multiplayer;
+
   const {
     goToStart,
     goToEnd,
@@ -102,22 +121,24 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     stopPlayingFromPosition,
     setSelectedDropPiece
   } = useChessActions();
+
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { startAnalysis, endAnalysis } = useAnalysisActions();
-  const [settingsOpen, setSettingsOpen] = useState(false);
+
   const [newGameOpen, setNewGameOpen] = useState(false);
+  // Tracks whether local "rematch sent" button has been pressed.
+  const [rematchSent, setRematchSent] = useState(false);
   const hasAutoPlayed = useRef(false);
-  const isPlayMode = mode === 'play';
-  const isAnalysisMode = mode === 'analysis';
-  const canGoBack = viewingIndex > 0;
-  const canGoForward = viewingIndex < positionHistory.length - 1;
-  const canAbort = moves.length < 2;
-  const { copy, isCopied } = useClipboard();
-  const { isPlaying, togglePlay } = usePlayback({
-    currentIndex: viewingIndex,
-    totalItems: positionHistory.length,
-    onNext: goToNext
-  });
+
+  // Reset rematch state when opponent declines or a new game begins.
+  useEffect(() => {
+    if (multiplayer?.rematchDeclined) setRematchSent(false);
+  }, [multiplayer?.rematchDeclined]);
+  useEffect(() => {
+    if (!gameOver) setRematchSent(false);
+  }, [gameOver]);
+
+  // Analysis mode: jump to start automatically on first load.
   useEffect(() => {
     if (
       isAnalysisMode &&
@@ -125,13 +146,14 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
       positionHistory.length > 1
     ) {
       hasAutoPlayed.current = true;
-      setTimeout(() => {
-        goToStart();
-      }, 100);
+      setTimeout(() => goToStart(), 100);
     }
   }, [isAnalysisMode, positionHistory.length, goToStart]);
+
+  // Play mode (non-multiplayer): open new-game dialog when no game is active.
   useEffect(() => {
     if (
+      !isMultiplayer &&
       hasHydrated &&
       isPlayMode &&
       !gameStarted &&
@@ -140,256 +162,258 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
     ) {
       setNewGameOpen(true);
     }
-  }, [hasHydrated, isPlayMode, gameStarted, gameOver, moves.length]);
-  const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
-  const handleCopyPGN = () =>
-    copy(
-      formatPGN(moves, { gameOver, gameResult, playAs, isLocalGame }),
-      'pgn'
-    );
-  const handleCopyFEN = () => {
-    const currentFEN = positionHistory[viewingIndex] || positionHistory[0];
-    copy(currentFEN, 'fen');
-  };
+  }, [
+    isMultiplayer,
+    hasHydrated,
+    isPlayMode,
+    gameStarted,
+    gameOver,
+    moves.length
+  ]);
+
+  const canGoBack = viewingIndex > 0;
+  const canGoForward = viewingIndex < positionHistory.length - 1;
+  const canAbort = moves.length < 2;
+
+  /**
+   * During a live multiplayer game, analysis is unavailable (server hasn't
+   * finished the game yet, so the position is still live).
+   */
+  const isLiveGame =
+    isMultiplayer &&
+    (multiplayer!.status === 'playing' || (gameStarted && !gameOver));
+
+  const { isPlaying, togglePlay } = usePlayback({
+    currentIndex: viewingIndex,
+    totalItems: positionHistory.length,
+    onNext: goToNext
+  });
+
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
   const handleResign = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('You resigned');
     setGameOver(true);
+    multiplayer?.onResign();
   };
+
   const handleAbort = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Game Aborted');
     setGameOver(true);
+    multiplayer?.onAbort();
   };
-  const handleOfferDraw = () => {
+
+  const handleDrawTrigger = () => {
     if (soundEnabled) playSound('draw-offer');
   };
-  const handleAcceptDraw = () => {
+
+  const handleDrawConfirm = () => {
+    if (isMultiplayer) {
+      multiplayer!.onOfferDraw();
+      return;
+    }
     if (soundEnabled) playSound('game-end');
     setGameResult('Draw by agreement');
     setGameOver(true);
   };
-  const handleNewGame = () => setNewGameOpen(true);
-  const handleToggleAnalysis = () => {
-    if (isAnalysisOn) {
-      endAnalysis();
+
+  const handleAcceptOpponentDraw = () => {
+    if (soundEnabled) playSound('game-end');
+    setGameResult('Draw by agreement');
+    setGameOver(true);
+    multiplayer!.onAcceptDraw();
+  };
+
+  const handleNewGame = () => {
+    if (isMultiplayer) {
+      multiplayer!.onFindNewGame();
     } else {
-      startAnalysis();
+      setNewGameOpen(true);
     }
   };
+
+  const handleToggleAnalysis = () => {
+    if (isAnalysisOn) endAnalysis();
+    else startAnalysis();
+  };
+
+  const handleFlipBoard = () => {
+    if (isPlayMode) flipBoard();
+    else toggleBoardOrientation();
+  };
+
   const handlePlayFromPosition = (color: 'white' | 'black') => {
     startPlayingFromPosition(color);
   };
-  const handleFlipBoard = () => {
-    if (isPlayMode) {
-      flipBoard();
-    } else {
-      toggleBoardOrientation();
-    }
-  };
+
+  // ── Crazyhouse pocket ─────────────────────────────────────────────────────
+
   const isCrazyhouse = variant === 'crazyhouse';
   const isGameActive = isPlayMode && gameStarted && !gameOver;
   const emptyPocket = { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 };
   const whitePocket = isCrazyhouse ? game.getPocket('w') : emptyPocket;
   const blackPocket = isCrazyhouse ? game.getPocket('b') : emptyPocket;
+
   const handlePocketSelect = (role: PieceSymbol) => {
     if (!isGameActive) return;
     setSelectedDropPiece(selectedDropPiece === role ? null : role);
   };
+
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <>
-      <div className='bg-card flex min-h-[300px] flex-col rounded-lg border lg:h-full'>
-        <div className='flex shrink-0 items-center justify-between border-b px-4 py-3'>
-          <h3 className='font-semibold'>Moves</h3>
-          <div className='flex items-center gap-1'>
-            {isPlayMode && (
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant='ghost'
-                      size='icon'
-                      className='h-8 w-8'
-                      onClick={() => router.push('/')}
-                    >
-                      <Icons.home className='h-4 w-4' />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Home</TooltipContent>
-                </Tooltip>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant='ghost' size='icon' className='h-8 w-8'>
-                      <Icons.share className='h-4 w-4' />
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Share Game</DialogTitle>
-                      <DialogDescription>
-                        Copy moves or PGN to clipboard.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className='flex flex-col gap-3 pt-2'>
+      <SidebarPanel fullHeight>
+        {/* ── Header ────────────────────────────────────────────────────── */}
+        <SidebarHeader
+          title='Moves'
+          actions={
+            <>
+              {isPlayMode && (
+                <>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
                       <Button
-                        onClick={handleCopyFEN}
-                        variant='outline'
-                        className='h-auto justify-between py-3'
+                        variant='ghost'
+                        size='icon'
+                        className='h-8 w-8'
+                        onClick={() => router.push('/')}
                       >
-                        <div className='flex flex-col items-start'>
-                          <span className='font-medium'>
-                            {isCopied('fen') ? 'Copied FEN' : 'Copy FEN'}
-                          </span>
-                          <span className='text-muted-foreground text-xs'>
-                            Current position
-                          </span>
-                        </div>
-                        {isCopied('fen') ? (
-                          <Icons.check className='h-4 w-4 [color:var(--success)]' />
-                        ) : (
-                          <Icons.copy className='text-muted-foreground h-4 w-4' />
-                        )}
+                        <Icons.home className='h-4 w-4' />
                       </Button>
-                      <Button
-                        onClick={handleCopyPGN}
-                        variant='outline'
-                        className='h-auto justify-between py-3'
-                      >
-                        <div className='flex flex-col items-start'>
-                          <span className='font-medium'>
-                            {isCopied('pgn') ? 'Copied PGN' : 'Copy PGN'}
-                          </span>
-                          <span className='text-muted-foreground text-xs'>
-                            Standard PGN format
-                          </span>
-                        </div>
-                        {isCopied('pgn') ? (
-                          <Icons.check className='h-4 w-4 [color:var(--success)]' />
-                        ) : (
-                          <Icons.copy className='text-muted-foreground h-4 w-4' />
-                        )}
+                    </TooltipTrigger>
+                    <TooltipContent>Home</TooltipContent>
+                  </Tooltip>
+                  <ShareGameDialog
+                    isLocalGame={isLocalGame}
+                    trigger={
+                      <Button variant='ghost' size='icon' className='h-8 w-8'>
+                        <Icons.share className='h-4 w-4' />
                       </Button>
-                      <Button
-                        onClick={handleCopyMoves}
-                        variant='outline'
-                        className='h-auto justify-between py-3'
-                      >
-                        <div className='flex flex-col items-start'>
-                          <span className='font-medium'>
-                            {isCopied('moves') ? 'Copied Moves' : 'Copy Moves'}
-                          </span>
-                          <span className='text-muted-foreground text-xs'>
-                            Simple move list
-                          </span>
-                        </div>
-                        {isCopied('moves') ? (
-                          <Icons.check className='h-4 w-4 [color:var(--success)]' />
-                        ) : (
-                          <Icons.copy className='text-muted-foreground h-4 w-4' />
-                        )}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </>
-            )}
+                    }
+                  />
+                </>
+              )}
 
-            {isAnalysisMode && (
-              <PGNImportDialog>
-                <Button
-                  variant='ghost'
-                  size='icon'
-                  className='h-8 w-8'
-                  title='Import PGN/FEN'
-                >
-                  <Icons.upload className='h-4 w-4' />
-                </Button>
-              </PGNImportDialog>
-            )}
-
-            {!isPlayMode && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              {isAnalysisMode && (
+                <PGNImportDialog>
                   <Button
                     variant='ghost'
                     size='icon'
                     className='h-8 w-8'
-                    title='Options'
+                    title='Import PGN/FEN'
                   >
-                    <Icons.settings className='h-4 w-4' />
+                    <Icons.upload className='h-4 w-4' />
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align='end' className='w-56'>
-                  <DropdownMenuLabel>View</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleFlipBoard}>
-                    <Icons.flipBoard className='mr-2 h-4 w-4' />
-                    Flip Board (
-                    {isPlayMode
-                      ? boardOrientation === 'white'
-                        ? 'Black'
-                        : 'White'
-                      : boardOrientation === 'white'
-                        ? 'Black'
-                        : 'White'}
-                    )
-                  </DropdownMenuItem>
+                </PGNImportDialog>
+              )}
 
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Engine</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleToggleAnalysis}
-                    disabled={!isInitialized}
-                  >
-                    <Icons.stockfish
-                      className={`mr-2 h-4 w-4 ${isAnalysisOn ? '[color:var(--success)]' : 'text-muted-foreground'}`}
-                    />
-                    {isAnalysisOn ? 'Disable Engine' : 'Enable Engine'}
-                  </DropdownMenuItem>
+              {!isPlayMode && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8'
+                      title='Options'
+                    >
+                      <Icons.settings className='h-4 w-4' />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align='end' className='w-56'>
+                    <DropdownMenuLabel>View</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleFlipBoard}>
+                      <Icons.flipBoard className='mr-2 h-4 w-4' />
+                      Flip Board (
+                      {boardOrientation === 'white' ? 'Black' : 'White'})
+                    </DropdownMenuItem>
 
-                  {isAnalysisMode && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Play vs Stockfish</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {playingAgainstStockfish ? (
-                        <DropdownMenuItem onClick={stopPlayingFromPosition}>
-                          <Icons.stockfish className='mr-2 h-4 w-4' />
-                          Stop Playing
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Engine</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleToggleAnalysis}
+                      disabled={!isInitialized}
+                    >
+                      <Icons.stockfish
+                        className={`mr-2 h-4 w-4 ${isAnalysisOn ? '[color:var(--success)]' : 'text-muted-foreground'}`}
+                      />
+                      {isAnalysisOn ? 'Disable Engine' : 'Enable Engine'}
+                    </DropdownMenuItem>
+
+                    {isAnalysisMode && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Play vs Stockfish</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {playingAgainstStockfish ? (
+                          <DropdownMenuItem onClick={stopPlayingFromPosition}>
+                            <Icons.stockfish className='mr-2 h-4 w-4' />
+                            Stop Playing
+                          </DropdownMenuItem>
+                        ) : (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => handlePlayFromPosition('white')}
+                            >
+                              <Icons.stockfish className='mr-2 h-4 w-4' />
+                              Play as White
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handlePlayFromPosition('black')}
+                            >
+                              <Icons.stockfish className='mr-2 h-4 w-4' />
+                              Play as Black
+                            </DropdownMenuItem>
+                          </>
+                        )}
+
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel>Reset Board</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={resetToStarting}>
+                          <Icons.rematch className='mr-2 h-4 w-4' />
+                          Base Position
                         </DropdownMenuItem>
-                      ) : (
-                        <>
-                          <DropdownMenuItem
-                            onClick={() => handlePlayFromPosition('white')}
-                          >
-                            <Icons.stockfish className='mr-2 h-4 w-4' />
-                            Play as White
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => handlePlayFromPosition('black')}
-                          >
-                            <Icons.stockfish className='mr-2 h-4 w-4' />
-                            Play as Black
-                          </DropdownMenuItem>
-                        </>
-                      )}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </>
+          }
+        />
 
-                      <DropdownMenuSeparator />
-                      <DropdownMenuLabel>Reset Board</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem onClick={resetToStarting}>
-                        <Icons.rematch className='mr-2 h-4 w-4' />
-                        Base Position
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+        {/* ── Multiplayer: draw-offer banner ─────────────────────────────── */}
+        {isMultiplayer && multiplayer!.drawOffered && !gameOver && (
+          <div className='shrink-0 space-y-2 border-b bg-blue-500/10 px-4 py-3'>
+            <p className='text-center text-sm font-medium text-blue-600 dark:text-blue-400'>
+              Opponent offers a draw
+            </p>
+            <div className='flex gap-2'>
+              <Button
+                size='sm'
+                className='flex-1 bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                onClick={handleAcceptOpponentDraw}
+              >
+                Accept
+              </Button>
+              <Button
+                size='sm'
+                variant='outline'
+                className='flex-1'
+                onClick={multiplayer!.onDeclineDraw}
+              >
+                Decline
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
+        {/* ── Crazyhouse pockets ─────────────────────────────────────────── */}
         {isCrazyhouse && isPlayMode && (
           <div className='flex shrink-0 flex-col gap-2 border-b px-4 py-2'>
             <div className='flex items-center justify-between'>
@@ -445,6 +469,7 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
           </div>
         )}
 
+        {/* ── Move history ───────────────────────────────────────────────── */}
         <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
           <div className='px-4 py-2'>
             <MoveHistory
@@ -453,12 +478,15 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
               viewingIndex={viewingIndex}
               onMoveClick={goToMove}
               showDepthTooltips={
-                engineConfig.mode === 'probabilistic' && gameType === 'computer'
+                !isMultiplayer &&
+                engineConfig.mode === 'probabilistic' &&
+                gameType === 'computer'
               }
             />
           </div>
         </ScrollArea>
 
+        {/* ── Navigation controls ────────────────────────────────────────── */}
         <NavigationControls
           viewingIndex={viewingIndex}
           totalPositions={positionHistory.length}
@@ -472,161 +500,130 @@ export function ChessSidebar({ mode }: ChessSidebarProps) {
           onGoToNext={goToNext}
         />
 
+        {/* ── Play-mode footer ───────────────────────────────────────────── */}
         {isPlayMode && (
           <div className='bg-muted/50 space-y-2 border-t p-2'>
+            {/* Game-over / pre-game panel */}
             {(gameOver || !gameStarted) && (
               <GameOverPanel
                 gameResult={gameResult || 'No active game'}
                 onNewGame={handleNewGame}
+                ratingDelta={
+                  isMultiplayer && gameOver
+                    ? multiplayer!.ratingDelta
+                    : undefined
+                }
                 moveDepths={moveDepths}
                 showDepthDistribution={
+                  !isMultiplayer &&
                   gameOver &&
                   engineConfig.mode === 'probabilistic' &&
                   gameType === 'computer'
                 }
               />
             )}
+
+            {/* Multiplayer: opponent sent rematch */}
+            {isMultiplayer && gameOver && multiplayer!.rematchOffered && (
+              <div className='space-y-2 rounded-md border bg-purple-500/10 px-3 py-2'>
+                <p className='text-center text-sm font-medium text-purple-600 dark:text-purple-400'>
+                  Opponent wants a rematch
+                </p>
+                <div className='flex gap-2'>
+                  <Button
+                    size='sm'
+                    className='flex-1 bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600'
+                    onClick={multiplayer!.onAcceptRematch}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    size='sm'
+                    variant='outline'
+                    className='flex-1'
+                    onClick={multiplayer!.onDeclineRematch}
+                  >
+                    Decline
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Multiplayer: send rematch button */}
+            {isMultiplayer &&
+              gameOver &&
+              !multiplayer!.rematchOffered &&
+              !multiplayer!.rematchDeclined &&
+              multiplayer!.status !== 'matched' &&
+              multiplayer!.status !== 'rejoined' && (
+                <Button
+                  size='sm'
+                  variant={rematchSent ? 'default' : 'outline'}
+                  className='w-full'
+                  disabled={rematchSent}
+                  onClick={() => {
+                    setRematchSent(true);
+                    multiplayer!.onOfferRematch();
+                  }}
+                >
+                  {rematchSent ? 'Rematch Sent ✓' : 'Rematch'}
+                </Button>
+              )}
+
+            {isMultiplayer && gameOver && multiplayer!.rematchDeclined && (
+              <p className='text-muted-foreground text-center text-xs'>
+                Opponent declined the rematch
+              </p>
+            )}
+
+            {/* ── Action bar ─────────────────────────────────────────────── */}
             <div className='flex items-center gap-1'>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant='ghost'
-                    size='icon'
-                    onClick={() => setSettingsOpen(true)}
-                  >
-                    <Icons.settings className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Settings</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant='ghost' size='icon' onClick={handleFlipBoard}>
-                    <Icons.flipBoard className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Flip Board</TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant={isAnalysisOn ? 'default' : 'ghost'}
-                    size='icon'
-                    onClick={handleToggleAnalysis}
-                    disabled={!isInitialized}
-                  >
-                    <Icons.engine className='h-4 w-4' />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {isAnalysisOn ? 'Turn Off Analysis' : 'Turn On Analysis'}
-                </TooltipContent>
-              </Tooltip>
-
+              <SettingsButton />
+              <FlipBoardButton onFlip={handleFlipBoard} />
+              <EngineToggleButton
+                isOn={isAnalysisOn}
+                disabled={!isInitialized || isLiveGame}
+                onToggle={handleToggleAnalysis}
+                tooltip={
+                  isLiveGame
+                    ? 'Analysis unavailable during game'
+                    : isAnalysisOn
+                      ? 'Turn Off Analysis'
+                      : 'Turn On Analysis'
+                }
+              />
               <div className='ml-auto flex items-center gap-1'>
-                <AlertDialog>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant='ghost'
-                          size='icon'
-                          className='bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-400'
-                          disabled={gameOver || !gameStarted}
-                          onClick={handleOfferDraw}
-                        >
-                          <Icons.handshake className='h-4 w-4' />
-                        </Button>
-                      </AlertDialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Offer Draw</TooltipContent>
-                  </Tooltip>
-
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Draw Offer</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {isLocalGame
-                          ? 'Do both players agree to a draw?'
-                          : 'Do you want to offer a draw to your opponent?'}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>
-                        {isLocalGame ? 'No' : 'Cancel'}
-                      </AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleAcceptDraw}
-                        className='bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
-                      >
-                        {isLocalGame ? 'Yes, Draw' : 'Offer Draw'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-
-                <AlertDialog>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant='ghost'
-                          size='icon'
-                          className='bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive'
-                          disabled={gameOver || !gameStarted}
-                        >
-                          {canAbort ? (
-                            <Icons.abort className='h-4 w-4' />
-                          ) : (
-                            <Icons.flag className='h-4 w-4' />
-                          )}
-                        </Button>
-                      </AlertDialogTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {canAbort ? 'Abort Game' : 'Resign Game'}
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        {canAbort ? 'Abort Game?' : 'Resign Game?'}
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {canAbort
-                          ? 'Are you sure you want to abort? This game will not be counted.'
-                          : 'Are you sure you want to resign? This will end the game and count as a loss.'}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={canAbort ? handleAbort : handleResign}
-                        className='bg-destructive text-destructive-foreground hover:bg-destructive/90'
-                      >
-                        {canAbort ? 'Abort' : 'Resign'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <GameActionButtons
+                  gameOver={gameOver}
+                  gameStarted={gameStarted}
+                  canAbort={canAbort}
+                  isLocalGame={isLocalGame}
+                  isMultiplayer={isMultiplayer}
+                  isLiveGame={isLiveGame}
+                  onDrawTrigger={handleDrawTrigger}
+                  onDrawConfirm={handleDrawConfirm}
+                  onResign={handleResign}
+                  onAbort={handleAbort}
+                />
               </div>
             </div>
           </div>
         )}
-      </div>
+      </SidebarPanel>
 
-      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-      {isLocalGame ? (
-        <LocalGameSelectionDialog
-          open={newGameOpen}
-          onOpenChange={setNewGameOpen}
-        />
-      ) : (
-        <GameSelectionDialog open={newGameOpen} onOpenChange={setNewGameOpen} />
-      )}
+      {/* New-game dialogs — only for non-multiplayer modes */}
+      {!isMultiplayer &&
+        (isLocalGame ? (
+          <LocalGameSelectionDialog
+            open={newGameOpen}
+            onOpenChange={setNewGameOpen}
+          />
+        ) : (
+          <GameSelectionDialog
+            open={newGameOpen}
+            onOpenChange={setNewGameOpen}
+          />
+        ))}
     </>
   );
 }

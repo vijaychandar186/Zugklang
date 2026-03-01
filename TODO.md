@@ -58,3 +58,5 @@ docker run -d --name zugklang-postgres \
 ### Frontend
 
 * [x] ~~CSS files cleanup~~
+* [ ] Unit tests setup and coverage for core frontend logic/components
+* [ ] Integration tests for key frontend user flows

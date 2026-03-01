@@ -147,7 +147,12 @@ export const useTriDChessStore = create<TriDChessStore>()(
         }
         const piece = gameState.pieces[squareKey(sq)];
         if (selected) {
-          if (piece && piece.color === gameState.turn) {
+          const sqKey = squareKey(sq);
+          if (
+            piece &&
+            piece.color === gameState.turn &&
+            !get().highlightedSquares.has(sqKey)
+          ) {
             const legal = getLegalMoves(sq, gameState);
             set({
               selected: sq,

@@ -80,10 +80,6 @@ Create a `.env.local` file (for local dev) or `.env.production` (for production)
 | `ALLOWED_ORIGINS` | No       | *(allow all)*  | Comma-separated list of allowed WebSocket origins. Leave unset for local dev |
 | `NEXT_APP_URL`    | No       | `http://localhost:3000` | Frontend base URL used for WS token introspection (`/api/ws-token`) |
 | `ADMIN_KEY`       | Yes      | —              | Bearer token for the `/admin` endpoint. Server returns 503 if not set       |
-| `ANTI_CHEAT_URL`  | No       | *(disabled)*   | Anti-cheat API base URL. When set, ws-server streams `start/move/end` game events |
-| `ANTI_CHEAT_MONITOR_TOKEN` | No | *(empty)*  | Optional token sent as `x-ws-monitor-token` header to anti-cheat |
-| `ANTI_CHEAT_TIMEOUT_MS` | No | `1500`        | HTTP timeout for anti-cheat calls |
-| `ANTI_CHEAT_PUSH_EVERY_N_MOVES` | No | `1`    | Send move updates every N plies (1 = every move) |
 
 **`.env.local` example:**
 
@@ -92,10 +88,6 @@ PORT=8080
 ALLOWED_ORIGINS="http://localhost:3000"
 NEXT_APP_URL="http://localhost:3000"
 ADMIN_KEY="your-secret-key-here"
-ANTI_CHEAT_URL="http://localhost:8000"
-ANTI_CHEAT_MONITOR_TOKEN=""
-ANTI_CHEAT_TIMEOUT_MS=1500
-ANTI_CHEAT_PUSH_EVERY_N_MOVES=1
 ```
 
 **`.env.production` example:**

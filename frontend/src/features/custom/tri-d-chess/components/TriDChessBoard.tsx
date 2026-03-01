@@ -54,6 +54,7 @@ interface SquareProps {
   isInCheck: boolean;
   onClick: (sq: TriDSquare) => void;
   flipped: boolean;
+  isActive: boolean;
 }
 function SquareCell({
   boardId,
@@ -67,7 +68,8 @@ function SquareCell({
   isHighlighted,
   isInCheck,
   onClick,
-  flipped
+  flipped,
+  isActive
 }: SquareProps) {
   const sq: TriDSquare = { boardId, row, col };
   const key = squareKey(sq);
@@ -101,6 +103,17 @@ function SquareCell({
             : boardTheme.lightSquareStyle),
         ...highlightStyle
       }}
+      draggable={isActive && !!piece}
+      onDragStart={(e) => {
+        if (!piece) return;
+        e.dataTransfer.effectAllowed = 'move';
+        onClick(sq);
+      }}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => {
+        e.preventDefault();
+        onClick(sq);
+      }}
       onClick={() => onClick(sq)}
     >
       {piece && (
@@ -133,6 +146,7 @@ interface BoardGridProps {
   isSelectedBoard?: boolean;
   canMoveBoard?: boolean;
   onBoardClick?: () => void;
+  isActive: boolean;
 }
 function BoardGrid({
   boardId,
@@ -149,7 +163,8 @@ function BoardGrid({
   isAttackBoard,
   isSelectedBoard,
   canMoveBoard,
-  onBoardClick
+  onBoardClick,
+  isActive
 }: BoardGridProps) {
   const size = BOARD_SIZES[boardId];
   const rows = Array.from({ length: size.rows }, (_, i) =>
@@ -204,6 +219,7 @@ function BoardGrid({
                   isInCheck={isKing}
                   onClick={onClick}
                   flipped={flipped}
+                  isActive={isActive}
                 />
               );
             })}
@@ -358,6 +374,7 @@ export function TriDChessBoard({
               isSelectedBoard={isSelected}
               canMoveBoard={canMove}
               onBoardClick={() => onAttackBoardClick(boardId)}
+              isActive={isActive}
             />
           );
         })()
@@ -436,6 +453,7 @@ export function TriDChessBoard({
             inCheckColor={inCheckColor}
             onClick={onSquareClick}
             flipped={flipped}
+            isActive={isActive}
           />
         ))}
       </div>

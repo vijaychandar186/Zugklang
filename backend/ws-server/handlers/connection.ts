@@ -14,7 +14,6 @@ import { broadcastClock, stopRoomClock } from '../utils/clock';
 import { clearRateLimit } from '../utils/rateLimit';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
-import { antiCheatOnGameEnd } from '../services/antiCheat';
 import { ABANDON_TIMEOUT_MS } from '../config';
 import { leaveFourPlayerLobby } from './fourPlayer';
 export function handleRejoinRoom(
@@ -148,7 +147,6 @@ export function handleDisconnect(ws: BunWS): void {
             whiteUserId: r.white.data.userId ?? null,
             blackUserId: r.black.data.userId ?? null
           });
-          antiCheatOnGameEnd(r, 'abandoned', isWhite ? 'black' : 'white');
           logger.info('player_abandoned', {
             roomId: roomId.slice(0, 8),
             color,

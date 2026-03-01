@@ -333,6 +333,8 @@ export function MultiplayerGameView({
   useEffect(() => {
     if (ws.isSecondaryTab) return;
     if (ws.status === 'matched' && ws.myColor) {
+      setMyRatingDelta(null);
+      setOpponentRatingDelta(null);
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('challenge');
@@ -367,6 +369,8 @@ export function MultiplayerGameView({
   useEffect(() => {
     if (ws.isSecondaryTab) return;
     if (ws.status === 'rejoined' && ws.myColor) {
+      setMyRatingDelta(null);
+      setOpponentRatingDelta(null);
       const moves = ws.movesToReplay;
       endAnalysis();
       ws.setPlaying();

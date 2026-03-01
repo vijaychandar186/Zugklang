@@ -570,6 +570,8 @@ export function useDiceChessMultiplayerGame(
       setGameStarted(true);
       setGameOver(isOver);
       setGameResult(isOver ? getGameResult(chess) : null);
+      setMyRatingDelta(null);
+      setOpponentRatingDelta(null);
       setDice(null);
       setNeedsRoll(!isOver);
       setDiceRollHistory([]);

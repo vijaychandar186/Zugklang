@@ -61,6 +61,8 @@ export interface Room {
   activeClock: Color | null;
   clockLastUpdatedAt: number | null;
   clockInterval: ReturnType<typeof setInterval> | null;
+  moveTimesWhiteMs: number[];
+  moveTimesBlackMs: number[];
 }
 
 export interface FourPlayerLobby {

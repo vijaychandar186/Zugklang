@@ -1,4 +1,4 @@
-import type { BunWS } from '../types';
+import type { BunWS, Room } from '../types';
 import { rooms, revokeRoomTokens } from '../state';
 import { send, getOpponent, isInRoom } from '../utils/socket';
 import { applyMove } from '../utils/chess';
@@ -10,10 +10,47 @@ import {
 } from '../utils/clock';
 import { logger } from '../utils/logger';
 import { createRoom } from './queue';
-import { ABORT_TIMEOUT_MS } from '../config';
+import { ABORT_TIMEOUT_MS, ANTI_CHEAT_URL } from '../config';
 
 function bothPlayersMovedAtLeastOnce(moves: string[]): boolean {
   return moves.length >= 2;
+}
+
+/**
+ * Fire-and-forget POST to the anti-cheat server with completed game data.
+ * Skips silently when ANTI_CHEAT_URL is unset or the game is too short.
+ */
+function postGameToAntiCheat(
+  room: Room,
+  winner: 'white' | 'black' | 'draw'
+): void {
+  if (!ANTI_CHEAT_URL) return;
+  if (!room.white.data.userId && !room.black.data.userId) return;
+  if (room.moveTimesWhiteMs.length < 2) return;
+
+  const payload = {
+    game_id: room.id,
+    variant: room.variant,
+    time_control_minutes: room.timeControl.minutes,
+    time_control_increment: room.timeControl.increment,
+    moves: room.moves,
+    move_times_white_ms: room.moveTimesWhiteMs,
+    move_times_black_ms: room.moveTimesBlackMs,
+    white_user_id: room.white.data.userId ?? null,
+    black_user_id: room.black.data.userId ?? null,
+    white_rating: room.white.data.rating ?? null,
+    black_rating: room.black.data.rating ?? null,
+    result: winner,
+    played_at: new Date().toISOString()
+  };
+
+  fetch(`${ANTI_CHEAT_URL}/game`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  }).catch((err: unknown) => {
+    logger.warn('anti_cheat_post_failed', { error: String(err) });
+  });
 }
 
 export function handleMove(
@@ -42,8 +79,18 @@ export function handleMove(
   }
   const uci = `${from}${to}${promotion ?? ''}`;
   room.moves.push(uci);
+
+  // Record how long this player spent on the move (timed and unlimited games).
+  const now = Date.now();
+  const moveStart = room.clockLastUpdatedAt ?? room.createdAt;
+  const elapsedMs = Math.max(0, now - moveStart);
+  if (movedColor === 'white') {
+    room.moveTimesWhiteMs.push(elapsedMs);
+  } else {
+    room.moveTimesBlackMs.push(elapsedMs);
+  }
   if (room.activeClock !== null) {
-    settleActiveClock(room);
+    settleActiveClock(room, now);
     const snapshot = projectClock(room);
     const timedOut =
       (snapshot.activeClock === 'white' && snapshot.whiteTimeMs === 0) ||
@@ -62,6 +109,7 @@ export function handleMove(
         whiteUserId: room.white.data.userId ?? null,
         blackUserId: room.black.data.userId ?? null
       };
+      postGameToAntiCheat(room, winner.toLowerCase() as 'white' | 'black');
       send(room.white, payload);
       send(room.black, payload);
       logger.info('game_timeout', {
@@ -82,8 +130,11 @@ export function handleMove(
       room.blackTimeMs += room.timeControl.increment * 1000;
     }
     room.activeClock = movedColor === 'white' ? 'black' : 'white';
-    room.clockLastUpdatedAt = Date.now();
+    room.clockLastUpdatedAt = now;
     broadcastClock(room);
+  } else {
+    // Track move timestamp for unlimited games (used by anti-cheat).
+    room.clockLastUpdatedAt = now;
   }
   if (room.moves.length === 1) {
     if (room.abortTimer !== null) clearTimeout(room.abortTimer);
@@ -146,6 +197,7 @@ export function handleResign(ws: BunWS): void {
     whiteUserId: room.white.data.userId ?? null,
     blackUserId: room.black.data.userId ?? null
   };
+  postGameToAntiCheat(room, winner.toLowerCase() as 'white' | 'black');
   send(room.white, payload);
   send(room.black, payload);
   logger.info('game_resign', {
@@ -181,6 +233,7 @@ export function handleAcceptDraw(ws: BunWS): void {
     whiteUserId: room.white.data.userId ?? null,
     blackUserId: room.black.data.userId ?? null
   };
+  postGameToAntiCheat(room, 'draw');
   send(room.white, payload);
   send(room.black, payload);
   logger.info('game_draw', { roomId: roomId.slice(0, 8) });
@@ -277,6 +330,16 @@ export function handleGameOverNotify(
     whiteUserId: room.white.data.userId ?? null,
     blackUserId: room.black.data.userId ?? null
   };
+  // Derive winner from result string.
+  // Handles chess notation ("1-0", "0-1") and natural language ("White wins…").
+  const resultLower = msg.result.toLowerCase();
+  const winner: 'white' | 'black' | 'draw' =
+    msg.result === '1-0' || resultLower.startsWith('white')
+      ? 'white'
+      : msg.result === '0-1' || resultLower.startsWith('black')
+        ? 'black'
+        : 'draw';
+  postGameToAntiCheat(room, winner);
   send(getOpponent(room, ws), gameOverPayload);
   send(ws, gameOverPayload);
   logger.info('game_over', {

@@ -40,3 +40,11 @@ export const RATING_BAND_BASE = 200;
 /** How many rating points the window expands per second of waiting.
  *  After 30 s the band is ±350, after 60 s it is ±500, etc. */
 export const RATING_BAND_EXPAND_PER_SEC = 5;
+
+// ---------------------------------------------------------------------------
+// Anti-cheat
+// ---------------------------------------------------------------------------
+
+/** Base URL of the Kaladin anti-cheat FastAPI server.
+ *  Leave empty to disable (no HTTP calls are made). */
+export const ANTI_CHEAT_URL: string = process.env.ANTI_CHEAT_URL ?? '';

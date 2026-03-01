@@ -1,33 +1,110 @@
+/**
+ * Client
+ **/
+
 import * as runtime from './runtime/client.js';
-import $Types = runtime.Types;
+import $Types = runtime.Types; // general types
 import $Public = runtime.Types.Public;
 import $Utils = runtime.Types.Utils;
 import $Extensions = runtime.Types.Extensions;
 import $Result = runtime.Types.Result;
+
 export type PrismaPromise<T> = $Public.PrismaPromise<T>;
+
+/**
+ * Model User
+ *
+ */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>;
+/**
+ * Model PassportFlag
+ *
+ */
 export type PassportFlag =
   $Result.DefaultSelection<Prisma.$PassportFlagPayload>;
+/**
+ * Model Account
+ *
+ */
 export type Account = $Result.DefaultSelection<Prisma.$AccountPayload>;
+/**
+ * Model Session
+ *
+ */
 export type Session = $Result.DefaultSelection<Prisma.$SessionPayload>;
+/**
+ * Model VerificationToken
+ *
+ */
 export type VerificationToken =
   $Result.DefaultSelection<Prisma.$VerificationTokenPayload>;
+/**
+ * Model Authenticator
+ *
+ */
 export type Authenticator =
   $Result.DefaultSelection<Prisma.$AuthenticatorPayload>;
+/**
+ * Model Game
+ *
+ */
 export type Game = $Result.DefaultSelection<Prisma.$GamePayload>;
+/**
+ * Model GameAnalysis
+ *
+ */
 export type GameAnalysis =
   $Result.DefaultSelection<Prisma.$GameAnalysisPayload>;
+/**
+ * Model Rating
+ *
+ */
 export type Rating = $Result.DefaultSelection<Prisma.$RatingPayload>;
+/**
+ * Model PuzzleRating
+ *
+ */
 export type PuzzleRating =
   $Result.DefaultSelection<Prisma.$PuzzleRatingPayload>;
+/**
+ * Model PuzzleAttempt
+ *
+ */
 export type PuzzleAttempt =
   $Result.DefaultSelection<Prisma.$PuzzleAttemptPayload>;
+/**
+ * Model PuzzleRushScore
+ *
+ */
 export type PuzzleRushScore =
   $Result.DefaultSelection<Prisma.$PuzzleRushScorePayload>;
+/**
+ * Model MemorySession
+ *
+ */
 export type MemorySession =
   $Result.DefaultSelection<Prisma.$MemorySessionPayload>;
+/**
+ * Model VisionSession
+ *
+ */
 export type VisionSession =
   $Result.DefaultSelection<Prisma.$VisionSessionPayload>;
+
+/**
+ * ##  Prisma Client ʲˢ
+ *
+ * Type-safe database client for TypeScript & Node.js
+ * @example
+ * ```
+ * const prisma = new PrismaClient()
+ * // Fetch zero or more Users
+ * const users = await prisma.user.findMany()
+ * ```
+ *
+ *
+ * Read more in our [docs](https://pris.ly/d/client).
+ */
 export class PrismaClient<
   ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
   const U = 'log' extends keyof ClientOptions
@@ -37,9 +114,23 @@ export class PrismaClient<
     : never,
   ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
 > {
-  [K: symbol]: {
-    types: Prisma.TypeMap<ExtArgs>['other'];
-  };
+  [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] };
+
+  /**
+   * ##  Prisma Client ʲˢ
+   *
+   * Type-safe database client for TypeScript & Node.js
+   * @example
+   * ```
+   * const prisma = new PrismaClient()
+   * // Fetch zero or more Users
+   * const users = await prisma.user.findMany()
+   * ```
+   *
+   *
+   * Read more in our [docs](https://pris.ly/d/client).
+   */
+
   constructor(
     optionsArg?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>
   );
@@ -49,30 +140,93 @@ export class PrismaClient<
       event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent
     ) => void
   ): PrismaClient;
+
+  /**
+   * Connect with the database
+   */
   $connect(): $Utils.JsPromise<void>;
+
+  /**
+   * Disconnect from the database
+   */
   $disconnect(): $Utils.JsPromise<void>;
+
+  /**
+   * Executes a prepared raw query and returns the number of affected rows.
+   * @example
+   * ```
+   * const result = await prisma.$executeRaw`UPDATE User SET cool = ${true} WHERE email = ${'user@email.com'};`
+   * ```
+   *
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
+   */
   $executeRaw<T = unknown>(
     query: TemplateStringsArray | Prisma.Sql,
     ...values: any[]
   ): Prisma.PrismaPromise<number>;
+
+  /**
+   * Executes a raw query and returns the number of affected rows.
+   * Susceptible to SQL injections, see documentation.
+   * @example
+   * ```
+   * const result = await prisma.$executeRawUnsafe('UPDATE User SET cool = $1 WHERE email = $2 ;', true, 'user@email.com')
+   * ```
+   *
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
+   */
   $executeRawUnsafe<T = unknown>(
     query: string,
     ...values: any[]
   ): Prisma.PrismaPromise<number>;
+
+  /**
+   * Performs a prepared raw query and returns the `SELECT` data.
+   * @example
+   * ```
+   * const result = await prisma.$queryRaw`SELECT * FROM User WHERE id = ${1} OR email = ${'user@email.com'};`
+   * ```
+   *
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
+   */
   $queryRaw<T = unknown>(
     query: TemplateStringsArray | Prisma.Sql,
     ...values: any[]
   ): Prisma.PrismaPromise<T>;
+
+  /**
+   * Performs a raw query and returns the `SELECT` data.
+   * Susceptible to SQL injections, see documentation.
+   * @example
+   * ```
+   * const result = await prisma.$queryRawUnsafe('SELECT * FROM User WHERE id = $1 OR email = $2;', 1, 'user@email.com')
+   * ```
+   *
+   * Read more in our [docs](https://pris.ly/d/raw-queries).
+   */
   $queryRawUnsafe<T = unknown>(
     query: string,
     ...values: any[]
   ): Prisma.PrismaPromise<T>;
+
+  /**
+   * Allows the running of a sequence of read/write operations that are guaranteed to either succeed or fail as a whole.
+   * @example
+   * ```
+   * const [george, bob, alice] = await prisma.$transaction([
+   *   prisma.user.create({ data: { name: 'George' } }),
+   *   prisma.user.create({ data: { name: 'Bob' } }),
+   *   prisma.user.create({ data: { name: 'Alice' } }),
+   * ])
+   * ```
+   *
+   * Read more in our [docs](https://www.prisma.io/docs/concepts/components/prisma-client/transactions).
+   */
   $transaction<P extends Prisma.PrismaPromise<any>[]>(
     arg: [...P],
-    options?: {
-      isolationLevel?: Prisma.TransactionIsolationLevel;
-    }
+    options?: { isolationLevel?: Prisma.TransactionIsolationLevel }
   ): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>;
+
   $transaction<R>(
     fn: (
       prisma: Omit<PrismaClient, runtime.ITXClientDenyList>
@@ -83,6 +237,7 @@ export class PrismaClient<
       isolationLevel?: Prisma.TransactionIsolationLevel;
     }
   ): $Utils.JsPromise<R>;
+
   $extends: $Extensions.ExtendsHook<
     'extends',
     Prisma.TypeMapCb<ClientOptions>,
@@ -94,51 +249,211 @@ export class PrismaClient<
       }
     >
   >;
+
+  /**
+   * `prisma.user`: Exposes CRUD operations for the **User** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Users
+   * const users = await prisma.user.findMany()
+   * ```
+   */
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.passportFlag`: Exposes CRUD operations for the **PassportFlag** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more PassportFlags
+   * const passportFlags = await prisma.passportFlag.findMany()
+   * ```
+   */
   get passportFlag(): Prisma.PassportFlagDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.account`: Exposes CRUD operations for the **Account** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Accounts
+   * const accounts = await prisma.account.findMany()
+   * ```
+   */
   get account(): Prisma.AccountDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.session`: Exposes CRUD operations for the **Session** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Sessions
+   * const sessions = await prisma.session.findMany()
+   * ```
+   */
   get session(): Prisma.SessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.verificationToken`: Exposes CRUD operations for the **VerificationToken** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more VerificationTokens
+   * const verificationTokens = await prisma.verificationToken.findMany()
+   * ```
+   */
   get verificationToken(): Prisma.VerificationTokenDelegate<
     ExtArgs,
     ClientOptions
   >;
+
+  /**
+   * `prisma.authenticator`: Exposes CRUD operations for the **Authenticator** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Authenticators
+   * const authenticators = await prisma.authenticator.findMany()
+   * ```
+   */
   get authenticator(): Prisma.AuthenticatorDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.game`: Exposes CRUD operations for the **Game** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Games
+   * const games = await prisma.game.findMany()
+   * ```
+   */
   get game(): Prisma.GameDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.gameAnalysis`: Exposes CRUD operations for the **GameAnalysis** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more GameAnalyses
+   * const gameAnalyses = await prisma.gameAnalysis.findMany()
+   * ```
+   */
   get gameAnalysis(): Prisma.GameAnalysisDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.rating`: Exposes CRUD operations for the **Rating** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more Ratings
+   * const ratings = await prisma.rating.findMany()
+   * ```
+   */
   get rating(): Prisma.RatingDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.puzzleRating`: Exposes CRUD operations for the **PuzzleRating** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more PuzzleRatings
+   * const puzzleRatings = await prisma.puzzleRating.findMany()
+   * ```
+   */
   get puzzleRating(): Prisma.PuzzleRatingDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.puzzleAttempt`: Exposes CRUD operations for the **PuzzleAttempt** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more PuzzleAttempts
+   * const puzzleAttempts = await prisma.puzzleAttempt.findMany()
+   * ```
+   */
   get puzzleAttempt(): Prisma.PuzzleAttemptDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.puzzleRushScore`: Exposes CRUD operations for the **PuzzleRushScore** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more PuzzleRushScores
+   * const puzzleRushScores = await prisma.puzzleRushScore.findMany()
+   * ```
+   */
   get puzzleRushScore(): Prisma.PuzzleRushScoreDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.memorySession`: Exposes CRUD operations for the **MemorySession** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more MemorySessions
+   * const memorySessions = await prisma.memorySession.findMany()
+   * ```
+   */
   get memorySession(): Prisma.MemorySessionDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.visionSession`: Exposes CRUD operations for the **VisionSession** model.
+   * Example usage:
+   * ```ts
+   * // Fetch zero or more VisionSessions
+   * const visionSessions = await prisma.visionSession.findMany()
+   * ```
+   */
   get visionSession(): Prisma.VisionSessionDelegate<ExtArgs, ClientOptions>;
 }
+
 export namespace Prisma {
   export import DMMF = runtime.DMMF;
+
   export type PrismaPromise<T> = $Public.PrismaPromise<T>;
+
+  /**
+   * Validator
+   */
   export import validator = runtime.Public.validator;
+
+  /**
+   * Prisma Errors
+   */
   export import PrismaClientKnownRequestError = runtime.PrismaClientKnownRequestError;
   export import PrismaClientUnknownRequestError = runtime.PrismaClientUnknownRequestError;
   export import PrismaClientRustPanicError = runtime.PrismaClientRustPanicError;
   export import PrismaClientInitializationError = runtime.PrismaClientInitializationError;
   export import PrismaClientValidationError = runtime.PrismaClientValidationError;
+
+  /**
+   * Re-export of sql-template-tag
+   */
   export import sql = runtime.sqltag;
   export import empty = runtime.empty;
   export import join = runtime.join;
   export import raw = runtime.raw;
   export import Sql = runtime.Sql;
+
+  /**
+   * Decimal.js
+   */
   export import Decimal = runtime.Decimal;
+
   export type DecimalJsLike = runtime.DecimalJsLike;
+
+  /**
+   * Extensions
+   */
   export import Extension = $Extensions.UserArgs;
   export import getExtensionContext = runtime.Extensions.getExtensionContext;
   export import Args = $Public.Args;
   export import Payload = $Public.Payload;
   export import Result = $Public.Result;
   export import Exact = $Public.Exact;
+
+  /**
+   * Prisma Client JS version: 7.4.0
+   * Query Engine version: ab56fe763f921d033a6c195e7ddeb3e255bdbb57
+   */
   export type PrismaVersion = {
     client: string;
     engine: string;
   };
+
   export const prismaVersion: PrismaVersion;
+
+  /**
+   * Utility Types
+   */
+
   export import Bytes = runtime.Bytes;
   export import JsonObject = runtime.JsonObject;
   export import JsonArray = runtime.JsonArray;
@@ -146,50 +461,126 @@ export namespace Prisma {
   export import InputJsonObject = runtime.InputJsonObject;
   export import InputJsonArray = runtime.InputJsonArray;
   export import InputJsonValue = runtime.InputJsonValue;
+
+  /**
+   * Types of the values used to represent different kinds of `null` values when working with JSON fields.
+   *
+   * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+   */
   namespace NullTypes {
+    /**
+     * Type of `Prisma.DbNull`.
+     *
+     * You cannot use other instances of this class. Please use the `Prisma.DbNull` value.
+     *
+     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+     */
     class DbNull {
       private DbNull: never;
       private constructor();
     }
+
+    /**
+     * Type of `Prisma.JsonNull`.
+     *
+     * You cannot use other instances of this class. Please use the `Prisma.JsonNull` value.
+     *
+     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+     */
     class JsonNull {
       private JsonNull: never;
       private constructor();
     }
+
+    /**
+     * Type of `Prisma.AnyNull`.
+     *
+     * You cannot use other instances of this class. Please use the `Prisma.AnyNull` value.
+     *
+     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+     */
     class AnyNull {
       private AnyNull: never;
       private constructor();
     }
   }
+
+  /**
+   * Helper for filtering JSON entries that have `null` on the database (empty on the db)
+   *
+   * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+   */
   export const DbNull: NullTypes.DbNull;
+
+  /**
+   * Helper for filtering JSON entries that have JSON `null` values (not empty on the db)
+   *
+   * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+   */
   export const JsonNull: NullTypes.JsonNull;
+
+  /**
+   * Helper for filtering JSON entries that are `Prisma.DbNull` or `Prisma.JsonNull`
+   *
+   * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+   */
   export const AnyNull: NullTypes.AnyNull;
+
   type SelectAndInclude = {
     select: any;
     include: any;
   };
+
   type SelectAndOmit = {
     select: any;
     omit: any;
   };
+
+  /**
+   * Get the type of the value, that the Promise holds.
+   */
   export type PromiseType<T extends PromiseLike<any>> =
     T extends PromiseLike<infer U> ? U : T;
+
+  /**
+   * Get the return type of a function which returns a Promise.
+   */
   export type PromiseReturnType<
     T extends (...args: any) => $Utils.JsPromise<any>
   > = PromiseType<ReturnType<T>>;
+
+  /**
+   * From T, pick a set of properties whose keys are in the union K
+   */
   type Prisma__Pick<T, K extends keyof T> = {
     [P in K]: T[P];
   };
+
   export type Enumerable<T> = T | Array<T>;
+
   export type RequiredKeys<T> = {
     [K in keyof T]-?: {} extends Prisma__Pick<T, K> ? never : K;
   }[keyof T];
+
   export type TruthyKeys<T> = keyof {
     [K in keyof T as T[K] extends false | undefined | null ? never : K]: K;
   };
+
   export type TrueKeys<T> = TruthyKeys<Prisma__Pick<T, RequiredKeys<T>>>;
+
+  /**
+   * Subset
+   * @desc From `T` pick properties that exist in `U`. Simple version of Intersection
+   */
   export type Subset<T, U> = {
     [key in keyof T]: key extends keyof U ? T[key] : never;
   };
+
+  /**
+   * SelectSubset
+   * @desc From `T` pick properties that exist in `U`. Simple version of Intersection.
+   * Additionally, it validates, if both select and include are present. If the case, it errors.
+   */
   export type SelectSubset<T, U> = {
     [key in keyof T]: key extends keyof U ? T[key] : never;
   } & (T extends SelectAndInclude
@@ -197,17 +588,30 @@ export namespace Prisma {
     : T extends SelectAndOmit
       ? 'Please either choose `select` or `omit`.'
       : {});
+
+  /**
+   * Subset + Intersection
+   * @desc From `T` pick properties that exist in `U` and intersect `K`
+   */
   export type SubsetIntersection<T, U, K> = {
     [key in keyof T]: key extends keyof U ? T[key] : never;
   } & K;
-  type Without<T, U> = {
-    [P in Exclude<keyof T, keyof U>]?: never;
-  };
+
+  type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
+
+  /**
+   * XOR is needed to have a real mutually exclusive union type
+   * https://stackoverflow.com/questions/42123407/does-typescript-support-mutually-exclusive-types
+   */
   type XOR<T, U> = T extends object
     ? U extends object
       ? (Without<T, U> & U) | (Without<U, T> & T)
       : U
     : T;
+
+  /**
+   * Is T a Record?
+   */
   type IsObject<T extends any> =
     T extends Array<any>
       ? False
@@ -220,36 +624,56 @@ export namespace Prisma {
             : T extends object
               ? True
               : False;
+
+  /**
+   * If it's T[], return T
+   */
   export type UnEnumerate<T extends unknown> = T extends Array<infer U> ? U : T;
+
+  /**
+   * From ts-toolbelt
+   */
+
   type __Either<O extends object, K extends Key> = Omit<O, K> &
     {
-      [P in K]: Prisma__Pick<O, P & keyof O>;
+      // Merge all but K
+      [P in K]: Prisma__Pick<O, P & keyof O>; // With K possibilities
     }[K];
+
   type EitherStrict<O extends object, K extends Key> = Strict<__Either<O, K>>;
+
   type EitherLoose<O extends object, K extends Key> = ComputeRaw<
     __Either<O, K>
   >;
+
   type _Either<O extends object, K extends Key, strict extends Boolean> = {
     1: EitherStrict<O, K>;
     0: EitherLoose<O, K>;
   }[strict];
+
   type Either<
     O extends object,
     K extends Key,
     strict extends Boolean = 1
   > = O extends unknown ? _Either<O, K, strict> : never;
+
   export type Union = any;
+
   type PatchUndefined<O extends object, O1 extends object> = {
     [K in keyof O]: O[K] extends undefined ? At<O1, K> : O[K];
   } & {};
+
+  /** Helper Types for "Merge" **/
   export type IntersectOf<U extends Union> = (
     U extends unknown ? (k: U) => void : never
   ) extends (k: infer I) => void
     ? I
     : never;
+
   export type Overwrite<O extends object, O1 extends object> = {
     [K in keyof O]: K extends keyof O1 ? O1[K] : O[K];
   } & {};
+
   type _Merge<U extends object> = IntersectOf<
     Overwrite<
       U,
@@ -258,6 +682,7 @@ export namespace Prisma {
       }
     >
   >;
+
   type Key = string | number | symbol;
   type AtBasic<O extends object, K extends Key> = K extends keyof O
     ? O[K]
@@ -274,51 +699,72 @@ export namespace Prisma {
     1: AtStrict<O, K>;
     0: AtLoose<O, K>;
   }[strict];
+
   export type ComputeRaw<A extends any> = A extends Function
     ? A
     : {
         [K in keyof A]: A[K];
       } & {};
+
   export type OptionalFlat<O> = {
     [K in keyof O]?: O[K];
   } & {};
+
   type _Record<K extends keyof any, T> = {
     [P in K]: T;
   };
+
+  // cause typescript not to expand types and preserve names
   type NoExpand<T> = T extends unknown ? T : never;
+
+  // this type assumes the passed object is entirely optional
   type AtLeast<O extends object, K extends string> = NoExpand<
     O extends unknown
       ?
-          | (K extends keyof O
-              ? {
-                  [P in K]: O[P];
-                } & O
-              : O)
-          | ({
-              [P in keyof O as P extends K ? P : never]-?: O[P];
-            } & O)
+          | (K extends keyof O ? { [P in K]: O[P] } & O : O)
+          | ({ [P in keyof O as P extends K ? P : never]-?: O[P] } & O)
       : never
   >;
+
   type _Strict<U, _U = U> = U extends unknown
     ? U & OptionalFlat<_Record<Exclude<Keys<_U>, keyof U>, never>>
     : never;
+
   export type Strict<U extends object> = ComputeRaw<_Strict<U>>;
+  /** End Helper Types for "Merge" **/
+
   export type Merge<U extends object> = ComputeRaw<_Merge<Strict<U>>>;
+
+  /**
+  A [[Boolean]]
+  */
   export type Boolean = True | False;
+
+  // /**
+  // 1
+  // */
   export type True = 1;
+
+  /**
+  0
+  */
   export type False = 0;
+
   export type Not<B extends Boolean> = {
     0: 1;
     1: 0;
   }[B];
+
   export type Extends<A1 extends any, A2 extends any> = [A1] extends [never]
-    ? 0
+    ? 0 // anything `never` is false
     : A1 extends A2
       ? 1
       : 0;
+
   export type Has<U extends Union, U1 extends Union> = Not<
     Extends<Exclude<U1, U>, U1>
   >;
+
   export type Or<B1 extends Boolean, B2 extends Boolean> = {
     0: {
       0: 0;
@@ -329,24 +775,37 @@ export namespace Prisma {
       1: 1;
     };
   }[B1][B2];
+
   export type Keys<U extends Union> = U extends unknown ? keyof U : never;
+
   type Cast<A, B> = A extends B ? A : B;
+
   export const type: unique symbol;
+
+  /**
+   * Used by group by
+   */
+
   export type GetScalarType<T, O> = O extends object
     ? {
         [P in keyof T]: P extends keyof O ? O[P] : never;
       }
     : never;
+
   type FieldPaths<
     T,
     U = Omit<T, '_avg' | '_sum' | '_count' | '_min' | '_max'>
   > = IsObject<T> extends True ? U : T;
+
   type GetHavingFields<T> = {
     [K in keyof T]: Or<
       Or<Extends<'OR', K>, Extends<'AND', K>>,
       Extends<'NOT', K>
     > extends True
-      ? T[K] extends infer TK
+      ? // infer is only needed to not hit TS limit
+        // based on the brilliant idea of Pierre-Antoine Mills
+        // https://github.com/microsoft/TypeScript/issues/30188#issuecomment-478938437
+        T[K] extends infer TK
         ? GetHavingFields<
             UnEnumerate<TK> extends object ? Merge<UnEnumerate<TK>> : never
           >
@@ -355,20 +814,35 @@ export namespace Prisma {
         ? never
         : K;
   }[keyof T];
+
+  /**
+   * Convert tuple to union
+   */
   type _TupleToUnion<T> = T extends (infer E)[] ? E : never;
   type TupleToUnion<K extends readonly any[]> = _TupleToUnion<K>;
   type MaybeTupleToUnion<T> = T extends any[] ? TupleToUnion<T> : T;
+
+  /**
+   * Like `Pick`, but additionally can also accept an array of keys
+   */
   type PickEnumerable<
     T,
     K extends Enumerable<keyof T> | keyof T
   > = Prisma__Pick<T, MaybeTupleToUnion<K>>;
+
+  /**
+   * Exclude all keys with underscores
+   */
   type ExcludeUnderscoreKeys<T extends string> = T extends `_${string}`
     ? never
     : T;
+
   export type FieldRef<Model, FieldType> = runtime.FieldRef<Model, FieldType>;
+
   type FieldRefInputType<Model, FieldType> = Model extends never
     ? never
     : FieldRef<Model, FieldType>;
+
   export const ModelName: {
     User: 'User';
     PassportFlag: 'PassportFlag';
@@ -385,23 +859,20 @@ export namespace Prisma {
     MemorySession: 'MemorySession';
     VisionSession: 'VisionSession';
   };
+
   export type ModelName = (typeof ModelName)[keyof typeof ModelName];
+
   interface TypeMapCb<ClientOptions = {}>
     extends $Utils.Fn<
-      {
-        extArgs: $Extensions.InternalArgs;
-      },
+      { extArgs: $Extensions.InternalArgs },
       $Utils.Record<string, any>
     > {
     returns: Prisma.TypeMap<
       this['params']['extArgs'],
-      ClientOptions extends {
-        omit: infer OmitOptions;
-      }
-        ? OmitOptions
-        : {}
+      ClientOptions extends { omit: infer OmitOptions } ? OmitOptions : {}
     >;
   }
+
   export type TypeMap<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
@@ -1514,16 +1985,83 @@ export namespace Prisma {
   export type DefaultPrismaClient = PrismaClient;
   export type ErrorFormat = 'pretty' | 'colorless' | 'minimal';
   export interface PrismaClientOptions {
+    /**
+     * @default "colorless"
+     */
     errorFormat?: ErrorFormat;
+    /**
+     * @example
+     * ```
+     * // Shorthand for `emit: 'stdout'`
+     * log: ['query', 'info', 'warn', 'error']
+     *
+     * // Emit as events only
+     * log: [
+     *   { emit: 'event', level: 'query' },
+     *   { emit: 'event', level: 'info' },
+     *   { emit: 'event', level: 'warn' }
+     *   { emit: 'event', level: 'error' }
+     * ]
+     *
+     * / Emit as events and log to stdout
+     * og: [
+     *  { emit: 'stdout', level: 'query' },
+     *  { emit: 'stdout', level: 'info' },
+     *  { emit: 'stdout', level: 'warn' }
+     *  { emit: 'stdout', level: 'error' }
+     *
+     * ```
+     * Read more in our [docs](https://pris.ly/d/logging).
+     */
     log?: (LogLevel | LogDefinition)[];
+    /**
+     * The default values for transactionOptions
+     * maxWait ?= 2000
+     * timeout ?= 5000
+     */
     transactionOptions?: {
       maxWait?: number;
       timeout?: number;
       isolationLevel?: Prisma.TransactionIsolationLevel;
     };
+    /**
+     * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-planetscale`
+     */
     adapter?: runtime.SqlDriverAdapterFactory;
+    /**
+     * Prisma Accelerate URL allowing the client to connect through Accelerate instead of a direct database.
+     */
     accelerateUrl?: string;
+    /**
+     * Global configuration for omitting model fields by default.
+     *
+     * @example
+     * ```
+     * const prisma = new PrismaClient({
+     *   omit: {
+     *     user: {
+     *       password: true
+     *     }
+     *   }
+     * })
+     * ```
+     */
     omit?: Prisma.GlobalOmitConfig;
+    /**
+     * SQL commenter plugins that add metadata to SQL queries as comments.
+     * Comments follow the sqlcommenter format: https://google.github.io/sqlcommenter/
+     *
+     * @example
+     * ```
+     * const prisma = new PrismaClient({
+     *   adapter,
+     *   comments: [
+     *     traceContext(),
+     *     queryInsights(),
+     *   ],
+     * })
+     * ```
+     */
     comments?: runtime.SqlCommenterPlugin[];
   }
   export type GlobalOmitConfig = {
@@ -1542,17 +2080,23 @@ export namespace Prisma {
     memorySession?: MemorySessionOmit;
     visionSession?: VisionSessionOmit;
   };
+
+  /* Types for Logging */
   export type LogLevel = 'info' | 'query' | 'warn' | 'error';
   export type LogDefinition = {
     level: LogLevel;
     emit: 'stdout' | 'event';
   };
+
   export type CheckIsLogLevel<T> = T extends LogLevel ? T : never;
+
   export type GetLogType<T> = CheckIsLogLevel<
     T extends LogDefinition ? T['level'] : T
   >;
+
   export type GetEvents<T extends any[]> =
     T extends Array<LogLevel | LogDefinition> ? GetLogType<T[number]> : never;
+
   export type QueryEvent = {
     timestamp: Date;
     query: string;
@@ -1560,11 +2104,14 @@ export namespace Prisma {
     duration: number;
     target: string;
   };
+
   export type LogEvent = {
     timestamp: Date;
     message: string;
     target: string;
   };
+  /* End Types for Logging */
+
   export type PrismaAction =
     | 'findUnique'
     | 'findUniqueOrThrow'
@@ -1587,16 +2134,32 @@ export namespace Prisma {
     | 'runCommandRaw'
     | 'findRaw'
     | 'groupBy';
+
+  // tested in getLogLevel.test.ts
   export function getLogLevel(
     log: Array<LogLevel | LogDefinition>
   ): LogLevel | undefined;
+
+  /**
+   * `PrismaClient` proxy available in interactive transactions.
+   */
   export type TransactionClient = Omit<
     Prisma.DefaultPrismaClient,
     runtime.ITXClientDenyList
   >;
+
   export type Datasource = {
     url?: string;
   };
+
+  /**
+   * Count Types
+   */
+
+  /**
+   * Count Type UserCountOutputType
+   */
+
   export type UserCountOutputType = {
     accounts: number;
     sessions: number;
@@ -1611,6 +2174,7 @@ export namespace Prisma {
     visionSessions: number;
     passportFlags: number;
   };
+
   export type UserCountOutputTypeSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -1627,76 +2191,142 @@ export namespace Prisma {
     visionSessions?: boolean | UserCountOutputTypeCountVisionSessionsArgs;
     passportFlags?: boolean | UserCountOutputTypeCountPassportFlagsArgs;
   };
+
+  // Custom InputTypes
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the UserCountOutputType
+     */
     select?: UserCountOutputTypeSelect<ExtArgs> | null;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountAccountsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: AccountWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountSessionsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: SessionWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountAuthenticatorArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: AuthenticatorWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountWhiteGamesArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: GameWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountBlackGamesArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: GameWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountRatingsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: RatingWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountAnalysesArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: GameAnalysisWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountPuzzleAttemptsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: PuzzleAttemptWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountPuzzleRushScoresArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: PuzzleRushScoreWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountMemorySessionsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: MemorySessionWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountVisionSessionsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: VisionSessionWhereInput;
   };
+
+  /**
+   * UserCountOutputType without action
+   */
   export type UserCountOutputTypeCountPassportFlagsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
     where?: PassportFlagWhereInput;
   };
+
+  /**
+   * Models
+   */
+
+  /**
+   * Model User
+   */
+
   export type AggregateUser = {
     _count: UserCountAggregateOutputType | null;
     _min: UserMinAggregateOutputType | null;
     _max: UserMaxAggregateOutputType | null;
   };
+
   export type UserMinAggregateOutputType = {
     id: string | null;
     name: string | null;
@@ -1707,6 +2337,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type UserMaxAggregateOutputType = {
     id: string | null;
     name: string | null;
@@ -1717,6 +2348,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type UserCountAggregateOutputType = {
     id: number;
     name: number;
@@ -1728,6 +2360,7 @@ export namespace Prisma {
     updatedAt: number;
     _all: number;
   };
+
   export type UserMinAggregateInputType = {
     id?: true;
     name?: true;
@@ -1738,6 +2371,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type UserMaxAggregateInputType = {
     id?: true;
     name?: true;
@@ -1748,6 +2382,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type UserCountAggregateInputType = {
     id?: true;
     name?: true;
@@ -1759,18 +2394,58 @@ export namespace Prisma {
     updatedAt?: true;
     _all?: true;
   };
+
   export type UserAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which User to aggregate.
+     */
     where?: UserWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Users to fetch.
+     */
     orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: UserWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Users from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Users.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Users
+     **/
     _count?: true | UserCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: UserMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: UserMaxAggregateInputType;
   };
+
   export type GetUserAggregateType<T extends UserAggregateArgs> = {
     [P in keyof T & keyof AggregateUser]: P extends '_count' | 'count'
       ? T[P] extends true
@@ -1778,6 +2453,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateUser[P]>
       : GetScalarType<T[P], AggregateUser[P]>;
   };
+
   export type UserGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -1793,6 +2469,7 @@ export namespace Prisma {
     _min?: UserMinAggregateInputType;
     _max?: UserMaxAggregateInputType;
   };
+
   export type UserGroupByOutputType = {
     id: string;
     name: string | null;
@@ -1806,6 +2483,7 @@ export namespace Prisma {
     _min: UserMinAggregateOutputType | null;
     _max: UserMaxAggregateOutputType | null;
   };
+
   type GetUserGroupByPayload<T extends UserGroupByArgs> = Prisma.PrismaPromise<
     Array<
       PickEnumerable<UserGroupByOutputType, T['by']> & {
@@ -1817,6 +2495,7 @@ export namespace Prisma {
       }
     >
   >;
+
   export type UserSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -1846,6 +2525,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['user']
   >;
+
   export type UserSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -1861,6 +2541,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['user']
   >;
+
   export type UserSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -1876,6 +2557,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['user']
   >;
+
   export type UserSelectScalar = {
     id?: boolean;
     name?: boolean;
@@ -1886,6 +2568,7 @@ export namespace Prisma {
     createdAt?: boolean;
     updatedAt?: boolean;
   };
+
   export type UserOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -1923,6 +2606,7 @@ export namespace Prisma {
   export type UserIncludeUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {};
+
   export type $UserPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -1957,23 +2641,35 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type UserGetPayload<S extends boolean | null | undefined | UserDefaultArgs> =
     $Result.GetResult<Prisma.$UserPayload, S>;
+
   type UserCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<UserFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
     select?: UserCountAggregateInputType | true;
   };
+
   export interface UserDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['User'];
-      meta: {
-        name: 'User';
-      };
+      meta: { name: 'User' };
     };
+    /**
+     * Find zero or one User that matches the filter.
+     * @param {UserFindUniqueArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends UserFindUniqueArgs>(
       args: SelectSubset<T, UserFindUniqueArgs<ExtArgs>>
     ): Prisma__UserClient<
@@ -1987,6 +2683,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one User that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {UserFindUniqueOrThrowArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends UserFindUniqueOrThrowArgs>(
       args: SelectSubset<T, UserFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__UserClient<
@@ -2000,6 +2709,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first User that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindFirstArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends UserFindFirstArgs>(
       args?: SelectSubset<T, UserFindFirstArgs<ExtArgs>>
     ): Prisma__UserClient<
@@ -2013,6 +2736,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first User that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindFirstOrThrowArgs} args - Arguments to find a User
+     * @example
+     * // Get one User
+     * const user = await prisma.user.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends UserFindFirstOrThrowArgs>(
       args?: SelectSubset<T, UserFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__UserClient<
@@ -2026,6 +2764,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more Users that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Users
+     * const users = await prisma.user.findMany()
+     *
+     * // Get first 10 Users
+     * const users = await prisma.user.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const userWithIdOnly = await prisma.user.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends UserFindManyArgs>(
       args?: SelectSubset<T, UserFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -2036,6 +2791,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a User.
+     * @param {UserCreateArgs} args - Arguments to create a User.
+     * @example
+     * // Create one User
+     * const User = await prisma.user.create({
+     *   data: {
+     *     // ... data to create a User
+     *   }
+     * })
+     *
+     */
     create<T extends UserCreateArgs>(
       args: SelectSubset<T, UserCreateArgs<ExtArgs>>
     ): Prisma__UserClient<
@@ -2049,9 +2817,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many Users.
+     * @param {UserCreateManyArgs} args - Arguments to create many Users.
+     * @example
+     * // Create many Users
+     * const user = await prisma.user.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends UserCreateManyArgs>(
       args?: SelectSubset<T, UserCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many Users and returns the data saved in the database.
+     * @param {UserCreateManyAndReturnArgs} args - Arguments to create many Users.
+     * @example
+     * // Create many Users
+     * const user = await prisma.user.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Users and only return the `id`
+     * const userWithIdOnly = await prisma.user.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends UserCreateManyAndReturnArgs>(
       args?: SelectSubset<T, UserCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -2062,6 +2866,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a User.
+     * @param {UserDeleteArgs} args - Arguments to delete one User.
+     * @example
+     * // Delete one User
+     * const User = await prisma.user.delete({
+     *   where: {
+     *     // ... filter to delete one User
+     *   }
+     * })
+     *
+     */
     delete<T extends UserDeleteArgs>(
       args: SelectSubset<T, UserDeleteArgs<ExtArgs>>
     ): Prisma__UserClient<
@@ -2075,6 +2892,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one User.
+     * @param {UserUpdateArgs} args - Arguments to update one User.
+     * @example
+     * // Update one User
+     * const user = await prisma.user.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends UserUpdateArgs>(
       args: SelectSubset<T, UserUpdateArgs<ExtArgs>>
     ): Prisma__UserClient<
@@ -2088,12 +2921,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more Users.
+     * @param {UserDeleteManyArgs} args - Arguments to filter Users to delete.
+     * @example
+     * // Delete a few Users
+     * const { count } = await prisma.user.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends UserDeleteManyArgs>(
       args?: SelectSubset<T, UserDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Users.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Users
+     * const user = await prisma.user.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends UserUpdateManyArgs>(
       args: SelectSubset<T, UserUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Users and returns the data updated in the database.
+     * @param {UserUpdateManyAndReturnArgs} args - Arguments to update many Users.
+     * @example
+     * // Update many Users
+     * const user = await prisma.user.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Users and only return the `id`
+     * const userWithIdOnly = await prisma.user.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends UserUpdateManyAndReturnArgs>(
       args: SelectSubset<T, UserUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -2104,6 +2997,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one User.
+     * @param {UserUpsertArgs} args - Arguments to update or create a User.
+     * @example
+     * // Update or create a User
+     * const user = await prisma.user.upsert({
+     *   create: {
+     *     // ... data to create a User
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the User we want to update
+     *   }
+     * })
+     */
     upsert<T extends UserUpsertArgs>(
       args: SelectSubset<T, UserUpsertArgs<ExtArgs>>
     ): Prisma__UserClient<
@@ -2117,6 +3028,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of Users.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserCountArgs} args - Arguments to filter Users to count.
+     * @example
+     * // Count the number of Users
+     * const count = await prisma.user.count({
+     *   where: {
+     *     // ... the filter for the Users we want to count
+     *   }
+     * })
+     **/
     count<T extends UserCountArgs>(
       args?: Subset<T, UserCountArgs>
     ): Prisma.PrismaPromise<
@@ -2126,9 +3051,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], UserCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a User.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends UserAggregateArgs>(
       args: Subset<T, UserAggregateArgs>
     ): Prisma.PrismaPromise<GetUserAggregateType<T>>;
+
+    /**
+     * Group by User.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {UserGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends UserGroupByArgs,
       HasSelectOrTake extends Or<
@@ -2136,12 +3105,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: UserGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: UserGroupByArgs['orderBy'];
-          },
+        ? { orderBy: UserGroupByArgs['orderBy'] }
+        : { orderBy?: UserGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -2197,8 +3162,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetUserGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the User model
+     */
     readonly fields: UserFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for User.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__UserClient<
     T,
     Null = never,
@@ -2351,6 +3326,12 @@ export namespace Prisma {
         >
       | Null
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -2361,14 +3342,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the User model
+   */
   interface UserFieldRefs {
     readonly id: FieldRef<'User', 'String'>;
     readonly name: FieldRef<'User', 'String'>;
@@ -2379,137 +3375,436 @@ export namespace Prisma {
     readonly createdAt: FieldRef<'User', 'DateTime'>;
     readonly updatedAt: FieldRef<'User', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * User findUnique
+   */
   export type UserFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * Filter, which User to fetch.
+     */
     where: UserWhereUniqueInput;
   };
+
+  /**
+   * User findUniqueOrThrow
+   */
   export type UserFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * Filter, which User to fetch.
+     */
     where: UserWhereUniqueInput;
   };
+
+  /**
+   * User findFirst
+   */
   export type UserFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * Filter, which User to fetch.
+     */
     where?: UserWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Users to fetch.
+     */
     orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Users.
+     */
     cursor?: UserWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Users from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Users.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Users.
+     */
     distinct?: UserScalarFieldEnum | UserScalarFieldEnum[];
   };
+
+  /**
+   * User findFirstOrThrow
+   */
   export type UserFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * Filter, which User to fetch.
+     */
     where?: UserWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Users to fetch.
+     */
     orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Users.
+     */
     cursor?: UserWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Users from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Users.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Users.
+     */
     distinct?: UserScalarFieldEnum | UserScalarFieldEnum[];
   };
+
+  /**
+   * User findMany
+   */
   export type UserFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * Filter, which Users to fetch.
+     */
     where?: UserWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Users to fetch.
+     */
     orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Users.
+     */
     cursor?: UserWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Users from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Users.
+     */
     skip?: number;
     distinct?: UserScalarFieldEnum | UserScalarFieldEnum[];
   };
+
+  /**
+   * User create
+   */
   export type UserCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a User.
+     */
     data: XOR<UserCreateInput, UserUncheckedCreateInput>;
   };
+
+  /**
+   * User createMany
+   */
   export type UserCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many Users.
+     */
     data: UserCreateManyInput | UserCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * User createManyAndReturn
+   */
   export type UserCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * The data used to create many Users.
+     */
     data: UserCreateManyInput | UserCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * User update
+   */
   export type UserUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a User.
+     */
     data: XOR<UserUpdateInput, UserUncheckedUpdateInput>;
+    /**
+     * Choose, which User to update.
+     */
     where: UserWhereUniqueInput;
   };
+
+  /**
+   * User updateMany
+   */
   export type UserUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update Users.
+     */
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyInput>;
+    /**
+     * Filter which Users to update
+     */
     where?: UserWhereInput;
+    /**
+     * Limit how many Users to update.
+     */
     limit?: number;
   };
+
+  /**
+   * User updateManyAndReturn
+   */
   export type UserUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * The data used to update Users.
+     */
     data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyInput>;
+    /**
+     * Filter which Users to update
+     */
     where?: UserWhereInput;
+    /**
+     * Limit how many Users to update.
+     */
     limit?: number;
   };
+
+  /**
+   * User upsert
+   */
   export type UserUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the User to update in case it exists.
+     */
     where: UserWhereUniqueInput;
+    /**
+     * In case the User found by the `where` argument doesn't exist, create a new User with this data.
+     */
     create: XOR<UserCreateInput, UserUncheckedCreateInput>;
+    /**
+     * In case the User was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<UserUpdateInput, UserUncheckedUpdateInput>;
   };
+
+  /**
+   * User delete
+   */
   export type UserDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
+    /**
+     * Filter which User to delete.
+     */
     where: UserWhereUniqueInput;
   };
+
+  /**
+   * User deleteMany
+   */
   export type UserDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Users to delete
+     */
     where?: UserWhereInput;
+    /**
+     * Limit how many Users to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * User.accounts
+   */
   export type User$accountsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
     where?: AccountWhereInput;
     orderBy?:
@@ -2520,11 +3815,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: AccountScalarFieldEnum | AccountScalarFieldEnum[];
   };
+
+  /**
+   * User.sessions
+   */
   export type User$sessionsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
     where?: SessionWhereInput;
     orderBy?:
@@ -2535,11 +3843,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[];
   };
+
+  /**
+   * User.Authenticator
+   */
   export type User$AuthenticatorArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
     where?: AuthenticatorWhereInput;
     orderBy?:
@@ -2550,11 +3871,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: AuthenticatorScalarFieldEnum | AuthenticatorScalarFieldEnum[];
   };
+
+  /**
+   * User.whiteGames
+   */
   export type User$whiteGamesArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
     where?: GameWhereInput;
     orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
@@ -2563,11 +3897,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
   };
+
+  /**
+   * User.blackGames
+   */
   export type User$blackGamesArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
     where?: GameWhereInput;
     orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
@@ -2576,11 +3923,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
   };
+
+  /**
+   * User.ratings
+   */
   export type User$ratingsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
     where?: RatingWhereInput;
     orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
@@ -2589,19 +3949,45 @@ export namespace Prisma {
     skip?: number;
     distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[];
   };
+
+  /**
+   * User.puzzleRating
+   */
   export type User$puzzleRatingArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
     where?: PuzzleRatingWhereInput;
   };
+
+  /**
+   * User.analyses
+   */
   export type User$analysesArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
     where?: GameAnalysisWhereInput;
     orderBy?:
@@ -2612,11 +3998,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: GameAnalysisScalarFieldEnum | GameAnalysisScalarFieldEnum[];
   };
+
+  /**
+   * User.puzzleAttempts
+   */
   export type User$puzzleAttemptsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
     where?: PuzzleAttemptWhereInput;
     orderBy?:
@@ -2627,11 +4026,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: PuzzleAttemptScalarFieldEnum | PuzzleAttemptScalarFieldEnum[];
   };
+
+  /**
+   * User.puzzleRushScores
+   */
   export type User$puzzleRushScoresArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
     where?: PuzzleRushScoreWhereInput;
     orderBy?:
@@ -2644,11 +4056,24 @@ export namespace Prisma {
       | PuzzleRushScoreScalarFieldEnum
       | PuzzleRushScoreScalarFieldEnum[];
   };
+
+  /**
+   * User.memorySessions
+   */
   export type User$memorySessionsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
     where?: MemorySessionWhereInput;
     orderBy?:
@@ -2659,11 +4084,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: MemorySessionScalarFieldEnum | MemorySessionScalarFieldEnum[];
   };
+
+  /**
+   * User.visionSessions
+   */
   export type User$visionSessionsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
     where?: VisionSessionWhereInput;
     orderBy?:
@@ -2674,11 +4112,24 @@ export namespace Prisma {
     skip?: number;
     distinct?: VisionSessionScalarFieldEnum | VisionSessionScalarFieldEnum[];
   };
+
+  /**
+   * User.passportFlags
+   */
   export type User$passportFlagsArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
     where?: PassportFlagWhereInput;
     orderBy?:
@@ -2689,30 +4140,51 @@ export namespace Prisma {
     skip?: number;
     distinct?: PassportFlagScalarFieldEnum | PassportFlagScalarFieldEnum[];
   };
+
+  /**
+   * User without action
+   */
   export type UserDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model PassportFlag
+   */
+
   export type AggregatePassportFlag = {
     _count: PassportFlagCountAggregateOutputType | null;
     _min: PassportFlagMinAggregateOutputType | null;
     _max: PassportFlagMaxAggregateOutputType | null;
   };
+
   export type PassportFlagMinAggregateOutputType = {
     id: string | null;
     userId: string | null;
     flagCode: string | null;
     createdAt: Date | null;
   };
+
   export type PassportFlagMaxAggregateOutputType = {
     id: string | null;
     userId: string | null;
     flagCode: string | null;
     createdAt: Date | null;
   };
+
   export type PassportFlagCountAggregateOutputType = {
     id: number;
     userId: number;
@@ -2720,18 +4192,21 @@ export namespace Prisma {
     createdAt: number;
     _all: number;
   };
+
   export type PassportFlagMinAggregateInputType = {
     id?: true;
     userId?: true;
     flagCode?: true;
     createdAt?: true;
   };
+
   export type PassportFlagMaxAggregateInputType = {
     id?: true;
     userId?: true;
     flagCode?: true;
     createdAt?: true;
   };
+
   export type PassportFlagCountAggregateInputType = {
     id?: true;
     userId?: true;
@@ -2739,20 +4214,60 @@ export namespace Prisma {
     createdAt?: true;
     _all?: true;
   };
+
   export type PassportFlagAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which PassportFlag to aggregate.
+     */
     where?: PassportFlagWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PassportFlags to fetch.
+     */
     orderBy?:
       | PassportFlagOrderByWithRelationInput
       | PassportFlagOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: PassportFlagWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PassportFlags from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PassportFlags.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned PassportFlags
+     **/
     _count?: true | PassportFlagCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: PassportFlagMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: PassportFlagMaxAggregateInputType;
   };
+
   export type GetPassportFlagAggregateType<
     T extends PassportFlagAggregateArgs
   > = {
@@ -2762,6 +4277,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregatePassportFlag[P]>
       : GetScalarType<T[P], AggregatePassportFlag[P]>;
   };
+
   export type PassportFlagGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -2777,6 +4293,7 @@ export namespace Prisma {
     _min?: PassportFlagMinAggregateInputType;
     _max?: PassportFlagMaxAggregateInputType;
   };
+
   export type PassportFlagGroupByOutputType = {
     id: string;
     userId: string;
@@ -2786,6 +4303,7 @@ export namespace Prisma {
     _min: PassportFlagMinAggregateOutputType | null;
     _max: PassportFlagMaxAggregateOutputType | null;
   };
+
   type GetPassportFlagGroupByPayload<T extends PassportFlagGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -2799,6 +4317,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type PassportFlagSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -2811,6 +4330,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['passportFlag']
   >;
+
   export type PassportFlagSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -2823,6 +4343,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['passportFlag']
   >;
+
   export type PassportFlagSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -2835,12 +4356,14 @@ export namespace Prisma {
     },
     ExtArgs['result']['passportFlag']
   >;
+
   export type PassportFlagSelectScalar = {
     id?: boolean;
     userId?: boolean;
     flagCode?: boolean;
     createdAt?: boolean;
   };
+
   export type PassportFlagOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -2862,6 +4385,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $PassportFlagPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -2880,9 +4404,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type PassportFlagGetPayload<
     S extends boolean | null | undefined | PassportFlagDefaultArgs
   > = $Result.GetResult<Prisma.$PassportFlagPayload, S>;
+
   type PassportFlagCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -2891,16 +4417,26 @@ export namespace Prisma {
   > & {
     select?: PassportFlagCountAggregateInputType | true;
   };
+
   export interface PassportFlagDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['PassportFlag'];
-      meta: {
-        name: 'PassportFlag';
-      };
+      meta: { name: 'PassportFlag' };
     };
+    /**
+     * Find zero or one PassportFlag that matches the filter.
+     * @param {PassportFlagFindUniqueArgs} args - Arguments to find a PassportFlag
+     * @example
+     * // Get one PassportFlag
+     * const passportFlag = await prisma.passportFlag.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends PassportFlagFindUniqueArgs>(
       args: SelectSubset<T, PassportFlagFindUniqueArgs<ExtArgs>>
     ): Prisma__PassportFlagClient<
@@ -2914,6 +4450,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one PassportFlag that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PassportFlagFindUniqueOrThrowArgs} args - Arguments to find a PassportFlag
+     * @example
+     * // Get one PassportFlag
+     * const passportFlag = await prisma.passportFlag.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends PassportFlagFindUniqueOrThrowArgs>(
       args: SelectSubset<T, PassportFlagFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__PassportFlagClient<
@@ -2927,6 +4476,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first PassportFlag that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagFindFirstArgs} args - Arguments to find a PassportFlag
+     * @example
+     * // Get one PassportFlag
+     * const passportFlag = await prisma.passportFlag.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends PassportFlagFindFirstArgs>(
       args?: SelectSubset<T, PassportFlagFindFirstArgs<ExtArgs>>
     ): Prisma__PassportFlagClient<
@@ -2940,6 +4503,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first PassportFlag that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagFindFirstOrThrowArgs} args - Arguments to find a PassportFlag
+     * @example
+     * // Get one PassportFlag
+     * const passportFlag = await prisma.passportFlag.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends PassportFlagFindFirstOrThrowArgs>(
       args?: SelectSubset<T, PassportFlagFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__PassportFlagClient<
@@ -2953,6 +4531,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more PassportFlags that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PassportFlags
+     * const passportFlags = await prisma.passportFlag.findMany()
+     *
+     * // Get first 10 PassportFlags
+     * const passportFlags = await prisma.passportFlag.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const passportFlagWithIdOnly = await prisma.passportFlag.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends PassportFlagFindManyArgs>(
       args?: SelectSubset<T, PassportFlagFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -2963,6 +4558,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a PassportFlag.
+     * @param {PassportFlagCreateArgs} args - Arguments to create a PassportFlag.
+     * @example
+     * // Create one PassportFlag
+     * const PassportFlag = await prisma.passportFlag.create({
+     *   data: {
+     *     // ... data to create a PassportFlag
+     *   }
+     * })
+     *
+     */
     create<T extends PassportFlagCreateArgs>(
       args: SelectSubset<T, PassportFlagCreateArgs<ExtArgs>>
     ): Prisma__PassportFlagClient<
@@ -2976,9 +4584,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many PassportFlags.
+     * @param {PassportFlagCreateManyArgs} args - Arguments to create many PassportFlags.
+     * @example
+     * // Create many PassportFlags
+     * const passportFlag = await prisma.passportFlag.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends PassportFlagCreateManyArgs>(
       args?: SelectSubset<T, PassportFlagCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many PassportFlags and returns the data saved in the database.
+     * @param {PassportFlagCreateManyAndReturnArgs} args - Arguments to create many PassportFlags.
+     * @example
+     * // Create many PassportFlags
+     * const passportFlag = await prisma.passportFlag.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many PassportFlags and only return the `id`
+     * const passportFlagWithIdOnly = await prisma.passportFlag.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends PassportFlagCreateManyAndReturnArgs>(
       args?: SelectSubset<T, PassportFlagCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -2989,6 +4633,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a PassportFlag.
+     * @param {PassportFlagDeleteArgs} args - Arguments to delete one PassportFlag.
+     * @example
+     * // Delete one PassportFlag
+     * const PassportFlag = await prisma.passportFlag.delete({
+     *   where: {
+     *     // ... filter to delete one PassportFlag
+     *   }
+     * })
+     *
+     */
     delete<T extends PassportFlagDeleteArgs>(
       args: SelectSubset<T, PassportFlagDeleteArgs<ExtArgs>>
     ): Prisma__PassportFlagClient<
@@ -3002,6 +4659,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one PassportFlag.
+     * @param {PassportFlagUpdateArgs} args - Arguments to update one PassportFlag.
+     * @example
+     * // Update one PassportFlag
+     * const passportFlag = await prisma.passportFlag.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends PassportFlagUpdateArgs>(
       args: SelectSubset<T, PassportFlagUpdateArgs<ExtArgs>>
     ): Prisma__PassportFlagClient<
@@ -3015,12 +4688,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more PassportFlags.
+     * @param {PassportFlagDeleteManyArgs} args - Arguments to filter PassportFlags to delete.
+     * @example
+     * // Delete a few PassportFlags
+     * const { count } = await prisma.passportFlag.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends PassportFlagDeleteManyArgs>(
       args?: SelectSubset<T, PassportFlagDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PassportFlags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PassportFlags
+     * const passportFlag = await prisma.passportFlag.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends PassportFlagUpdateManyArgs>(
       args: SelectSubset<T, PassportFlagUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PassportFlags and returns the data updated in the database.
+     * @param {PassportFlagUpdateManyAndReturnArgs} args - Arguments to update many PassportFlags.
+     * @example
+     * // Update many PassportFlags
+     * const passportFlag = await prisma.passportFlag.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more PassportFlags and only return the `id`
+     * const passportFlagWithIdOnly = await prisma.passportFlag.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends PassportFlagUpdateManyAndReturnArgs>(
       args: SelectSubset<T, PassportFlagUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -3031,6 +4764,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one PassportFlag.
+     * @param {PassportFlagUpsertArgs} args - Arguments to update or create a PassportFlag.
+     * @example
+     * // Update or create a PassportFlag
+     * const passportFlag = await prisma.passportFlag.upsert({
+     *   create: {
+     *     // ... data to create a PassportFlag
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PassportFlag we want to update
+     *   }
+     * })
+     */
     upsert<T extends PassportFlagUpsertArgs>(
       args: SelectSubset<T, PassportFlagUpsertArgs<ExtArgs>>
     ): Prisma__PassportFlagClient<
@@ -3044,6 +4795,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of PassportFlags.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagCountArgs} args - Arguments to filter PassportFlags to count.
+     * @example
+     * // Count the number of PassportFlags
+     * const count = await prisma.passportFlag.count({
+     *   where: {
+     *     // ... the filter for the PassportFlags we want to count
+     *   }
+     * })
+     **/
     count<T extends PassportFlagCountArgs>(
       args?: Subset<T, PassportFlagCountArgs>
     ): Prisma.PrismaPromise<
@@ -3053,9 +4818,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], PassportFlagCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a PassportFlag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends PassportFlagAggregateArgs>(
       args: Subset<T, PassportFlagAggregateArgs>
     ): Prisma.PrismaPromise<GetPassportFlagAggregateType<T>>;
+
+    /**
+     * Group by PassportFlag.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PassportFlagGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends PassportFlagGroupByArgs,
       HasSelectOrTake extends Or<
@@ -3063,12 +4872,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: PassportFlagGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: PassportFlagGroupByArgs['orderBy'];
-          },
+        ? { orderBy: PassportFlagGroupByArgs['orderBy'] }
+        : { orderBy?: PassportFlagGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -3125,8 +4930,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetPassportFlagGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the PassportFlag model
+     */
     readonly fields: PassportFlagFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PassportFlag.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__PassportFlagClient<
     T,
     Null = never,
@@ -3148,6 +4963,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -3158,167 +4979,492 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the PassportFlag model
+   */
   interface PassportFlagFieldRefs {
     readonly id: FieldRef<'PassportFlag', 'String'>;
     readonly userId: FieldRef<'PassportFlag', 'String'>;
     readonly flagCode: FieldRef<'PassportFlag', 'String'>;
     readonly createdAt: FieldRef<'PassportFlag', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * PassportFlag findUnique
+   */
   export type PassportFlagFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlag to fetch.
+     */
     where: PassportFlagWhereUniqueInput;
   };
+
+  /**
+   * PassportFlag findUniqueOrThrow
+   */
   export type PassportFlagFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlag to fetch.
+     */
     where: PassportFlagWhereUniqueInput;
   };
+
+  /**
+   * PassportFlag findFirst
+   */
   export type PassportFlagFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlag to fetch.
+     */
     where?: PassportFlagWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PassportFlags to fetch.
+     */
     orderBy?:
       | PassportFlagOrderByWithRelationInput
       | PassportFlagOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PassportFlags.
+     */
     cursor?: PassportFlagWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PassportFlags from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PassportFlags.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PassportFlags.
+     */
     distinct?: PassportFlagScalarFieldEnum | PassportFlagScalarFieldEnum[];
   };
+
+  /**
+   * PassportFlag findFirstOrThrow
+   */
   export type PassportFlagFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlag to fetch.
+     */
     where?: PassportFlagWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PassportFlags to fetch.
+     */
     orderBy?:
       | PassportFlagOrderByWithRelationInput
       | PassportFlagOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PassportFlags.
+     */
     cursor?: PassportFlagWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PassportFlags from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PassportFlags.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PassportFlags.
+     */
     distinct?: PassportFlagScalarFieldEnum | PassportFlagScalarFieldEnum[];
   };
+
+  /**
+   * PassportFlag findMany
+   */
   export type PassportFlagFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter, which PassportFlags to fetch.
+     */
     where?: PassportFlagWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PassportFlags to fetch.
+     */
     orderBy?:
       | PassportFlagOrderByWithRelationInput
       | PassportFlagOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing PassportFlags.
+     */
     cursor?: PassportFlagWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PassportFlags from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PassportFlags.
+     */
     skip?: number;
     distinct?: PassportFlagScalarFieldEnum | PassportFlagScalarFieldEnum[];
   };
+
+  /**
+   * PassportFlag create
+   */
   export type PassportFlagCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a PassportFlag.
+     */
     data: XOR<PassportFlagCreateInput, PassportFlagUncheckedCreateInput>;
   };
+
+  /**
+   * PassportFlag createMany
+   */
   export type PassportFlagCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many PassportFlags.
+     */
     data: PassportFlagCreateManyInput | PassportFlagCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * PassportFlag createManyAndReturn
+   */
   export type PassportFlagCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * The data used to create many PassportFlags.
+     */
     data: PassportFlagCreateManyInput | PassportFlagCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * PassportFlag update
+   */
   export type PassportFlagUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a PassportFlag.
+     */
     data: XOR<PassportFlagUpdateInput, PassportFlagUncheckedUpdateInput>;
+    /**
+     * Choose, which PassportFlag to update.
+     */
     where: PassportFlagWhereUniqueInput;
   };
+
+  /**
+   * PassportFlag updateMany
+   */
   export type PassportFlagUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update PassportFlags.
+     */
     data: XOR<
       PassportFlagUpdateManyMutationInput,
       PassportFlagUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which PassportFlags to update
+     */
     where?: PassportFlagWhereInput;
+    /**
+     * Limit how many PassportFlags to update.
+     */
     limit?: number;
   };
+
+  /**
+   * PassportFlag updateManyAndReturn
+   */
   export type PassportFlagUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * The data used to update PassportFlags.
+     */
     data: XOR<
       PassportFlagUpdateManyMutationInput,
       PassportFlagUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which PassportFlags to update
+     */
     where?: PassportFlagWhereInput;
+    /**
+     * Limit how many PassportFlags to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * PassportFlag upsert
+   */
   export type PassportFlagUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the PassportFlag to update in case it exists.
+     */
     where: PassportFlagWhereUniqueInput;
+    /**
+     * In case the PassportFlag found by the `where` argument doesn't exist, create a new PassportFlag with this data.
+     */
     create: XOR<PassportFlagCreateInput, PassportFlagUncheckedCreateInput>;
+    /**
+     * In case the PassportFlag was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<PassportFlagUpdateInput, PassportFlagUncheckedUpdateInput>;
   };
+
+  /**
+   * PassportFlag delete
+   */
   export type PassportFlagDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
+    /**
+     * Filter which PassportFlag to delete.
+     */
     where: PassportFlagWhereUniqueInput;
   };
+
+  /**
+   * PassportFlag deleteMany
+   */
   export type PassportFlagDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which PassportFlags to delete
+     */
     where?: PassportFlagWhereInput;
+    /**
+     * Limit how many PassportFlags to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * PassportFlag without action
+   */
   export type PassportFlagDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PassportFlag
+     */
     select?: PassportFlagSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PassportFlag
+     */
     omit?: PassportFlagOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PassportFlagInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model Account
+   */
+
   export type AggregateAccount = {
     _count: AccountCountAggregateOutputType | null;
     _avg: AccountAvgAggregateOutputType | null;
@@ -3326,12 +5472,15 @@ export namespace Prisma {
     _min: AccountMinAggregateOutputType | null;
     _max: AccountMaxAggregateOutputType | null;
   };
+
   export type AccountAvgAggregateOutputType = {
     expires_at: number | null;
   };
+
   export type AccountSumAggregateOutputType = {
     expires_at: number | null;
   };
+
   export type AccountMinAggregateOutputType = {
     userId: string | null;
     type: string | null;
@@ -3347,6 +5496,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type AccountMaxAggregateOutputType = {
     userId: string | null;
     type: string | null;
@@ -3362,6 +5512,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type AccountCountAggregateOutputType = {
     userId: number;
     type: number;
@@ -3378,12 +5529,15 @@ export namespace Prisma {
     updatedAt: number;
     _all: number;
   };
+
   export type AccountAvgAggregateInputType = {
     expires_at?: true;
   };
+
   export type AccountSumAggregateInputType = {
     expires_at?: true;
   };
+
   export type AccountMinAggregateInputType = {
     userId?: true;
     type?: true;
@@ -3399,6 +5553,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type AccountMaxAggregateInputType = {
     userId?: true;
     type?: true;
@@ -3414,6 +5569,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type AccountCountAggregateInputType = {
     userId?: true;
     type?: true;
@@ -3430,22 +5586,72 @@ export namespace Prisma {
     updatedAt?: true;
     _all?: true;
   };
+
   export type AccountAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Account to aggregate.
+     */
     where?: AccountWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Accounts to fetch.
+     */
     orderBy?:
       | AccountOrderByWithRelationInput
       | AccountOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: AccountWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Accounts from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Accounts.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Accounts
+     **/
     _count?: true | AccountCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: AccountAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: AccountSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: AccountMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: AccountMaxAggregateInputType;
   };
+
   export type GetAccountAggregateType<T extends AccountAggregateArgs> = {
     [P in keyof T & keyof AggregateAccount]: P extends '_count' | 'count'
       ? T[P] extends true
@@ -3453,6 +5659,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateAccount[P]>
       : GetScalarType<T[P], AggregateAccount[P]>;
   };
+
   export type AccountGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -3470,6 +5677,7 @@ export namespace Prisma {
     _min?: AccountMinAggregateInputType;
     _max?: AccountMaxAggregateInputType;
   };
+
   export type AccountGroupByOutputType = {
     userId: string;
     type: string;
@@ -3490,6 +5698,7 @@ export namespace Prisma {
     _min: AccountMinAggregateOutputType | null;
     _max: AccountMaxAggregateOutputType | null;
   };
+
   type GetAccountGroupByPayload<T extends AccountGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -3502,6 +5711,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type AccountSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -3523,6 +5733,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['account']
   >;
+
   export type AccountSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -3544,6 +5755,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['account']
   >;
+
   export type AccountSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -3565,6 +5777,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['account']
   >;
+
   export type AccountSelectScalar = {
     userId?: boolean;
     type?: boolean;
@@ -3580,6 +5793,7 @@ export namespace Prisma {
     createdAt?: boolean;
     updatedAt?: boolean;
   };
+
   export type AccountOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -3613,6 +5827,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $AccountPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -3640,24 +5855,36 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type AccountGetPayload<
     S extends boolean | null | undefined | AccountDefaultArgs
   > = $Result.GetResult<Prisma.$AccountPayload, S>;
+
   type AccountCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<AccountFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
     select?: AccountCountAggregateInputType | true;
   };
+
   export interface AccountDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['Account'];
-      meta: {
-        name: 'Account';
-      };
+      meta: { name: 'Account' };
     };
+    /**
+     * Find zero or one Account that matches the filter.
+     * @param {AccountFindUniqueArgs} args - Arguments to find a Account
+     * @example
+     * // Get one Account
+     * const account = await prisma.account.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends AccountFindUniqueArgs>(
       args: SelectSubset<T, AccountFindUniqueArgs<ExtArgs>>
     ): Prisma__AccountClient<
@@ -3671,6 +5898,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one Account that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AccountFindUniqueOrThrowArgs} args - Arguments to find a Account
+     * @example
+     * // Get one Account
+     * const account = await prisma.account.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends AccountFindUniqueOrThrowArgs>(
       args: SelectSubset<T, AccountFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__AccountClient<
@@ -3684,6 +5924,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Account that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountFindFirstArgs} args - Arguments to find a Account
+     * @example
+     * // Get one Account
+     * const account = await prisma.account.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends AccountFindFirstArgs>(
       args?: SelectSubset<T, AccountFindFirstArgs<ExtArgs>>
     ): Prisma__AccountClient<
@@ -3697,6 +5951,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Account that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountFindFirstOrThrowArgs} args - Arguments to find a Account
+     * @example
+     * // Get one Account
+     * const account = await prisma.account.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends AccountFindFirstOrThrowArgs>(
       args?: SelectSubset<T, AccountFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__AccountClient<
@@ -3710,6 +5979,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more Accounts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Accounts
+     * const accounts = await prisma.account.findMany()
+     *
+     * // Get first 10 Accounts
+     * const accounts = await prisma.account.findMany({ take: 10 })
+     *
+     * // Only select the `userId`
+     * const accountWithUserIdOnly = await prisma.account.findMany({ select: { userId: true } })
+     *
+     */
     findMany<T extends AccountFindManyArgs>(
       args?: SelectSubset<T, AccountFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -3720,6 +6006,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a Account.
+     * @param {AccountCreateArgs} args - Arguments to create a Account.
+     * @example
+     * // Create one Account
+     * const Account = await prisma.account.create({
+     *   data: {
+     *     // ... data to create a Account
+     *   }
+     * })
+     *
+     */
     create<T extends AccountCreateArgs>(
       args: SelectSubset<T, AccountCreateArgs<ExtArgs>>
     ): Prisma__AccountClient<
@@ -3733,9 +6032,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many Accounts.
+     * @param {AccountCreateManyArgs} args - Arguments to create many Accounts.
+     * @example
+     * // Create many Accounts
+     * const account = await prisma.account.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends AccountCreateManyArgs>(
       args?: SelectSubset<T, AccountCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many Accounts and returns the data saved in the database.
+     * @param {AccountCreateManyAndReturnArgs} args - Arguments to create many Accounts.
+     * @example
+     * // Create many Accounts
+     * const account = await prisma.account.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Accounts and only return the `userId`
+     * const accountWithUserIdOnly = await prisma.account.createManyAndReturn({
+     *   select: { userId: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends AccountCreateManyAndReturnArgs>(
       args?: SelectSubset<T, AccountCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -3746,6 +6081,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a Account.
+     * @param {AccountDeleteArgs} args - Arguments to delete one Account.
+     * @example
+     * // Delete one Account
+     * const Account = await prisma.account.delete({
+     *   where: {
+     *     // ... filter to delete one Account
+     *   }
+     * })
+     *
+     */
     delete<T extends AccountDeleteArgs>(
       args: SelectSubset<T, AccountDeleteArgs<ExtArgs>>
     ): Prisma__AccountClient<
@@ -3759,6 +6107,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one Account.
+     * @param {AccountUpdateArgs} args - Arguments to update one Account.
+     * @example
+     * // Update one Account
+     * const account = await prisma.account.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends AccountUpdateArgs>(
       args: SelectSubset<T, AccountUpdateArgs<ExtArgs>>
     ): Prisma__AccountClient<
@@ -3772,12 +6136,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more Accounts.
+     * @param {AccountDeleteManyArgs} args - Arguments to filter Accounts to delete.
+     * @example
+     * // Delete a few Accounts
+     * const { count } = await prisma.account.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends AccountDeleteManyArgs>(
       args?: SelectSubset<T, AccountDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Accounts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Accounts
+     * const account = await prisma.account.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends AccountUpdateManyArgs>(
       args: SelectSubset<T, AccountUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Accounts and returns the data updated in the database.
+     * @param {AccountUpdateManyAndReturnArgs} args - Arguments to update many Accounts.
+     * @example
+     * // Update many Accounts
+     * const account = await prisma.account.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Accounts and only return the `userId`
+     * const accountWithUserIdOnly = await prisma.account.updateManyAndReturn({
+     *   select: { userId: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends AccountUpdateManyAndReturnArgs>(
       args: SelectSubset<T, AccountUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -3788,6 +6212,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one Account.
+     * @param {AccountUpsertArgs} args - Arguments to update or create a Account.
+     * @example
+     * // Update or create a Account
+     * const account = await prisma.account.upsert({
+     *   create: {
+     *     // ... data to create a Account
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Account we want to update
+     *   }
+     * })
+     */
     upsert<T extends AccountUpsertArgs>(
       args: SelectSubset<T, AccountUpsertArgs<ExtArgs>>
     ): Prisma__AccountClient<
@@ -3801,6 +6243,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of Accounts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountCountArgs} args - Arguments to filter Accounts to count.
+     * @example
+     * // Count the number of Accounts
+     * const count = await prisma.account.count({
+     *   where: {
+     *     // ... the filter for the Accounts we want to count
+     *   }
+     * })
+     **/
     count<T extends AccountCountArgs>(
       args?: Subset<T, AccountCountArgs>
     ): Prisma.PrismaPromise<
@@ -3810,9 +6266,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], AccountCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a Account.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends AccountAggregateArgs>(
       args: Subset<T, AccountAggregateArgs>
     ): Prisma.PrismaPromise<GetAccountAggregateType<T>>;
+
+    /**
+     * Group by Account.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AccountGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends AccountGroupByArgs,
       HasSelectOrTake extends Or<
@@ -3820,12 +6320,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: AccountGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: AccountGroupByArgs['orderBy'];
-          },
+        ? { orderBy: AccountGroupByArgs['orderBy'] }
+        : { orderBy?: AccountGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -3881,8 +6377,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetAccountGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the Account model
+     */
     readonly fields: AccountFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Account.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__AccountClient<
     T,
     Null = never,
@@ -3904,6 +6410,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -3914,14 +6426,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the Account model
+   */
   interface AccountFieldRefs {
     readonly userId: FieldRef<'Account', 'String'>;
     readonly type: FieldRef<'Account', 'String'>;
@@ -3937,152 +6464,463 @@ export namespace Prisma {
     readonly createdAt: FieldRef<'Account', 'DateTime'>;
     readonly updatedAt: FieldRef<'Account', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * Account findUnique
+   */
   export type AccountFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * Filter, which Account to fetch.
+     */
     where: AccountWhereUniqueInput;
   };
+
+  /**
+   * Account findUniqueOrThrow
+   */
   export type AccountFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * Filter, which Account to fetch.
+     */
     where: AccountWhereUniqueInput;
   };
+
+  /**
+   * Account findFirst
+   */
   export type AccountFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * Filter, which Account to fetch.
+     */
     where?: AccountWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Accounts to fetch.
+     */
     orderBy?:
       | AccountOrderByWithRelationInput
       | AccountOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Accounts.
+     */
     cursor?: AccountWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Accounts from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Accounts.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Accounts.
+     */
     distinct?: AccountScalarFieldEnum | AccountScalarFieldEnum[];
   };
+
+  /**
+   * Account findFirstOrThrow
+   */
   export type AccountFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * Filter, which Account to fetch.
+     */
     where?: AccountWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Accounts to fetch.
+     */
     orderBy?:
       | AccountOrderByWithRelationInput
       | AccountOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Accounts.
+     */
     cursor?: AccountWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Accounts from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Accounts.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Accounts.
+     */
     distinct?: AccountScalarFieldEnum | AccountScalarFieldEnum[];
   };
+
+  /**
+   * Account findMany
+   */
   export type AccountFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * Filter, which Accounts to fetch.
+     */
     where?: AccountWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Accounts to fetch.
+     */
     orderBy?:
       | AccountOrderByWithRelationInput
       | AccountOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Accounts.
+     */
     cursor?: AccountWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Accounts from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Accounts.
+     */
     skip?: number;
     distinct?: AccountScalarFieldEnum | AccountScalarFieldEnum[];
   };
+
+  /**
+   * Account create
+   */
   export type AccountCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a Account.
+     */
     data: XOR<AccountCreateInput, AccountUncheckedCreateInput>;
   };
+
+  /**
+   * Account createMany
+   */
   export type AccountCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many Accounts.
+     */
     data: AccountCreateManyInput | AccountCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * Account createManyAndReturn
+   */
   export type AccountCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * The data used to create many Accounts.
+     */
     data: AccountCreateManyInput | AccountCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Account update
+   */
   export type AccountUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a Account.
+     */
     data: XOR<AccountUpdateInput, AccountUncheckedUpdateInput>;
+    /**
+     * Choose, which Account to update.
+     */
     where: AccountWhereUniqueInput;
   };
+
+  /**
+   * Account updateMany
+   */
   export type AccountUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update Accounts.
+     */
     data: XOR<AccountUpdateManyMutationInput, AccountUncheckedUpdateManyInput>;
+    /**
+     * Filter which Accounts to update
+     */
     where?: AccountWhereInput;
+    /**
+     * Limit how many Accounts to update.
+     */
     limit?: number;
   };
+
+  /**
+   * Account updateManyAndReturn
+   */
   export type AccountUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * The data used to update Accounts.
+     */
     data: XOR<AccountUpdateManyMutationInput, AccountUncheckedUpdateManyInput>;
+    /**
+     * Filter which Accounts to update
+     */
     where?: AccountWhereInput;
+    /**
+     * Limit how many Accounts to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Account upsert
+   */
   export type AccountUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the Account to update in case it exists.
+     */
     where: AccountWhereUniqueInput;
+    /**
+     * In case the Account found by the `where` argument doesn't exist, create a new Account with this data.
+     */
     create: XOR<AccountCreateInput, AccountUncheckedCreateInput>;
+    /**
+     * In case the Account was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<AccountUpdateInput, AccountUncheckedUpdateInput>;
   };
+
+  /**
+   * Account delete
+   */
   export type AccountDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
+    /**
+     * Filter which Account to delete.
+     */
     where: AccountWhereUniqueInput;
   };
+
+  /**
+   * Account deleteMany
+   */
   export type AccountDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Accounts to delete
+     */
     where?: AccountWhereInput;
+    /**
+     * Limit how many Accounts to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * Account without action
+   */
   export type AccountDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Account
+     */
     select?: AccountSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Account
+     */
     omit?: AccountOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AccountInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model Session
+   */
+
   export type AggregateSession = {
     _count: SessionCountAggregateOutputType | null;
     _min: SessionMinAggregateOutputType | null;
     _max: SessionMaxAggregateOutputType | null;
   };
+
   export type SessionMinAggregateOutputType = {
     sessionToken: string | null;
     userId: string | null;
@@ -4090,6 +6928,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type SessionMaxAggregateOutputType = {
     sessionToken: string | null;
     userId: string | null;
@@ -4097,6 +6936,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type SessionCountAggregateOutputType = {
     sessionToken: number;
     userId: number;
@@ -4105,6 +6945,7 @@ export namespace Prisma {
     updatedAt: number;
     _all: number;
   };
+
   export type SessionMinAggregateInputType = {
     sessionToken?: true;
     userId?: true;
@@ -4112,6 +6953,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type SessionMaxAggregateInputType = {
     sessionToken?: true;
     userId?: true;
@@ -4119,6 +6961,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type SessionCountAggregateInputType = {
     sessionToken?: true;
     userId?: true;
@@ -4127,20 +6970,60 @@ export namespace Prisma {
     updatedAt?: true;
     _all?: true;
   };
+
   export type SessionAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Session to aggregate.
+     */
     where?: SessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Sessions to fetch.
+     */
     orderBy?:
       | SessionOrderByWithRelationInput
       | SessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: SessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Sessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Sessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Sessions
+     **/
     _count?: true | SessionCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: SessionMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: SessionMaxAggregateInputType;
   };
+
   export type GetSessionAggregateType<T extends SessionAggregateArgs> = {
     [P in keyof T & keyof AggregateSession]: P extends '_count' | 'count'
       ? T[P] extends true
@@ -4148,6 +7031,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateSession[P]>
       : GetScalarType<T[P], AggregateSession[P]>;
   };
+
   export type SessionGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -4163,6 +7047,7 @@ export namespace Prisma {
     _min?: SessionMinAggregateInputType;
     _max?: SessionMaxAggregateInputType;
   };
+
   export type SessionGroupByOutputType = {
     sessionToken: string;
     userId: string;
@@ -4173,6 +7058,7 @@ export namespace Prisma {
     _min: SessionMinAggregateOutputType | null;
     _max: SessionMaxAggregateOutputType | null;
   };
+
   type GetSessionGroupByPayload<T extends SessionGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -4185,6 +7071,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type SessionSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -4198,6 +7085,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['session']
   >;
+
   export type SessionSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -4211,6 +7099,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['session']
   >;
+
   export type SessionSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -4224,6 +7113,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['session']
   >;
+
   export type SessionSelectScalar = {
     sessionToken?: boolean;
     userId?: boolean;
@@ -4231,6 +7121,7 @@ export namespace Prisma {
     createdAt?: boolean;
     updatedAt?: boolean;
   };
+
   export type SessionOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -4252,6 +7143,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $SessionPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -4271,24 +7163,36 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type SessionGetPayload<
     S extends boolean | null | undefined | SessionDefaultArgs
   > = $Result.GetResult<Prisma.$SessionPayload, S>;
+
   type SessionCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<SessionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
     select?: SessionCountAggregateInputType | true;
   };
+
   export interface SessionDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['Session'];
-      meta: {
-        name: 'Session';
-      };
+      meta: { name: 'Session' };
     };
+    /**
+     * Find zero or one Session that matches the filter.
+     * @param {SessionFindUniqueArgs} args - Arguments to find a Session
+     * @example
+     * // Get one Session
+     * const session = await prisma.session.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends SessionFindUniqueArgs>(
       args: SelectSubset<T, SessionFindUniqueArgs<ExtArgs>>
     ): Prisma__SessionClient<
@@ -4302,6 +7206,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one Session that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {SessionFindUniqueOrThrowArgs} args - Arguments to find a Session
+     * @example
+     * // Get one Session
+     * const session = await prisma.session.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends SessionFindUniqueOrThrowArgs>(
       args: SelectSubset<T, SessionFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__SessionClient<
@@ -4315,6 +7232,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Session that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFindFirstArgs} args - Arguments to find a Session
+     * @example
+     * // Get one Session
+     * const session = await prisma.session.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends SessionFindFirstArgs>(
       args?: SelectSubset<T, SessionFindFirstArgs<ExtArgs>>
     ): Prisma__SessionClient<
@@ -4328,6 +7259,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Session that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFindFirstOrThrowArgs} args - Arguments to find a Session
+     * @example
+     * // Get one Session
+     * const session = await prisma.session.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends SessionFindFirstOrThrowArgs>(
       args?: SelectSubset<T, SessionFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__SessionClient<
@@ -4341,6 +7287,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more Sessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Sessions
+     * const sessions = await prisma.session.findMany()
+     *
+     * // Get first 10 Sessions
+     * const sessions = await prisma.session.findMany({ take: 10 })
+     *
+     * // Only select the `sessionToken`
+     * const sessionWithSessionTokenOnly = await prisma.session.findMany({ select: { sessionToken: true } })
+     *
+     */
     findMany<T extends SessionFindManyArgs>(
       args?: SelectSubset<T, SessionFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -4351,6 +7314,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a Session.
+     * @param {SessionCreateArgs} args - Arguments to create a Session.
+     * @example
+     * // Create one Session
+     * const Session = await prisma.session.create({
+     *   data: {
+     *     // ... data to create a Session
+     *   }
+     * })
+     *
+     */
     create<T extends SessionCreateArgs>(
       args: SelectSubset<T, SessionCreateArgs<ExtArgs>>
     ): Prisma__SessionClient<
@@ -4364,9 +7340,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many Sessions.
+     * @param {SessionCreateManyArgs} args - Arguments to create many Sessions.
+     * @example
+     * // Create many Sessions
+     * const session = await prisma.session.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends SessionCreateManyArgs>(
       args?: SelectSubset<T, SessionCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many Sessions and returns the data saved in the database.
+     * @param {SessionCreateManyAndReturnArgs} args - Arguments to create many Sessions.
+     * @example
+     * // Create many Sessions
+     * const session = await prisma.session.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Sessions and only return the `sessionToken`
+     * const sessionWithSessionTokenOnly = await prisma.session.createManyAndReturn({
+     *   select: { sessionToken: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends SessionCreateManyAndReturnArgs>(
       args?: SelectSubset<T, SessionCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -4377,6 +7389,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a Session.
+     * @param {SessionDeleteArgs} args - Arguments to delete one Session.
+     * @example
+     * // Delete one Session
+     * const Session = await prisma.session.delete({
+     *   where: {
+     *     // ... filter to delete one Session
+     *   }
+     * })
+     *
+     */
     delete<T extends SessionDeleteArgs>(
       args: SelectSubset<T, SessionDeleteArgs<ExtArgs>>
     ): Prisma__SessionClient<
@@ -4390,6 +7415,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one Session.
+     * @param {SessionUpdateArgs} args - Arguments to update one Session.
+     * @example
+     * // Update one Session
+     * const session = await prisma.session.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends SessionUpdateArgs>(
       args: SelectSubset<T, SessionUpdateArgs<ExtArgs>>
     ): Prisma__SessionClient<
@@ -4403,12 +7444,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more Sessions.
+     * @param {SessionDeleteManyArgs} args - Arguments to filter Sessions to delete.
+     * @example
+     * // Delete a few Sessions
+     * const { count } = await prisma.session.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends SessionDeleteManyArgs>(
       args?: SelectSubset<T, SessionDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Sessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Sessions
+     * const session = await prisma.session.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends SessionUpdateManyArgs>(
       args: SelectSubset<T, SessionUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Sessions and returns the data updated in the database.
+     * @param {SessionUpdateManyAndReturnArgs} args - Arguments to update many Sessions.
+     * @example
+     * // Update many Sessions
+     * const session = await prisma.session.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Sessions and only return the `sessionToken`
+     * const sessionWithSessionTokenOnly = await prisma.session.updateManyAndReturn({
+     *   select: { sessionToken: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends SessionUpdateManyAndReturnArgs>(
       args: SelectSubset<T, SessionUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -4419,6 +7520,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one Session.
+     * @param {SessionUpsertArgs} args - Arguments to update or create a Session.
+     * @example
+     * // Update or create a Session
+     * const session = await prisma.session.upsert({
+     *   create: {
+     *     // ... data to create a Session
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Session we want to update
+     *   }
+     * })
+     */
     upsert<T extends SessionUpsertArgs>(
       args: SelectSubset<T, SessionUpsertArgs<ExtArgs>>
     ): Prisma__SessionClient<
@@ -4432,6 +7551,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of Sessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionCountArgs} args - Arguments to filter Sessions to count.
+     * @example
+     * // Count the number of Sessions
+     * const count = await prisma.session.count({
+     *   where: {
+     *     // ... the filter for the Sessions we want to count
+     *   }
+     * })
+     **/
     count<T extends SessionCountArgs>(
       args?: Subset<T, SessionCountArgs>
     ): Prisma.PrismaPromise<
@@ -4441,9 +7574,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], SessionCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a Session.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends SessionAggregateArgs>(
       args: Subset<T, SessionAggregateArgs>
     ): Prisma.PrismaPromise<GetSessionAggregateType<T>>;
+
+    /**
+     * Group by Session.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {SessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends SessionGroupByArgs,
       HasSelectOrTake extends Or<
@@ -4451,12 +7628,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: SessionGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: SessionGroupByArgs['orderBy'];
-          },
+        ? { orderBy: SessionGroupByArgs['orderBy'] }
+        : { orderBy?: SessionGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -4512,8 +7685,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetSessionGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the Session model
+     */
     readonly fields: SessionFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Session.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__SessionClient<
     T,
     Null = never,
@@ -4535,6 +7718,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -4545,14 +7734,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the Session model
+   */
   interface SessionFieldRefs {
     readonly sessionToken: FieldRef<'Session', 'String'>;
     readonly userId: FieldRef<'Session', 'String'>;
@@ -4560,198 +7764,554 @@ export namespace Prisma {
     readonly createdAt: FieldRef<'Session', 'DateTime'>;
     readonly updatedAt: FieldRef<'Session', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * Session findUnique
+   */
   export type SessionFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which Session to fetch.
+     */
     where: SessionWhereUniqueInput;
   };
+
+  /**
+   * Session findUniqueOrThrow
+   */
   export type SessionFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which Session to fetch.
+     */
     where: SessionWhereUniqueInput;
   };
+
+  /**
+   * Session findFirst
+   */
   export type SessionFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which Session to fetch.
+     */
     where?: SessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Sessions to fetch.
+     */
     orderBy?:
       | SessionOrderByWithRelationInput
       | SessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Sessions.
+     */
     cursor?: SessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Sessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Sessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Sessions.
+     */
     distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[];
   };
+
+  /**
+   * Session findFirstOrThrow
+   */
   export type SessionFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which Session to fetch.
+     */
     where?: SessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Sessions to fetch.
+     */
     orderBy?:
       | SessionOrderByWithRelationInput
       | SessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Sessions.
+     */
     cursor?: SessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Sessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Sessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Sessions.
+     */
     distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[];
   };
+
+  /**
+   * Session findMany
+   */
   export type SessionFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which Sessions to fetch.
+     */
     where?: SessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Sessions to fetch.
+     */
     orderBy?:
       | SessionOrderByWithRelationInput
       | SessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Sessions.
+     */
     cursor?: SessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Sessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Sessions.
+     */
     skip?: number;
     distinct?: SessionScalarFieldEnum | SessionScalarFieldEnum[];
   };
+
+  /**
+   * Session create
+   */
   export type SessionCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a Session.
+     */
     data: XOR<SessionCreateInput, SessionUncheckedCreateInput>;
   };
+
+  /**
+   * Session createMany
+   */
   export type SessionCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many Sessions.
+     */
     data: SessionCreateManyInput | SessionCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * Session createManyAndReturn
+   */
   export type SessionCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * The data used to create many Sessions.
+     */
     data: SessionCreateManyInput | SessionCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Session update
+   */
   export type SessionUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a Session.
+     */
     data: XOR<SessionUpdateInput, SessionUncheckedUpdateInput>;
+    /**
+     * Choose, which Session to update.
+     */
     where: SessionWhereUniqueInput;
   };
+
+  /**
+   * Session updateMany
+   */
   export type SessionUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update Sessions.
+     */
     data: XOR<SessionUpdateManyMutationInput, SessionUncheckedUpdateManyInput>;
+    /**
+     * Filter which Sessions to update
+     */
     where?: SessionWhereInput;
+    /**
+     * Limit how many Sessions to update.
+     */
     limit?: number;
   };
+
+  /**
+   * Session updateManyAndReturn
+   */
   export type SessionUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * The data used to update Sessions.
+     */
     data: XOR<SessionUpdateManyMutationInput, SessionUncheckedUpdateManyInput>;
+    /**
+     * Filter which Sessions to update
+     */
     where?: SessionWhereInput;
+    /**
+     * Limit how many Sessions to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Session upsert
+   */
   export type SessionUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the Session to update in case it exists.
+     */
     where: SessionWhereUniqueInput;
+    /**
+     * In case the Session found by the `where` argument doesn't exist, create a new Session with this data.
+     */
     create: XOR<SessionCreateInput, SessionUncheckedCreateInput>;
+    /**
+     * In case the Session was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<SessionUpdateInput, SessionUncheckedUpdateInput>;
   };
+
+  /**
+   * Session delete
+   */
   export type SessionDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
+    /**
+     * Filter which Session to delete.
+     */
     where: SessionWhereUniqueInput;
   };
+
+  /**
+   * Session deleteMany
+   */
   export type SessionDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Sessions to delete
+     */
     where?: SessionWhereInput;
+    /**
+     * Limit how many Sessions to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * Session without action
+   */
   export type SessionDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Session
+     */
     select?: SessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Session
+     */
     omit?: SessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: SessionInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model VerificationToken
+   */
+
   export type AggregateVerificationToken = {
     _count: VerificationTokenCountAggregateOutputType | null;
     _min: VerificationTokenMinAggregateOutputType | null;
     _max: VerificationTokenMaxAggregateOutputType | null;
   };
+
   export type VerificationTokenMinAggregateOutputType = {
     identifier: string | null;
     token: string | null;
     expires: Date | null;
   };
+
   export type VerificationTokenMaxAggregateOutputType = {
     identifier: string | null;
     token: string | null;
     expires: Date | null;
   };
+
   export type VerificationTokenCountAggregateOutputType = {
     identifier: number;
     token: number;
     expires: number;
     _all: number;
   };
+
   export type VerificationTokenMinAggregateInputType = {
     identifier?: true;
     token?: true;
     expires?: true;
   };
+
   export type VerificationTokenMaxAggregateInputType = {
     identifier?: true;
     token?: true;
     expires?: true;
   };
+
   export type VerificationTokenCountAggregateInputType = {
     identifier?: true;
     token?: true;
     expires?: true;
     _all?: true;
   };
+
   export type VerificationTokenAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which VerificationToken to aggregate.
+     */
     where?: VerificationTokenWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of VerificationTokens to fetch.
+     */
     orderBy?:
       | VerificationTokenOrderByWithRelationInput
       | VerificationTokenOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: VerificationTokenWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` VerificationTokens from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` VerificationTokens.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned VerificationTokens
+     **/
     _count?: true | VerificationTokenCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: VerificationTokenMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: VerificationTokenMaxAggregateInputType;
   };
+
   export type GetVerificationTokenAggregateType<
     T extends VerificationTokenAggregateArgs
   > = {
@@ -4763,6 +8323,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateVerificationToken[P]>
       : GetScalarType<T[P], AggregateVerificationToken[P]>;
   };
+
   export type VerificationTokenGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -4778,6 +8339,7 @@ export namespace Prisma {
     _min?: VerificationTokenMinAggregateInputType;
     _max?: VerificationTokenMaxAggregateInputType;
   };
+
   export type VerificationTokenGroupByOutputType = {
     identifier: string;
     token: string;
@@ -4786,6 +8348,7 @@ export namespace Prisma {
     _min: VerificationTokenMinAggregateOutputType | null;
     _max: VerificationTokenMaxAggregateOutputType | null;
   };
+
   type GetVerificationTokenGroupByPayload<
     T extends VerificationTokenGroupByArgs
   > = Prisma.PrismaPromise<
@@ -4800,6 +8363,7 @@ export namespace Prisma {
       }
     >
   >;
+
   export type VerificationTokenSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -4810,6 +8374,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['verificationToken']
   >;
+
   export type VerificationTokenSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -4820,6 +8385,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['verificationToken']
   >;
+
   export type VerificationTokenSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -4830,17 +8396,20 @@ export namespace Prisma {
     },
     ExtArgs['result']['verificationToken']
   >;
+
   export type VerificationTokenSelectScalar = {
     identifier?: boolean;
     token?: boolean;
     expires?: boolean;
   };
+
   export type VerificationTokenOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
     'identifier' | 'token' | 'expires',
     ExtArgs['result']['verificationToken']
   >;
+
   export type $VerificationTokenPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -4856,9 +8425,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type VerificationTokenGetPayload<
     S extends boolean | null | undefined | VerificationTokenDefaultArgs
   > = $Result.GetResult<Prisma.$VerificationTokenPayload, S>;
+
   type VerificationTokenCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -4867,16 +8438,26 @@ export namespace Prisma {
   > & {
     select?: VerificationTokenCountAggregateInputType | true;
   };
+
   export interface VerificationTokenDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['VerificationToken'];
-      meta: {
-        name: 'VerificationToken';
-      };
+      meta: { name: 'VerificationToken' };
     };
+    /**
+     * Find zero or one VerificationToken that matches the filter.
+     * @param {VerificationTokenFindUniqueArgs} args - Arguments to find a VerificationToken
+     * @example
+     * // Get one VerificationToken
+     * const verificationToken = await prisma.verificationToken.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends VerificationTokenFindUniqueArgs>(
       args: SelectSubset<T, VerificationTokenFindUniqueArgs<ExtArgs>>
     ): Prisma__VerificationTokenClient<
@@ -4890,6 +8471,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one VerificationToken that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VerificationTokenFindUniqueOrThrowArgs} args - Arguments to find a VerificationToken
+     * @example
+     * // Get one VerificationToken
+     * const verificationToken = await prisma.verificationToken.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends VerificationTokenFindUniqueOrThrowArgs>(
       args: SelectSubset<T, VerificationTokenFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__VerificationTokenClient<
@@ -4903,6 +8497,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first VerificationToken that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationTokenFindFirstArgs} args - Arguments to find a VerificationToken
+     * @example
+     * // Get one VerificationToken
+     * const verificationToken = await prisma.verificationToken.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends VerificationTokenFindFirstArgs>(
       args?: SelectSubset<T, VerificationTokenFindFirstArgs<ExtArgs>>
     ): Prisma__VerificationTokenClient<
@@ -4916,6 +8524,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first VerificationToken that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationTokenFindFirstOrThrowArgs} args - Arguments to find a VerificationToken
+     * @example
+     * // Get one VerificationToken
+     * const verificationToken = await prisma.verificationToken.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends VerificationTokenFindFirstOrThrowArgs>(
       args?: SelectSubset<T, VerificationTokenFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__VerificationTokenClient<
@@ -4929,6 +8552,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more VerificationTokens that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationTokenFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VerificationTokens
+     * const verificationTokens = await prisma.verificationToken.findMany()
+     *
+     * // Get first 10 VerificationTokens
+     * const verificationTokens = await prisma.verificationToken.findMany({ take: 10 })
+     *
+     * // Only select the `identifier`
+     * const verificationTokenWithIdentifierOnly = await prisma.verificationToken.findMany({ select: { identifier: true } })
+     *
+     */
     findMany<T extends VerificationTokenFindManyArgs>(
       args?: SelectSubset<T, VerificationTokenFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -4939,6 +8579,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a VerificationToken.
+     * @param {VerificationTokenCreateArgs} args - Arguments to create a VerificationToken.
+     * @example
+     * // Create one VerificationToken
+     * const VerificationToken = await prisma.verificationToken.create({
+     *   data: {
+     *     // ... data to create a VerificationToken
+     *   }
+     * })
+     *
+     */
     create<T extends VerificationTokenCreateArgs>(
       args: SelectSubset<T, VerificationTokenCreateArgs<ExtArgs>>
     ): Prisma__VerificationTokenClient<
@@ -4952,9 +8605,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many VerificationTokens.
+     * @param {VerificationTokenCreateManyArgs} args - Arguments to create many VerificationTokens.
+     * @example
+     * // Create many VerificationTokens
+     * const verificationToken = await prisma.verificationToken.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends VerificationTokenCreateManyArgs>(
       args?: SelectSubset<T, VerificationTokenCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many VerificationTokens and returns the data saved in the database.
+     * @param {VerificationTokenCreateManyAndReturnArgs} args - Arguments to create many VerificationTokens.
+     * @example
+     * // Create many VerificationTokens
+     * const verificationToken = await prisma.verificationToken.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many VerificationTokens and only return the `identifier`
+     * const verificationTokenWithIdentifierOnly = await prisma.verificationToken.createManyAndReturn({
+     *   select: { identifier: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends VerificationTokenCreateManyAndReturnArgs>(
       args?: SelectSubset<T, VerificationTokenCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -4965,6 +8654,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a VerificationToken.
+     * @param {VerificationTokenDeleteArgs} args - Arguments to delete one VerificationToken.
+     * @example
+     * // Delete one VerificationToken
+     * const VerificationToken = await prisma.verificationToken.delete({
+     *   where: {
+     *     // ... filter to delete one VerificationToken
+     *   }
+     * })
+     *
+     */
     delete<T extends VerificationTokenDeleteArgs>(
       args: SelectSubset<T, VerificationTokenDeleteArgs<ExtArgs>>
     ): Prisma__VerificationTokenClient<
@@ -4978,6 +8680,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one VerificationToken.
+     * @param {VerificationTokenUpdateArgs} args - Arguments to update one VerificationToken.
+     * @example
+     * // Update one VerificationToken
+     * const verificationToken = await prisma.verificationToken.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends VerificationTokenUpdateArgs>(
       args: SelectSubset<T, VerificationTokenUpdateArgs<ExtArgs>>
     ): Prisma__VerificationTokenClient<
@@ -4991,12 +8709,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more VerificationTokens.
+     * @param {VerificationTokenDeleteManyArgs} args - Arguments to filter VerificationTokens to delete.
+     * @example
+     * // Delete a few VerificationTokens
+     * const { count } = await prisma.verificationToken.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends VerificationTokenDeleteManyArgs>(
       args?: SelectSubset<T, VerificationTokenDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more VerificationTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationTokenUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VerificationTokens
+     * const verificationToken = await prisma.verificationToken.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends VerificationTokenUpdateManyArgs>(
       args: SelectSubset<T, VerificationTokenUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more VerificationTokens and returns the data updated in the database.
+     * @param {VerificationTokenUpdateManyAndReturnArgs} args - Arguments to update many VerificationTokens.
+     * @example
+     * // Update many VerificationTokens
+     * const verificationToken = await prisma.verificationToken.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more VerificationTokens and only return the `identifier`
+     * const verificationTokenWithIdentifierOnly = await prisma.verificationToken.updateManyAndReturn({
+     *   select: { identifier: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends VerificationTokenUpdateManyAndReturnArgs>(
       args: SelectSubset<T, VerificationTokenUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -5007,6 +8785,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one VerificationToken.
+     * @param {VerificationTokenUpsertArgs} args - Arguments to update or create a VerificationToken.
+     * @example
+     * // Update or create a VerificationToken
+     * const verificationToken = await prisma.verificationToken.upsert({
+     *   create: {
+     *     // ... data to create a VerificationToken
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VerificationToken we want to update
+     *   }
+     * })
+     */
     upsert<T extends VerificationTokenUpsertArgs>(
       args: SelectSubset<T, VerificationTokenUpsertArgs<ExtArgs>>
     ): Prisma__VerificationTokenClient<
@@ -5020,6 +8816,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of VerificationTokens.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationTokenCountArgs} args - Arguments to filter VerificationTokens to count.
+     * @example
+     * // Count the number of VerificationTokens
+     * const count = await prisma.verificationToken.count({
+     *   where: {
+     *     // ... the filter for the VerificationTokens we want to count
+     *   }
+     * })
+     **/
     count<T extends VerificationTokenCountArgs>(
       args?: Subset<T, VerificationTokenCountArgs>
     ): Prisma.PrismaPromise<
@@ -5032,9 +8842,53 @@ export namespace Prisma {
             >
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a VerificationToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationTokenAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends VerificationTokenAggregateArgs>(
       args: Subset<T, VerificationTokenAggregateArgs>
     ): Prisma.PrismaPromise<GetVerificationTokenAggregateType<T>>;
+
+    /**
+     * Group by VerificationToken.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VerificationTokenGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends VerificationTokenGroupByArgs,
       HasSelectOrTake extends Or<
@@ -5042,12 +8896,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: VerificationTokenGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: VerificationTokenGroupByArgs['orderBy'];
-          },
+        ? { orderBy: VerificationTokenGroupByArgs['orderBy'] }
+        : { orderBy?: VerificationTokenGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -5104,8 +8954,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetVerificationTokenGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the VerificationToken model
+     */
     readonly fields: VerificationTokenFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VerificationToken.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__VerificationTokenClient<
     T,
     Null = never,
@@ -5113,6 +8973,12 @@ export namespace Prisma {
     GlobalOmitOptions = {}
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise';
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -5123,172 +8989,461 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the VerificationToken model
+   */
   interface VerificationTokenFieldRefs {
     readonly identifier: FieldRef<'VerificationToken', 'String'>;
     readonly token: FieldRef<'VerificationToken', 'String'>;
     readonly expires: FieldRef<'VerificationToken', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * VerificationToken findUnique
+   */
   export type VerificationTokenFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * Filter, which VerificationToken to fetch.
+     */
     where: VerificationTokenWhereUniqueInput;
   };
+
+  /**
+   * VerificationToken findUniqueOrThrow
+   */
   export type VerificationTokenFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * Filter, which VerificationToken to fetch.
+     */
     where: VerificationTokenWhereUniqueInput;
   };
+
+  /**
+   * VerificationToken findFirst
+   */
   export type VerificationTokenFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * Filter, which VerificationToken to fetch.
+     */
     where?: VerificationTokenWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of VerificationTokens to fetch.
+     */
     orderBy?:
       | VerificationTokenOrderByWithRelationInput
       | VerificationTokenOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for VerificationTokens.
+     */
     cursor?: VerificationTokenWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` VerificationTokens from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` VerificationTokens.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of VerificationTokens.
+     */
     distinct?:
       | VerificationTokenScalarFieldEnum
       | VerificationTokenScalarFieldEnum[];
   };
+
+  /**
+   * VerificationToken findFirstOrThrow
+   */
   export type VerificationTokenFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * Filter, which VerificationToken to fetch.
+     */
     where?: VerificationTokenWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of VerificationTokens to fetch.
+     */
     orderBy?:
       | VerificationTokenOrderByWithRelationInput
       | VerificationTokenOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for VerificationTokens.
+     */
     cursor?: VerificationTokenWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` VerificationTokens from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` VerificationTokens.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of VerificationTokens.
+     */
     distinct?:
       | VerificationTokenScalarFieldEnum
       | VerificationTokenScalarFieldEnum[];
   };
+
+  /**
+   * VerificationToken findMany
+   */
   export type VerificationTokenFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * Filter, which VerificationTokens to fetch.
+     */
     where?: VerificationTokenWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of VerificationTokens to fetch.
+     */
     orderBy?:
       | VerificationTokenOrderByWithRelationInput
       | VerificationTokenOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing VerificationTokens.
+     */
     cursor?: VerificationTokenWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` VerificationTokens from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` VerificationTokens.
+     */
     skip?: number;
     distinct?:
       | VerificationTokenScalarFieldEnum
       | VerificationTokenScalarFieldEnum[];
   };
+
+  /**
+   * VerificationToken create
+   */
   export type VerificationTokenCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * The data needed to create a VerificationToken.
+     */
     data: XOR<
       VerificationTokenCreateInput,
       VerificationTokenUncheckedCreateInput
     >;
   };
+
+  /**
+   * VerificationToken createMany
+   */
   export type VerificationTokenCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many VerificationTokens.
+     */
     data: VerificationTokenCreateManyInput | VerificationTokenCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * VerificationToken createManyAndReturn
+   */
   export type VerificationTokenCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * The data used to create many VerificationTokens.
+     */
     data: VerificationTokenCreateManyInput | VerificationTokenCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * VerificationToken update
+   */
   export type VerificationTokenUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * The data needed to update a VerificationToken.
+     */
     data: XOR<
       VerificationTokenUpdateInput,
       VerificationTokenUncheckedUpdateInput
     >;
+    /**
+     * Choose, which VerificationToken to update.
+     */
     where: VerificationTokenWhereUniqueInput;
   };
+
+  /**
+   * VerificationToken updateMany
+   */
   export type VerificationTokenUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update VerificationTokens.
+     */
     data: XOR<
       VerificationTokenUpdateManyMutationInput,
       VerificationTokenUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which VerificationTokens to update
+     */
     where?: VerificationTokenWhereInput;
+    /**
+     * Limit how many VerificationTokens to update.
+     */
     limit?: number;
   };
+
+  /**
+   * VerificationToken updateManyAndReturn
+   */
   export type VerificationTokenUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * The data used to update VerificationTokens.
+     */
     data: XOR<
       VerificationTokenUpdateManyMutationInput,
       VerificationTokenUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which VerificationTokens to update
+     */
     where?: VerificationTokenWhereInput;
+    /**
+     * Limit how many VerificationTokens to update.
+     */
     limit?: number;
   };
+
+  /**
+   * VerificationToken upsert
+   */
   export type VerificationTokenUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * The filter to search for the VerificationToken to update in case it exists.
+     */
     where: VerificationTokenWhereUniqueInput;
+    /**
+     * In case the VerificationToken found by the `where` argument doesn't exist, create a new VerificationToken with this data.
+     */
     create: XOR<
       VerificationTokenCreateInput,
       VerificationTokenUncheckedCreateInput
     >;
+    /**
+     * In case the VerificationToken was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<
       VerificationTokenUpdateInput,
       VerificationTokenUncheckedUpdateInput
     >;
   };
+
+  /**
+   * VerificationToken delete
+   */
   export type VerificationTokenDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
+    /**
+     * Filter which VerificationToken to delete.
+     */
     where: VerificationTokenWhereUniqueInput;
   };
+
+  /**
+   * VerificationToken deleteMany
+   */
   export type VerificationTokenDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which VerificationTokens to delete
+     */
     where?: VerificationTokenWhereInput;
+    /**
+     * Limit how many VerificationTokens to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * VerificationToken without action
+   */
   export type VerificationTokenDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VerificationToken
+     */
     select?: VerificationTokenSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VerificationToken
+     */
     omit?: VerificationTokenOmit<ExtArgs> | null;
   };
+
+  /**
+   * Model Authenticator
+   */
+
   export type AggregateAuthenticator = {
     _count: AuthenticatorCountAggregateOutputType | null;
     _avg: AuthenticatorAvgAggregateOutputType | null;
@@ -5296,12 +9451,15 @@ export namespace Prisma {
     _min: AuthenticatorMinAggregateOutputType | null;
     _max: AuthenticatorMaxAggregateOutputType | null;
   };
+
   export type AuthenticatorAvgAggregateOutputType = {
     counter: number | null;
   };
+
   export type AuthenticatorSumAggregateOutputType = {
     counter: number | null;
   };
+
   export type AuthenticatorMinAggregateOutputType = {
     credentialID: string | null;
     userId: string | null;
@@ -5312,6 +9470,7 @@ export namespace Prisma {
     credentialBackedUp: boolean | null;
     transports: string | null;
   };
+
   export type AuthenticatorMaxAggregateOutputType = {
     credentialID: string | null;
     userId: string | null;
@@ -5322,6 +9481,7 @@ export namespace Prisma {
     credentialBackedUp: boolean | null;
     transports: string | null;
   };
+
   export type AuthenticatorCountAggregateOutputType = {
     credentialID: number;
     userId: number;
@@ -5333,12 +9493,15 @@ export namespace Prisma {
     transports: number;
     _all: number;
   };
+
   export type AuthenticatorAvgAggregateInputType = {
     counter?: true;
   };
+
   export type AuthenticatorSumAggregateInputType = {
     counter?: true;
   };
+
   export type AuthenticatorMinAggregateInputType = {
     credentialID?: true;
     userId?: true;
@@ -5349,6 +9512,7 @@ export namespace Prisma {
     credentialBackedUp?: true;
     transports?: true;
   };
+
   export type AuthenticatorMaxAggregateInputType = {
     credentialID?: true;
     userId?: true;
@@ -5359,6 +9523,7 @@ export namespace Prisma {
     credentialBackedUp?: true;
     transports?: true;
   };
+
   export type AuthenticatorCountAggregateInputType = {
     credentialID?: true;
     userId?: true;
@@ -5370,22 +9535,72 @@ export namespace Prisma {
     transports?: true;
     _all?: true;
   };
+
   export type AuthenticatorAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Authenticator to aggregate.
+     */
     where?: AuthenticatorWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Authenticators to fetch.
+     */
     orderBy?:
       | AuthenticatorOrderByWithRelationInput
       | AuthenticatorOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: AuthenticatorWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Authenticators from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Authenticators.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Authenticators
+     **/
     _count?: true | AuthenticatorCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: AuthenticatorAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: AuthenticatorSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: AuthenticatorMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: AuthenticatorMaxAggregateInputType;
   };
+
   export type GetAuthenticatorAggregateType<
     T extends AuthenticatorAggregateArgs
   > = {
@@ -5395,6 +9610,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateAuthenticator[P]>
       : GetScalarType<T[P], AggregateAuthenticator[P]>;
   };
+
   export type AuthenticatorGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -5412,6 +9628,7 @@ export namespace Prisma {
     _min?: AuthenticatorMinAggregateInputType;
     _max?: AuthenticatorMaxAggregateInputType;
   };
+
   export type AuthenticatorGroupByOutputType = {
     credentialID: string;
     userId: string;
@@ -5427,6 +9644,7 @@ export namespace Prisma {
     _min: AuthenticatorMinAggregateOutputType | null;
     _max: AuthenticatorMaxAggregateOutputType | null;
   };
+
   type GetAuthenticatorGroupByPayload<T extends AuthenticatorGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -5440,6 +9658,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type AuthenticatorSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -5456,6 +9675,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['authenticator']
   >;
+
   export type AuthenticatorSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -5472,6 +9692,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['authenticator']
   >;
+
   export type AuthenticatorSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -5488,6 +9709,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['authenticator']
   >;
+
   export type AuthenticatorSelectScalar = {
     credentialID?: boolean;
     userId?: boolean;
@@ -5498,6 +9720,7 @@ export namespace Prisma {
     credentialBackedUp?: boolean;
     transports?: boolean;
   };
+
   export type AuthenticatorOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -5526,6 +9749,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $AuthenticatorPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -5548,9 +9772,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type AuthenticatorGetPayload<
     S extends boolean | null | undefined | AuthenticatorDefaultArgs
   > = $Result.GetResult<Prisma.$AuthenticatorPayload, S>;
+
   type AuthenticatorCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -5559,16 +9785,26 @@ export namespace Prisma {
   > & {
     select?: AuthenticatorCountAggregateInputType | true;
   };
+
   export interface AuthenticatorDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['Authenticator'];
-      meta: {
-        name: 'Authenticator';
-      };
+      meta: { name: 'Authenticator' };
     };
+    /**
+     * Find zero or one Authenticator that matches the filter.
+     * @param {AuthenticatorFindUniqueArgs} args - Arguments to find a Authenticator
+     * @example
+     * // Get one Authenticator
+     * const authenticator = await prisma.authenticator.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends AuthenticatorFindUniqueArgs>(
       args: SelectSubset<T, AuthenticatorFindUniqueArgs<ExtArgs>>
     ): Prisma__AuthenticatorClient<
@@ -5582,6 +9818,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one Authenticator that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {AuthenticatorFindUniqueOrThrowArgs} args - Arguments to find a Authenticator
+     * @example
+     * // Get one Authenticator
+     * const authenticator = await prisma.authenticator.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends AuthenticatorFindUniqueOrThrowArgs>(
       args: SelectSubset<T, AuthenticatorFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__AuthenticatorClient<
@@ -5595,6 +9844,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Authenticator that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuthenticatorFindFirstArgs} args - Arguments to find a Authenticator
+     * @example
+     * // Get one Authenticator
+     * const authenticator = await prisma.authenticator.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends AuthenticatorFindFirstArgs>(
       args?: SelectSubset<T, AuthenticatorFindFirstArgs<ExtArgs>>
     ): Prisma__AuthenticatorClient<
@@ -5608,6 +9871,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Authenticator that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuthenticatorFindFirstOrThrowArgs} args - Arguments to find a Authenticator
+     * @example
+     * // Get one Authenticator
+     * const authenticator = await prisma.authenticator.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends AuthenticatorFindFirstOrThrowArgs>(
       args?: SelectSubset<T, AuthenticatorFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__AuthenticatorClient<
@@ -5621,6 +9899,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more Authenticators that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuthenticatorFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Authenticators
+     * const authenticators = await prisma.authenticator.findMany()
+     *
+     * // Get first 10 Authenticators
+     * const authenticators = await prisma.authenticator.findMany({ take: 10 })
+     *
+     * // Only select the `credentialID`
+     * const authenticatorWithCredentialIDOnly = await prisma.authenticator.findMany({ select: { credentialID: true } })
+     *
+     */
     findMany<T extends AuthenticatorFindManyArgs>(
       args?: SelectSubset<T, AuthenticatorFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -5631,6 +9926,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a Authenticator.
+     * @param {AuthenticatorCreateArgs} args - Arguments to create a Authenticator.
+     * @example
+     * // Create one Authenticator
+     * const Authenticator = await prisma.authenticator.create({
+     *   data: {
+     *     // ... data to create a Authenticator
+     *   }
+     * })
+     *
+     */
     create<T extends AuthenticatorCreateArgs>(
       args: SelectSubset<T, AuthenticatorCreateArgs<ExtArgs>>
     ): Prisma__AuthenticatorClient<
@@ -5644,9 +9952,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many Authenticators.
+     * @param {AuthenticatorCreateManyArgs} args - Arguments to create many Authenticators.
+     * @example
+     * // Create many Authenticators
+     * const authenticator = await prisma.authenticator.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends AuthenticatorCreateManyArgs>(
       args?: SelectSubset<T, AuthenticatorCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many Authenticators and returns the data saved in the database.
+     * @param {AuthenticatorCreateManyAndReturnArgs} args - Arguments to create many Authenticators.
+     * @example
+     * // Create many Authenticators
+     * const authenticator = await prisma.authenticator.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Authenticators and only return the `credentialID`
+     * const authenticatorWithCredentialIDOnly = await prisma.authenticator.createManyAndReturn({
+     *   select: { credentialID: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends AuthenticatorCreateManyAndReturnArgs>(
       args?: SelectSubset<T, AuthenticatorCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -5657,6 +10001,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a Authenticator.
+     * @param {AuthenticatorDeleteArgs} args - Arguments to delete one Authenticator.
+     * @example
+     * // Delete one Authenticator
+     * const Authenticator = await prisma.authenticator.delete({
+     *   where: {
+     *     // ... filter to delete one Authenticator
+     *   }
+     * })
+     *
+     */
     delete<T extends AuthenticatorDeleteArgs>(
       args: SelectSubset<T, AuthenticatorDeleteArgs<ExtArgs>>
     ): Prisma__AuthenticatorClient<
@@ -5670,6 +10027,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one Authenticator.
+     * @param {AuthenticatorUpdateArgs} args - Arguments to update one Authenticator.
+     * @example
+     * // Update one Authenticator
+     * const authenticator = await prisma.authenticator.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends AuthenticatorUpdateArgs>(
       args: SelectSubset<T, AuthenticatorUpdateArgs<ExtArgs>>
     ): Prisma__AuthenticatorClient<
@@ -5683,12 +10056,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more Authenticators.
+     * @param {AuthenticatorDeleteManyArgs} args - Arguments to filter Authenticators to delete.
+     * @example
+     * // Delete a few Authenticators
+     * const { count } = await prisma.authenticator.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends AuthenticatorDeleteManyArgs>(
       args?: SelectSubset<T, AuthenticatorDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Authenticators.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuthenticatorUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Authenticators
+     * const authenticator = await prisma.authenticator.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends AuthenticatorUpdateManyArgs>(
       args: SelectSubset<T, AuthenticatorUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Authenticators and returns the data updated in the database.
+     * @param {AuthenticatorUpdateManyAndReturnArgs} args - Arguments to update many Authenticators.
+     * @example
+     * // Update many Authenticators
+     * const authenticator = await prisma.authenticator.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Authenticators and only return the `credentialID`
+     * const authenticatorWithCredentialIDOnly = await prisma.authenticator.updateManyAndReturn({
+     *   select: { credentialID: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends AuthenticatorUpdateManyAndReturnArgs>(
       args: SelectSubset<T, AuthenticatorUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -5699,6 +10132,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one Authenticator.
+     * @param {AuthenticatorUpsertArgs} args - Arguments to update or create a Authenticator.
+     * @example
+     * // Update or create a Authenticator
+     * const authenticator = await prisma.authenticator.upsert({
+     *   create: {
+     *     // ... data to create a Authenticator
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Authenticator we want to update
+     *   }
+     * })
+     */
     upsert<T extends AuthenticatorUpsertArgs>(
       args: SelectSubset<T, AuthenticatorUpsertArgs<ExtArgs>>
     ): Prisma__AuthenticatorClient<
@@ -5712,6 +10163,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of Authenticators.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuthenticatorCountArgs} args - Arguments to filter Authenticators to count.
+     * @example
+     * // Count the number of Authenticators
+     * const count = await prisma.authenticator.count({
+     *   where: {
+     *     // ... the filter for the Authenticators we want to count
+     *   }
+     * })
+     **/
     count<T extends AuthenticatorCountArgs>(
       args?: Subset<T, AuthenticatorCountArgs>
     ): Prisma.PrismaPromise<
@@ -5721,9 +10186,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], AuthenticatorCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a Authenticator.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuthenticatorAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends AuthenticatorAggregateArgs>(
       args: Subset<T, AuthenticatorAggregateArgs>
     ): Prisma.PrismaPromise<GetAuthenticatorAggregateType<T>>;
+
+    /**
+     * Group by Authenticator.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {AuthenticatorGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends AuthenticatorGroupByArgs,
       HasSelectOrTake extends Or<
@@ -5731,12 +10240,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: AuthenticatorGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: AuthenticatorGroupByArgs['orderBy'];
-          },
+        ? { orderBy: AuthenticatorGroupByArgs['orderBy'] }
+        : { orderBy?: AuthenticatorGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -5793,8 +10298,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetAuthenticatorGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the Authenticator model
+     */
     readonly fields: AuthenticatorFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Authenticator.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__AuthenticatorClient<
     T,
     Null = never,
@@ -5816,6 +10331,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -5826,14 +10347,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the Authenticator model
+   */
   interface AuthenticatorFieldRefs {
     readonly credentialID: FieldRef<'Authenticator', 'String'>;
     readonly userId: FieldRef<'Authenticator', 'String'>;
@@ -5844,153 +10380,463 @@ export namespace Prisma {
     readonly credentialBackedUp: FieldRef<'Authenticator', 'Boolean'>;
     readonly transports: FieldRef<'Authenticator', 'String'>;
   }
+
+  // Custom InputTypes
+  /**
+   * Authenticator findUnique
+   */
   export type AuthenticatorFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * Filter, which Authenticator to fetch.
+     */
     where: AuthenticatorWhereUniqueInput;
   };
+
+  /**
+   * Authenticator findUniqueOrThrow
+   */
   export type AuthenticatorFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * Filter, which Authenticator to fetch.
+     */
     where: AuthenticatorWhereUniqueInput;
   };
+
+  /**
+   * Authenticator findFirst
+   */
   export type AuthenticatorFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * Filter, which Authenticator to fetch.
+     */
     where?: AuthenticatorWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Authenticators to fetch.
+     */
     orderBy?:
       | AuthenticatorOrderByWithRelationInput
       | AuthenticatorOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Authenticators.
+     */
     cursor?: AuthenticatorWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Authenticators from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Authenticators.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Authenticators.
+     */
     distinct?: AuthenticatorScalarFieldEnum | AuthenticatorScalarFieldEnum[];
   };
+
+  /**
+   * Authenticator findFirstOrThrow
+   */
   export type AuthenticatorFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * Filter, which Authenticator to fetch.
+     */
     where?: AuthenticatorWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Authenticators to fetch.
+     */
     orderBy?:
       | AuthenticatorOrderByWithRelationInput
       | AuthenticatorOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Authenticators.
+     */
     cursor?: AuthenticatorWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Authenticators from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Authenticators.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Authenticators.
+     */
     distinct?: AuthenticatorScalarFieldEnum | AuthenticatorScalarFieldEnum[];
   };
+
+  /**
+   * Authenticator findMany
+   */
   export type AuthenticatorFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * Filter, which Authenticators to fetch.
+     */
     where?: AuthenticatorWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Authenticators to fetch.
+     */
     orderBy?:
       | AuthenticatorOrderByWithRelationInput
       | AuthenticatorOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Authenticators.
+     */
     cursor?: AuthenticatorWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Authenticators from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Authenticators.
+     */
     skip?: number;
     distinct?: AuthenticatorScalarFieldEnum | AuthenticatorScalarFieldEnum[];
   };
+
+  /**
+   * Authenticator create
+   */
   export type AuthenticatorCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a Authenticator.
+     */
     data: XOR<AuthenticatorCreateInput, AuthenticatorUncheckedCreateInput>;
   };
+
+  /**
+   * Authenticator createMany
+   */
   export type AuthenticatorCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many Authenticators.
+     */
     data: AuthenticatorCreateManyInput | AuthenticatorCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * Authenticator createManyAndReturn
+   */
   export type AuthenticatorCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * The data used to create many Authenticators.
+     */
     data: AuthenticatorCreateManyInput | AuthenticatorCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Authenticator update
+   */
   export type AuthenticatorUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a Authenticator.
+     */
     data: XOR<AuthenticatorUpdateInput, AuthenticatorUncheckedUpdateInput>;
+    /**
+     * Choose, which Authenticator to update.
+     */
     where: AuthenticatorWhereUniqueInput;
   };
+
+  /**
+   * Authenticator updateMany
+   */
   export type AuthenticatorUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update Authenticators.
+     */
     data: XOR<
       AuthenticatorUpdateManyMutationInput,
       AuthenticatorUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which Authenticators to update
+     */
     where?: AuthenticatorWhereInput;
+    /**
+     * Limit how many Authenticators to update.
+     */
     limit?: number;
   };
+
+  /**
+   * Authenticator updateManyAndReturn
+   */
   export type AuthenticatorUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * The data used to update Authenticators.
+     */
     data: XOR<
       AuthenticatorUpdateManyMutationInput,
       AuthenticatorUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which Authenticators to update
+     */
     where?: AuthenticatorWhereInput;
+    /**
+     * Limit how many Authenticators to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Authenticator upsert
+   */
   export type AuthenticatorUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the Authenticator to update in case it exists.
+     */
     where: AuthenticatorWhereUniqueInput;
+    /**
+     * In case the Authenticator found by the `where` argument doesn't exist, create a new Authenticator with this data.
+     */
     create: XOR<AuthenticatorCreateInput, AuthenticatorUncheckedCreateInput>;
+    /**
+     * In case the Authenticator was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<AuthenticatorUpdateInput, AuthenticatorUncheckedUpdateInput>;
   };
+
+  /**
+   * Authenticator delete
+   */
   export type AuthenticatorDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
+    /**
+     * Filter which Authenticator to delete.
+     */
     where: AuthenticatorWhereUniqueInput;
   };
+
+  /**
+   * Authenticator deleteMany
+   */
   export type AuthenticatorDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Authenticators to delete
+     */
     where?: AuthenticatorWhereInput;
+    /**
+     * Limit how many Authenticators to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * Authenticator without action
+   */
   export type AuthenticatorDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Authenticator
+     */
     select?: AuthenticatorSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Authenticator
+     */
     omit?: AuthenticatorOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: AuthenticatorInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model Game
+   */
+
   export type AggregateGame = {
     _count: GameCountAggregateOutputType | null;
     _avg: GameAvgAggregateOutputType | null;
@@ -5998,6 +10844,7 @@ export namespace Prisma {
     _min: GameMinAggregateOutputType | null;
     _max: GameMaxAggregateOutputType | null;
   };
+
   export type GameAvgAggregateOutputType = {
     whitePregameRating: number | null;
     blackPregameRating: number | null;
@@ -6005,6 +10852,7 @@ export namespace Prisma {
     blackRatingDelta: number | null;
     moveCount: number | null;
   };
+
   export type GameSumAggregateOutputType = {
     whitePregameRating: number | null;
     blackPregameRating: number | null;
@@ -6012,6 +10860,7 @@ export namespace Prisma {
     blackRatingDelta: number | null;
     moveCount: number | null;
   };
+
   export type GameMinAggregateOutputType = {
     id: string | null;
     roomId: string | null;
@@ -6031,6 +10880,7 @@ export namespace Prisma {
     playedAt: Date | null;
     createdAt: Date | null;
   };
+
   export type GameMaxAggregateOutputType = {
     id: string | null;
     roomId: string | null;
@@ -6050,6 +10900,7 @@ export namespace Prisma {
     playedAt: Date | null;
     createdAt: Date | null;
   };
+
   export type GameCountAggregateOutputType = {
     id: number;
     roomId: number;
@@ -6072,6 +10923,7 @@ export namespace Prisma {
     createdAt: number;
     _all: number;
   };
+
   export type GameAvgAggregateInputType = {
     whitePregameRating?: true;
     blackPregameRating?: true;
@@ -6079,6 +10931,7 @@ export namespace Prisma {
     blackRatingDelta?: true;
     moveCount?: true;
   };
+
   export type GameSumAggregateInputType = {
     whitePregameRating?: true;
     blackPregameRating?: true;
@@ -6086,6 +10939,7 @@ export namespace Prisma {
     blackRatingDelta?: true;
     moveCount?: true;
   };
+
   export type GameMinAggregateInputType = {
     id?: true;
     roomId?: true;
@@ -6105,6 +10959,7 @@ export namespace Prisma {
     playedAt?: true;
     createdAt?: true;
   };
+
   export type GameMaxAggregateInputType = {
     id?: true;
     roomId?: true;
@@ -6124,6 +10979,7 @@ export namespace Prisma {
     playedAt?: true;
     createdAt?: true;
   };
+
   export type GameCountAggregateInputType = {
     id?: true;
     roomId?: true;
@@ -6146,20 +11002,70 @@ export namespace Prisma {
     createdAt?: true;
     _all?: true;
   };
+
   export type GameAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Game to aggregate.
+     */
     where?: GameWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Games to fetch.
+     */
     orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: GameWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Games from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Games.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Games
+     **/
     _count?: true | GameCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: GameAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: GameSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: GameMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: GameMaxAggregateInputType;
   };
+
   export type GetGameAggregateType<T extends GameAggregateArgs> = {
     [P in keyof T & keyof AggregateGame]: P extends '_count' | 'count'
       ? T[P] extends true
@@ -6167,6 +11073,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateGame[P]>
       : GetScalarType<T[P], AggregateGame[P]>;
   };
+
   export type GameGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -6184,6 +11091,7 @@ export namespace Prisma {
     _min?: GameMinAggregateInputType;
     _max?: GameMaxAggregateInputType;
   };
+
   export type GameGroupByOutputType = {
     id: string;
     roomId: string | null;
@@ -6210,6 +11118,7 @@ export namespace Prisma {
     _min: GameMinAggregateOutputType | null;
     _max: GameMaxAggregateOutputType | null;
   };
+
   type GetGameGroupByPayload<T extends GameGroupByArgs> = Prisma.PrismaPromise<
     Array<
       PickEnumerable<GameGroupByOutputType, T['by']> & {
@@ -6221,6 +11130,7 @@ export namespace Prisma {
       }
     >
   >;
+
   export type GameSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -6250,6 +11160,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['game']
   >;
+
   export type GameSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -6278,6 +11189,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['game']
   >;
+
   export type GameSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -6306,6 +11218,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['game']
   >;
+
   export type GameSelectScalar = {
     id?: boolean;
     roomId?: boolean;
@@ -6327,6 +11240,7 @@ export namespace Prisma {
     playedAt?: boolean;
     createdAt?: boolean;
   };
+
   export type GameOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -6370,6 +11284,7 @@ export namespace Prisma {
     white?: boolean | Game$whiteArgs<ExtArgs>;
     black?: boolean | Game$blackArgs<ExtArgs>;
   };
+
   export type $GamePayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -6405,23 +11320,35 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type GameGetPayload<S extends boolean | null | undefined | GameDefaultArgs> =
     $Result.GetResult<Prisma.$GamePayload, S>;
+
   type GameCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<GameFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
     select?: GameCountAggregateInputType | true;
   };
+
   export interface GameDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['Game'];
-      meta: {
-        name: 'Game';
-      };
+      meta: { name: 'Game' };
     };
+    /**
+     * Find zero or one Game that matches the filter.
+     * @param {GameFindUniqueArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends GameFindUniqueArgs>(
       args: SelectSubset<T, GameFindUniqueArgs<ExtArgs>>
     ): Prisma__GameClient<
@@ -6435,6 +11362,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one Game that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GameFindUniqueOrThrowArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends GameFindUniqueOrThrowArgs>(
       args: SelectSubset<T, GameFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__GameClient<
@@ -6448,6 +11388,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Game that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindFirstArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends GameFindFirstArgs>(
       args?: SelectSubset<T, GameFindFirstArgs<ExtArgs>>
     ): Prisma__GameClient<
@@ -6461,6 +11415,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Game that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindFirstOrThrowArgs} args - Arguments to find a Game
+     * @example
+     * // Get one Game
+     * const game = await prisma.game.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends GameFindFirstOrThrowArgs>(
       args?: SelectSubset<T, GameFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__GameClient<
@@ -6474,6 +11443,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more Games that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Games
+     * const games = await prisma.game.findMany()
+     *
+     * // Get first 10 Games
+     * const games = await prisma.game.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const gameWithIdOnly = await prisma.game.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends GameFindManyArgs>(
       args?: SelectSubset<T, GameFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -6484,6 +11470,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a Game.
+     * @param {GameCreateArgs} args - Arguments to create a Game.
+     * @example
+     * // Create one Game
+     * const Game = await prisma.game.create({
+     *   data: {
+     *     // ... data to create a Game
+     *   }
+     * })
+     *
+     */
     create<T extends GameCreateArgs>(
       args: SelectSubset<T, GameCreateArgs<ExtArgs>>
     ): Prisma__GameClient<
@@ -6497,9 +11496,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many Games.
+     * @param {GameCreateManyArgs} args - Arguments to create many Games.
+     * @example
+     * // Create many Games
+     * const game = await prisma.game.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends GameCreateManyArgs>(
       args?: SelectSubset<T, GameCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many Games and returns the data saved in the database.
+     * @param {GameCreateManyAndReturnArgs} args - Arguments to create many Games.
+     * @example
+     * // Create many Games
+     * const game = await prisma.game.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Games and only return the `id`
+     * const gameWithIdOnly = await prisma.game.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends GameCreateManyAndReturnArgs>(
       args?: SelectSubset<T, GameCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -6510,6 +11545,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a Game.
+     * @param {GameDeleteArgs} args - Arguments to delete one Game.
+     * @example
+     * // Delete one Game
+     * const Game = await prisma.game.delete({
+     *   where: {
+     *     // ... filter to delete one Game
+     *   }
+     * })
+     *
+     */
     delete<T extends GameDeleteArgs>(
       args: SelectSubset<T, GameDeleteArgs<ExtArgs>>
     ): Prisma__GameClient<
@@ -6523,6 +11571,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one Game.
+     * @param {GameUpdateArgs} args - Arguments to update one Game.
+     * @example
+     * // Update one Game
+     * const game = await prisma.game.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends GameUpdateArgs>(
       args: SelectSubset<T, GameUpdateArgs<ExtArgs>>
     ): Prisma__GameClient<
@@ -6536,12 +11600,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more Games.
+     * @param {GameDeleteManyArgs} args - Arguments to filter Games to delete.
+     * @example
+     * // Delete a few Games
+     * const { count } = await prisma.game.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends GameDeleteManyArgs>(
       args?: SelectSubset<T, GameDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Games.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Games
+     * const game = await prisma.game.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends GameUpdateManyArgs>(
       args: SelectSubset<T, GameUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Games and returns the data updated in the database.
+     * @param {GameUpdateManyAndReturnArgs} args - Arguments to update many Games.
+     * @example
+     * // Update many Games
+     * const game = await prisma.game.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Games and only return the `id`
+     * const gameWithIdOnly = await prisma.game.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends GameUpdateManyAndReturnArgs>(
       args: SelectSubset<T, GameUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -6552,6 +11676,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one Game.
+     * @param {GameUpsertArgs} args - Arguments to update or create a Game.
+     * @example
+     * // Update or create a Game
+     * const game = await prisma.game.upsert({
+     *   create: {
+     *     // ... data to create a Game
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Game we want to update
+     *   }
+     * })
+     */
     upsert<T extends GameUpsertArgs>(
       args: SelectSubset<T, GameUpsertArgs<ExtArgs>>
     ): Prisma__GameClient<
@@ -6565,6 +11707,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of Games.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameCountArgs} args - Arguments to filter Games to count.
+     * @example
+     * // Count the number of Games
+     * const count = await prisma.game.count({
+     *   where: {
+     *     // ... the filter for the Games we want to count
+     *   }
+     * })
+     **/
     count<T extends GameCountArgs>(
       args?: Subset<T, GameCountArgs>
     ): Prisma.PrismaPromise<
@@ -6574,9 +11730,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], GameCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a Game.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends GameAggregateArgs>(
       args: Subset<T, GameAggregateArgs>
     ): Prisma.PrismaPromise<GetGameAggregateType<T>>;
+
+    /**
+     * Group by Game.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends GameGroupByArgs,
       HasSelectOrTake extends Or<
@@ -6584,12 +11784,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: GameGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: GameGroupByArgs['orderBy'];
-          },
+        ? { orderBy: GameGroupByArgs['orderBy'] }
+        : { orderBy?: GameGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -6645,8 +11841,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetGameGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the Game model
+     */
     readonly fields: GameFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Game.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__GameClient<
     T,
     Null = never,
@@ -6693,6 +11899,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -6703,14 +11915,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the Game model
+   */
   interface GameFieldRefs {
     readonly id: FieldRef<'Game', 'String'>;
     readonly roomId: FieldRef<'Game', 'String'>;
@@ -6732,182 +11959,534 @@ export namespace Prisma {
     readonly playedAt: FieldRef<'Game', 'DateTime'>;
     readonly createdAt: FieldRef<'Game', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * Game findUnique
+   */
   export type GameFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Game to fetch.
+     */
     where: GameWhereUniqueInput;
   };
+
+  /**
+   * Game findUniqueOrThrow
+   */
   export type GameFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Game to fetch.
+     */
     where: GameWhereUniqueInput;
   };
+
+  /**
+   * Game findFirst
+   */
   export type GameFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Game to fetch.
+     */
     where?: GameWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Games to fetch.
+     */
     orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Games.
+     */
     cursor?: GameWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Games from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Games.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Games.
+     */
     distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
   };
+
+  /**
+   * Game findFirstOrThrow
+   */
   export type GameFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Game to fetch.
+     */
     where?: GameWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Games to fetch.
+     */
     orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Games.
+     */
     cursor?: GameWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Games from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Games.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Games.
+     */
     distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
   };
+
+  /**
+   * Game findMany
+   */
   export type GameFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter, which Games to fetch.
+     */
     where?: GameWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Games to fetch.
+     */
     orderBy?: GameOrderByWithRelationInput | GameOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Games.
+     */
     cursor?: GameWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Games from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Games.
+     */
     skip?: number;
     distinct?: GameScalarFieldEnum | GameScalarFieldEnum[];
   };
+
+  /**
+   * Game create
+   */
   export type GameCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a Game.
+     */
     data: XOR<GameCreateInput, GameUncheckedCreateInput>;
   };
+
+  /**
+   * Game createMany
+   */
   export type GameCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many Games.
+     */
     data: GameCreateManyInput | GameCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * Game createManyAndReturn
+   */
   export type GameCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * The data used to create many Games.
+     */
     data: GameCreateManyInput | GameCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Game update
+   */
   export type GameUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a Game.
+     */
     data: XOR<GameUpdateInput, GameUncheckedUpdateInput>;
+    /**
+     * Choose, which Game to update.
+     */
     where: GameWhereUniqueInput;
   };
+
+  /**
+   * Game updateMany
+   */
   export type GameUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update Games.
+     */
     data: XOR<GameUpdateManyMutationInput, GameUncheckedUpdateManyInput>;
+    /**
+     * Filter which Games to update
+     */
     where?: GameWhereInput;
+    /**
+     * Limit how many Games to update.
+     */
     limit?: number;
   };
+
+  /**
+   * Game updateManyAndReturn
+   */
   export type GameUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * The data used to update Games.
+     */
     data: XOR<GameUpdateManyMutationInput, GameUncheckedUpdateManyInput>;
+    /**
+     * Filter which Games to update
+     */
     where?: GameWhereInput;
+    /**
+     * Limit how many Games to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Game upsert
+   */
   export type GameUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the Game to update in case it exists.
+     */
     where: GameWhereUniqueInput;
+    /**
+     * In case the Game found by the `where` argument doesn't exist, create a new Game with this data.
+     */
     create: XOR<GameCreateInput, GameUncheckedCreateInput>;
+    /**
+     * In case the Game was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<GameUpdateInput, GameUncheckedUpdateInput>;
   };
+
+  /**
+   * Game delete
+   */
   export type GameDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
+    /**
+     * Filter which Game to delete.
+     */
     where: GameWhereUniqueInput;
   };
+
+  /**
+   * Game deleteMany
+   */
   export type GameDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Games to delete
+     */
     where?: GameWhereInput;
+    /**
+     * Limit how many Games to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * Game.white
+   */
   export type Game$whiteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
     where?: UserWhereInput;
   };
+
+  /**
+   * Game.black
+   */
   export type Game$blackArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the User
+     */
     select?: UserSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the User
+     */
     omit?: UserOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: UserInclude<ExtArgs> | null;
     where?: UserWhereInput;
   };
+
+  /**
+   * Game.analysis
+   */
   export type Game$analysisArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
     where?: GameAnalysisWhereInput;
   };
+
+  /**
+   * Game without action
+   */
   export type GameDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Game
+     */
     select?: GameSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Game
+     */
     omit?: GameOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model GameAnalysis
+   */
+
   export type AggregateGameAnalysis = {
     _count: GameAnalysisCountAggregateOutputType | null;
     _min: GameAnalysisMinAggregateOutputType | null;
     _max: GameAnalysisMaxAggregateOutputType | null;
   };
+
   export type GameAnalysisMinAggregateOutputType = {
     id: string | null;
     gameId: string | null;
     userId: string | null;
     createdAt: Date | null;
   };
+
   export type GameAnalysisMaxAggregateOutputType = {
     id: string | null;
     gameId: string | null;
     userId: string | null;
     createdAt: Date | null;
   };
+
   export type GameAnalysisCountAggregateOutputType = {
     id: number;
     gameId: number;
@@ -6916,18 +12495,21 @@ export namespace Prisma {
     createdAt: number;
     _all: number;
   };
+
   export type GameAnalysisMinAggregateInputType = {
     id?: true;
     gameId?: true;
     userId?: true;
     createdAt?: true;
   };
+
   export type GameAnalysisMaxAggregateInputType = {
     id?: true;
     gameId?: true;
     userId?: true;
     createdAt?: true;
   };
+
   export type GameAnalysisCountAggregateInputType = {
     id?: true;
     gameId?: true;
@@ -6936,20 +12518,60 @@ export namespace Prisma {
     createdAt?: true;
     _all?: true;
   };
+
   export type GameAnalysisAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which GameAnalysis to aggregate.
+     */
     where?: GameAnalysisWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GameAnalyses to fetch.
+     */
     orderBy?:
       | GameAnalysisOrderByWithRelationInput
       | GameAnalysisOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: GameAnalysisWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GameAnalyses from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GameAnalyses.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned GameAnalyses
+     **/
     _count?: true | GameAnalysisCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: GameAnalysisMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: GameAnalysisMaxAggregateInputType;
   };
+
   export type GetGameAnalysisAggregateType<
     T extends GameAnalysisAggregateArgs
   > = {
@@ -6959,6 +12581,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateGameAnalysis[P]>
       : GetScalarType<T[P], AggregateGameAnalysis[P]>;
   };
+
   export type GameAnalysisGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -6974,6 +12597,7 @@ export namespace Prisma {
     _min?: GameAnalysisMinAggregateInputType;
     _max?: GameAnalysisMaxAggregateInputType;
   };
+
   export type GameAnalysisGroupByOutputType = {
     id: string;
     gameId: string;
@@ -6984,6 +12608,7 @@ export namespace Prisma {
     _min: GameAnalysisMinAggregateOutputType | null;
     _max: GameAnalysisMaxAggregateOutputType | null;
   };
+
   type GetGameAnalysisGroupByPayload<T extends GameAnalysisGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -6997,6 +12622,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type GameAnalysisSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -7011,6 +12637,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['gameAnalysis']
   >;
+
   export type GameAnalysisSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -7025,6 +12652,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['gameAnalysis']
   >;
+
   export type GameAnalysisSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -7039,6 +12667,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['gameAnalysis']
   >;
+
   export type GameAnalysisSelectScalar = {
     id?: boolean;
     gameId?: boolean;
@@ -7046,6 +12675,7 @@ export namespace Prisma {
     results?: boolean;
     createdAt?: boolean;
   };
+
   export type GameAnalysisOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -7070,6 +12700,7 @@ export namespace Prisma {
     game?: boolean | GameDefaultArgs<ExtArgs>;
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $GameAnalysisPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -7090,9 +12721,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type GameAnalysisGetPayload<
     S extends boolean | null | undefined | GameAnalysisDefaultArgs
   > = $Result.GetResult<Prisma.$GameAnalysisPayload, S>;
+
   type GameAnalysisCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -7101,16 +12734,26 @@ export namespace Prisma {
   > & {
     select?: GameAnalysisCountAggregateInputType | true;
   };
+
   export interface GameAnalysisDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['GameAnalysis'];
-      meta: {
-        name: 'GameAnalysis';
-      };
+      meta: { name: 'GameAnalysis' };
     };
+    /**
+     * Find zero or one GameAnalysis that matches the filter.
+     * @param {GameAnalysisFindUniqueArgs} args - Arguments to find a GameAnalysis
+     * @example
+     * // Get one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends GameAnalysisFindUniqueArgs>(
       args: SelectSubset<T, GameAnalysisFindUniqueArgs<ExtArgs>>
     ): Prisma__GameAnalysisClient<
@@ -7124,6 +12767,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one GameAnalysis that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GameAnalysisFindUniqueOrThrowArgs} args - Arguments to find a GameAnalysis
+     * @example
+     * // Get one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends GameAnalysisFindUniqueOrThrowArgs>(
       args: SelectSubset<T, GameAnalysisFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__GameAnalysisClient<
@@ -7137,6 +12793,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first GameAnalysis that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisFindFirstArgs} args - Arguments to find a GameAnalysis
+     * @example
+     * // Get one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends GameAnalysisFindFirstArgs>(
       args?: SelectSubset<T, GameAnalysisFindFirstArgs<ExtArgs>>
     ): Prisma__GameAnalysisClient<
@@ -7150,6 +12820,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first GameAnalysis that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisFindFirstOrThrowArgs} args - Arguments to find a GameAnalysis
+     * @example
+     * // Get one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends GameAnalysisFindFirstOrThrowArgs>(
       args?: SelectSubset<T, GameAnalysisFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__GameAnalysisClient<
@@ -7163,6 +12848,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more GameAnalyses that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GameAnalyses
+     * const gameAnalyses = await prisma.gameAnalysis.findMany()
+     *
+     * // Get first 10 GameAnalyses
+     * const gameAnalyses = await prisma.gameAnalysis.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const gameAnalysisWithIdOnly = await prisma.gameAnalysis.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends GameAnalysisFindManyArgs>(
       args?: SelectSubset<T, GameAnalysisFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -7173,6 +12875,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a GameAnalysis.
+     * @param {GameAnalysisCreateArgs} args - Arguments to create a GameAnalysis.
+     * @example
+     * // Create one GameAnalysis
+     * const GameAnalysis = await prisma.gameAnalysis.create({
+     *   data: {
+     *     // ... data to create a GameAnalysis
+     *   }
+     * })
+     *
+     */
     create<T extends GameAnalysisCreateArgs>(
       args: SelectSubset<T, GameAnalysisCreateArgs<ExtArgs>>
     ): Prisma__GameAnalysisClient<
@@ -7186,9 +12901,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many GameAnalyses.
+     * @param {GameAnalysisCreateManyArgs} args - Arguments to create many GameAnalyses.
+     * @example
+     * // Create many GameAnalyses
+     * const gameAnalysis = await prisma.gameAnalysis.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends GameAnalysisCreateManyArgs>(
       args?: SelectSubset<T, GameAnalysisCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many GameAnalyses and returns the data saved in the database.
+     * @param {GameAnalysisCreateManyAndReturnArgs} args - Arguments to create many GameAnalyses.
+     * @example
+     * // Create many GameAnalyses
+     * const gameAnalysis = await prisma.gameAnalysis.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many GameAnalyses and only return the `id`
+     * const gameAnalysisWithIdOnly = await prisma.gameAnalysis.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends GameAnalysisCreateManyAndReturnArgs>(
       args?: SelectSubset<T, GameAnalysisCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -7199,6 +12950,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a GameAnalysis.
+     * @param {GameAnalysisDeleteArgs} args - Arguments to delete one GameAnalysis.
+     * @example
+     * // Delete one GameAnalysis
+     * const GameAnalysis = await prisma.gameAnalysis.delete({
+     *   where: {
+     *     // ... filter to delete one GameAnalysis
+     *   }
+     * })
+     *
+     */
     delete<T extends GameAnalysisDeleteArgs>(
       args: SelectSubset<T, GameAnalysisDeleteArgs<ExtArgs>>
     ): Prisma__GameAnalysisClient<
@@ -7212,6 +12976,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one GameAnalysis.
+     * @param {GameAnalysisUpdateArgs} args - Arguments to update one GameAnalysis.
+     * @example
+     * // Update one GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends GameAnalysisUpdateArgs>(
       args: SelectSubset<T, GameAnalysisUpdateArgs<ExtArgs>>
     ): Prisma__GameAnalysisClient<
@@ -7225,12 +13005,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more GameAnalyses.
+     * @param {GameAnalysisDeleteManyArgs} args - Arguments to filter GameAnalyses to delete.
+     * @example
+     * // Delete a few GameAnalyses
+     * const { count } = await prisma.gameAnalysis.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends GameAnalysisDeleteManyArgs>(
       args?: SelectSubset<T, GameAnalysisDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more GameAnalyses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GameAnalyses
+     * const gameAnalysis = await prisma.gameAnalysis.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends GameAnalysisUpdateManyArgs>(
       args: SelectSubset<T, GameAnalysisUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more GameAnalyses and returns the data updated in the database.
+     * @param {GameAnalysisUpdateManyAndReturnArgs} args - Arguments to update many GameAnalyses.
+     * @example
+     * // Update many GameAnalyses
+     * const gameAnalysis = await prisma.gameAnalysis.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more GameAnalyses and only return the `id`
+     * const gameAnalysisWithIdOnly = await prisma.gameAnalysis.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends GameAnalysisUpdateManyAndReturnArgs>(
       args: SelectSubset<T, GameAnalysisUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -7241,6 +13081,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one GameAnalysis.
+     * @param {GameAnalysisUpsertArgs} args - Arguments to update or create a GameAnalysis.
+     * @example
+     * // Update or create a GameAnalysis
+     * const gameAnalysis = await prisma.gameAnalysis.upsert({
+     *   create: {
+     *     // ... data to create a GameAnalysis
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GameAnalysis we want to update
+     *   }
+     * })
+     */
     upsert<T extends GameAnalysisUpsertArgs>(
       args: SelectSubset<T, GameAnalysisUpsertArgs<ExtArgs>>
     ): Prisma__GameAnalysisClient<
@@ -7254,6 +13112,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of GameAnalyses.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisCountArgs} args - Arguments to filter GameAnalyses to count.
+     * @example
+     * // Count the number of GameAnalyses
+     * const count = await prisma.gameAnalysis.count({
+     *   where: {
+     *     // ... the filter for the GameAnalyses we want to count
+     *   }
+     * })
+     **/
     count<T extends GameAnalysisCountArgs>(
       args?: Subset<T, GameAnalysisCountArgs>
     ): Prisma.PrismaPromise<
@@ -7263,9 +13135,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], GameAnalysisCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a GameAnalysis.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends GameAnalysisAggregateArgs>(
       args: Subset<T, GameAnalysisAggregateArgs>
     ): Prisma.PrismaPromise<GetGameAnalysisAggregateType<T>>;
+
+    /**
+     * Group by GameAnalysis.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GameAnalysisGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends GameAnalysisGroupByArgs,
       HasSelectOrTake extends Or<
@@ -7273,12 +13189,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: GameAnalysisGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: GameAnalysisGroupByArgs['orderBy'];
-          },
+        ? { orderBy: GameAnalysisGroupByArgs['orderBy'] }
+        : { orderBy?: GameAnalysisGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -7335,8 +13247,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetGameAnalysisGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the GameAnalysis model
+     */
     readonly fields: GameAnalysisFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GameAnalysis.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__GameAnalysisClient<
     T,
     Null = never,
@@ -7372,6 +13294,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -7382,14 +13310,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the GameAnalysis model
+   */
   interface GameAnalysisFieldRefs {
     readonly id: FieldRef<'GameAnalysis', 'String'>;
     readonly gameId: FieldRef<'GameAnalysis', 'String'>;
@@ -7397,153 +13340,463 @@ export namespace Prisma {
     readonly results: FieldRef<'GameAnalysis', 'Json'>;
     readonly createdAt: FieldRef<'GameAnalysis', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * GameAnalysis findUnique
+   */
   export type GameAnalysisFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalysis to fetch.
+     */
     where: GameAnalysisWhereUniqueInput;
   };
+
+  /**
+   * GameAnalysis findUniqueOrThrow
+   */
   export type GameAnalysisFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalysis to fetch.
+     */
     where: GameAnalysisWhereUniqueInput;
   };
+
+  /**
+   * GameAnalysis findFirst
+   */
   export type GameAnalysisFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalysis to fetch.
+     */
     where?: GameAnalysisWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GameAnalyses to fetch.
+     */
     orderBy?:
       | GameAnalysisOrderByWithRelationInput
       | GameAnalysisOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for GameAnalyses.
+     */
     cursor?: GameAnalysisWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GameAnalyses from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GameAnalyses.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of GameAnalyses.
+     */
     distinct?: GameAnalysisScalarFieldEnum | GameAnalysisScalarFieldEnum[];
   };
+
+  /**
+   * GameAnalysis findFirstOrThrow
+   */
   export type GameAnalysisFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalysis to fetch.
+     */
     where?: GameAnalysisWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GameAnalyses to fetch.
+     */
     orderBy?:
       | GameAnalysisOrderByWithRelationInput
       | GameAnalysisOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for GameAnalyses.
+     */
     cursor?: GameAnalysisWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GameAnalyses from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GameAnalyses.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of GameAnalyses.
+     */
     distinct?: GameAnalysisScalarFieldEnum | GameAnalysisScalarFieldEnum[];
   };
+
+  /**
+   * GameAnalysis findMany
+   */
   export type GameAnalysisFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter, which GameAnalyses to fetch.
+     */
     where?: GameAnalysisWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of GameAnalyses to fetch.
+     */
     orderBy?:
       | GameAnalysisOrderByWithRelationInput
       | GameAnalysisOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing GameAnalyses.
+     */
     cursor?: GameAnalysisWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` GameAnalyses from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` GameAnalyses.
+     */
     skip?: number;
     distinct?: GameAnalysisScalarFieldEnum | GameAnalysisScalarFieldEnum[];
   };
+
+  /**
+   * GameAnalysis create
+   */
   export type GameAnalysisCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a GameAnalysis.
+     */
     data: XOR<GameAnalysisCreateInput, GameAnalysisUncheckedCreateInput>;
   };
+
+  /**
+   * GameAnalysis createMany
+   */
   export type GameAnalysisCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many GameAnalyses.
+     */
     data: GameAnalysisCreateManyInput | GameAnalysisCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * GameAnalysis createManyAndReturn
+   */
   export type GameAnalysisCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * The data used to create many GameAnalyses.
+     */
     data: GameAnalysisCreateManyInput | GameAnalysisCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * GameAnalysis update
+   */
   export type GameAnalysisUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a GameAnalysis.
+     */
     data: XOR<GameAnalysisUpdateInput, GameAnalysisUncheckedUpdateInput>;
+    /**
+     * Choose, which GameAnalysis to update.
+     */
     where: GameAnalysisWhereUniqueInput;
   };
+
+  /**
+   * GameAnalysis updateMany
+   */
   export type GameAnalysisUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update GameAnalyses.
+     */
     data: XOR<
       GameAnalysisUpdateManyMutationInput,
       GameAnalysisUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which GameAnalyses to update
+     */
     where?: GameAnalysisWhereInput;
+    /**
+     * Limit how many GameAnalyses to update.
+     */
     limit?: number;
   };
+
+  /**
+   * GameAnalysis updateManyAndReturn
+   */
   export type GameAnalysisUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * The data used to update GameAnalyses.
+     */
     data: XOR<
       GameAnalysisUpdateManyMutationInput,
       GameAnalysisUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which GameAnalyses to update
+     */
     where?: GameAnalysisWhereInput;
+    /**
+     * Limit how many GameAnalyses to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * GameAnalysis upsert
+   */
   export type GameAnalysisUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the GameAnalysis to update in case it exists.
+     */
     where: GameAnalysisWhereUniqueInput;
+    /**
+     * In case the GameAnalysis found by the `where` argument doesn't exist, create a new GameAnalysis with this data.
+     */
     create: XOR<GameAnalysisCreateInput, GameAnalysisUncheckedCreateInput>;
+    /**
+     * In case the GameAnalysis was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<GameAnalysisUpdateInput, GameAnalysisUncheckedUpdateInput>;
   };
+
+  /**
+   * GameAnalysis delete
+   */
   export type GameAnalysisDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
+    /**
+     * Filter which GameAnalysis to delete.
+     */
     where: GameAnalysisWhereUniqueInput;
   };
+
+  /**
+   * GameAnalysis deleteMany
+   */
   export type GameAnalysisDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which GameAnalyses to delete
+     */
     where?: GameAnalysisWhereInput;
+    /**
+     * Limit how many GameAnalyses to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * GameAnalysis without action
+   */
   export type GameAnalysisDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the GameAnalysis
+     */
     select?: GameAnalysisSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the GameAnalysis
+     */
     omit?: GameAnalysisOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: GameAnalysisInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model Rating
+   */
+
   export type AggregateRating = {
     _count: RatingCountAggregateOutputType | null;
     _avg: RatingAvgAggregateOutputType | null;
@@ -7551,18 +13804,21 @@ export namespace Prisma {
     _min: RatingMinAggregateOutputType | null;
     _max: RatingMaxAggregateOutputType | null;
   };
+
   export type RatingAvgAggregateOutputType = {
     rating: number | null;
     rd: number | null;
     sigma: number | null;
     gameCount: number | null;
   };
+
   export type RatingSumAggregateOutputType = {
     rating: number | null;
     rd: number | null;
     sigma: number | null;
     gameCount: number | null;
   };
+
   export type RatingMinAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -7575,6 +13831,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type RatingMaxAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -7587,6 +13844,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type RatingCountAggregateOutputType = {
     id: number;
     userId: number;
@@ -7600,18 +13858,21 @@ export namespace Prisma {
     updatedAt: number;
     _all: number;
   };
+
   export type RatingAvgAggregateInputType = {
     rating?: true;
     rd?: true;
     sigma?: true;
     gameCount?: true;
   };
+
   export type RatingSumAggregateInputType = {
     rating?: true;
     rd?: true;
     sigma?: true;
     gameCount?: true;
   };
+
   export type RatingMinAggregateInputType = {
     id?: true;
     userId?: true;
@@ -7624,6 +13885,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type RatingMaxAggregateInputType = {
     id?: true;
     userId?: true;
@@ -7636,6 +13898,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type RatingCountAggregateInputType = {
     id?: true;
     userId?: true;
@@ -7649,20 +13912,70 @@ export namespace Prisma {
     updatedAt?: true;
     _all?: true;
   };
+
   export type RatingAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Rating to aggregate.
+     */
     where?: RatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Ratings to fetch.
+     */
     orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: RatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Ratings from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Ratings.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned Ratings
+     **/
     _count?: true | RatingCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: RatingAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: RatingSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: RatingMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: RatingMaxAggregateInputType;
   };
+
   export type GetRatingAggregateType<T extends RatingAggregateArgs> = {
     [P in keyof T & keyof AggregateRating]: P extends '_count' | 'count'
       ? T[P] extends true
@@ -7670,6 +13983,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateRating[P]>
       : GetScalarType<T[P], AggregateRating[P]>;
   };
+
   export type RatingGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -7687,6 +14001,7 @@ export namespace Prisma {
     _min?: RatingMinAggregateInputType;
     _max?: RatingMaxAggregateInputType;
   };
+
   export type RatingGroupByOutputType = {
     id: string;
     userId: string;
@@ -7704,6 +14019,7 @@ export namespace Prisma {
     _min: RatingMinAggregateOutputType | null;
     _max: RatingMaxAggregateOutputType | null;
   };
+
   type GetRatingGroupByPayload<T extends RatingGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -7716,6 +14032,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type RatingSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -7734,6 +14051,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['rating']
   >;
+
   export type RatingSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -7752,6 +14070,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['rating']
   >;
+
   export type RatingSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -7770,6 +14089,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['rating']
   >;
+
   export type RatingSelectScalar = {
     id?: boolean;
     userId?: boolean;
@@ -7782,6 +14102,7 @@ export namespace Prisma {
     createdAt?: boolean;
     updatedAt?: boolean;
   };
+
   export type RatingOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -7812,6 +14133,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $RatingPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -7836,24 +14158,36 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type RatingGetPayload<
     S extends boolean | null | undefined | RatingDefaultArgs
   > = $Result.GetResult<Prisma.$RatingPayload, S>;
+
   type RatingCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<RatingFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
     select?: RatingCountAggregateInputType | true;
   };
+
   export interface RatingDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['Rating'];
-      meta: {
-        name: 'Rating';
-      };
+      meta: { name: 'Rating' };
     };
+    /**
+     * Find zero or one Rating that matches the filter.
+     * @param {RatingFindUniqueArgs} args - Arguments to find a Rating
+     * @example
+     * // Get one Rating
+     * const rating = await prisma.rating.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends RatingFindUniqueArgs>(
       args: SelectSubset<T, RatingFindUniqueArgs<ExtArgs>>
     ): Prisma__RatingClient<
@@ -7867,6 +14201,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one Rating that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RatingFindUniqueOrThrowArgs} args - Arguments to find a Rating
+     * @example
+     * // Get one Rating
+     * const rating = await prisma.rating.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends RatingFindUniqueOrThrowArgs>(
       args: SelectSubset<T, RatingFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__RatingClient<
@@ -7880,6 +14227,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Rating that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingFindFirstArgs} args - Arguments to find a Rating
+     * @example
+     * // Get one Rating
+     * const rating = await prisma.rating.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends RatingFindFirstArgs>(
       args?: SelectSubset<T, RatingFindFirstArgs<ExtArgs>>
     ): Prisma__RatingClient<
@@ -7893,6 +14254,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first Rating that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingFindFirstOrThrowArgs} args - Arguments to find a Rating
+     * @example
+     * // Get one Rating
+     * const rating = await prisma.rating.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends RatingFindFirstOrThrowArgs>(
       args?: SelectSubset<T, RatingFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__RatingClient<
@@ -7906,6 +14282,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more Ratings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Ratings
+     * const ratings = await prisma.rating.findMany()
+     *
+     * // Get first 10 Ratings
+     * const ratings = await prisma.rating.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const ratingWithIdOnly = await prisma.rating.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends RatingFindManyArgs>(
       args?: SelectSubset<T, RatingFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -7916,6 +14309,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a Rating.
+     * @param {RatingCreateArgs} args - Arguments to create a Rating.
+     * @example
+     * // Create one Rating
+     * const Rating = await prisma.rating.create({
+     *   data: {
+     *     // ... data to create a Rating
+     *   }
+     * })
+     *
+     */
     create<T extends RatingCreateArgs>(
       args: SelectSubset<T, RatingCreateArgs<ExtArgs>>
     ): Prisma__RatingClient<
@@ -7929,9 +14335,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many Ratings.
+     * @param {RatingCreateManyArgs} args - Arguments to create many Ratings.
+     * @example
+     * // Create many Ratings
+     * const rating = await prisma.rating.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends RatingCreateManyArgs>(
       args?: SelectSubset<T, RatingCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many Ratings and returns the data saved in the database.
+     * @param {RatingCreateManyAndReturnArgs} args - Arguments to create many Ratings.
+     * @example
+     * // Create many Ratings
+     * const rating = await prisma.rating.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many Ratings and only return the `id`
+     * const ratingWithIdOnly = await prisma.rating.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends RatingCreateManyAndReturnArgs>(
       args?: SelectSubset<T, RatingCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -7942,6 +14384,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a Rating.
+     * @param {RatingDeleteArgs} args - Arguments to delete one Rating.
+     * @example
+     * // Delete one Rating
+     * const Rating = await prisma.rating.delete({
+     *   where: {
+     *     // ... filter to delete one Rating
+     *   }
+     * })
+     *
+     */
     delete<T extends RatingDeleteArgs>(
       args: SelectSubset<T, RatingDeleteArgs<ExtArgs>>
     ): Prisma__RatingClient<
@@ -7955,6 +14410,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one Rating.
+     * @param {RatingUpdateArgs} args - Arguments to update one Rating.
+     * @example
+     * // Update one Rating
+     * const rating = await prisma.rating.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends RatingUpdateArgs>(
       args: SelectSubset<T, RatingUpdateArgs<ExtArgs>>
     ): Prisma__RatingClient<
@@ -7968,12 +14439,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more Ratings.
+     * @param {RatingDeleteManyArgs} args - Arguments to filter Ratings to delete.
+     * @example
+     * // Delete a few Ratings
+     * const { count } = await prisma.rating.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends RatingDeleteManyArgs>(
       args?: SelectSubset<T, RatingDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Ratings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Ratings
+     * const rating = await prisma.rating.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends RatingUpdateManyArgs>(
       args: SelectSubset<T, RatingUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more Ratings and returns the data updated in the database.
+     * @param {RatingUpdateManyAndReturnArgs} args - Arguments to update many Ratings.
+     * @example
+     * // Update many Ratings
+     * const rating = await prisma.rating.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more Ratings and only return the `id`
+     * const ratingWithIdOnly = await prisma.rating.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends RatingUpdateManyAndReturnArgs>(
       args: SelectSubset<T, RatingUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -7984,6 +14515,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one Rating.
+     * @param {RatingUpsertArgs} args - Arguments to update or create a Rating.
+     * @example
+     * // Update or create a Rating
+     * const rating = await prisma.rating.upsert({
+     *   create: {
+     *     // ... data to create a Rating
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Rating we want to update
+     *   }
+     * })
+     */
     upsert<T extends RatingUpsertArgs>(
       args: SelectSubset<T, RatingUpsertArgs<ExtArgs>>
     ): Prisma__RatingClient<
@@ -7997,6 +14546,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of Ratings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingCountArgs} args - Arguments to filter Ratings to count.
+     * @example
+     * // Count the number of Ratings
+     * const count = await prisma.rating.count({
+     *   where: {
+     *     // ... the filter for the Ratings we want to count
+     *   }
+     * })
+     **/
     count<T extends RatingCountArgs>(
       args?: Subset<T, RatingCountArgs>
     ): Prisma.PrismaPromise<
@@ -8006,9 +14569,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], RatingCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a Rating.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends RatingAggregateArgs>(
       args: Subset<T, RatingAggregateArgs>
     ): Prisma.PrismaPromise<GetRatingAggregateType<T>>;
+
+    /**
+     * Group by Rating.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RatingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends RatingGroupByArgs,
       HasSelectOrTake extends Or<
@@ -8016,12 +14623,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: RatingGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: RatingGroupByArgs['orderBy'];
-          },
+        ? { orderBy: RatingGroupByArgs['orderBy'] }
+        : { orderBy?: RatingGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -8077,8 +14680,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetRatingGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the Rating model
+     */
     readonly fields: RatingFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Rating.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__RatingClient<
     T,
     Null = never,
@@ -8100,6 +14713,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -8110,14 +14729,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the Rating model
+   */
   interface RatingFieldRefs {
     readonly id: FieldRef<'Rating', 'String'>;
     readonly userId: FieldRef<'Rating', 'String'>;
@@ -8130,141 +14764,451 @@ export namespace Prisma {
     readonly createdAt: FieldRef<'Rating', 'DateTime'>;
     readonly updatedAt: FieldRef<'Rating', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * Rating findUnique
+   */
   export type RatingFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Rating to fetch.
+     */
     where: RatingWhereUniqueInput;
   };
+
+  /**
+   * Rating findUniqueOrThrow
+   */
   export type RatingFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Rating to fetch.
+     */
     where: RatingWhereUniqueInput;
   };
+
+  /**
+   * Rating findFirst
+   */
   export type RatingFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Rating to fetch.
+     */
     where?: RatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Ratings to fetch.
+     */
     orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Ratings.
+     */
     cursor?: RatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Ratings from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Ratings.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Ratings.
+     */
     distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[];
   };
+
+  /**
+   * Rating findFirstOrThrow
+   */
   export type RatingFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Rating to fetch.
+     */
     where?: RatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Ratings to fetch.
+     */
     orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for Ratings.
+     */
     cursor?: RatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Ratings from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Ratings.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of Ratings.
+     */
     distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[];
   };
+
+  /**
+   * Rating findMany
+   */
   export type RatingFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which Ratings to fetch.
+     */
     where?: RatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of Ratings to fetch.
+     */
     orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing Ratings.
+     */
     cursor?: RatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` Ratings from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` Ratings.
+     */
     skip?: number;
     distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[];
   };
+
+  /**
+   * Rating create
+   */
   export type RatingCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a Rating.
+     */
     data: XOR<RatingCreateInput, RatingUncheckedCreateInput>;
   };
+
+  /**
+   * Rating createMany
+   */
   export type RatingCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many Ratings.
+     */
     data: RatingCreateManyInput | RatingCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * Rating createManyAndReturn
+   */
   export type RatingCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * The data used to create many Ratings.
+     */
     data: RatingCreateManyInput | RatingCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Rating update
+   */
   export type RatingUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a Rating.
+     */
     data: XOR<RatingUpdateInput, RatingUncheckedUpdateInput>;
+    /**
+     * Choose, which Rating to update.
+     */
     where: RatingWhereUniqueInput;
   };
+
+  /**
+   * Rating updateMany
+   */
   export type RatingUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update Ratings.
+     */
     data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyInput>;
+    /**
+     * Filter which Ratings to update
+     */
     where?: RatingWhereInput;
+    /**
+     * Limit how many Ratings to update.
+     */
     limit?: number;
   };
+
+  /**
+   * Rating updateManyAndReturn
+   */
   export type RatingUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * The data used to update Ratings.
+     */
     data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyInput>;
+    /**
+     * Filter which Ratings to update
+     */
     where?: RatingWhereInput;
+    /**
+     * Limit how many Ratings to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * Rating upsert
+   */
   export type RatingUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the Rating to update in case it exists.
+     */
     where: RatingWhereUniqueInput;
+    /**
+     * In case the Rating found by the `where` argument doesn't exist, create a new Rating with this data.
+     */
     create: XOR<RatingCreateInput, RatingUncheckedCreateInput>;
+    /**
+     * In case the Rating was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<RatingUpdateInput, RatingUncheckedUpdateInput>;
   };
+
+  /**
+   * Rating delete
+   */
   export type RatingDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
+    /**
+     * Filter which Rating to delete.
+     */
     where: RatingWhereUniqueInput;
   };
+
+  /**
+   * Rating deleteMany
+   */
   export type RatingDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which Ratings to delete
+     */
     where?: RatingWhereInput;
+    /**
+     * Limit how many Ratings to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * Rating without action
+   */
   export type RatingDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
     select?: RatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the Rating
+     */
     omit?: RatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: RatingInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model PuzzleRating
+   */
+
   export type AggregatePuzzleRating = {
     _count: PuzzleRatingCountAggregateOutputType | null;
     _avg: PuzzleRatingAvgAggregateOutputType | null;
@@ -8272,18 +15216,21 @@ export namespace Prisma {
     _min: PuzzleRatingMinAggregateOutputType | null;
     _max: PuzzleRatingMaxAggregateOutputType | null;
   };
+
   export type PuzzleRatingAvgAggregateOutputType = {
     rating: number | null;
     rd: number | null;
     sigma: number | null;
     gameCount: number | null;
   };
+
   export type PuzzleRatingSumAggregateOutputType = {
     rating: number | null;
     rd: number | null;
     sigma: number | null;
     gameCount: number | null;
   };
+
   export type PuzzleRatingMinAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -8294,6 +15241,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type PuzzleRatingMaxAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -8304,6 +15252,7 @@ export namespace Prisma {
     createdAt: Date | null;
     updatedAt: Date | null;
   };
+
   export type PuzzleRatingCountAggregateOutputType = {
     id: number;
     userId: number;
@@ -8315,18 +15264,21 @@ export namespace Prisma {
     updatedAt: number;
     _all: number;
   };
+
   export type PuzzleRatingAvgAggregateInputType = {
     rating?: true;
     rd?: true;
     sigma?: true;
     gameCount?: true;
   };
+
   export type PuzzleRatingSumAggregateInputType = {
     rating?: true;
     rd?: true;
     sigma?: true;
     gameCount?: true;
   };
+
   export type PuzzleRatingMinAggregateInputType = {
     id?: true;
     userId?: true;
@@ -8337,6 +15289,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type PuzzleRatingMaxAggregateInputType = {
     id?: true;
     userId?: true;
@@ -8347,6 +15300,7 @@ export namespace Prisma {
     createdAt?: true;
     updatedAt?: true;
   };
+
   export type PuzzleRatingCountAggregateInputType = {
     id?: true;
     userId?: true;
@@ -8358,22 +15312,72 @@ export namespace Prisma {
     updatedAt?: true;
     _all?: true;
   };
+
   export type PuzzleRatingAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which PuzzleRating to aggregate.
+     */
     where?: PuzzleRatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleRatings to fetch.
+     */
     orderBy?:
       | PuzzleRatingOrderByWithRelationInput
       | PuzzleRatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: PuzzleRatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleRatings from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleRatings.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned PuzzleRatings
+     **/
     _count?: true | PuzzleRatingCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: PuzzleRatingAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: PuzzleRatingSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: PuzzleRatingMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: PuzzleRatingMaxAggregateInputType;
   };
+
   export type GetPuzzleRatingAggregateType<
     T extends PuzzleRatingAggregateArgs
   > = {
@@ -8383,6 +15387,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregatePuzzleRating[P]>
       : GetScalarType<T[P], AggregatePuzzleRating[P]>;
   };
+
   export type PuzzleRatingGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -8400,6 +15405,7 @@ export namespace Prisma {
     _min?: PuzzleRatingMinAggregateInputType;
     _max?: PuzzleRatingMaxAggregateInputType;
   };
+
   export type PuzzleRatingGroupByOutputType = {
     id: string;
     userId: string;
@@ -8415,6 +15421,7 @@ export namespace Prisma {
     _min: PuzzleRatingMinAggregateOutputType | null;
     _max: PuzzleRatingMaxAggregateOutputType | null;
   };
+
   type GetPuzzleRatingGroupByPayload<T extends PuzzleRatingGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -8428,6 +15435,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type PuzzleRatingSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -8444,6 +15452,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleRating']
   >;
+
   export type PuzzleRatingSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -8460,6 +15469,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleRating']
   >;
+
   export type PuzzleRatingSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -8476,6 +15486,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleRating']
   >;
+
   export type PuzzleRatingSelectScalar = {
     id?: boolean;
     userId?: boolean;
@@ -8486,6 +15497,7 @@ export namespace Prisma {
     createdAt?: boolean;
     updatedAt?: boolean;
   };
+
   export type PuzzleRatingOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -8514,6 +15526,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $PuzzleRatingPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -8536,9 +15549,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type PuzzleRatingGetPayload<
     S extends boolean | null | undefined | PuzzleRatingDefaultArgs
   > = $Result.GetResult<Prisma.$PuzzleRatingPayload, S>;
+
   type PuzzleRatingCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -8547,16 +15562,26 @@ export namespace Prisma {
   > & {
     select?: PuzzleRatingCountAggregateInputType | true;
   };
+
   export interface PuzzleRatingDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['PuzzleRating'];
-      meta: {
-        name: 'PuzzleRating';
-      };
+      meta: { name: 'PuzzleRating' };
     };
+    /**
+     * Find zero or one PuzzleRating that matches the filter.
+     * @param {PuzzleRatingFindUniqueArgs} args - Arguments to find a PuzzleRating
+     * @example
+     * // Get one PuzzleRating
+     * const puzzleRating = await prisma.puzzleRating.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends PuzzleRatingFindUniqueArgs>(
       args: SelectSubset<T, PuzzleRatingFindUniqueArgs<ExtArgs>>
     ): Prisma__PuzzleRatingClient<
@@ -8570,6 +15595,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one PuzzleRating that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PuzzleRatingFindUniqueOrThrowArgs} args - Arguments to find a PuzzleRating
+     * @example
+     * // Get one PuzzleRating
+     * const puzzleRating = await prisma.puzzleRating.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends PuzzleRatingFindUniqueOrThrowArgs>(
       args: SelectSubset<T, PuzzleRatingFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__PuzzleRatingClient<
@@ -8583,6 +15621,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first PuzzleRating that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRatingFindFirstArgs} args - Arguments to find a PuzzleRating
+     * @example
+     * // Get one PuzzleRating
+     * const puzzleRating = await prisma.puzzleRating.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends PuzzleRatingFindFirstArgs>(
       args?: SelectSubset<T, PuzzleRatingFindFirstArgs<ExtArgs>>
     ): Prisma__PuzzleRatingClient<
@@ -8596,6 +15648,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first PuzzleRating that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRatingFindFirstOrThrowArgs} args - Arguments to find a PuzzleRating
+     * @example
+     * // Get one PuzzleRating
+     * const puzzleRating = await prisma.puzzleRating.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends PuzzleRatingFindFirstOrThrowArgs>(
       args?: SelectSubset<T, PuzzleRatingFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__PuzzleRatingClient<
@@ -8609,6 +15676,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more PuzzleRatings that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRatingFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PuzzleRatings
+     * const puzzleRatings = await prisma.puzzleRating.findMany()
+     *
+     * // Get first 10 PuzzleRatings
+     * const puzzleRatings = await prisma.puzzleRating.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const puzzleRatingWithIdOnly = await prisma.puzzleRating.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends PuzzleRatingFindManyArgs>(
       args?: SelectSubset<T, PuzzleRatingFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -8619,6 +15703,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a PuzzleRating.
+     * @param {PuzzleRatingCreateArgs} args - Arguments to create a PuzzleRating.
+     * @example
+     * // Create one PuzzleRating
+     * const PuzzleRating = await prisma.puzzleRating.create({
+     *   data: {
+     *     // ... data to create a PuzzleRating
+     *   }
+     * })
+     *
+     */
     create<T extends PuzzleRatingCreateArgs>(
       args: SelectSubset<T, PuzzleRatingCreateArgs<ExtArgs>>
     ): Prisma__PuzzleRatingClient<
@@ -8632,9 +15729,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many PuzzleRatings.
+     * @param {PuzzleRatingCreateManyArgs} args - Arguments to create many PuzzleRatings.
+     * @example
+     * // Create many PuzzleRatings
+     * const puzzleRating = await prisma.puzzleRating.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends PuzzleRatingCreateManyArgs>(
       args?: SelectSubset<T, PuzzleRatingCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many PuzzleRatings and returns the data saved in the database.
+     * @param {PuzzleRatingCreateManyAndReturnArgs} args - Arguments to create many PuzzleRatings.
+     * @example
+     * // Create many PuzzleRatings
+     * const puzzleRating = await prisma.puzzleRating.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many PuzzleRatings and only return the `id`
+     * const puzzleRatingWithIdOnly = await prisma.puzzleRating.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends PuzzleRatingCreateManyAndReturnArgs>(
       args?: SelectSubset<T, PuzzleRatingCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -8645,6 +15778,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a PuzzleRating.
+     * @param {PuzzleRatingDeleteArgs} args - Arguments to delete one PuzzleRating.
+     * @example
+     * // Delete one PuzzleRating
+     * const PuzzleRating = await prisma.puzzleRating.delete({
+     *   where: {
+     *     // ... filter to delete one PuzzleRating
+     *   }
+     * })
+     *
+     */
     delete<T extends PuzzleRatingDeleteArgs>(
       args: SelectSubset<T, PuzzleRatingDeleteArgs<ExtArgs>>
     ): Prisma__PuzzleRatingClient<
@@ -8658,6 +15804,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one PuzzleRating.
+     * @param {PuzzleRatingUpdateArgs} args - Arguments to update one PuzzleRating.
+     * @example
+     * // Update one PuzzleRating
+     * const puzzleRating = await prisma.puzzleRating.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends PuzzleRatingUpdateArgs>(
       args: SelectSubset<T, PuzzleRatingUpdateArgs<ExtArgs>>
     ): Prisma__PuzzleRatingClient<
@@ -8671,12 +15833,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more PuzzleRatings.
+     * @param {PuzzleRatingDeleteManyArgs} args - Arguments to filter PuzzleRatings to delete.
+     * @example
+     * // Delete a few PuzzleRatings
+     * const { count } = await prisma.puzzleRating.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends PuzzleRatingDeleteManyArgs>(
       args?: SelectSubset<T, PuzzleRatingDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PuzzleRatings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRatingUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PuzzleRatings
+     * const puzzleRating = await prisma.puzzleRating.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends PuzzleRatingUpdateManyArgs>(
       args: SelectSubset<T, PuzzleRatingUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PuzzleRatings and returns the data updated in the database.
+     * @param {PuzzleRatingUpdateManyAndReturnArgs} args - Arguments to update many PuzzleRatings.
+     * @example
+     * // Update many PuzzleRatings
+     * const puzzleRating = await prisma.puzzleRating.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more PuzzleRatings and only return the `id`
+     * const puzzleRatingWithIdOnly = await prisma.puzzleRating.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends PuzzleRatingUpdateManyAndReturnArgs>(
       args: SelectSubset<T, PuzzleRatingUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -8687,6 +15909,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one PuzzleRating.
+     * @param {PuzzleRatingUpsertArgs} args - Arguments to update or create a PuzzleRating.
+     * @example
+     * // Update or create a PuzzleRating
+     * const puzzleRating = await prisma.puzzleRating.upsert({
+     *   create: {
+     *     // ... data to create a PuzzleRating
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PuzzleRating we want to update
+     *   }
+     * })
+     */
     upsert<T extends PuzzleRatingUpsertArgs>(
       args: SelectSubset<T, PuzzleRatingUpsertArgs<ExtArgs>>
     ): Prisma__PuzzleRatingClient<
@@ -8700,6 +15940,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of PuzzleRatings.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRatingCountArgs} args - Arguments to filter PuzzleRatings to count.
+     * @example
+     * // Count the number of PuzzleRatings
+     * const count = await prisma.puzzleRating.count({
+     *   where: {
+     *     // ... the filter for the PuzzleRatings we want to count
+     *   }
+     * })
+     **/
     count<T extends PuzzleRatingCountArgs>(
       args?: Subset<T, PuzzleRatingCountArgs>
     ): Prisma.PrismaPromise<
@@ -8709,9 +15963,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], PuzzleRatingCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a PuzzleRating.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRatingAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends PuzzleRatingAggregateArgs>(
       args: Subset<T, PuzzleRatingAggregateArgs>
     ): Prisma.PrismaPromise<GetPuzzleRatingAggregateType<T>>;
+
+    /**
+     * Group by PuzzleRating.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRatingGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends PuzzleRatingGroupByArgs,
       HasSelectOrTake extends Or<
@@ -8719,12 +16017,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: PuzzleRatingGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: PuzzleRatingGroupByArgs['orderBy'];
-          },
+        ? { orderBy: PuzzleRatingGroupByArgs['orderBy'] }
+        : { orderBy?: PuzzleRatingGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -8781,8 +16075,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetPuzzleRatingGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the PuzzleRating model
+     */
     readonly fields: PuzzleRatingFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PuzzleRating.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__PuzzleRatingClient<
     T,
     Null = never,
@@ -8804,6 +16108,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -8814,14 +16124,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the PuzzleRating model
+   */
   interface PuzzleRatingFieldRefs {
     readonly id: FieldRef<'PuzzleRating', 'String'>;
     readonly userId: FieldRef<'PuzzleRating', 'String'>;
@@ -8832,153 +16157,463 @@ export namespace Prisma {
     readonly createdAt: FieldRef<'PuzzleRating', 'DateTime'>;
     readonly updatedAt: FieldRef<'PuzzleRating', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * PuzzleRating findUnique
+   */
   export type PuzzleRatingFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRating to fetch.
+     */
     where: PuzzleRatingWhereUniqueInput;
   };
+
+  /**
+   * PuzzleRating findUniqueOrThrow
+   */
   export type PuzzleRatingFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRating to fetch.
+     */
     where: PuzzleRatingWhereUniqueInput;
   };
+
+  /**
+   * PuzzleRating findFirst
+   */
   export type PuzzleRatingFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRating to fetch.
+     */
     where?: PuzzleRatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleRatings to fetch.
+     */
     orderBy?:
       | PuzzleRatingOrderByWithRelationInput
       | PuzzleRatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PuzzleRatings.
+     */
     cursor?: PuzzleRatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleRatings from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleRatings.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PuzzleRatings.
+     */
     distinct?: PuzzleRatingScalarFieldEnum | PuzzleRatingScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleRating findFirstOrThrow
+   */
   export type PuzzleRatingFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRating to fetch.
+     */
     where?: PuzzleRatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleRatings to fetch.
+     */
     orderBy?:
       | PuzzleRatingOrderByWithRelationInput
       | PuzzleRatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PuzzleRatings.
+     */
     cursor?: PuzzleRatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleRatings from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleRatings.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PuzzleRatings.
+     */
     distinct?: PuzzleRatingScalarFieldEnum | PuzzleRatingScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleRating findMany
+   */
   export type PuzzleRatingFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRatings to fetch.
+     */
     where?: PuzzleRatingWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleRatings to fetch.
+     */
     orderBy?:
       | PuzzleRatingOrderByWithRelationInput
       | PuzzleRatingOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing PuzzleRatings.
+     */
     cursor?: PuzzleRatingWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleRatings from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleRatings.
+     */
     skip?: number;
     distinct?: PuzzleRatingScalarFieldEnum | PuzzleRatingScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleRating create
+   */
   export type PuzzleRatingCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a PuzzleRating.
+     */
     data: XOR<PuzzleRatingCreateInput, PuzzleRatingUncheckedCreateInput>;
   };
+
+  /**
+   * PuzzleRating createMany
+   */
   export type PuzzleRatingCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many PuzzleRatings.
+     */
     data: PuzzleRatingCreateManyInput | PuzzleRatingCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * PuzzleRating createManyAndReturn
+   */
   export type PuzzleRatingCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * The data used to create many PuzzleRatings.
+     */
     data: PuzzleRatingCreateManyInput | PuzzleRatingCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * PuzzleRating update
+   */
   export type PuzzleRatingUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a PuzzleRating.
+     */
     data: XOR<PuzzleRatingUpdateInput, PuzzleRatingUncheckedUpdateInput>;
+    /**
+     * Choose, which PuzzleRating to update.
+     */
     where: PuzzleRatingWhereUniqueInput;
   };
+
+  /**
+   * PuzzleRating updateMany
+   */
   export type PuzzleRatingUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update PuzzleRatings.
+     */
     data: XOR<
       PuzzleRatingUpdateManyMutationInput,
       PuzzleRatingUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which PuzzleRatings to update
+     */
     where?: PuzzleRatingWhereInput;
+    /**
+     * Limit how many PuzzleRatings to update.
+     */
     limit?: number;
   };
+
+  /**
+   * PuzzleRating updateManyAndReturn
+   */
   export type PuzzleRatingUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * The data used to update PuzzleRatings.
+     */
     data: XOR<
       PuzzleRatingUpdateManyMutationInput,
       PuzzleRatingUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which PuzzleRatings to update
+     */
     where?: PuzzleRatingWhereInput;
+    /**
+     * Limit how many PuzzleRatings to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * PuzzleRating upsert
+   */
   export type PuzzleRatingUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the PuzzleRating to update in case it exists.
+     */
     where: PuzzleRatingWhereUniqueInput;
+    /**
+     * In case the PuzzleRating found by the `where` argument doesn't exist, create a new PuzzleRating with this data.
+     */
     create: XOR<PuzzleRatingCreateInput, PuzzleRatingUncheckedCreateInput>;
+    /**
+     * In case the PuzzleRating was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<PuzzleRatingUpdateInput, PuzzleRatingUncheckedUpdateInput>;
   };
+
+  /**
+   * PuzzleRating delete
+   */
   export type PuzzleRatingDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
+    /**
+     * Filter which PuzzleRating to delete.
+     */
     where: PuzzleRatingWhereUniqueInput;
   };
+
+  /**
+   * PuzzleRating deleteMany
+   */
   export type PuzzleRatingDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which PuzzleRatings to delete
+     */
     where?: PuzzleRatingWhereInput;
+    /**
+     * Limit how many PuzzleRatings to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * PuzzleRating without action
+   */
   export type PuzzleRatingDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRating
+     */
     select?: PuzzleRatingSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRating
+     */
     omit?: PuzzleRatingOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRatingInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model PuzzleAttempt
+   */
+
   export type AggregatePuzzleAttempt = {
     _count: PuzzleAttemptCountAggregateOutputType | null;
     _avg: PuzzleAttemptAvgAggregateOutputType | null;
@@ -8986,12 +16621,15 @@ export namespace Prisma {
     _min: PuzzleAttemptMinAggregateOutputType | null;
     _max: PuzzleAttemptMaxAggregateOutputType | null;
   };
+
   export type PuzzleAttemptAvgAggregateOutputType = {
     rating: number | null;
   };
+
   export type PuzzleAttemptSumAggregateOutputType = {
     rating: number | null;
   };
+
   export type PuzzleAttemptMinAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -9002,6 +16640,7 @@ export namespace Prisma {
     usedHint: boolean | null;
     createdAt: Date | null;
   };
+
   export type PuzzleAttemptMaxAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -9012,6 +16651,7 @@ export namespace Prisma {
     usedHint: boolean | null;
     createdAt: Date | null;
   };
+
   export type PuzzleAttemptCountAggregateOutputType = {
     id: number;
     userId: number;
@@ -9023,12 +16663,15 @@ export namespace Prisma {
     createdAt: number;
     _all: number;
   };
+
   export type PuzzleAttemptAvgAggregateInputType = {
     rating?: true;
   };
+
   export type PuzzleAttemptSumAggregateInputType = {
     rating?: true;
   };
+
   export type PuzzleAttemptMinAggregateInputType = {
     id?: true;
     userId?: true;
@@ -9039,6 +16682,7 @@ export namespace Prisma {
     usedHint?: true;
     createdAt?: true;
   };
+
   export type PuzzleAttemptMaxAggregateInputType = {
     id?: true;
     userId?: true;
@@ -9049,6 +16693,7 @@ export namespace Prisma {
     usedHint?: true;
     createdAt?: true;
   };
+
   export type PuzzleAttemptCountAggregateInputType = {
     id?: true;
     userId?: true;
@@ -9060,22 +16705,72 @@ export namespace Prisma {
     createdAt?: true;
     _all?: true;
   };
+
   export type PuzzleAttemptAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which PuzzleAttempt to aggregate.
+     */
     where?: PuzzleAttemptWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleAttempts to fetch.
+     */
     orderBy?:
       | PuzzleAttemptOrderByWithRelationInput
       | PuzzleAttemptOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: PuzzleAttemptWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleAttempts from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleAttempts.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned PuzzleAttempts
+     **/
     _count?: true | PuzzleAttemptCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: PuzzleAttemptAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: PuzzleAttemptSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: PuzzleAttemptMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: PuzzleAttemptMaxAggregateInputType;
   };
+
   export type GetPuzzleAttemptAggregateType<
     T extends PuzzleAttemptAggregateArgs
   > = {
@@ -9085,6 +16780,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregatePuzzleAttempt[P]>
       : GetScalarType<T[P], AggregatePuzzleAttempt[P]>;
   };
+
   export type PuzzleAttemptGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -9102,6 +16798,7 @@ export namespace Prisma {
     _min?: PuzzleAttemptMinAggregateInputType;
     _max?: PuzzleAttemptMaxAggregateInputType;
   };
+
   export type PuzzleAttemptGroupByOutputType = {
     id: string;
     userId: string;
@@ -9117,6 +16814,7 @@ export namespace Prisma {
     _min: PuzzleAttemptMinAggregateOutputType | null;
     _max: PuzzleAttemptMaxAggregateOutputType | null;
   };
+
   type GetPuzzleAttemptGroupByPayload<T extends PuzzleAttemptGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -9130,6 +16828,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type PuzzleAttemptSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -9146,6 +16845,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleAttempt']
   >;
+
   export type PuzzleAttemptSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -9162,6 +16862,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleAttempt']
   >;
+
   export type PuzzleAttemptSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -9178,6 +16879,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleAttempt']
   >;
+
   export type PuzzleAttemptSelectScalar = {
     id?: boolean;
     userId?: boolean;
@@ -9188,6 +16890,7 @@ export namespace Prisma {
     usedHint?: boolean;
     createdAt?: boolean;
   };
+
   export type PuzzleAttemptOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -9216,6 +16919,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $PuzzleAttemptPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -9238,9 +16942,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type PuzzleAttemptGetPayload<
     S extends boolean | null | undefined | PuzzleAttemptDefaultArgs
   > = $Result.GetResult<Prisma.$PuzzleAttemptPayload, S>;
+
   type PuzzleAttemptCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -9249,16 +16955,26 @@ export namespace Prisma {
   > & {
     select?: PuzzleAttemptCountAggregateInputType | true;
   };
+
   export interface PuzzleAttemptDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['PuzzleAttempt'];
-      meta: {
-        name: 'PuzzleAttempt';
-      };
+      meta: { name: 'PuzzleAttempt' };
     };
+    /**
+     * Find zero or one PuzzleAttempt that matches the filter.
+     * @param {PuzzleAttemptFindUniqueArgs} args - Arguments to find a PuzzleAttempt
+     * @example
+     * // Get one PuzzleAttempt
+     * const puzzleAttempt = await prisma.puzzleAttempt.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends PuzzleAttemptFindUniqueArgs>(
       args: SelectSubset<T, PuzzleAttemptFindUniqueArgs<ExtArgs>>
     ): Prisma__PuzzleAttemptClient<
@@ -9272,6 +16988,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one PuzzleAttempt that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PuzzleAttemptFindUniqueOrThrowArgs} args - Arguments to find a PuzzleAttempt
+     * @example
+     * // Get one PuzzleAttempt
+     * const puzzleAttempt = await prisma.puzzleAttempt.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends PuzzleAttemptFindUniqueOrThrowArgs>(
       args: SelectSubset<T, PuzzleAttemptFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__PuzzleAttemptClient<
@@ -9285,6 +17014,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first PuzzleAttempt that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleAttemptFindFirstArgs} args - Arguments to find a PuzzleAttempt
+     * @example
+     * // Get one PuzzleAttempt
+     * const puzzleAttempt = await prisma.puzzleAttempt.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends PuzzleAttemptFindFirstArgs>(
       args?: SelectSubset<T, PuzzleAttemptFindFirstArgs<ExtArgs>>
     ): Prisma__PuzzleAttemptClient<
@@ -9298,6 +17041,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first PuzzleAttempt that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleAttemptFindFirstOrThrowArgs} args - Arguments to find a PuzzleAttempt
+     * @example
+     * // Get one PuzzleAttempt
+     * const puzzleAttempt = await prisma.puzzleAttempt.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends PuzzleAttemptFindFirstOrThrowArgs>(
       args?: SelectSubset<T, PuzzleAttemptFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__PuzzleAttemptClient<
@@ -9311,6 +17069,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more PuzzleAttempts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleAttemptFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PuzzleAttempts
+     * const puzzleAttempts = await prisma.puzzleAttempt.findMany()
+     *
+     * // Get first 10 PuzzleAttempts
+     * const puzzleAttempts = await prisma.puzzleAttempt.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const puzzleAttemptWithIdOnly = await prisma.puzzleAttempt.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends PuzzleAttemptFindManyArgs>(
       args?: SelectSubset<T, PuzzleAttemptFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -9321,6 +17096,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a PuzzleAttempt.
+     * @param {PuzzleAttemptCreateArgs} args - Arguments to create a PuzzleAttempt.
+     * @example
+     * // Create one PuzzleAttempt
+     * const PuzzleAttempt = await prisma.puzzleAttempt.create({
+     *   data: {
+     *     // ... data to create a PuzzleAttempt
+     *   }
+     * })
+     *
+     */
     create<T extends PuzzleAttemptCreateArgs>(
       args: SelectSubset<T, PuzzleAttemptCreateArgs<ExtArgs>>
     ): Prisma__PuzzleAttemptClient<
@@ -9334,9 +17122,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many PuzzleAttempts.
+     * @param {PuzzleAttemptCreateManyArgs} args - Arguments to create many PuzzleAttempts.
+     * @example
+     * // Create many PuzzleAttempts
+     * const puzzleAttempt = await prisma.puzzleAttempt.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends PuzzleAttemptCreateManyArgs>(
       args?: SelectSubset<T, PuzzleAttemptCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many PuzzleAttempts and returns the data saved in the database.
+     * @param {PuzzleAttemptCreateManyAndReturnArgs} args - Arguments to create many PuzzleAttempts.
+     * @example
+     * // Create many PuzzleAttempts
+     * const puzzleAttempt = await prisma.puzzleAttempt.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many PuzzleAttempts and only return the `id`
+     * const puzzleAttemptWithIdOnly = await prisma.puzzleAttempt.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends PuzzleAttemptCreateManyAndReturnArgs>(
       args?: SelectSubset<T, PuzzleAttemptCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -9347,6 +17171,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a PuzzleAttempt.
+     * @param {PuzzleAttemptDeleteArgs} args - Arguments to delete one PuzzleAttempt.
+     * @example
+     * // Delete one PuzzleAttempt
+     * const PuzzleAttempt = await prisma.puzzleAttempt.delete({
+     *   where: {
+     *     // ... filter to delete one PuzzleAttempt
+     *   }
+     * })
+     *
+     */
     delete<T extends PuzzleAttemptDeleteArgs>(
       args: SelectSubset<T, PuzzleAttemptDeleteArgs<ExtArgs>>
     ): Prisma__PuzzleAttemptClient<
@@ -9360,6 +17197,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one PuzzleAttempt.
+     * @param {PuzzleAttemptUpdateArgs} args - Arguments to update one PuzzleAttempt.
+     * @example
+     * // Update one PuzzleAttempt
+     * const puzzleAttempt = await prisma.puzzleAttempt.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends PuzzleAttemptUpdateArgs>(
       args: SelectSubset<T, PuzzleAttemptUpdateArgs<ExtArgs>>
     ): Prisma__PuzzleAttemptClient<
@@ -9373,12 +17226,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more PuzzleAttempts.
+     * @param {PuzzleAttemptDeleteManyArgs} args - Arguments to filter PuzzleAttempts to delete.
+     * @example
+     * // Delete a few PuzzleAttempts
+     * const { count } = await prisma.puzzleAttempt.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends PuzzleAttemptDeleteManyArgs>(
       args?: SelectSubset<T, PuzzleAttemptDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PuzzleAttempts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleAttemptUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PuzzleAttempts
+     * const puzzleAttempt = await prisma.puzzleAttempt.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends PuzzleAttemptUpdateManyArgs>(
       args: SelectSubset<T, PuzzleAttemptUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PuzzleAttempts and returns the data updated in the database.
+     * @param {PuzzleAttemptUpdateManyAndReturnArgs} args - Arguments to update many PuzzleAttempts.
+     * @example
+     * // Update many PuzzleAttempts
+     * const puzzleAttempt = await prisma.puzzleAttempt.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more PuzzleAttempts and only return the `id`
+     * const puzzleAttemptWithIdOnly = await prisma.puzzleAttempt.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends PuzzleAttemptUpdateManyAndReturnArgs>(
       args: SelectSubset<T, PuzzleAttemptUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -9389,6 +17302,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one PuzzleAttempt.
+     * @param {PuzzleAttemptUpsertArgs} args - Arguments to update or create a PuzzleAttempt.
+     * @example
+     * // Update or create a PuzzleAttempt
+     * const puzzleAttempt = await prisma.puzzleAttempt.upsert({
+     *   create: {
+     *     // ... data to create a PuzzleAttempt
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PuzzleAttempt we want to update
+     *   }
+     * })
+     */
     upsert<T extends PuzzleAttemptUpsertArgs>(
       args: SelectSubset<T, PuzzleAttemptUpsertArgs<ExtArgs>>
     ): Prisma__PuzzleAttemptClient<
@@ -9402,6 +17333,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of PuzzleAttempts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleAttemptCountArgs} args - Arguments to filter PuzzleAttempts to count.
+     * @example
+     * // Count the number of PuzzleAttempts
+     * const count = await prisma.puzzleAttempt.count({
+     *   where: {
+     *     // ... the filter for the PuzzleAttempts we want to count
+     *   }
+     * })
+     **/
     count<T extends PuzzleAttemptCountArgs>(
       args?: Subset<T, PuzzleAttemptCountArgs>
     ): Prisma.PrismaPromise<
@@ -9411,9 +17356,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], PuzzleAttemptCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a PuzzleAttempt.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleAttemptAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends PuzzleAttemptAggregateArgs>(
       args: Subset<T, PuzzleAttemptAggregateArgs>
     ): Prisma.PrismaPromise<GetPuzzleAttemptAggregateType<T>>;
+
+    /**
+     * Group by PuzzleAttempt.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleAttemptGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends PuzzleAttemptGroupByArgs,
       HasSelectOrTake extends Or<
@@ -9421,12 +17410,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: PuzzleAttemptGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: PuzzleAttemptGroupByArgs['orderBy'];
-          },
+        ? { orderBy: PuzzleAttemptGroupByArgs['orderBy'] }
+        : { orderBy?: PuzzleAttemptGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -9483,8 +17468,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetPuzzleAttemptGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the PuzzleAttempt model
+     */
     readonly fields: PuzzleAttemptFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PuzzleAttempt.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__PuzzleAttemptClient<
     T,
     Null = never,
@@ -9506,6 +17501,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -9516,14 +17517,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the PuzzleAttempt model
+   */
   interface PuzzleAttemptFieldRefs {
     readonly id: FieldRef<'PuzzleAttempt', 'String'>;
     readonly userId: FieldRef<'PuzzleAttempt', 'String'>;
@@ -9534,153 +17550,463 @@ export namespace Prisma {
     readonly usedHint: FieldRef<'PuzzleAttempt', 'Boolean'>;
     readonly createdAt: FieldRef<'PuzzleAttempt', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * PuzzleAttempt findUnique
+   */
   export type PuzzleAttemptFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleAttempt to fetch.
+     */
     where: PuzzleAttemptWhereUniqueInput;
   };
+
+  /**
+   * PuzzleAttempt findUniqueOrThrow
+   */
   export type PuzzleAttemptFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleAttempt to fetch.
+     */
     where: PuzzleAttemptWhereUniqueInput;
   };
+
+  /**
+   * PuzzleAttempt findFirst
+   */
   export type PuzzleAttemptFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleAttempt to fetch.
+     */
     where?: PuzzleAttemptWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleAttempts to fetch.
+     */
     orderBy?:
       | PuzzleAttemptOrderByWithRelationInput
       | PuzzleAttemptOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PuzzleAttempts.
+     */
     cursor?: PuzzleAttemptWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleAttempts from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleAttempts.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PuzzleAttempts.
+     */
     distinct?: PuzzleAttemptScalarFieldEnum | PuzzleAttemptScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleAttempt findFirstOrThrow
+   */
   export type PuzzleAttemptFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleAttempt to fetch.
+     */
     where?: PuzzleAttemptWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleAttempts to fetch.
+     */
     orderBy?:
       | PuzzleAttemptOrderByWithRelationInput
       | PuzzleAttemptOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PuzzleAttempts.
+     */
     cursor?: PuzzleAttemptWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleAttempts from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleAttempts.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PuzzleAttempts.
+     */
     distinct?: PuzzleAttemptScalarFieldEnum | PuzzleAttemptScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleAttempt findMany
+   */
   export type PuzzleAttemptFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleAttempts to fetch.
+     */
     where?: PuzzleAttemptWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleAttempts to fetch.
+     */
     orderBy?:
       | PuzzleAttemptOrderByWithRelationInput
       | PuzzleAttemptOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing PuzzleAttempts.
+     */
     cursor?: PuzzleAttemptWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleAttempts from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleAttempts.
+     */
     skip?: number;
     distinct?: PuzzleAttemptScalarFieldEnum | PuzzleAttemptScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleAttempt create
+   */
   export type PuzzleAttemptCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a PuzzleAttempt.
+     */
     data: XOR<PuzzleAttemptCreateInput, PuzzleAttemptUncheckedCreateInput>;
   };
+
+  /**
+   * PuzzleAttempt createMany
+   */
   export type PuzzleAttemptCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many PuzzleAttempts.
+     */
     data: PuzzleAttemptCreateManyInput | PuzzleAttemptCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * PuzzleAttempt createManyAndReturn
+   */
   export type PuzzleAttemptCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * The data used to create many PuzzleAttempts.
+     */
     data: PuzzleAttemptCreateManyInput | PuzzleAttemptCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * PuzzleAttempt update
+   */
   export type PuzzleAttemptUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a PuzzleAttempt.
+     */
     data: XOR<PuzzleAttemptUpdateInput, PuzzleAttemptUncheckedUpdateInput>;
+    /**
+     * Choose, which PuzzleAttempt to update.
+     */
     where: PuzzleAttemptWhereUniqueInput;
   };
+
+  /**
+   * PuzzleAttempt updateMany
+   */
   export type PuzzleAttemptUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update PuzzleAttempts.
+     */
     data: XOR<
       PuzzleAttemptUpdateManyMutationInput,
       PuzzleAttemptUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which PuzzleAttempts to update
+     */
     where?: PuzzleAttemptWhereInput;
+    /**
+     * Limit how many PuzzleAttempts to update.
+     */
     limit?: number;
   };
+
+  /**
+   * PuzzleAttempt updateManyAndReturn
+   */
   export type PuzzleAttemptUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * The data used to update PuzzleAttempts.
+     */
     data: XOR<
       PuzzleAttemptUpdateManyMutationInput,
       PuzzleAttemptUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which PuzzleAttempts to update
+     */
     where?: PuzzleAttemptWhereInput;
+    /**
+     * Limit how many PuzzleAttempts to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * PuzzleAttempt upsert
+   */
   export type PuzzleAttemptUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the PuzzleAttempt to update in case it exists.
+     */
     where: PuzzleAttemptWhereUniqueInput;
+    /**
+     * In case the PuzzleAttempt found by the `where` argument doesn't exist, create a new PuzzleAttempt with this data.
+     */
     create: XOR<PuzzleAttemptCreateInput, PuzzleAttemptUncheckedCreateInput>;
+    /**
+     * In case the PuzzleAttempt was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<PuzzleAttemptUpdateInput, PuzzleAttemptUncheckedUpdateInput>;
   };
+
+  /**
+   * PuzzleAttempt delete
+   */
   export type PuzzleAttemptDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
+    /**
+     * Filter which PuzzleAttempt to delete.
+     */
     where: PuzzleAttemptWhereUniqueInput;
   };
+
+  /**
+   * PuzzleAttempt deleteMany
+   */
   export type PuzzleAttemptDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which PuzzleAttempts to delete
+     */
     where?: PuzzleAttemptWhereInput;
+    /**
+     * Limit how many PuzzleAttempts to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * PuzzleAttempt without action
+   */
   export type PuzzleAttemptDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleAttempt
+     */
     select?: PuzzleAttemptSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleAttempt
+     */
     omit?: PuzzleAttemptOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleAttemptInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model PuzzleRushScore
+   */
+
   export type AggregatePuzzleRushScore = {
     _count: PuzzleRushScoreCountAggregateOutputType | null;
     _avg: PuzzleRushScoreAvgAggregateOutputType | null;
@@ -9688,18 +18014,21 @@ export namespace Prisma {
     _min: PuzzleRushScoreMinAggregateOutputType | null;
     _max: PuzzleRushScoreMaxAggregateOutputType | null;
   };
+
   export type PuzzleRushScoreAvgAggregateOutputType = {
     score: number | null;
     mistakes: number | null;
     timeLimitSeconds: number | null;
     maxMistakes: number | null;
   };
+
   export type PuzzleRushScoreSumAggregateOutputType = {
     score: number | null;
     mistakes: number | null;
     timeLimitSeconds: number | null;
     maxMistakes: number | null;
   };
+
   export type PuzzleRushScoreMinAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -9711,6 +18040,7 @@ export namespace Prisma {
     maxMistakes: number | null;
     createdAt: Date | null;
   };
+
   export type PuzzleRushScoreMaxAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -9722,6 +18052,7 @@ export namespace Prisma {
     maxMistakes: number | null;
     createdAt: Date | null;
   };
+
   export type PuzzleRushScoreCountAggregateOutputType = {
     id: number;
     userId: number;
@@ -9734,18 +18065,21 @@ export namespace Prisma {
     createdAt: number;
     _all: number;
   };
+
   export type PuzzleRushScoreAvgAggregateInputType = {
     score?: true;
     mistakes?: true;
     timeLimitSeconds?: true;
     maxMistakes?: true;
   };
+
   export type PuzzleRushScoreSumAggregateInputType = {
     score?: true;
     mistakes?: true;
     timeLimitSeconds?: true;
     maxMistakes?: true;
   };
+
   export type PuzzleRushScoreMinAggregateInputType = {
     id?: true;
     userId?: true;
@@ -9757,6 +18091,7 @@ export namespace Prisma {
     maxMistakes?: true;
     createdAt?: true;
   };
+
   export type PuzzleRushScoreMaxAggregateInputType = {
     id?: true;
     userId?: true;
@@ -9768,6 +18103,7 @@ export namespace Prisma {
     maxMistakes?: true;
     createdAt?: true;
   };
+
   export type PuzzleRushScoreCountAggregateInputType = {
     id?: true;
     userId?: true;
@@ -9780,22 +18116,72 @@ export namespace Prisma {
     createdAt?: true;
     _all?: true;
   };
+
   export type PuzzleRushScoreAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which PuzzleRushScore to aggregate.
+     */
     where?: PuzzleRushScoreWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleRushScores to fetch.
+     */
     orderBy?:
       | PuzzleRushScoreOrderByWithRelationInput
       | PuzzleRushScoreOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: PuzzleRushScoreWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleRushScores from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleRushScores.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned PuzzleRushScores
+     **/
     _count?: true | PuzzleRushScoreCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: PuzzleRushScoreAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: PuzzleRushScoreSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: PuzzleRushScoreMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: PuzzleRushScoreMaxAggregateInputType;
   };
+
   export type GetPuzzleRushScoreAggregateType<
     T extends PuzzleRushScoreAggregateArgs
   > = {
@@ -9807,6 +18193,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregatePuzzleRushScore[P]>
       : GetScalarType<T[P], AggregatePuzzleRushScore[P]>;
   };
+
   export type PuzzleRushScoreGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -9824,6 +18211,7 @@ export namespace Prisma {
     _min?: PuzzleRushScoreMinAggregateInputType;
     _max?: PuzzleRushScoreMaxAggregateInputType;
   };
+
   export type PuzzleRushScoreGroupByOutputType = {
     id: string;
     userId: string;
@@ -9840,6 +18228,7 @@ export namespace Prisma {
     _min: PuzzleRushScoreMinAggregateOutputType | null;
     _max: PuzzleRushScoreMaxAggregateOutputType | null;
   };
+
   type GetPuzzleRushScoreGroupByPayload<T extends PuzzleRushScoreGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -9853,6 +18242,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type PuzzleRushScoreSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -9870,6 +18260,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleRushScore']
   >;
+
   export type PuzzleRushScoreSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -9887,6 +18278,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleRushScore']
   >;
+
   export type PuzzleRushScoreSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -9904,6 +18296,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['puzzleRushScore']
   >;
+
   export type PuzzleRushScoreSelectScalar = {
     id?: boolean;
     userId?: boolean;
@@ -9915,6 +18308,7 @@ export namespace Prisma {
     maxMistakes?: boolean;
     createdAt?: boolean;
   };
+
   export type PuzzleRushScoreOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -9944,6 +18338,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $PuzzleRushScorePayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -9967,9 +18362,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type PuzzleRushScoreGetPayload<
     S extends boolean | null | undefined | PuzzleRushScoreDefaultArgs
   > = $Result.GetResult<Prisma.$PuzzleRushScorePayload, S>;
+
   type PuzzleRushScoreCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -9978,16 +18375,26 @@ export namespace Prisma {
   > & {
     select?: PuzzleRushScoreCountAggregateInputType | true;
   };
+
   export interface PuzzleRushScoreDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['PuzzleRushScore'];
-      meta: {
-        name: 'PuzzleRushScore';
-      };
+      meta: { name: 'PuzzleRushScore' };
     };
+    /**
+     * Find zero or one PuzzleRushScore that matches the filter.
+     * @param {PuzzleRushScoreFindUniqueArgs} args - Arguments to find a PuzzleRushScore
+     * @example
+     * // Get one PuzzleRushScore
+     * const puzzleRushScore = await prisma.puzzleRushScore.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends PuzzleRushScoreFindUniqueArgs>(
       args: SelectSubset<T, PuzzleRushScoreFindUniqueArgs<ExtArgs>>
     ): Prisma__PuzzleRushScoreClient<
@@ -10001,6 +18408,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one PuzzleRushScore that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PuzzleRushScoreFindUniqueOrThrowArgs} args - Arguments to find a PuzzleRushScore
+     * @example
+     * // Get one PuzzleRushScore
+     * const puzzleRushScore = await prisma.puzzleRushScore.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends PuzzleRushScoreFindUniqueOrThrowArgs>(
       args: SelectSubset<T, PuzzleRushScoreFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__PuzzleRushScoreClient<
@@ -10014,6 +18434,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first PuzzleRushScore that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRushScoreFindFirstArgs} args - Arguments to find a PuzzleRushScore
+     * @example
+     * // Get one PuzzleRushScore
+     * const puzzleRushScore = await prisma.puzzleRushScore.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends PuzzleRushScoreFindFirstArgs>(
       args?: SelectSubset<T, PuzzleRushScoreFindFirstArgs<ExtArgs>>
     ): Prisma__PuzzleRushScoreClient<
@@ -10027,6 +18461,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first PuzzleRushScore that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRushScoreFindFirstOrThrowArgs} args - Arguments to find a PuzzleRushScore
+     * @example
+     * // Get one PuzzleRushScore
+     * const puzzleRushScore = await prisma.puzzleRushScore.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends PuzzleRushScoreFindFirstOrThrowArgs>(
       args?: SelectSubset<T, PuzzleRushScoreFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__PuzzleRushScoreClient<
@@ -10040,6 +18489,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more PuzzleRushScores that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRushScoreFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PuzzleRushScores
+     * const puzzleRushScores = await prisma.puzzleRushScore.findMany()
+     *
+     * // Get first 10 PuzzleRushScores
+     * const puzzleRushScores = await prisma.puzzleRushScore.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const puzzleRushScoreWithIdOnly = await prisma.puzzleRushScore.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends PuzzleRushScoreFindManyArgs>(
       args?: SelectSubset<T, PuzzleRushScoreFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -10050,6 +18516,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a PuzzleRushScore.
+     * @param {PuzzleRushScoreCreateArgs} args - Arguments to create a PuzzleRushScore.
+     * @example
+     * // Create one PuzzleRushScore
+     * const PuzzleRushScore = await prisma.puzzleRushScore.create({
+     *   data: {
+     *     // ... data to create a PuzzleRushScore
+     *   }
+     * })
+     *
+     */
     create<T extends PuzzleRushScoreCreateArgs>(
       args: SelectSubset<T, PuzzleRushScoreCreateArgs<ExtArgs>>
     ): Prisma__PuzzleRushScoreClient<
@@ -10063,9 +18542,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many PuzzleRushScores.
+     * @param {PuzzleRushScoreCreateManyArgs} args - Arguments to create many PuzzleRushScores.
+     * @example
+     * // Create many PuzzleRushScores
+     * const puzzleRushScore = await prisma.puzzleRushScore.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends PuzzleRushScoreCreateManyArgs>(
       args?: SelectSubset<T, PuzzleRushScoreCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many PuzzleRushScores and returns the data saved in the database.
+     * @param {PuzzleRushScoreCreateManyAndReturnArgs} args - Arguments to create many PuzzleRushScores.
+     * @example
+     * // Create many PuzzleRushScores
+     * const puzzleRushScore = await prisma.puzzleRushScore.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many PuzzleRushScores and only return the `id`
+     * const puzzleRushScoreWithIdOnly = await prisma.puzzleRushScore.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends PuzzleRushScoreCreateManyAndReturnArgs>(
       args?: SelectSubset<T, PuzzleRushScoreCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -10076,6 +18591,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a PuzzleRushScore.
+     * @param {PuzzleRushScoreDeleteArgs} args - Arguments to delete one PuzzleRushScore.
+     * @example
+     * // Delete one PuzzleRushScore
+     * const PuzzleRushScore = await prisma.puzzleRushScore.delete({
+     *   where: {
+     *     // ... filter to delete one PuzzleRushScore
+     *   }
+     * })
+     *
+     */
     delete<T extends PuzzleRushScoreDeleteArgs>(
       args: SelectSubset<T, PuzzleRushScoreDeleteArgs<ExtArgs>>
     ): Prisma__PuzzleRushScoreClient<
@@ -10089,6 +18617,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one PuzzleRushScore.
+     * @param {PuzzleRushScoreUpdateArgs} args - Arguments to update one PuzzleRushScore.
+     * @example
+     * // Update one PuzzleRushScore
+     * const puzzleRushScore = await prisma.puzzleRushScore.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends PuzzleRushScoreUpdateArgs>(
       args: SelectSubset<T, PuzzleRushScoreUpdateArgs<ExtArgs>>
     ): Prisma__PuzzleRushScoreClient<
@@ -10102,12 +18646,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more PuzzleRushScores.
+     * @param {PuzzleRushScoreDeleteManyArgs} args - Arguments to filter PuzzleRushScores to delete.
+     * @example
+     * // Delete a few PuzzleRushScores
+     * const { count } = await prisma.puzzleRushScore.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends PuzzleRushScoreDeleteManyArgs>(
       args?: SelectSubset<T, PuzzleRushScoreDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PuzzleRushScores.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRushScoreUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PuzzleRushScores
+     * const puzzleRushScore = await prisma.puzzleRushScore.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends PuzzleRushScoreUpdateManyArgs>(
       args: SelectSubset<T, PuzzleRushScoreUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more PuzzleRushScores and returns the data updated in the database.
+     * @param {PuzzleRushScoreUpdateManyAndReturnArgs} args - Arguments to update many PuzzleRushScores.
+     * @example
+     * // Update many PuzzleRushScores
+     * const puzzleRushScore = await prisma.puzzleRushScore.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more PuzzleRushScores and only return the `id`
+     * const puzzleRushScoreWithIdOnly = await prisma.puzzleRushScore.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends PuzzleRushScoreUpdateManyAndReturnArgs>(
       args: SelectSubset<T, PuzzleRushScoreUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -10118,6 +18722,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one PuzzleRushScore.
+     * @param {PuzzleRushScoreUpsertArgs} args - Arguments to update or create a PuzzleRushScore.
+     * @example
+     * // Update or create a PuzzleRushScore
+     * const puzzleRushScore = await prisma.puzzleRushScore.upsert({
+     *   create: {
+     *     // ... data to create a PuzzleRushScore
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PuzzleRushScore we want to update
+     *   }
+     * })
+     */
     upsert<T extends PuzzleRushScoreUpsertArgs>(
       args: SelectSubset<T, PuzzleRushScoreUpsertArgs<ExtArgs>>
     ): Prisma__PuzzleRushScoreClient<
@@ -10131,6 +18753,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of PuzzleRushScores.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRushScoreCountArgs} args - Arguments to filter PuzzleRushScores to count.
+     * @example
+     * // Count the number of PuzzleRushScores
+     * const count = await prisma.puzzleRushScore.count({
+     *   where: {
+     *     // ... the filter for the PuzzleRushScores we want to count
+     *   }
+     * })
+     **/
     count<T extends PuzzleRushScoreCountArgs>(
       args?: Subset<T, PuzzleRushScoreCountArgs>
     ): Prisma.PrismaPromise<
@@ -10140,9 +18776,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], PuzzleRushScoreCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a PuzzleRushScore.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRushScoreAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends PuzzleRushScoreAggregateArgs>(
       args: Subset<T, PuzzleRushScoreAggregateArgs>
     ): Prisma.PrismaPromise<GetPuzzleRushScoreAggregateType<T>>;
+
+    /**
+     * Group by PuzzleRushScore.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PuzzleRushScoreGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends PuzzleRushScoreGroupByArgs,
       HasSelectOrTake extends Or<
@@ -10150,12 +18830,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: PuzzleRushScoreGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: PuzzleRushScoreGroupByArgs['orderBy'];
-          },
+        ? { orderBy: PuzzleRushScoreGroupByArgs['orderBy'] }
+        : { orderBy?: PuzzleRushScoreGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -10212,8 +18888,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetPuzzleRushScoreGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the PuzzleRushScore model
+     */
     readonly fields: PuzzleRushScoreFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PuzzleRushScore.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__PuzzleRushScoreClient<
     T,
     Null = never,
@@ -10235,6 +18921,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -10245,14 +18937,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the PuzzleRushScore model
+   */
   interface PuzzleRushScoreFieldRefs {
     readonly id: FieldRef<'PuzzleRushScore', 'String'>;
     readonly userId: FieldRef<'PuzzleRushScore', 'String'>;
@@ -10264,165 +18971,475 @@ export namespace Prisma {
     readonly maxMistakes: FieldRef<'PuzzleRushScore', 'Int'>;
     readonly createdAt: FieldRef<'PuzzleRushScore', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * PuzzleRushScore findUnique
+   */
   export type PuzzleRushScoreFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRushScore to fetch.
+     */
     where: PuzzleRushScoreWhereUniqueInput;
   };
+
+  /**
+   * PuzzleRushScore findUniqueOrThrow
+   */
   export type PuzzleRushScoreFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRushScore to fetch.
+     */
     where: PuzzleRushScoreWhereUniqueInput;
   };
+
+  /**
+   * PuzzleRushScore findFirst
+   */
   export type PuzzleRushScoreFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRushScore to fetch.
+     */
     where?: PuzzleRushScoreWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleRushScores to fetch.
+     */
     orderBy?:
       | PuzzleRushScoreOrderByWithRelationInput
       | PuzzleRushScoreOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PuzzleRushScores.
+     */
     cursor?: PuzzleRushScoreWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleRushScores from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleRushScores.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PuzzleRushScores.
+     */
     distinct?:
       | PuzzleRushScoreScalarFieldEnum
       | PuzzleRushScoreScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleRushScore findFirstOrThrow
+   */
   export type PuzzleRushScoreFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRushScore to fetch.
+     */
     where?: PuzzleRushScoreWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleRushScores to fetch.
+     */
     orderBy?:
       | PuzzleRushScoreOrderByWithRelationInput
       | PuzzleRushScoreOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for PuzzleRushScores.
+     */
     cursor?: PuzzleRushScoreWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleRushScores from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleRushScores.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of PuzzleRushScores.
+     */
     distinct?:
       | PuzzleRushScoreScalarFieldEnum
       | PuzzleRushScoreScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleRushScore findMany
+   */
   export type PuzzleRushScoreFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * Filter, which PuzzleRushScores to fetch.
+     */
     where?: PuzzleRushScoreWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of PuzzleRushScores to fetch.
+     */
     orderBy?:
       | PuzzleRushScoreOrderByWithRelationInput
       | PuzzleRushScoreOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing PuzzleRushScores.
+     */
     cursor?: PuzzleRushScoreWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` PuzzleRushScores from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` PuzzleRushScores.
+     */
     skip?: number;
     distinct?:
       | PuzzleRushScoreScalarFieldEnum
       | PuzzleRushScoreScalarFieldEnum[];
   };
+
+  /**
+   * PuzzleRushScore create
+   */
   export type PuzzleRushScoreCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a PuzzleRushScore.
+     */
     data: XOR<PuzzleRushScoreCreateInput, PuzzleRushScoreUncheckedCreateInput>;
   };
+
+  /**
+   * PuzzleRushScore createMany
+   */
   export type PuzzleRushScoreCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many PuzzleRushScores.
+     */
     data: PuzzleRushScoreCreateManyInput | PuzzleRushScoreCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * PuzzleRushScore createManyAndReturn
+   */
   export type PuzzleRushScoreCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * The data used to create many PuzzleRushScores.
+     */
     data: PuzzleRushScoreCreateManyInput | PuzzleRushScoreCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * PuzzleRushScore update
+   */
   export type PuzzleRushScoreUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a PuzzleRushScore.
+     */
     data: XOR<PuzzleRushScoreUpdateInput, PuzzleRushScoreUncheckedUpdateInput>;
+    /**
+     * Choose, which PuzzleRushScore to update.
+     */
     where: PuzzleRushScoreWhereUniqueInput;
   };
+
+  /**
+   * PuzzleRushScore updateMany
+   */
   export type PuzzleRushScoreUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update PuzzleRushScores.
+     */
     data: XOR<
       PuzzleRushScoreUpdateManyMutationInput,
       PuzzleRushScoreUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which PuzzleRushScores to update
+     */
     where?: PuzzleRushScoreWhereInput;
+    /**
+     * Limit how many PuzzleRushScores to update.
+     */
     limit?: number;
   };
+
+  /**
+   * PuzzleRushScore updateManyAndReturn
+   */
   export type PuzzleRushScoreUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * The data used to update PuzzleRushScores.
+     */
     data: XOR<
       PuzzleRushScoreUpdateManyMutationInput,
       PuzzleRushScoreUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which PuzzleRushScores to update
+     */
     where?: PuzzleRushScoreWhereInput;
+    /**
+     * Limit how many PuzzleRushScores to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * PuzzleRushScore upsert
+   */
   export type PuzzleRushScoreUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the PuzzleRushScore to update in case it exists.
+     */
     where: PuzzleRushScoreWhereUniqueInput;
+    /**
+     * In case the PuzzleRushScore found by the `where` argument doesn't exist, create a new PuzzleRushScore with this data.
+     */
     create: XOR<
       PuzzleRushScoreCreateInput,
       PuzzleRushScoreUncheckedCreateInput
     >;
+    /**
+     * In case the PuzzleRushScore was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<
       PuzzleRushScoreUpdateInput,
       PuzzleRushScoreUncheckedUpdateInput
     >;
   };
+
+  /**
+   * PuzzleRushScore delete
+   */
   export type PuzzleRushScoreDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
+    /**
+     * Filter which PuzzleRushScore to delete.
+     */
     where: PuzzleRushScoreWhereUniqueInput;
   };
+
+  /**
+   * PuzzleRushScore deleteMany
+   */
   export type PuzzleRushScoreDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which PuzzleRushScores to delete
+     */
     where?: PuzzleRushScoreWhereInput;
+    /**
+     * Limit how many PuzzleRushScores to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * PuzzleRushScore without action
+   */
   export type PuzzleRushScoreDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the PuzzleRushScore
+     */
     select?: PuzzleRushScoreSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the PuzzleRushScore
+     */
     omit?: PuzzleRushScoreOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: PuzzleRushScoreInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model MemorySession
+   */
+
   export type AggregateMemorySession = {
     _count: MemorySessionCountAggregateOutputType | null;
     _avg: MemorySessionAvgAggregateOutputType | null;
@@ -10430,6 +19447,7 @@ export namespace Prisma {
     _min: MemorySessionMinAggregateOutputType | null;
     _max: MemorySessionMaxAggregateOutputType | null;
   };
+
   export type MemorySessionAvgAggregateOutputType = {
     pieceCount: number | null;
     memorizeTimeSeconds: number | null;
@@ -10438,6 +19456,7 @@ export namespace Prisma {
     accuracy: number | null;
     progressiveLevel: number | null;
   };
+
   export type MemorySessionSumAggregateOutputType = {
     pieceCount: number | null;
     memorizeTimeSeconds: number | null;
@@ -10446,6 +19465,7 @@ export namespace Prisma {
     accuracy: number | null;
     progressiveLevel: number | null;
   };
+
   export type MemorySessionMinAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -10458,6 +19478,7 @@ export namespace Prisma {
     progressiveLevel: number | null;
     createdAt: Date | null;
   };
+
   export type MemorySessionMaxAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -10470,6 +19491,7 @@ export namespace Prisma {
     progressiveLevel: number | null;
     createdAt: Date | null;
   };
+
   export type MemorySessionCountAggregateOutputType = {
     id: number;
     userId: number;
@@ -10483,6 +19505,7 @@ export namespace Prisma {
     createdAt: number;
     _all: number;
   };
+
   export type MemorySessionAvgAggregateInputType = {
     pieceCount?: true;
     memorizeTimeSeconds?: true;
@@ -10491,6 +19514,7 @@ export namespace Prisma {
     accuracy?: true;
     progressiveLevel?: true;
   };
+
   export type MemorySessionSumAggregateInputType = {
     pieceCount?: true;
     memorizeTimeSeconds?: true;
@@ -10499,6 +19523,7 @@ export namespace Prisma {
     accuracy?: true;
     progressiveLevel?: true;
   };
+
   export type MemorySessionMinAggregateInputType = {
     id?: true;
     userId?: true;
@@ -10511,6 +19536,7 @@ export namespace Prisma {
     progressiveLevel?: true;
     createdAt?: true;
   };
+
   export type MemorySessionMaxAggregateInputType = {
     id?: true;
     userId?: true;
@@ -10523,6 +19549,7 @@ export namespace Prisma {
     progressiveLevel?: true;
     createdAt?: true;
   };
+
   export type MemorySessionCountAggregateInputType = {
     id?: true;
     userId?: true;
@@ -10536,22 +19563,72 @@ export namespace Prisma {
     createdAt?: true;
     _all?: true;
   };
+
   export type MemorySessionAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which MemorySession to aggregate.
+     */
     where?: MemorySessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of MemorySessions to fetch.
+     */
     orderBy?:
       | MemorySessionOrderByWithRelationInput
       | MemorySessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: MemorySessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` MemorySessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` MemorySessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned MemorySessions
+     **/
     _count?: true | MemorySessionCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: MemorySessionAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: MemorySessionSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: MemorySessionMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: MemorySessionMaxAggregateInputType;
   };
+
   export type GetMemorySessionAggregateType<
     T extends MemorySessionAggregateArgs
   > = {
@@ -10561,6 +19638,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateMemorySession[P]>
       : GetScalarType<T[P], AggregateMemorySession[P]>;
   };
+
   export type MemorySessionGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -10578,6 +19656,7 @@ export namespace Prisma {
     _min?: MemorySessionMinAggregateInputType;
     _max?: MemorySessionMaxAggregateInputType;
   };
+
   export type MemorySessionGroupByOutputType = {
     id: string;
     userId: string;
@@ -10595,6 +19674,7 @@ export namespace Prisma {
     _min: MemorySessionMinAggregateOutputType | null;
     _max: MemorySessionMaxAggregateOutputType | null;
   };
+
   type GetMemorySessionGroupByPayload<T extends MemorySessionGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -10608,6 +19688,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type MemorySessionSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -10626,6 +19707,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['memorySession']
   >;
+
   export type MemorySessionSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -10644,6 +19726,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['memorySession']
   >;
+
   export type MemorySessionSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -10662,6 +19745,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['memorySession']
   >;
+
   export type MemorySessionSelectScalar = {
     id?: boolean;
     userId?: boolean;
@@ -10674,6 +19758,7 @@ export namespace Prisma {
     progressiveLevel?: boolean;
     createdAt?: boolean;
   };
+
   export type MemorySessionOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -10704,6 +19789,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $MemorySessionPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -10728,9 +19814,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type MemorySessionGetPayload<
     S extends boolean | null | undefined | MemorySessionDefaultArgs
   > = $Result.GetResult<Prisma.$MemorySessionPayload, S>;
+
   type MemorySessionCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -10739,16 +19827,26 @@ export namespace Prisma {
   > & {
     select?: MemorySessionCountAggregateInputType | true;
   };
+
   export interface MemorySessionDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['MemorySession'];
-      meta: {
-        name: 'MemorySession';
-      };
+      meta: { name: 'MemorySession' };
     };
+    /**
+     * Find zero or one MemorySession that matches the filter.
+     * @param {MemorySessionFindUniqueArgs} args - Arguments to find a MemorySession
+     * @example
+     * // Get one MemorySession
+     * const memorySession = await prisma.memorySession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends MemorySessionFindUniqueArgs>(
       args: SelectSubset<T, MemorySessionFindUniqueArgs<ExtArgs>>
     ): Prisma__MemorySessionClient<
@@ -10762,6 +19860,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one MemorySession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MemorySessionFindUniqueOrThrowArgs} args - Arguments to find a MemorySession
+     * @example
+     * // Get one MemorySession
+     * const memorySession = await prisma.memorySession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends MemorySessionFindUniqueOrThrowArgs>(
       args: SelectSubset<T, MemorySessionFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__MemorySessionClient<
@@ -10775,6 +19886,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first MemorySession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemorySessionFindFirstArgs} args - Arguments to find a MemorySession
+     * @example
+     * // Get one MemorySession
+     * const memorySession = await prisma.memorySession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends MemorySessionFindFirstArgs>(
       args?: SelectSubset<T, MemorySessionFindFirstArgs<ExtArgs>>
     ): Prisma__MemorySessionClient<
@@ -10788,6 +19913,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first MemorySession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemorySessionFindFirstOrThrowArgs} args - Arguments to find a MemorySession
+     * @example
+     * // Get one MemorySession
+     * const memorySession = await prisma.memorySession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends MemorySessionFindFirstOrThrowArgs>(
       args?: SelectSubset<T, MemorySessionFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__MemorySessionClient<
@@ -10801,6 +19941,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more MemorySessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemorySessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MemorySessions
+     * const memorySessions = await prisma.memorySession.findMany()
+     *
+     * // Get first 10 MemorySessions
+     * const memorySessions = await prisma.memorySession.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const memorySessionWithIdOnly = await prisma.memorySession.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends MemorySessionFindManyArgs>(
       args?: SelectSubset<T, MemorySessionFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -10811,6 +19968,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a MemorySession.
+     * @param {MemorySessionCreateArgs} args - Arguments to create a MemorySession.
+     * @example
+     * // Create one MemorySession
+     * const MemorySession = await prisma.memorySession.create({
+     *   data: {
+     *     // ... data to create a MemorySession
+     *   }
+     * })
+     *
+     */
     create<T extends MemorySessionCreateArgs>(
       args: SelectSubset<T, MemorySessionCreateArgs<ExtArgs>>
     ): Prisma__MemorySessionClient<
@@ -10824,9 +19994,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many MemorySessions.
+     * @param {MemorySessionCreateManyArgs} args - Arguments to create many MemorySessions.
+     * @example
+     * // Create many MemorySessions
+     * const memorySession = await prisma.memorySession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends MemorySessionCreateManyArgs>(
       args?: SelectSubset<T, MemorySessionCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many MemorySessions and returns the data saved in the database.
+     * @param {MemorySessionCreateManyAndReturnArgs} args - Arguments to create many MemorySessions.
+     * @example
+     * // Create many MemorySessions
+     * const memorySession = await prisma.memorySession.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many MemorySessions and only return the `id`
+     * const memorySessionWithIdOnly = await prisma.memorySession.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends MemorySessionCreateManyAndReturnArgs>(
       args?: SelectSubset<T, MemorySessionCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -10837,6 +20043,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a MemorySession.
+     * @param {MemorySessionDeleteArgs} args - Arguments to delete one MemorySession.
+     * @example
+     * // Delete one MemorySession
+     * const MemorySession = await prisma.memorySession.delete({
+     *   where: {
+     *     // ... filter to delete one MemorySession
+     *   }
+     * })
+     *
+     */
     delete<T extends MemorySessionDeleteArgs>(
       args: SelectSubset<T, MemorySessionDeleteArgs<ExtArgs>>
     ): Prisma__MemorySessionClient<
@@ -10850,6 +20069,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one MemorySession.
+     * @param {MemorySessionUpdateArgs} args - Arguments to update one MemorySession.
+     * @example
+     * // Update one MemorySession
+     * const memorySession = await prisma.memorySession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends MemorySessionUpdateArgs>(
       args: SelectSubset<T, MemorySessionUpdateArgs<ExtArgs>>
     ): Prisma__MemorySessionClient<
@@ -10863,12 +20098,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more MemorySessions.
+     * @param {MemorySessionDeleteManyArgs} args - Arguments to filter MemorySessions to delete.
+     * @example
+     * // Delete a few MemorySessions
+     * const { count } = await prisma.memorySession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends MemorySessionDeleteManyArgs>(
       args?: SelectSubset<T, MemorySessionDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more MemorySessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemorySessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MemorySessions
+     * const memorySession = await prisma.memorySession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends MemorySessionUpdateManyArgs>(
       args: SelectSubset<T, MemorySessionUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more MemorySessions and returns the data updated in the database.
+     * @param {MemorySessionUpdateManyAndReturnArgs} args - Arguments to update many MemorySessions.
+     * @example
+     * // Update many MemorySessions
+     * const memorySession = await prisma.memorySession.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more MemorySessions and only return the `id`
+     * const memorySessionWithIdOnly = await prisma.memorySession.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends MemorySessionUpdateManyAndReturnArgs>(
       args: SelectSubset<T, MemorySessionUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -10879,6 +20174,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one MemorySession.
+     * @param {MemorySessionUpsertArgs} args - Arguments to update or create a MemorySession.
+     * @example
+     * // Update or create a MemorySession
+     * const memorySession = await prisma.memorySession.upsert({
+     *   create: {
+     *     // ... data to create a MemorySession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MemorySession we want to update
+     *   }
+     * })
+     */
     upsert<T extends MemorySessionUpsertArgs>(
       args: SelectSubset<T, MemorySessionUpsertArgs<ExtArgs>>
     ): Prisma__MemorySessionClient<
@@ -10892,6 +20205,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of MemorySessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemorySessionCountArgs} args - Arguments to filter MemorySessions to count.
+     * @example
+     * // Count the number of MemorySessions
+     * const count = await prisma.memorySession.count({
+     *   where: {
+     *     // ... the filter for the MemorySessions we want to count
+     *   }
+     * })
+     **/
     count<T extends MemorySessionCountArgs>(
       args?: Subset<T, MemorySessionCountArgs>
     ): Prisma.PrismaPromise<
@@ -10901,9 +20228,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], MemorySessionCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a MemorySession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemorySessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends MemorySessionAggregateArgs>(
       args: Subset<T, MemorySessionAggregateArgs>
     ): Prisma.PrismaPromise<GetMemorySessionAggregateType<T>>;
+
+    /**
+     * Group by MemorySession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MemorySessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends MemorySessionGroupByArgs,
       HasSelectOrTake extends Or<
@@ -10911,12 +20282,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: MemorySessionGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: MemorySessionGroupByArgs['orderBy'];
-          },
+        ? { orderBy: MemorySessionGroupByArgs['orderBy'] }
+        : { orderBy?: MemorySessionGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -10973,8 +20340,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetMemorySessionGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the MemorySession model
+     */
     readonly fields: MemorySessionFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MemorySession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__MemorySessionClient<
     T,
     Null = never,
@@ -10996,6 +20373,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -11006,14 +20389,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the MemorySession model
+   */
   interface MemorySessionFieldRefs {
     readonly id: FieldRef<'MemorySession', 'String'>;
     readonly userId: FieldRef<'MemorySession', 'String'>;
@@ -11026,153 +20424,463 @@ export namespace Prisma {
     readonly progressiveLevel: FieldRef<'MemorySession', 'Int'>;
     readonly createdAt: FieldRef<'MemorySession', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * MemorySession findUnique
+   */
   export type MemorySessionFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which MemorySession to fetch.
+     */
     where: MemorySessionWhereUniqueInput;
   };
+
+  /**
+   * MemorySession findUniqueOrThrow
+   */
   export type MemorySessionFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which MemorySession to fetch.
+     */
     where: MemorySessionWhereUniqueInput;
   };
+
+  /**
+   * MemorySession findFirst
+   */
   export type MemorySessionFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which MemorySession to fetch.
+     */
     where?: MemorySessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of MemorySessions to fetch.
+     */
     orderBy?:
       | MemorySessionOrderByWithRelationInput
       | MemorySessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for MemorySessions.
+     */
     cursor?: MemorySessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` MemorySessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` MemorySessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of MemorySessions.
+     */
     distinct?: MemorySessionScalarFieldEnum | MemorySessionScalarFieldEnum[];
   };
+
+  /**
+   * MemorySession findFirstOrThrow
+   */
   export type MemorySessionFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which MemorySession to fetch.
+     */
     where?: MemorySessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of MemorySessions to fetch.
+     */
     orderBy?:
       | MemorySessionOrderByWithRelationInput
       | MemorySessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for MemorySessions.
+     */
     cursor?: MemorySessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` MemorySessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` MemorySessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of MemorySessions.
+     */
     distinct?: MemorySessionScalarFieldEnum | MemorySessionScalarFieldEnum[];
   };
+
+  /**
+   * MemorySession findMany
+   */
   export type MemorySessionFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which MemorySessions to fetch.
+     */
     where?: MemorySessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of MemorySessions to fetch.
+     */
     orderBy?:
       | MemorySessionOrderByWithRelationInput
       | MemorySessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing MemorySessions.
+     */
     cursor?: MemorySessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` MemorySessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` MemorySessions.
+     */
     skip?: number;
     distinct?: MemorySessionScalarFieldEnum | MemorySessionScalarFieldEnum[];
   };
+
+  /**
+   * MemorySession create
+   */
   export type MemorySessionCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a MemorySession.
+     */
     data: XOR<MemorySessionCreateInput, MemorySessionUncheckedCreateInput>;
   };
+
+  /**
+   * MemorySession createMany
+   */
   export type MemorySessionCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many MemorySessions.
+     */
     data: MemorySessionCreateManyInput | MemorySessionCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * MemorySession createManyAndReturn
+   */
   export type MemorySessionCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * The data used to create many MemorySessions.
+     */
     data: MemorySessionCreateManyInput | MemorySessionCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * MemorySession update
+   */
   export type MemorySessionUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a MemorySession.
+     */
     data: XOR<MemorySessionUpdateInput, MemorySessionUncheckedUpdateInput>;
+    /**
+     * Choose, which MemorySession to update.
+     */
     where: MemorySessionWhereUniqueInput;
   };
+
+  /**
+   * MemorySession updateMany
+   */
   export type MemorySessionUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update MemorySessions.
+     */
     data: XOR<
       MemorySessionUpdateManyMutationInput,
       MemorySessionUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which MemorySessions to update
+     */
     where?: MemorySessionWhereInput;
+    /**
+     * Limit how many MemorySessions to update.
+     */
     limit?: number;
   };
+
+  /**
+   * MemorySession updateManyAndReturn
+   */
   export type MemorySessionUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * The data used to update MemorySessions.
+     */
     data: XOR<
       MemorySessionUpdateManyMutationInput,
       MemorySessionUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which MemorySessions to update
+     */
     where?: MemorySessionWhereInput;
+    /**
+     * Limit how many MemorySessions to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * MemorySession upsert
+   */
   export type MemorySessionUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the MemorySession to update in case it exists.
+     */
     where: MemorySessionWhereUniqueInput;
+    /**
+     * In case the MemorySession found by the `where` argument doesn't exist, create a new MemorySession with this data.
+     */
     create: XOR<MemorySessionCreateInput, MemorySessionUncheckedCreateInput>;
+    /**
+     * In case the MemorySession was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<MemorySessionUpdateInput, MemorySessionUncheckedUpdateInput>;
   };
+
+  /**
+   * MemorySession delete
+   */
   export type MemorySessionDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
+    /**
+     * Filter which MemorySession to delete.
+     */
     where: MemorySessionWhereUniqueInput;
   };
+
+  /**
+   * MemorySession deleteMany
+   */
   export type MemorySessionDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which MemorySessions to delete
+     */
     where?: MemorySessionWhereInput;
+    /**
+     * Limit how many MemorySessions to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * MemorySession without action
+   */
   export type MemorySessionDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the MemorySession
+     */
     select?: MemorySessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the MemorySession
+     */
     omit?: MemorySessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: MemorySessionInclude<ExtArgs> | null;
   };
+
+  /**
+   * Model VisionSession
+   */
+
   export type AggregateVisionSession = {
     _count: VisionSessionCountAggregateOutputType | null;
     _avg: VisionSessionAvgAggregateOutputType | null;
@@ -11180,6 +20888,7 @@ export namespace Prisma {
     _min: VisionSessionMinAggregateOutputType | null;
     _max: VisionSessionMaxAggregateOutputType | null;
   };
+
   export type VisionSessionAvgAggregateOutputType = {
     timeLimitSeconds: number | null;
     score: number | null;
@@ -11187,6 +20896,7 @@ export namespace Prisma {
     accuracy: number | null;
     avgResponseTimeMs: number | null;
   };
+
   export type VisionSessionSumAggregateOutputType = {
     timeLimitSeconds: number | null;
     score: number | null;
@@ -11194,6 +20904,7 @@ export namespace Prisma {
     accuracy: number | null;
     avgResponseTimeMs: number | null;
   };
+
   export type VisionSessionMinAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -11206,6 +20917,7 @@ export namespace Prisma {
     avgResponseTimeMs: number | null;
     createdAt: Date | null;
   };
+
   export type VisionSessionMaxAggregateOutputType = {
     id: string | null;
     userId: string | null;
@@ -11218,6 +20930,7 @@ export namespace Prisma {
     avgResponseTimeMs: number | null;
     createdAt: Date | null;
   };
+
   export type VisionSessionCountAggregateOutputType = {
     id: number;
     userId: number;
@@ -11231,6 +20944,7 @@ export namespace Prisma {
     createdAt: number;
     _all: number;
   };
+
   export type VisionSessionAvgAggregateInputType = {
     timeLimitSeconds?: true;
     score?: true;
@@ -11238,6 +20952,7 @@ export namespace Prisma {
     accuracy?: true;
     avgResponseTimeMs?: true;
   };
+
   export type VisionSessionSumAggregateInputType = {
     timeLimitSeconds?: true;
     score?: true;
@@ -11245,6 +20960,7 @@ export namespace Prisma {
     accuracy?: true;
     avgResponseTimeMs?: true;
   };
+
   export type VisionSessionMinAggregateInputType = {
     id?: true;
     userId?: true;
@@ -11257,6 +20973,7 @@ export namespace Prisma {
     avgResponseTimeMs?: true;
     createdAt?: true;
   };
+
   export type VisionSessionMaxAggregateInputType = {
     id?: true;
     userId?: true;
@@ -11269,6 +20986,7 @@ export namespace Prisma {
     avgResponseTimeMs?: true;
     createdAt?: true;
   };
+
   export type VisionSessionCountAggregateInputType = {
     id?: true;
     userId?: true;
@@ -11282,22 +21000,72 @@ export namespace Prisma {
     createdAt?: true;
     _all?: true;
   };
+
   export type VisionSessionAggregateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which VisionSession to aggregate.
+     */
     where?: VisionSessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of VisionSessions to fetch.
+     */
     orderBy?:
       | VisionSessionOrderByWithRelationInput
       | VisionSessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the start position
+     */
     cursor?: VisionSessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` VisionSessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` VisionSessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Count returned VisionSessions
+     **/
     _count?: true | VisionSessionCountAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to average
+     **/
     _avg?: VisionSessionAvgAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to sum
+     **/
     _sum?: VisionSessionSumAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the minimum value
+     **/
     _min?: VisionSessionMinAggregateInputType;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     *
+     * Select which fields to find the maximum value
+     **/
     _max?: VisionSessionMaxAggregateInputType;
   };
+
   export type GetVisionSessionAggregateType<
     T extends VisionSessionAggregateArgs
   > = {
@@ -11307,6 +21075,7 @@ export namespace Prisma {
         : GetScalarType<T[P], AggregateVisionSession[P]>
       : GetScalarType<T[P], AggregateVisionSession[P]>;
   };
+
   export type VisionSessionGroupByArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -11324,6 +21093,7 @@ export namespace Prisma {
     _min?: VisionSessionMinAggregateInputType;
     _max?: VisionSessionMaxAggregateInputType;
   };
+
   export type VisionSessionGroupByOutputType = {
     id: string;
     userId: string;
@@ -11341,6 +21111,7 @@ export namespace Prisma {
     _min: VisionSessionMinAggregateOutputType | null;
     _max: VisionSessionMaxAggregateOutputType | null;
   };
+
   type GetVisionSessionGroupByPayload<T extends VisionSessionGroupByArgs> =
     Prisma.PrismaPromise<
       Array<
@@ -11354,6 +21125,7 @@ export namespace Prisma {
         }
       >
     >;
+
   export type VisionSessionSelect<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -11372,6 +21144,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['visionSession']
   >;
+
   export type VisionSessionSelectCreateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -11390,6 +21163,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['visionSession']
   >;
+
   export type VisionSessionSelectUpdateManyAndReturn<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetSelect<
@@ -11408,6 +21182,7 @@ export namespace Prisma {
     },
     ExtArgs['result']['visionSession']
   >;
+
   export type VisionSessionSelectScalar = {
     id?: boolean;
     userId?: boolean;
@@ -11420,6 +21195,7 @@ export namespace Prisma {
     avgResponseTimeMs?: boolean;
     createdAt?: boolean;
   };
+
   export type VisionSessionOmit<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = $Extensions.GetOmit<
@@ -11450,6 +21226,7 @@ export namespace Prisma {
   > = {
     user?: boolean | UserDefaultArgs<ExtArgs>;
   };
+
   export type $VisionSessionPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
@@ -11474,9 +21251,11 @@ export namespace Prisma {
     >;
     composites: {};
   };
+
   type VisionSessionGetPayload<
     S extends boolean | null | undefined | VisionSessionDefaultArgs
   > = $Result.GetResult<Prisma.$VisionSessionPayload, S>;
+
   type VisionSessionCountArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = Omit<
@@ -11485,16 +21264,26 @@ export namespace Prisma {
   > & {
     select?: VisionSessionCountAggregateInputType | true;
   };
+
   export interface VisionSessionDelegate<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
     GlobalOmitOptions = {}
   > {
     [K: symbol]: {
       types: Prisma.TypeMap<ExtArgs>['model']['VisionSession'];
-      meta: {
-        name: 'VisionSession';
-      };
+      meta: { name: 'VisionSession' };
     };
+    /**
+     * Find zero or one VisionSession that matches the filter.
+     * @param {VisionSessionFindUniqueArgs} args - Arguments to find a VisionSession
+     * @example
+     * // Get one VisionSession
+     * const visionSession = await prisma.visionSession.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUnique<T extends VisionSessionFindUniqueArgs>(
       args: SelectSubset<T, VisionSessionFindUniqueArgs<ExtArgs>>
     ): Prisma__VisionSessionClient<
@@ -11508,6 +21297,19 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find one VisionSession that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {VisionSessionFindUniqueOrThrowArgs} args - Arguments to find a VisionSession
+     * @example
+     * // Get one VisionSession
+     * const visionSession = await prisma.visionSession.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findUniqueOrThrow<T extends VisionSessionFindUniqueOrThrowArgs>(
       args: SelectSubset<T, VisionSessionFindUniqueOrThrowArgs<ExtArgs>>
     ): Prisma__VisionSessionClient<
@@ -11521,6 +21323,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first VisionSession that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisionSessionFindFirstArgs} args - Arguments to find a VisionSession
+     * @example
+     * // Get one VisionSession
+     * const visionSession = await prisma.visionSession.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirst<T extends VisionSessionFindFirstArgs>(
       args?: SelectSubset<T, VisionSessionFindFirstArgs<ExtArgs>>
     ): Prisma__VisionSessionClient<
@@ -11534,6 +21350,21 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find the first VisionSession that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisionSessionFindFirstOrThrowArgs} args - Arguments to find a VisionSession
+     * @example
+     * // Get one VisionSession
+     * const visionSession = await prisma.visionSession.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
     findFirstOrThrow<T extends VisionSessionFindFirstOrThrowArgs>(
       args?: SelectSubset<T, VisionSessionFindFirstOrThrowArgs<ExtArgs>>
     ): Prisma__VisionSessionClient<
@@ -11547,6 +21378,23 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Find zero or more VisionSessions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisionSessionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all VisionSessions
+     * const visionSessions = await prisma.visionSession.findMany()
+     *
+     * // Get first 10 VisionSessions
+     * const visionSessions = await prisma.visionSession.findMany({ take: 10 })
+     *
+     * // Only select the `id`
+     * const visionSessionWithIdOnly = await prisma.visionSession.findMany({ select: { id: true } })
+     *
+     */
     findMany<T extends VisionSessionFindManyArgs>(
       args?: SelectSubset<T, VisionSessionFindManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -11557,6 +21405,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create a VisionSession.
+     * @param {VisionSessionCreateArgs} args - Arguments to create a VisionSession.
+     * @example
+     * // Create one VisionSession
+     * const VisionSession = await prisma.visionSession.create({
+     *   data: {
+     *     // ... data to create a VisionSession
+     *   }
+     * })
+     *
+     */
     create<T extends VisionSessionCreateArgs>(
       args: SelectSubset<T, VisionSessionCreateArgs<ExtArgs>>
     ): Prisma__VisionSessionClient<
@@ -11570,9 +21431,45 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Create many VisionSessions.
+     * @param {VisionSessionCreateManyArgs} args - Arguments to create many VisionSessions.
+     * @example
+     * // Create many VisionSessions
+     * const visionSession = await prisma.visionSession.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     */
     createMany<T extends VisionSessionCreateManyArgs>(
       args?: SelectSubset<T, VisionSessionCreateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Create many VisionSessions and returns the data saved in the database.
+     * @param {VisionSessionCreateManyAndReturnArgs} args - Arguments to create many VisionSessions.
+     * @example
+     * // Create many VisionSessions
+     * const visionSession = await prisma.visionSession.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Create many VisionSessions and only return the `id`
+     * const visionSessionWithIdOnly = await prisma.visionSession.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     createManyAndReturn<T extends VisionSessionCreateManyAndReturnArgs>(
       args?: SelectSubset<T, VisionSessionCreateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -11583,6 +21480,19 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Delete a VisionSession.
+     * @param {VisionSessionDeleteArgs} args - Arguments to delete one VisionSession.
+     * @example
+     * // Delete one VisionSession
+     * const VisionSession = await prisma.visionSession.delete({
+     *   where: {
+     *     // ... filter to delete one VisionSession
+     *   }
+     * })
+     *
+     */
     delete<T extends VisionSessionDeleteArgs>(
       args: SelectSubset<T, VisionSessionDeleteArgs<ExtArgs>>
     ): Prisma__VisionSessionClient<
@@ -11596,6 +21506,22 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Update one VisionSession.
+     * @param {VisionSessionUpdateArgs} args - Arguments to update one VisionSession.
+     * @example
+     * // Update one VisionSession
+     * const visionSession = await prisma.visionSession.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     update<T extends VisionSessionUpdateArgs>(
       args: SelectSubset<T, VisionSessionUpdateArgs<ExtArgs>>
     ): Prisma__VisionSessionClient<
@@ -11609,12 +21535,72 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Delete zero or more VisionSessions.
+     * @param {VisionSessionDeleteManyArgs} args - Arguments to filter VisionSessions to delete.
+     * @example
+     * // Delete a few VisionSessions
+     * const { count } = await prisma.visionSession.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     *
+     */
     deleteMany<T extends VisionSessionDeleteManyArgs>(
       args?: SelectSubset<T, VisionSessionDeleteManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more VisionSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisionSessionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many VisionSessions
+     * const visionSession = await prisma.visionSession.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     *
+     */
     updateMany<T extends VisionSessionUpdateManyArgs>(
       args: SelectSubset<T, VisionSessionUpdateManyArgs<ExtArgs>>
     ): Prisma.PrismaPromise<BatchPayload>;
+
+    /**
+     * Update zero or more VisionSessions and returns the data updated in the database.
+     * @param {VisionSessionUpdateManyAndReturnArgs} args - Arguments to update many VisionSessions.
+     * @example
+     * // Update many VisionSessions
+     * const visionSession = await prisma.visionSession.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *
+     * // Update zero or more VisionSessions and only return the `id`
+     * const visionSessionWithIdOnly = await prisma.visionSession.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     *
+     */
     updateManyAndReturn<T extends VisionSessionUpdateManyAndReturnArgs>(
       args: SelectSubset<T, VisionSessionUpdateManyAndReturnArgs<ExtArgs>>
     ): Prisma.PrismaPromise<
@@ -11625,6 +21611,24 @@ export namespace Prisma {
         GlobalOmitOptions
       >
     >;
+
+    /**
+     * Create or update one VisionSession.
+     * @param {VisionSessionUpsertArgs} args - Arguments to update or create a VisionSession.
+     * @example
+     * // Update or create a VisionSession
+     * const visionSession = await prisma.visionSession.upsert({
+     *   create: {
+     *     // ... data to create a VisionSession
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the VisionSession we want to update
+     *   }
+     * })
+     */
     upsert<T extends VisionSessionUpsertArgs>(
       args: SelectSubset<T, VisionSessionUpsertArgs<ExtArgs>>
     ): Prisma__VisionSessionClient<
@@ -11638,6 +21642,20 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+
+    /**
+     * Count the number of VisionSessions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisionSessionCountArgs} args - Arguments to filter VisionSessions to count.
+     * @example
+     * // Count the number of VisionSessions
+     * const count = await prisma.visionSession.count({
+     *   where: {
+     *     // ... the filter for the VisionSessions we want to count
+     *   }
+     * })
+     **/
     count<T extends VisionSessionCountArgs>(
       args?: Subset<T, VisionSessionCountArgs>
     ): Prisma.PrismaPromise<
@@ -11647,9 +21665,53 @@ export namespace Prisma {
           : GetScalarType<T['select'], VisionSessionCountAggregateOutputType>
         : number
     >;
+
+    /**
+     * Allows you to perform aggregations operations on a VisionSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisionSessionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+     **/
     aggregate<T extends VisionSessionAggregateArgs>(
       args: Subset<T, VisionSessionAggregateArgs>
     ): Prisma.PrismaPromise<GetVisionSessionAggregateType<T>>;
+
+    /**
+     * Group by VisionSession.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {VisionSessionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     *
+     **/
     groupBy<
       T extends VisionSessionGroupByArgs,
       HasSelectOrTake extends Or<
@@ -11657,12 +21719,8 @@ export namespace Prisma {
         Extends<'take', Keys<T>>
       >,
       OrderByArg extends True extends HasSelectOrTake
-        ? {
-            orderBy: VisionSessionGroupByArgs['orderBy'];
-          }
-        : {
-            orderBy?: VisionSessionGroupByArgs['orderBy'];
-          },
+        ? { orderBy: VisionSessionGroupByArgs['orderBy'] }
+        : { orderBy?: VisionSessionGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<
         Keys<MaybeTupleToUnion<T['orderBy']>>
       >,
@@ -11719,8 +21777,18 @@ export namespace Prisma {
     ): {} extends InputErrors
       ? GetVisionSessionGroupByPayload<T>
       : Prisma.PrismaPromise<InputErrors>;
+    /**
+     * Fields of the VisionSession model
+     */
     readonly fields: VisionSessionFieldRefs;
   }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for VisionSession.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
   export interface Prisma__VisionSessionClient<
     T,
     Null = never,
@@ -11742,6 +21810,12 @@ export namespace Prisma {
       ExtArgs,
       GlobalOmitOptions
     >;
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
     then<TResult1 = T, TResult2 = never>(
       onfulfilled?:
         | ((value: T) => TResult1 | PromiseLike<TResult1>)
@@ -11752,14 +21826,29 @@ export namespace Prisma {
         | undefined
         | null
     ): $Utils.JsPromise<TResult1 | TResult2>;
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
     catch<TResult = never>(
       onrejected?:
         | ((reason: any) => TResult | PromiseLike<TResult>)
         | undefined
         | null
     ): $Utils.JsPromise<T | TResult>;
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>;
   }
+
+  /**
+   * Fields of the VisionSession model
+   */
   interface VisionSessionFieldRefs {
     readonly id: FieldRef<'VisionSession', 'String'>;
     readonly userId: FieldRef<'VisionSession', 'String'>;
@@ -11772,161 +21861,473 @@ export namespace Prisma {
     readonly avgResponseTimeMs: FieldRef<'VisionSession', 'Int'>;
     readonly createdAt: FieldRef<'VisionSession', 'DateTime'>;
   }
+
+  // Custom InputTypes
+  /**
+   * VisionSession findUnique
+   */
   export type VisionSessionFindUniqueArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which VisionSession to fetch.
+     */
     where: VisionSessionWhereUniqueInput;
   };
+
+  /**
+   * VisionSession findUniqueOrThrow
+   */
   export type VisionSessionFindUniqueOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which VisionSession to fetch.
+     */
     where: VisionSessionWhereUniqueInput;
   };
+
+  /**
+   * VisionSession findFirst
+   */
   export type VisionSessionFindFirstArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which VisionSession to fetch.
+     */
     where?: VisionSessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of VisionSessions to fetch.
+     */
     orderBy?:
       | VisionSessionOrderByWithRelationInput
       | VisionSessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for VisionSessions.
+     */
     cursor?: VisionSessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` VisionSessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` VisionSessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of VisionSessions.
+     */
     distinct?: VisionSessionScalarFieldEnum | VisionSessionScalarFieldEnum[];
   };
+
+  /**
+   * VisionSession findFirstOrThrow
+   */
   export type VisionSessionFindFirstOrThrowArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which VisionSession to fetch.
+     */
     where?: VisionSessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of VisionSessions to fetch.
+     */
     orderBy?:
       | VisionSessionOrderByWithRelationInput
       | VisionSessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for searching for VisionSessions.
+     */
     cursor?: VisionSessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` VisionSessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` VisionSessions.
+     */
     skip?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     *
+     * Filter by unique combinations of VisionSessions.
+     */
     distinct?: VisionSessionScalarFieldEnum | VisionSessionScalarFieldEnum[];
   };
+
+  /**
+   * VisionSession findMany
+   */
   export type VisionSessionFindManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * Filter, which VisionSessions to fetch.
+     */
     where?: VisionSessionWhereInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     *
+     * Determine the order of VisionSessions to fetch.
+     */
     orderBy?:
       | VisionSessionOrderByWithRelationInput
       | VisionSessionOrderByWithRelationInput[];
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     *
+     * Sets the position for listing VisionSessions.
+     */
     cursor?: VisionSessionWhereUniqueInput;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Take `±n` VisionSessions from the position of the cursor.
+     */
     take?: number;
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     *
+     * Skip the first `n` VisionSessions.
+     */
     skip?: number;
     distinct?: VisionSessionScalarFieldEnum | VisionSessionScalarFieldEnum[];
   };
+
+  /**
+   * VisionSession create
+   */
   export type VisionSessionCreateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * The data needed to create a VisionSession.
+     */
     data: XOR<VisionSessionCreateInput, VisionSessionUncheckedCreateInput>;
   };
+
+  /**
+   * VisionSession createMany
+   */
   export type VisionSessionCreateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to create many VisionSessions.
+     */
     data: VisionSessionCreateManyInput | VisionSessionCreateManyInput[];
     skipDuplicates?: boolean;
   };
+
+  /**
+   * VisionSession createManyAndReturn
+   */
   export type VisionSessionCreateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelectCreateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * The data used to create many VisionSessions.
+     */
     data: VisionSessionCreateManyInput | VisionSessionCreateManyInput[];
     skipDuplicates?: boolean;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionIncludeCreateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * VisionSession update
+   */
   export type VisionSessionUpdateArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * The data needed to update a VisionSession.
+     */
     data: XOR<VisionSessionUpdateInput, VisionSessionUncheckedUpdateInput>;
+    /**
+     * Choose, which VisionSession to update.
+     */
     where: VisionSessionWhereUniqueInput;
   };
+
+  /**
+   * VisionSession updateMany
+   */
   export type VisionSessionUpdateManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * The data used to update VisionSessions.
+     */
     data: XOR<
       VisionSessionUpdateManyMutationInput,
       VisionSessionUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which VisionSessions to update
+     */
     where?: VisionSessionWhereInput;
+    /**
+     * Limit how many VisionSessions to update.
+     */
     limit?: number;
   };
+
+  /**
+   * VisionSession updateManyAndReturn
+   */
   export type VisionSessionUpdateManyAndReturnArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelectUpdateManyAndReturn<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * The data used to update VisionSessions.
+     */
     data: XOR<
       VisionSessionUpdateManyMutationInput,
       VisionSessionUncheckedUpdateManyInput
     >;
+    /**
+     * Filter which VisionSessions to update
+     */
     where?: VisionSessionWhereInput;
+    /**
+     * Limit how many VisionSessions to update.
+     */
     limit?: number;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionIncludeUpdateManyAndReturn<ExtArgs> | null;
   };
+
+  /**
+   * VisionSession upsert
+   */
   export type VisionSessionUpsertArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * The filter to search for the VisionSession to update in case it exists.
+     */
     where: VisionSessionWhereUniqueInput;
+    /**
+     * In case the VisionSession found by the `where` argument doesn't exist, create a new VisionSession with this data.
+     */
     create: XOR<VisionSessionCreateInput, VisionSessionUncheckedCreateInput>;
+    /**
+     * In case the VisionSession was found with the provided `where` argument, update it with this data.
+     */
     update: XOR<VisionSessionUpdateInput, VisionSessionUncheckedUpdateInput>;
   };
+
+  /**
+   * VisionSession delete
+   */
   export type VisionSessionDeleteArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
+    /**
+     * Filter which VisionSession to delete.
+     */
     where: VisionSessionWhereUniqueInput;
   };
+
+  /**
+   * VisionSession deleteMany
+   */
   export type VisionSessionDeleteManyArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Filter which VisionSessions to delete
+     */
     where?: VisionSessionWhereInput;
+    /**
+     * Limit how many VisionSessions to delete.
+     */
     limit?: number;
   };
+
+  /**
+   * VisionSession without action
+   */
   export type VisionSessionDefaultArgs<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
   > = {
+    /**
+     * Select specific fields to fetch from the VisionSession
+     */
     select?: VisionSessionSelect<ExtArgs> | null;
+    /**
+     * Omit specific fields from the VisionSession
+     */
     omit?: VisionSessionOmit<ExtArgs> | null;
+    /**
+     * Choose, which related nodes to fetch as well
+     */
     include?: VisionSessionInclude<ExtArgs> | null;
   };
+
+  /**
+   * Enums
+   */
+
   export const TransactionIsolationLevel: {
     ReadUncommitted: 'ReadUncommitted';
     ReadCommitted: 'ReadCommitted';
     RepeatableRead: 'RepeatableRead';
     Serializable: 'Serializable';
   };
+
   export type TransactionIsolationLevel =
     (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel];
+
   export const UserScalarFieldEnum: {
     id: 'id';
     name: 'name';
@@ -11937,16 +22338,20 @@ export namespace Prisma {
     createdAt: 'createdAt';
     updatedAt: 'updatedAt';
   };
+
   export type UserScalarFieldEnum =
     (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum];
+
   export const PassportFlagScalarFieldEnum: {
     id: 'id';
     userId: 'userId';
     flagCode: 'flagCode';
     createdAt: 'createdAt';
   };
+
   export type PassportFlagScalarFieldEnum =
     (typeof PassportFlagScalarFieldEnum)[keyof typeof PassportFlagScalarFieldEnum];
+
   export const AccountScalarFieldEnum: {
     userId: 'userId';
     type: 'type';
@@ -11962,8 +22367,10 @@ export namespace Prisma {
     createdAt: 'createdAt';
     updatedAt: 'updatedAt';
   };
+
   export type AccountScalarFieldEnum =
     (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum];
+
   export const SessionScalarFieldEnum: {
     sessionToken: 'sessionToken';
     userId: 'userId';
@@ -11971,15 +22378,19 @@ export namespace Prisma {
     createdAt: 'createdAt';
     updatedAt: 'updatedAt';
   };
+
   export type SessionScalarFieldEnum =
     (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum];
+
   export const VerificationTokenScalarFieldEnum: {
     identifier: 'identifier';
     token: 'token';
     expires: 'expires';
   };
+
   export type VerificationTokenScalarFieldEnum =
     (typeof VerificationTokenScalarFieldEnum)[keyof typeof VerificationTokenScalarFieldEnum];
+
   export const AuthenticatorScalarFieldEnum: {
     credentialID: 'credentialID';
     userId: 'userId';
@@ -11990,8 +22401,10 @@ export namespace Prisma {
     credentialBackedUp: 'credentialBackedUp';
     transports: 'transports';
   };
+
   export type AuthenticatorScalarFieldEnum =
     (typeof AuthenticatorScalarFieldEnum)[keyof typeof AuthenticatorScalarFieldEnum];
+
   export const GameScalarFieldEnum: {
     id: 'id';
     roomId: 'roomId';
@@ -12013,8 +22426,10 @@ export namespace Prisma {
     playedAt: 'playedAt';
     createdAt: 'createdAt';
   };
+
   export type GameScalarFieldEnum =
     (typeof GameScalarFieldEnum)[keyof typeof GameScalarFieldEnum];
+
   export const GameAnalysisScalarFieldEnum: {
     id: 'id';
     gameId: 'gameId';
@@ -12022,8 +22437,10 @@ export namespace Prisma {
     results: 'results';
     createdAt: 'createdAt';
   };
+
   export type GameAnalysisScalarFieldEnum =
     (typeof GameAnalysisScalarFieldEnum)[keyof typeof GameAnalysisScalarFieldEnum];
+
   export const RatingScalarFieldEnum: {
     id: 'id';
     userId: 'userId';
@@ -12036,8 +22453,10 @@ export namespace Prisma {
     createdAt: 'createdAt';
     updatedAt: 'updatedAt';
   };
+
   export type RatingScalarFieldEnum =
     (typeof RatingScalarFieldEnum)[keyof typeof RatingScalarFieldEnum];
+
   export const PuzzleRatingScalarFieldEnum: {
     id: 'id';
     userId: 'userId';
@@ -12048,8 +22467,10 @@ export namespace Prisma {
     createdAt: 'createdAt';
     updatedAt: 'updatedAt';
   };
+
   export type PuzzleRatingScalarFieldEnum =
     (typeof PuzzleRatingScalarFieldEnum)[keyof typeof PuzzleRatingScalarFieldEnum];
+
   export const PuzzleAttemptScalarFieldEnum: {
     id: 'id';
     userId: 'userId';
@@ -12060,8 +22481,10 @@ export namespace Prisma {
     usedHint: 'usedHint';
     createdAt: 'createdAt';
   };
+
   export type PuzzleAttemptScalarFieldEnum =
     (typeof PuzzleAttemptScalarFieldEnum)[keyof typeof PuzzleAttemptScalarFieldEnum];
+
   export const PuzzleRushScoreScalarFieldEnum: {
     id: 'id';
     userId: 'userId';
@@ -12073,8 +22496,10 @@ export namespace Prisma {
     maxMistakes: 'maxMistakes';
     createdAt: 'createdAt';
   };
+
   export type PuzzleRushScoreScalarFieldEnum =
     (typeof PuzzleRushScoreScalarFieldEnum)[keyof typeof PuzzleRushScoreScalarFieldEnum];
+
   export const MemorySessionScalarFieldEnum: {
     id: 'id';
     userId: 'userId';
@@ -12087,8 +22512,10 @@ export namespace Prisma {
     progressiveLevel: 'progressiveLevel';
     createdAt: 'createdAt';
   };
+
   export type MemorySessionScalarFieldEnum =
     (typeof MemorySessionScalarFieldEnum)[keyof typeof MemorySessionScalarFieldEnum];
+
   export const VisionSessionScalarFieldEnum: {
     id: 'id';
     userId: 'userId';
@@ -12101,79 +22528,143 @@ export namespace Prisma {
     avgResponseTimeMs: 'avgResponseTimeMs';
     createdAt: 'createdAt';
   };
+
   export type VisionSessionScalarFieldEnum =
     (typeof VisionSessionScalarFieldEnum)[keyof typeof VisionSessionScalarFieldEnum];
+
   export const SortOrder: {
     asc: 'asc';
     desc: 'desc';
   };
+
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder];
+
   export const JsonNullValueInput: {
     JsonNull: typeof JsonNull;
   };
+
   export type JsonNullValueInput =
     (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput];
+
   export const QueryMode: {
     default: 'default';
     insensitive: 'insensitive';
   };
+
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode];
+
   export const NullsOrder: {
     first: 'first';
     last: 'last';
   };
+
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder];
+
   export const JsonNullValueFilter: {
     DbNull: typeof DbNull;
     JsonNull: typeof JsonNull;
     AnyNull: typeof AnyNull;
   };
+
   export type JsonNullValueFilter =
     (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter];
+
+  /**
+   * Field references
+   */
+
+  /**
+   * Reference to a field of type 'String'
+   */
   export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'String'
   >;
+
+  /**
+   * Reference to a field of type 'String[]'
+   */
   export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'String[]'
   >;
+
+  /**
+   * Reference to a field of type 'DateTime'
+   */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'DateTime'
   >;
+
+  /**
+   * Reference to a field of type 'DateTime[]'
+   */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'DateTime[]'
   >;
+
+  /**
+   * Reference to a field of type 'Int'
+   */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'Int'
   >;
+
+  /**
+   * Reference to a field of type 'Int[]'
+   */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'Int[]'
   >;
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'Boolean'
   >;
+
+  /**
+   * Reference to a field of type 'Json'
+   */
   export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'Json'
   >;
+
+  /**
+   * Reference to a field of type 'QueryMode'
+   */
   export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'QueryMode'
   >;
+
+  /**
+   * Reference to a field of type 'Float'
+   */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'Float'
   >;
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<
     $PrismaModel,
     'Float[]'
   >;
+
+  /**
+   * Deep Input Types
+   */
+
   export type UserWhereInput = {
     AND?: UserWhereInput | UserWhereInput[];
     OR?: UserWhereInput[];
@@ -12203,6 +22694,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionListRelationFilter;
     passportFlags?: PassportFlagListRelationFilter;
   };
+
   export type UserOrderByWithRelationInput = {
     id?: SortOrder;
     name?: SortOrderInput | SortOrder;
@@ -12226,6 +22718,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionOrderByRelationAggregateInput;
     passportFlags?: PassportFlagOrderByRelationAggregateInput;
   };
+
   export type UserWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -12258,6 +22751,7 @@ export namespace Prisma {
     },
     'id' | 'email'
   >;
+
   export type UserOrderByWithAggregationInput = {
     id?: SortOrder;
     name?: SortOrderInput | SortOrder;
@@ -12271,6 +22765,7 @@ export namespace Prisma {
     _max?: UserMaxOrderByAggregateInput;
     _min?: UserMinOrderByAggregateInput;
   };
+
   export type UserScalarWhereWithAggregatesInput = {
     AND?:
       | UserScalarWhereWithAggregatesInput
@@ -12292,6 +22787,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<'User'> | Date | string;
     updatedAt?: DateTimeWithAggregatesFilter<'User'> | Date | string;
   };
+
   export type PassportFlagWhereInput = {
     AND?: PassportFlagWhereInput | PassportFlagWhereInput[];
     OR?: PassportFlagWhereInput[];
@@ -12302,6 +22798,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'PassportFlag'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type PassportFlagOrderByWithRelationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -12309,6 +22806,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type PassportFlagWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -12323,6 +22821,7 @@ export namespace Prisma {
     },
     'id' | 'userId_flagCode'
   >;
+
   export type PassportFlagOrderByWithAggregationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -12332,6 +22831,7 @@ export namespace Prisma {
     _max?: PassportFlagMaxOrderByAggregateInput;
     _min?: PassportFlagMinOrderByAggregateInput;
   };
+
   export type PassportFlagScalarWhereWithAggregatesInput = {
     AND?:
       | PassportFlagScalarWhereWithAggregatesInput
@@ -12345,6 +22845,7 @@ export namespace Prisma {
     flagCode?: StringWithAggregatesFilter<'PassportFlag'> | string;
     createdAt?: DateTimeWithAggregatesFilter<'PassportFlag'> | Date | string;
   };
+
   export type AccountWhereInput = {
     AND?: AccountWhereInput | AccountWhereInput[];
     OR?: AccountWhereInput[];
@@ -12364,6 +22865,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<'Account'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type AccountOrderByWithRelationInput = {
     userId?: SortOrder;
     type?: SortOrder;
@@ -12380,6 +22882,7 @@ export namespace Prisma {
     updatedAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type AccountWhereUniqueInput = Prisma.AtLeast<
     {
       provider_providerAccountId?: AccountProviderProviderAccountIdCompoundUniqueInput;
@@ -12403,6 +22906,7 @@ export namespace Prisma {
     },
     'provider_providerAccountId'
   >;
+
   export type AccountOrderByWithAggregationInput = {
     userId?: SortOrder;
     type?: SortOrder;
@@ -12423,6 +22927,7 @@ export namespace Prisma {
     _min?: AccountMinOrderByAggregateInput;
     _sum?: AccountSumOrderByAggregateInput;
   };
+
   export type AccountScalarWhereWithAggregatesInput = {
     AND?:
       | AccountScalarWhereWithAggregatesInput
@@ -12454,6 +22959,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<'Account'> | Date | string;
     updatedAt?: DateTimeWithAggregatesFilter<'Account'> | Date | string;
   };
+
   export type SessionWhereInput = {
     AND?: SessionWhereInput | SessionWhereInput[];
     OR?: SessionWhereInput[];
@@ -12465,6 +22971,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<'Session'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type SessionOrderByWithRelationInput = {
     sessionToken?: SortOrder;
     userId?: SortOrder;
@@ -12473,6 +22980,7 @@ export namespace Prisma {
     updatedAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type SessionWhereUniqueInput = Prisma.AtLeast<
     {
       sessionToken?: string;
@@ -12487,6 +22995,7 @@ export namespace Prisma {
     },
     'sessionToken'
   >;
+
   export type SessionOrderByWithAggregationInput = {
     sessionToken?: SortOrder;
     userId?: SortOrder;
@@ -12497,6 +23006,7 @@ export namespace Prisma {
     _max?: SessionMaxOrderByAggregateInput;
     _min?: SessionMinOrderByAggregateInput;
   };
+
   export type SessionScalarWhereWithAggregatesInput = {
     AND?:
       | SessionScalarWhereWithAggregatesInput
@@ -12511,6 +23021,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<'Session'> | Date | string;
     updatedAt?: DateTimeWithAggregatesFilter<'Session'> | Date | string;
   };
+
   export type VerificationTokenWhereInput = {
     AND?: VerificationTokenWhereInput | VerificationTokenWhereInput[];
     OR?: VerificationTokenWhereInput[];
@@ -12519,11 +23030,13 @@ export namespace Prisma {
     token?: StringFilter<'VerificationToken'> | string;
     expires?: DateTimeFilter<'VerificationToken'> | Date | string;
   };
+
   export type VerificationTokenOrderByWithRelationInput = {
     identifier?: SortOrder;
     token?: SortOrder;
     expires?: SortOrder;
   };
+
   export type VerificationTokenWhereUniqueInput = Prisma.AtLeast<
     {
       identifier_token?: VerificationTokenIdentifierTokenCompoundUniqueInput;
@@ -12536,6 +23049,7 @@ export namespace Prisma {
     },
     'identifier_token'
   >;
+
   export type VerificationTokenOrderByWithAggregationInput = {
     identifier?: SortOrder;
     token?: SortOrder;
@@ -12544,6 +23058,7 @@ export namespace Prisma {
     _max?: VerificationTokenMaxOrderByAggregateInput;
     _min?: VerificationTokenMinOrderByAggregateInput;
   };
+
   export type VerificationTokenScalarWhereWithAggregatesInput = {
     AND?:
       | VerificationTokenScalarWhereWithAggregatesInput
@@ -12556,6 +23071,7 @@ export namespace Prisma {
     token?: StringWithAggregatesFilter<'VerificationToken'> | string;
     expires?: DateTimeWithAggregatesFilter<'VerificationToken'> | Date | string;
   };
+
   export type AuthenticatorWhereInput = {
     AND?: AuthenticatorWhereInput | AuthenticatorWhereInput[];
     OR?: AuthenticatorWhereInput[];
@@ -12570,6 +23086,7 @@ export namespace Prisma {
     transports?: StringNullableFilter<'Authenticator'> | string | null;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type AuthenticatorOrderByWithRelationInput = {
     credentialID?: SortOrder;
     userId?: SortOrder;
@@ -12581,6 +23098,7 @@ export namespace Prisma {
     transports?: SortOrderInput | SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type AuthenticatorWhereUniqueInput = Prisma.AtLeast<
     {
       credentialID?: string;
@@ -12599,6 +23117,7 @@ export namespace Prisma {
     },
     'userId_credentialID' | 'credentialID'
   >;
+
   export type AuthenticatorOrderByWithAggregationInput = {
     credentialID?: SortOrder;
     userId?: SortOrder;
@@ -12614,6 +23133,7 @@ export namespace Prisma {
     _min?: AuthenticatorMinOrderByAggregateInput;
     _sum?: AuthenticatorSumOrderByAggregateInput;
   };
+
   export type AuthenticatorScalarWhereWithAggregatesInput = {
     AND?:
       | AuthenticatorScalarWhereWithAggregatesInput
@@ -12634,6 +23154,7 @@ export namespace Prisma {
       | string
       | null;
   };
+
   export type GameWhereInput = {
     AND?: GameWhereInput | GameWhereInput[];
     OR?: GameWhereInput[];
@@ -12664,6 +23185,7 @@ export namespace Prisma {
       GameAnalysisWhereInput
     > | null;
   };
+
   export type GameOrderByWithRelationInput = {
     id?: SortOrder;
     roomId?: SortOrderInput | SortOrder;
@@ -12688,6 +23210,7 @@ export namespace Prisma {
     black?: UserOrderByWithRelationInput;
     analysis?: GameAnalysisOrderByWithRelationInput;
   };
+
   export type GameWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -12721,6 +23244,7 @@ export namespace Prisma {
     },
     'id' | 'roomId'
   >;
+
   export type GameOrderByWithAggregationInput = {
     id?: SortOrder;
     roomId?: SortOrderInput | SortOrder;
@@ -12747,6 +23271,7 @@ export namespace Prisma {
     _min?: GameMinOrderByAggregateInput;
     _sum?: GameSumOrderByAggregateInput;
   };
+
   export type GameScalarWhereWithAggregatesInput = {
     AND?:
       | GameScalarWhereWithAggregatesInput
@@ -12785,6 +23310,7 @@ export namespace Prisma {
       | null;
     createdAt?: DateTimeWithAggregatesFilter<'Game'> | Date | string;
   };
+
   export type GameAnalysisWhereInput = {
     AND?: GameAnalysisWhereInput | GameAnalysisWhereInput[];
     OR?: GameAnalysisWhereInput[];
@@ -12797,6 +23323,7 @@ export namespace Prisma {
     game?: XOR<GameScalarRelationFilter, GameWhereInput>;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type GameAnalysisOrderByWithRelationInput = {
     id?: SortOrder;
     gameId?: SortOrder;
@@ -12806,6 +23333,7 @@ export namespace Prisma {
     game?: GameOrderByWithRelationInput;
     user?: UserOrderByWithRelationInput;
   };
+
   export type GameAnalysisWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -12821,6 +23349,7 @@ export namespace Prisma {
     },
     'id' | 'gameId'
   >;
+
   export type GameAnalysisOrderByWithAggregationInput = {
     id?: SortOrder;
     gameId?: SortOrder;
@@ -12831,6 +23360,7 @@ export namespace Prisma {
     _max?: GameAnalysisMaxOrderByAggregateInput;
     _min?: GameAnalysisMinOrderByAggregateInput;
   };
+
   export type GameAnalysisScalarWhereWithAggregatesInput = {
     AND?:
       | GameAnalysisScalarWhereWithAggregatesInput
@@ -12845,6 +23375,7 @@ export namespace Prisma {
     results?: JsonWithAggregatesFilter<'GameAnalysis'>;
     createdAt?: DateTimeWithAggregatesFilter<'GameAnalysis'> | Date | string;
   };
+
   export type RatingWhereInput = {
     AND?: RatingWhereInput | RatingWhereInput[];
     OR?: RatingWhereInput[];
@@ -12861,6 +23392,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<'Rating'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type RatingOrderByWithRelationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -12874,6 +23406,7 @@ export namespace Prisma {
     updatedAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type RatingWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -12894,6 +23427,7 @@ export namespace Prisma {
     },
     'id' | 'userId_variant_category'
   >;
+
   export type RatingOrderByWithAggregationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -12911,6 +23445,7 @@ export namespace Prisma {
     _min?: RatingMinOrderByAggregateInput;
     _sum?: RatingSumOrderByAggregateInput;
   };
+
   export type RatingScalarWhereWithAggregatesInput = {
     AND?:
       | RatingScalarWhereWithAggregatesInput
@@ -12930,6 +23465,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<'Rating'> | Date | string;
     updatedAt?: DateTimeWithAggregatesFilter<'Rating'> | Date | string;
   };
+
   export type PuzzleRatingWhereInput = {
     AND?: PuzzleRatingWhereInput | PuzzleRatingWhereInput[];
     OR?: PuzzleRatingWhereInput[];
@@ -12944,6 +23480,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<'PuzzleRating'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type PuzzleRatingOrderByWithRelationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -12955,6 +23492,7 @@ export namespace Prisma {
     updatedAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type PuzzleRatingWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -12972,6 +23510,7 @@ export namespace Prisma {
     },
     'id' | 'userId'
   >;
+
   export type PuzzleRatingOrderByWithAggregationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -12987,6 +23526,7 @@ export namespace Prisma {
     _min?: PuzzleRatingMinOrderByAggregateInput;
     _sum?: PuzzleRatingSumOrderByAggregateInput;
   };
+
   export type PuzzleRatingScalarWhereWithAggregatesInput = {
     AND?:
       | PuzzleRatingScalarWhereWithAggregatesInput
@@ -13004,6 +23544,7 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<'PuzzleRating'> | Date | string;
     updatedAt?: DateTimeWithAggregatesFilter<'PuzzleRating'> | Date | string;
   };
+
   export type PuzzleAttemptWhereInput = {
     AND?: PuzzleAttemptWhereInput | PuzzleAttemptWhereInput[];
     OR?: PuzzleAttemptWhereInput[];
@@ -13018,6 +23559,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'PuzzleAttempt'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type PuzzleAttemptOrderByWithRelationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -13029,6 +23571,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type PuzzleAttemptWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -13046,6 +23589,7 @@ export namespace Prisma {
     },
     'id'
   >;
+
   export type PuzzleAttemptOrderByWithAggregationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -13061,6 +23605,7 @@ export namespace Prisma {
     _min?: PuzzleAttemptMinOrderByAggregateInput;
     _sum?: PuzzleAttemptSumOrderByAggregateInput;
   };
+
   export type PuzzleAttemptScalarWhereWithAggregatesInput = {
     AND?:
       | PuzzleAttemptScalarWhereWithAggregatesInput
@@ -13078,6 +23623,7 @@ export namespace Prisma {
     usedHint?: BoolWithAggregatesFilter<'PuzzleAttempt'> | boolean;
     createdAt?: DateTimeWithAggregatesFilter<'PuzzleAttempt'> | Date | string;
   };
+
   export type PuzzleRushScoreWhereInput = {
     AND?: PuzzleRushScoreWhereInput | PuzzleRushScoreWhereInput[];
     OR?: PuzzleRushScoreWhereInput[];
@@ -13093,6 +23639,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'PuzzleRushScore'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type PuzzleRushScoreOrderByWithRelationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -13105,6 +23652,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type PuzzleRushScoreWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -13123,6 +23671,7 @@ export namespace Prisma {
     },
     'id'
   >;
+
   export type PuzzleRushScoreOrderByWithAggregationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -13139,6 +23688,7 @@ export namespace Prisma {
     _min?: PuzzleRushScoreMinOrderByAggregateInput;
     _sum?: PuzzleRushScoreSumOrderByAggregateInput;
   };
+
   export type PuzzleRushScoreScalarWhereWithAggregatesInput = {
     AND?:
       | PuzzleRushScoreScalarWhereWithAggregatesInput
@@ -13163,6 +23713,7 @@ export namespace Prisma {
       | null;
     createdAt?: DateTimeWithAggregatesFilter<'PuzzleRushScore'> | Date | string;
   };
+
   export type MemorySessionWhereInput = {
     AND?: MemorySessionWhereInput | MemorySessionWhereInput[];
     OR?: MemorySessionWhereInput[];
@@ -13179,6 +23730,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'MemorySession'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type MemorySessionOrderByWithRelationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -13192,6 +23744,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type MemorySessionWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -13211,6 +23764,7 @@ export namespace Prisma {
     },
     'id'
   >;
+
   export type MemorySessionOrderByWithAggregationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -13228,6 +23782,7 @@ export namespace Prisma {
     _min?: MemorySessionMinOrderByAggregateInput;
     _sum?: MemorySessionSumOrderByAggregateInput;
   };
+
   export type MemorySessionScalarWhereWithAggregatesInput = {
     AND?:
       | MemorySessionScalarWhereWithAggregatesInput
@@ -13250,6 +23805,7 @@ export namespace Prisma {
       | null;
     createdAt?: DateTimeWithAggregatesFilter<'MemorySession'> | Date | string;
   };
+
   export type VisionSessionWhereInput = {
     AND?: VisionSessionWhereInput | VisionSessionWhereInput[];
     OR?: VisionSessionWhereInput[];
@@ -13266,6 +23822,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'VisionSession'> | Date | string;
     user?: XOR<UserScalarRelationFilter, UserWhereInput>;
   };
+
   export type VisionSessionOrderByWithRelationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -13279,6 +23836,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     user?: UserOrderByWithRelationInput;
   };
+
   export type VisionSessionWhereUniqueInput = Prisma.AtLeast<
     {
       id?: string;
@@ -13298,6 +23856,7 @@ export namespace Prisma {
     },
     'id'
   >;
+
   export type VisionSessionOrderByWithAggregationInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -13315,6 +23874,7 @@ export namespace Prisma {
     _min?: VisionSessionMinOrderByAggregateInput;
     _sum?: VisionSessionSumOrderByAggregateInput;
   };
+
   export type VisionSessionScalarWhereWithAggregatesInput = {
     AND?:
       | VisionSessionScalarWhereWithAggregatesInput
@@ -13334,6 +23894,7 @@ export namespace Prisma {
     avgResponseTimeMs?: IntWithAggregatesFilter<'VisionSession'> | number;
     createdAt?: DateTimeWithAggregatesFilter<'VisionSession'> | Date | string;
   };
+
   export type UserCreateInput = {
     id?: string;
     name?: string | null;
@@ -13357,6 +23918,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateInput = {
     id?: string;
     name?: string | null;
@@ -13380,6 +23942,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -13407,6 +23970,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -13434,6 +23998,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateManyInput = {
     id?: string;
     name?: string | null;
@@ -13444,6 +24009,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type UserUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -13458,6 +24024,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type UserUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -13472,47 +24039,55 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PassportFlagCreateInput = {
     id?: string;
     flagCode: string;
     createdAt?: Date | string;
     user: UserCreateNestedOneWithoutPassportFlagsInput;
   };
+
   export type PassportFlagUncheckedCreateInput = {
     id?: string;
     userId: string;
     flagCode: string;
     createdAt?: Date | string;
   };
+
   export type PassportFlagUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutPassportFlagsNestedInput;
   };
+
   export type PassportFlagUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
     flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PassportFlagCreateManyInput = {
     id?: string;
     userId: string;
     flagCode: string;
     createdAt?: Date | string;
   };
+
   export type PassportFlagUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PassportFlagUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
     flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type AccountCreateInput = {
     type: string;
     provider: string;
@@ -13528,6 +24103,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     user: UserCreateNestedOneWithoutAccountsInput;
   };
+
   export type AccountUncheckedCreateInput = {
     userId: string;
     type: string;
@@ -13543,6 +24119,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type AccountUpdateInput = {
     type?: StringFieldUpdateOperationsInput | string;
     provider?: StringFieldUpdateOperationsInput | string;
@@ -13558,6 +24135,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutAccountsNestedInput;
   };
+
   export type AccountUncheckedUpdateInput = {
     userId?: StringFieldUpdateOperationsInput | string;
     type?: StringFieldUpdateOperationsInput | string;
@@ -13573,6 +24151,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type AccountCreateManyInput = {
     userId: string;
     type: string;
@@ -13588,6 +24167,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type AccountUpdateManyMutationInput = {
     type?: StringFieldUpdateOperationsInput | string;
     provider?: StringFieldUpdateOperationsInput | string;
@@ -13602,6 +24182,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type AccountUncheckedUpdateManyInput = {
     userId?: StringFieldUpdateOperationsInput | string;
     type?: StringFieldUpdateOperationsInput | string;
@@ -13617,6 +24198,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type SessionCreateInput = {
     sessionToken: string;
     expires: Date | string;
@@ -13624,6 +24206,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     user: UserCreateNestedOneWithoutSessionsInput;
   };
+
   export type SessionUncheckedCreateInput = {
     sessionToken: string;
     userId: string;
@@ -13631,6 +24214,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type SessionUpdateInput = {
     sessionToken?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
@@ -13638,6 +24222,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutSessionsNestedInput;
   };
+
   export type SessionUncheckedUpdateInput = {
     sessionToken?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -13645,6 +24230,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type SessionCreateManyInput = {
     sessionToken: string;
     userId: string;
@@ -13652,12 +24238,14 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type SessionUpdateManyMutationInput = {
     sessionToken?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type SessionUncheckedUpdateManyInput = {
     sessionToken?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -13665,41 +24253,49 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VerificationTokenCreateInput = {
     identifier: string;
     token: string;
     expires: Date | string;
   };
+
   export type VerificationTokenUncheckedCreateInput = {
     identifier: string;
     token: string;
     expires: Date | string;
   };
+
   export type VerificationTokenUpdateInput = {
     identifier?: StringFieldUpdateOperationsInput | string;
     token?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VerificationTokenUncheckedUpdateInput = {
     identifier?: StringFieldUpdateOperationsInput | string;
     token?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VerificationTokenCreateManyInput = {
     identifier: string;
     token: string;
     expires: Date | string;
   };
+
   export type VerificationTokenUpdateManyMutationInput = {
     identifier?: StringFieldUpdateOperationsInput | string;
     token?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VerificationTokenUncheckedUpdateManyInput = {
     identifier?: StringFieldUpdateOperationsInput | string;
     token?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type AuthenticatorCreateInput = {
     credentialID: string;
     providerAccountId: string;
@@ -13710,6 +24306,7 @@ export namespace Prisma {
     transports?: string | null;
     user: UserCreateNestedOneWithoutAuthenticatorInput;
   };
+
   export type AuthenticatorUncheckedCreateInput = {
     credentialID: string;
     userId: string;
@@ -13720,6 +24317,7 @@ export namespace Prisma {
     credentialBackedUp: boolean;
     transports?: string | null;
   };
+
   export type AuthenticatorUpdateInput = {
     credentialID?: StringFieldUpdateOperationsInput | string;
     providerAccountId?: StringFieldUpdateOperationsInput | string;
@@ -13730,6 +24328,7 @@ export namespace Prisma {
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
     user?: UserUpdateOneRequiredWithoutAuthenticatorNestedInput;
   };
+
   export type AuthenticatorUncheckedUpdateInput = {
     credentialID?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -13740,6 +24339,7 @@ export namespace Prisma {
     credentialBackedUp?: BoolFieldUpdateOperationsInput | boolean;
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
   };
+
   export type AuthenticatorCreateManyInput = {
     credentialID: string;
     userId: string;
@@ -13750,6 +24350,7 @@ export namespace Prisma {
     credentialBackedUp: boolean;
     transports?: string | null;
   };
+
   export type AuthenticatorUpdateManyMutationInput = {
     credentialID?: StringFieldUpdateOperationsInput | string;
     providerAccountId?: StringFieldUpdateOperationsInput | string;
@@ -13759,6 +24360,7 @@ export namespace Prisma {
     credentialBackedUp?: BoolFieldUpdateOperationsInput | boolean;
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
   };
+
   export type AuthenticatorUncheckedUpdateManyInput = {
     credentialID?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -13769,6 +24371,7 @@ export namespace Prisma {
     credentialBackedUp?: BoolFieldUpdateOperationsInput | boolean;
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
   };
+
   export type GameCreateInput = {
     id?: string;
     roomId?: string | null;
@@ -13791,6 +24394,7 @@ export namespace Prisma {
     black?: UserCreateNestedOneWithoutBlackGamesInput;
     analysis?: GameAnalysisCreateNestedOneWithoutGameInput;
   };
+
   export type GameUncheckedCreateInput = {
     id?: string;
     roomId?: string | null;
@@ -13813,6 +24417,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
   };
+
   export type GameUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -13839,6 +24444,7 @@ export namespace Prisma {
     black?: UserUpdateOneWithoutBlackGamesNestedInput;
     analysis?: GameAnalysisUpdateOneWithoutGameNestedInput;
   };
+
   export type GameUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -13865,6 +24471,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
   };
+
   export type GameCreateManyInput = {
     id?: string;
     roomId?: string | null;
@@ -13886,6 +24493,7 @@ export namespace Prisma {
     playedAt?: Date | string | null;
     createdAt?: Date | string;
   };
+
   export type GameUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -13909,6 +24517,7 @@ export namespace Prisma {
       | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -13934,6 +24543,7 @@ export namespace Prisma {
       | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameAnalysisCreateInput = {
     id?: string;
     results: JsonNullValueInput | InputJsonValue;
@@ -13941,6 +24551,7 @@ export namespace Prisma {
     game: GameCreateNestedOneWithoutAnalysisInput;
     user: UserCreateNestedOneWithoutAnalysesInput;
   };
+
   export type GameAnalysisUncheckedCreateInput = {
     id?: string;
     gameId: string;
@@ -13948,6 +24559,7 @@ export namespace Prisma {
     results: JsonNullValueInput | InputJsonValue;
     createdAt?: Date | string;
   };
+
   export type GameAnalysisUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     results?: JsonNullValueInput | InputJsonValue;
@@ -13955,6 +24567,7 @@ export namespace Prisma {
     game?: GameUpdateOneRequiredWithoutAnalysisNestedInput;
     user?: UserUpdateOneRequiredWithoutAnalysesNestedInput;
   };
+
   export type GameAnalysisUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     gameId?: StringFieldUpdateOperationsInput | string;
@@ -13962,6 +24575,7 @@ export namespace Prisma {
     results?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameAnalysisCreateManyInput = {
     id?: string;
     gameId: string;
@@ -13969,11 +24583,13 @@ export namespace Prisma {
     results: JsonNullValueInput | InputJsonValue;
     createdAt?: Date | string;
   };
+
   export type GameAnalysisUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     results?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameAnalysisUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     gameId?: StringFieldUpdateOperationsInput | string;
@@ -13981,6 +24597,7 @@ export namespace Prisma {
     results?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type RatingCreateInput = {
     id?: string;
     variant?: string;
@@ -13993,6 +24610,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     user: UserCreateNestedOneWithoutRatingsInput;
   };
+
   export type RatingUncheckedCreateInput = {
     id?: string;
     userId: string;
@@ -14005,6 +24623,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type RatingUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     variant?: StringFieldUpdateOperationsInput | string;
@@ -14017,6 +24636,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutRatingsNestedInput;
   };
+
   export type RatingUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14029,6 +24649,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type RatingCreateManyInput = {
     id?: string;
     userId: string;
@@ -14041,6 +24662,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type RatingUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     variant?: StringFieldUpdateOperationsInput | string;
@@ -14052,6 +24674,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type RatingUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14064,6 +24687,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRatingCreateInput = {
     id?: string;
     rating?: number;
@@ -14074,6 +24698,7 @@ export namespace Prisma {
     updatedAt?: Date | string;
     user: UserCreateNestedOneWithoutPuzzleRatingInput;
   };
+
   export type PuzzleRatingUncheckedCreateInput = {
     id?: string;
     userId: string;
@@ -14084,6 +24709,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type PuzzleRatingUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
@@ -14094,6 +24720,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutPuzzleRatingNestedInput;
   };
+
   export type PuzzleRatingUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14104,6 +24731,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRatingCreateManyInput = {
     id?: string;
     userId: string;
@@ -14114,6 +24742,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type PuzzleRatingUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
@@ -14123,6 +24752,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRatingUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14133,6 +24763,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleAttemptCreateInput = {
     id?: string;
     puzzleId: string;
@@ -14143,6 +24774,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     user: UserCreateNestedOneWithoutPuzzleAttemptsInput;
   };
+
   export type PuzzleAttemptUncheckedCreateInput = {
     id?: string;
     userId: string;
@@ -14153,6 +24785,7 @@ export namespace Prisma {
     usedHint?: boolean;
     createdAt?: Date | string;
   };
+
   export type PuzzleAttemptUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     puzzleId?: StringFieldUpdateOperationsInput | string;
@@ -14163,6 +24796,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutPuzzleAttemptsNestedInput;
   };
+
   export type PuzzleAttemptUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14173,6 +24807,7 @@ export namespace Prisma {
     usedHint?: BoolFieldUpdateOperationsInput | boolean;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleAttemptCreateManyInput = {
     id?: string;
     userId: string;
@@ -14183,6 +24818,7 @@ export namespace Prisma {
     usedHint?: boolean;
     createdAt?: Date | string;
   };
+
   export type PuzzleAttemptUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     puzzleId?: StringFieldUpdateOperationsInput | string;
@@ -14192,6 +24828,7 @@ export namespace Prisma {
     usedHint?: BoolFieldUpdateOperationsInput | boolean;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleAttemptUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14202,6 +24839,7 @@ export namespace Prisma {
     usedHint?: BoolFieldUpdateOperationsInput | boolean;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRushScoreCreateInput = {
     id?: string;
     mode: string;
@@ -14213,6 +24851,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     user: UserCreateNestedOneWithoutPuzzleRushScoresInput;
   };
+
   export type PuzzleRushScoreUncheckedCreateInput = {
     id?: string;
     userId: string;
@@ -14224,6 +24863,7 @@ export namespace Prisma {
     maxMistakes?: number | null;
     createdAt?: Date | string;
   };
+
   export type PuzzleRushScoreUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -14235,6 +24875,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutPuzzleRushScoresNestedInput;
   };
+
   export type PuzzleRushScoreUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14246,6 +24887,7 @@ export namespace Prisma {
     maxMistakes?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRushScoreCreateManyInput = {
     id?: string;
     userId: string;
@@ -14257,6 +24899,7 @@ export namespace Prisma {
     maxMistakes?: number | null;
     createdAt?: Date | string;
   };
+
   export type PuzzleRushScoreUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -14267,6 +24910,7 @@ export namespace Prisma {
     maxMistakes?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRushScoreUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14278,6 +24922,7 @@ export namespace Prisma {
     maxMistakes?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type MemorySessionCreateInput = {
     id?: string;
     mode: string;
@@ -14290,6 +24935,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     user: UserCreateNestedOneWithoutMemorySessionsInput;
   };
+
   export type MemorySessionUncheckedCreateInput = {
     id?: string;
     userId: string;
@@ -14302,6 +24948,7 @@ export namespace Prisma {
     progressiveLevel?: number | null;
     createdAt?: Date | string;
   };
+
   export type MemorySessionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -14314,6 +24961,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutMemorySessionsNestedInput;
   };
+
   export type MemorySessionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14326,6 +24974,7 @@ export namespace Prisma {
     progressiveLevel?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type MemorySessionCreateManyInput = {
     id?: string;
     userId: string;
@@ -14338,6 +24987,7 @@ export namespace Prisma {
     progressiveLevel?: number | null;
     createdAt?: Date | string;
   };
+
   export type MemorySessionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -14349,6 +24999,7 @@ export namespace Prisma {
     progressiveLevel?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type MemorySessionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14361,6 +25012,7 @@ export namespace Prisma {
     progressiveLevel?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VisionSessionCreateInput = {
     id?: string;
     trainingMode: string;
@@ -14373,6 +25025,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     user: UserCreateNestedOneWithoutVisionSessionsInput;
   };
+
   export type VisionSessionUncheckedCreateInput = {
     id?: string;
     userId: string;
@@ -14385,6 +25038,7 @@ export namespace Prisma {
     avgResponseTimeMs: number;
     createdAt?: Date | string;
   };
+
   export type VisionSessionUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     trainingMode?: StringFieldUpdateOperationsInput | string;
@@ -14397,6 +25051,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutVisionSessionsNestedInput;
   };
+
   export type VisionSessionUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14409,6 +25064,7 @@ export namespace Prisma {
     avgResponseTimeMs?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VisionSessionCreateManyInput = {
     id?: string;
     userId: string;
@@ -14421,6 +25077,7 @@ export namespace Prisma {
     avgResponseTimeMs: number;
     createdAt?: Date | string;
   };
+
   export type VisionSessionUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string;
     trainingMode?: StringFieldUpdateOperationsInput | string;
@@ -14432,6 +25089,7 @@ export namespace Prisma {
     avgResponseTimeMs?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VisionSessionUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
@@ -14444,6 +25102,7 @@ export namespace Prisma {
     avgResponseTimeMs?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -14458,6 +25117,7 @@ export namespace Prisma {
     mode?: QueryMode;
     not?: NestedStringFilter<$PrismaModel> | string;
   };
+
   export type StringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null;
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
@@ -14472,6 +25132,7 @@ export namespace Prisma {
     mode?: QueryMode;
     not?: NestedStringNullableFilter<$PrismaModel> | string | null;
   };
+
   export type DateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
@@ -14482,6 +25143,7 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
   };
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>;
@@ -14492,102 +25154,127 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string;
   };
+
   export type AccountListRelationFilter = {
     every?: AccountWhereInput;
     some?: AccountWhereInput;
     none?: AccountWhereInput;
   };
+
   export type SessionListRelationFilter = {
     every?: SessionWhereInput;
     some?: SessionWhereInput;
     none?: SessionWhereInput;
   };
+
   export type AuthenticatorListRelationFilter = {
     every?: AuthenticatorWhereInput;
     some?: AuthenticatorWhereInput;
     none?: AuthenticatorWhereInput;
   };
+
   export type GameListRelationFilter = {
     every?: GameWhereInput;
     some?: GameWhereInput;
     none?: GameWhereInput;
   };
+
   export type RatingListRelationFilter = {
     every?: RatingWhereInput;
     some?: RatingWhereInput;
     none?: RatingWhereInput;
   };
+
   export type PuzzleRatingNullableScalarRelationFilter = {
     is?: PuzzleRatingWhereInput | null;
     isNot?: PuzzleRatingWhereInput | null;
   };
+
   export type GameAnalysisListRelationFilter = {
     every?: GameAnalysisWhereInput;
     some?: GameAnalysisWhereInput;
     none?: GameAnalysisWhereInput;
   };
+
   export type PuzzleAttemptListRelationFilter = {
     every?: PuzzleAttemptWhereInput;
     some?: PuzzleAttemptWhereInput;
     none?: PuzzleAttemptWhereInput;
   };
+
   export type PuzzleRushScoreListRelationFilter = {
     every?: PuzzleRushScoreWhereInput;
     some?: PuzzleRushScoreWhereInput;
     none?: PuzzleRushScoreWhereInput;
   };
+
   export type MemorySessionListRelationFilter = {
     every?: MemorySessionWhereInput;
     some?: MemorySessionWhereInput;
     none?: MemorySessionWhereInput;
   };
+
   export type VisionSessionListRelationFilter = {
     every?: VisionSessionWhereInput;
     some?: VisionSessionWhereInput;
     none?: VisionSessionWhereInput;
   };
+
   export type PassportFlagListRelationFilter = {
     every?: PassportFlagWhereInput;
     some?: PassportFlagWhereInput;
     none?: PassportFlagWhereInput;
   };
+
   export type SortOrderInput = {
     sort: SortOrder;
     nulls?: NullsOrder;
   };
+
   export type AccountOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type SessionOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type AuthenticatorOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type GameOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type RatingOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type GameAnalysisOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type PuzzleAttemptOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type PuzzleRushScoreOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type MemorySessionOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type VisionSessionOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type PassportFlagOrderByRelationAggregateInput = {
     _count?: SortOrder;
   };
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder;
     name?: SortOrder;
@@ -14598,6 +25285,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type UserMaxOrderByAggregateInput = {
     id?: SortOrder;
     name?: SortOrder;
@@ -14608,6 +25296,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type UserMinOrderByAggregateInput = {
     id?: SortOrder;
     name?: SortOrder;
@@ -14618,6 +25307,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type StringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -14635,6 +25325,7 @@ export namespace Prisma {
     _min?: NestedStringFilter<$PrismaModel>;
     _max?: NestedStringFilter<$PrismaModel>;
   };
+
   export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null;
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
@@ -14655,6 +25346,7 @@ export namespace Prisma {
     _min?: NestedStringNullableFilter<$PrismaModel>;
     _max?: NestedStringNullableFilter<$PrismaModel>;
   };
+
   export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
@@ -14672,6 +25364,7 @@ export namespace Prisma {
     _min?: NestedDateTimeNullableFilter<$PrismaModel>;
     _max?: NestedDateTimeNullableFilter<$PrismaModel>;
   };
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>;
@@ -14685,32 +25378,38 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>;
     _max?: NestedDateTimeFilter<$PrismaModel>;
   };
+
   export type UserScalarRelationFilter = {
     is?: UserWhereInput;
     isNot?: UserWhereInput;
   };
+
   export type PassportFlagUserIdFlagCodeCompoundUniqueInput = {
     userId: string;
     flagCode: string;
   };
+
   export type PassportFlagCountOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
     flagCode?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type PassportFlagMaxOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
     flagCode?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type PassportFlagMinOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
     flagCode?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null;
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
@@ -14721,10 +25420,12 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>;
     not?: NestedIntNullableFilter<$PrismaModel> | number | null;
   };
+
   export type AccountProviderProviderAccountIdCompoundUniqueInput = {
     provider: string;
     providerAccountId: string;
   };
+
   export type AccountCountOrderByAggregateInput = {
     userId?: SortOrder;
     type?: SortOrder;
@@ -14740,9 +25441,11 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type AccountAvgOrderByAggregateInput = {
     expires_at?: SortOrder;
   };
+
   export type AccountMaxOrderByAggregateInput = {
     userId?: SortOrder;
     type?: SortOrder;
@@ -14758,6 +25461,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type AccountMinOrderByAggregateInput = {
     userId?: SortOrder;
     type?: SortOrder;
@@ -14773,9 +25477,11 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type AccountSumOrderByAggregateInput = {
     expires_at?: SortOrder;
   };
+
   export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null;
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
@@ -14791,6 +25497,7 @@ export namespace Prisma {
     _min?: NestedIntNullableFilter<$PrismaModel>;
     _max?: NestedIntNullableFilter<$PrismaModel>;
   };
+
   export type SessionCountOrderByAggregateInput = {
     sessionToken?: SortOrder;
     userId?: SortOrder;
@@ -14798,6 +25505,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type SessionMaxOrderByAggregateInput = {
     sessionToken?: SortOrder;
     userId?: SortOrder;
@@ -14805,6 +25513,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type SessionMinOrderByAggregateInput = {
     sessionToken?: SortOrder;
     userId?: SortOrder;
@@ -14812,25 +25521,30 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type VerificationTokenIdentifierTokenCompoundUniqueInput = {
     identifier: string;
     token: string;
   };
+
   export type VerificationTokenCountOrderByAggregateInput = {
     identifier?: SortOrder;
     token?: SortOrder;
     expires?: SortOrder;
   };
+
   export type VerificationTokenMaxOrderByAggregateInput = {
     identifier?: SortOrder;
     token?: SortOrder;
     expires?: SortOrder;
   };
+
   export type VerificationTokenMinOrderByAggregateInput = {
     identifier?: SortOrder;
     token?: SortOrder;
     expires?: SortOrder;
   };
+
   export type IntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>;
     in?: number[] | ListIntFieldRefInput<$PrismaModel>;
@@ -14841,14 +25555,17 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>;
     not?: NestedIntFilter<$PrismaModel> | number;
   };
+
   export type BoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>;
     not?: NestedBoolFilter<$PrismaModel> | boolean;
   };
+
   export type AuthenticatorUserIdCredentialIDCompoundUniqueInput = {
     userId: string;
     credentialID: string;
   };
+
   export type AuthenticatorCountOrderByAggregateInput = {
     credentialID?: SortOrder;
     userId?: SortOrder;
@@ -14859,9 +25576,11 @@ export namespace Prisma {
     credentialBackedUp?: SortOrder;
     transports?: SortOrder;
   };
+
   export type AuthenticatorAvgOrderByAggregateInput = {
     counter?: SortOrder;
   };
+
   export type AuthenticatorMaxOrderByAggregateInput = {
     credentialID?: SortOrder;
     userId?: SortOrder;
@@ -14872,6 +25591,7 @@ export namespace Prisma {
     credentialBackedUp?: SortOrder;
     transports?: SortOrder;
   };
+
   export type AuthenticatorMinOrderByAggregateInput = {
     credentialID?: SortOrder;
     userId?: SortOrder;
@@ -14882,9 +25602,11 @@ export namespace Prisma {
     credentialBackedUp?: SortOrder;
     transports?: SortOrder;
   };
+
   export type AuthenticatorSumOrderByAggregateInput = {
     counter?: SortOrder;
   };
+
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>;
     in?: number[] | ListIntFieldRefInput<$PrismaModel>;
@@ -14900,6 +25622,7 @@ export namespace Prisma {
     _min?: NestedIntFilter<$PrismaModel>;
     _max?: NestedIntFilter<$PrismaModel>;
   };
+
   export type BoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>;
     not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean;
@@ -14907,6 +25630,7 @@ export namespace Prisma {
     _min?: NestedBoolFilter<$PrismaModel>;
     _max?: NestedBoolFilter<$PrismaModel>;
   };
+
   export type StringNullableListFilter<$PrismaModel = never> = {
     equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
     has?: string | StringFieldRefInput<$PrismaModel> | null;
@@ -14923,6 +25647,7 @@ export namespace Prisma {
         Required<JsonFilterBase<$PrismaModel>>
       >
     | OptionalFlat<Omit<Required<JsonFilterBase<$PrismaModel>>, 'path'>>;
+
   export type JsonFilterBase<$PrismaModel = never> = {
     equals?:
       | InputJsonValue
@@ -14945,14 +25670,17 @@ export namespace Prisma {
       | JsonFieldRefInput<$PrismaModel>
       | JsonNullValueFilter;
   };
+
   export type UserNullableScalarRelationFilter = {
     is?: UserWhereInput | null;
     isNot?: UserWhereInput | null;
   };
+
   export type GameAnalysisNullableScalarRelationFilter = {
     is?: GameAnalysisWhereInput | null;
     isNot?: GameAnalysisWhereInput | null;
   };
+
   export type GameCountOrderByAggregateInput = {
     id?: SortOrder;
     roomId?: SortOrder;
@@ -14974,6 +25702,7 @@ export namespace Prisma {
     playedAt?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type GameAvgOrderByAggregateInput = {
     whitePregameRating?: SortOrder;
     blackPregameRating?: SortOrder;
@@ -14981,6 +25710,7 @@ export namespace Prisma {
     blackRatingDelta?: SortOrder;
     moveCount?: SortOrder;
   };
+
   export type GameMaxOrderByAggregateInput = {
     id?: SortOrder;
     roomId?: SortOrder;
@@ -15000,6 +25730,7 @@ export namespace Prisma {
     playedAt?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type GameMinOrderByAggregateInput = {
     id?: SortOrder;
     roomId?: SortOrder;
@@ -15019,6 +25750,7 @@ export namespace Prisma {
     playedAt?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type GameSumOrderByAggregateInput = {
     whitePregameRating?: SortOrder;
     blackPregameRating?: SortOrder;
@@ -15040,6 +25772,7 @@ export namespace Prisma {
     | OptionalFlat<
         Omit<Required<JsonWithAggregatesFilterBase<$PrismaModel>>, 'path'>
       >;
+
   export type JsonWithAggregatesFilterBase<$PrismaModel = never> = {
     equals?:
       | InputJsonValue
@@ -15065,10 +25798,12 @@ export namespace Prisma {
     _min?: NestedJsonFilter<$PrismaModel>;
     _max?: NestedJsonFilter<$PrismaModel>;
   };
+
   export type GameScalarRelationFilter = {
     is?: GameWhereInput;
     isNot?: GameWhereInput;
   };
+
   export type GameAnalysisCountOrderByAggregateInput = {
     id?: SortOrder;
     gameId?: SortOrder;
@@ -15076,18 +25811,21 @@ export namespace Prisma {
     results?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type GameAnalysisMaxOrderByAggregateInput = {
     id?: SortOrder;
     gameId?: SortOrder;
     userId?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type GameAnalysisMinOrderByAggregateInput = {
     id?: SortOrder;
     gameId?: SortOrder;
     userId?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type FloatFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>;
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>;
@@ -15098,11 +25836,13 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>;
     not?: NestedFloatFilter<$PrismaModel> | number;
   };
+
   export type RatingUserIdVariantCategoryCompoundUniqueInput = {
     userId: string;
     variant: string;
     category: string;
   };
+
   export type RatingCountOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15115,12 +25855,14 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type RatingAvgOrderByAggregateInput = {
     rating?: SortOrder;
     rd?: SortOrder;
     sigma?: SortOrder;
     gameCount?: SortOrder;
   };
+
   export type RatingMaxOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15133,6 +25875,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type RatingMinOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15145,12 +25888,14 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type RatingSumOrderByAggregateInput = {
     rating?: SortOrder;
     rd?: SortOrder;
     sigma?: SortOrder;
     gameCount?: SortOrder;
   };
+
   export type FloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>;
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>;
@@ -15166,6 +25911,7 @@ export namespace Prisma {
     _min?: NestedFloatFilter<$PrismaModel>;
     _max?: NestedFloatFilter<$PrismaModel>;
   };
+
   export type PuzzleRatingCountOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15176,12 +25922,14 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type PuzzleRatingAvgOrderByAggregateInput = {
     rating?: SortOrder;
     rd?: SortOrder;
     sigma?: SortOrder;
     gameCount?: SortOrder;
   };
+
   export type PuzzleRatingMaxOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15192,6 +25940,7 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type PuzzleRatingMinOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15202,12 +25951,14 @@ export namespace Prisma {
     createdAt?: SortOrder;
     updatedAt?: SortOrder;
   };
+
   export type PuzzleRatingSumOrderByAggregateInput = {
     rating?: SortOrder;
     rd?: SortOrder;
     sigma?: SortOrder;
     gameCount?: SortOrder;
   };
+
   export type PuzzleAttemptCountOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15218,9 +25969,11 @@ export namespace Prisma {
     usedHint?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type PuzzleAttemptAvgOrderByAggregateInput = {
     rating?: SortOrder;
   };
+
   export type PuzzleAttemptMaxOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15231,6 +25984,7 @@ export namespace Prisma {
     usedHint?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type PuzzleAttemptMinOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15241,9 +25995,11 @@ export namespace Prisma {
     usedHint?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type PuzzleAttemptSumOrderByAggregateInput = {
     rating?: SortOrder;
   };
+
   export type PuzzleRushScoreCountOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15255,12 +26011,14 @@ export namespace Prisma {
     maxMistakes?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type PuzzleRushScoreAvgOrderByAggregateInput = {
     score?: SortOrder;
     mistakes?: SortOrder;
     timeLimitSeconds?: SortOrder;
     maxMistakes?: SortOrder;
   };
+
   export type PuzzleRushScoreMaxOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15272,6 +26030,7 @@ export namespace Prisma {
     maxMistakes?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type PuzzleRushScoreMinOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15283,12 +26042,14 @@ export namespace Prisma {
     maxMistakes?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type PuzzleRushScoreSumOrderByAggregateInput = {
     score?: SortOrder;
     mistakes?: SortOrder;
     timeLimitSeconds?: SortOrder;
     maxMistakes?: SortOrder;
   };
+
   export type MemorySessionCountOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15301,6 +26062,7 @@ export namespace Prisma {
     progressiveLevel?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type MemorySessionAvgOrderByAggregateInput = {
     pieceCount?: SortOrder;
     memorizeTimeSeconds?: SortOrder;
@@ -15309,6 +26071,7 @@ export namespace Prisma {
     accuracy?: SortOrder;
     progressiveLevel?: SortOrder;
   };
+
   export type MemorySessionMaxOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15321,6 +26084,7 @@ export namespace Prisma {
     progressiveLevel?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type MemorySessionMinOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15333,6 +26097,7 @@ export namespace Prisma {
     progressiveLevel?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type MemorySessionSumOrderByAggregateInput = {
     pieceCount?: SortOrder;
     memorizeTimeSeconds?: SortOrder;
@@ -15341,6 +26106,7 @@ export namespace Prisma {
     accuracy?: SortOrder;
     progressiveLevel?: SortOrder;
   };
+
   export type VisionSessionCountOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15353,6 +26119,7 @@ export namespace Prisma {
     avgResponseTimeMs?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type VisionSessionAvgOrderByAggregateInput = {
     timeLimitSeconds?: SortOrder;
     score?: SortOrder;
@@ -15360,6 +26127,7 @@ export namespace Prisma {
     accuracy?: SortOrder;
     avgResponseTimeMs?: SortOrder;
   };
+
   export type VisionSessionMaxOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15372,6 +26140,7 @@ export namespace Prisma {
     avgResponseTimeMs?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type VisionSessionMinOrderByAggregateInput = {
     id?: SortOrder;
     userId?: SortOrder;
@@ -15384,6 +26153,7 @@ export namespace Prisma {
     avgResponseTimeMs?: SortOrder;
     createdAt?: SortOrder;
   };
+
   export type VisionSessionSumOrderByAggregateInput = {
     timeLimitSeconds?: SortOrder;
     score?: SortOrder;
@@ -15391,6 +26161,7 @@ export namespace Prisma {
     accuracy?: SortOrder;
     avgResponseTimeMs?: SortOrder;
   };
+
   export type AccountCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15405,6 +26176,7 @@ export namespace Prisma {
     createMany?: AccountCreateManyUserInputEnvelope;
     connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[];
   };
+
   export type SessionCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15419,6 +26191,7 @@ export namespace Prisma {
     createMany?: SessionCreateManyUserInputEnvelope;
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[];
   };
+
   export type AuthenticatorCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15433,6 +26206,7 @@ export namespace Prisma {
     createMany?: AuthenticatorCreateManyUserInputEnvelope;
     connect?: AuthenticatorWhereUniqueInput | AuthenticatorWhereUniqueInput[];
   };
+
   export type GameCreateNestedManyWithoutWhiteInput = {
     create?:
       | XOR<GameCreateWithoutWhiteInput, GameUncheckedCreateWithoutWhiteInput>
@@ -15444,6 +26218,7 @@ export namespace Prisma {
     createMany?: GameCreateManyWhiteInputEnvelope;
     connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
   };
+
   export type GameCreateNestedManyWithoutBlackInput = {
     create?:
       | XOR<GameCreateWithoutBlackInput, GameUncheckedCreateWithoutBlackInput>
@@ -15455,6 +26230,7 @@ export namespace Prisma {
     createMany?: GameCreateManyBlackInputEnvelope;
     connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
   };
+
   export type RatingCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
@@ -15466,6 +26242,7 @@ export namespace Prisma {
     createMany?: RatingCreateManyUserInputEnvelope;
     connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
   };
+
   export type PuzzleRatingCreateNestedOneWithoutUserInput = {
     create?: XOR<
       PuzzleRatingCreateWithoutUserInput,
@@ -15474,6 +26251,7 @@ export namespace Prisma {
     connectOrCreate?: PuzzleRatingCreateOrConnectWithoutUserInput;
     connect?: PuzzleRatingWhereUniqueInput;
   };
+
   export type GameAnalysisCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15488,6 +26266,7 @@ export namespace Prisma {
     createMany?: GameAnalysisCreateManyUserInputEnvelope;
     connect?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
   };
+
   export type PuzzleAttemptCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15502,6 +26281,7 @@ export namespace Prisma {
     createMany?: PuzzleAttemptCreateManyUserInputEnvelope;
     connect?: PuzzleAttemptWhereUniqueInput | PuzzleAttemptWhereUniqueInput[];
   };
+
   export type PuzzleRushScoreCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15518,6 +26298,7 @@ export namespace Prisma {
       | PuzzleRushScoreWhereUniqueInput
       | PuzzleRushScoreWhereUniqueInput[];
   };
+
   export type MemorySessionCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15532,6 +26313,7 @@ export namespace Prisma {
     createMany?: MemorySessionCreateManyUserInputEnvelope;
     connect?: MemorySessionWhereUniqueInput | MemorySessionWhereUniqueInput[];
   };
+
   export type VisionSessionCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15546,6 +26328,7 @@ export namespace Prisma {
     createMany?: VisionSessionCreateManyUserInputEnvelope;
     connect?: VisionSessionWhereUniqueInput | VisionSessionWhereUniqueInput[];
   };
+
   export type PassportFlagCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15560,6 +26343,7 @@ export namespace Prisma {
     createMany?: PassportFlagCreateManyUserInputEnvelope;
     connect?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
   };
+
   export type AccountUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15574,6 +26358,7 @@ export namespace Prisma {
     createMany?: AccountCreateManyUserInputEnvelope;
     connect?: AccountWhereUniqueInput | AccountWhereUniqueInput[];
   };
+
   export type SessionUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15588,6 +26373,7 @@ export namespace Prisma {
     createMany?: SessionCreateManyUserInputEnvelope;
     connect?: SessionWhereUniqueInput | SessionWhereUniqueInput[];
   };
+
   export type AuthenticatorUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15602,6 +26388,7 @@ export namespace Prisma {
     createMany?: AuthenticatorCreateManyUserInputEnvelope;
     connect?: AuthenticatorWhereUniqueInput | AuthenticatorWhereUniqueInput[];
   };
+
   export type GameUncheckedCreateNestedManyWithoutWhiteInput = {
     create?:
       | XOR<GameCreateWithoutWhiteInput, GameUncheckedCreateWithoutWhiteInput>
@@ -15613,6 +26400,7 @@ export namespace Prisma {
     createMany?: GameCreateManyWhiteInputEnvelope;
     connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
   };
+
   export type GameUncheckedCreateNestedManyWithoutBlackInput = {
     create?:
       | XOR<GameCreateWithoutBlackInput, GameUncheckedCreateWithoutBlackInput>
@@ -15624,6 +26412,7 @@ export namespace Prisma {
     createMany?: GameCreateManyBlackInputEnvelope;
     connect?: GameWhereUniqueInput | GameWhereUniqueInput[];
   };
+
   export type RatingUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
@@ -15635,6 +26424,7 @@ export namespace Prisma {
     createMany?: RatingCreateManyUserInputEnvelope;
     connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[];
   };
+
   export type PuzzleRatingUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<
       PuzzleRatingCreateWithoutUserInput,
@@ -15643,6 +26433,7 @@ export namespace Prisma {
     connectOrCreate?: PuzzleRatingCreateOrConnectWithoutUserInput;
     connect?: PuzzleRatingWhereUniqueInput;
   };
+
   export type GameAnalysisUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15657,6 +26448,7 @@ export namespace Prisma {
     createMany?: GameAnalysisCreateManyUserInputEnvelope;
     connect?: GameAnalysisWhereUniqueInput | GameAnalysisWhereUniqueInput[];
   };
+
   export type PuzzleAttemptUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15671,6 +26463,7 @@ export namespace Prisma {
     createMany?: PuzzleAttemptCreateManyUserInputEnvelope;
     connect?: PuzzleAttemptWhereUniqueInput | PuzzleAttemptWhereUniqueInput[];
   };
+
   export type PuzzleRushScoreUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15687,6 +26480,7 @@ export namespace Prisma {
       | PuzzleRushScoreWhereUniqueInput
       | PuzzleRushScoreWhereUniqueInput[];
   };
+
   export type MemorySessionUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15701,6 +26495,7 @@ export namespace Prisma {
     createMany?: MemorySessionCreateManyUserInputEnvelope;
     connect?: MemorySessionWhereUniqueInput | MemorySessionWhereUniqueInput[];
   };
+
   export type VisionSessionUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15715,6 +26510,7 @@ export namespace Prisma {
     createMany?: VisionSessionCreateManyUserInputEnvelope;
     connect?: VisionSessionWhereUniqueInput | VisionSessionWhereUniqueInput[];
   };
+
   export type PassportFlagUncheckedCreateNestedManyWithoutUserInput = {
     create?:
       | XOR<
@@ -15729,18 +26525,23 @@ export namespace Prisma {
     createMany?: PassportFlagCreateManyUserInputEnvelope;
     connect?: PassportFlagWhereUniqueInput | PassportFlagWhereUniqueInput[];
   };
+
   export type StringFieldUpdateOperationsInput = {
     set?: string;
   };
+
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null;
   };
+
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null;
   };
+
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string;
   };
+
   export type AccountUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -15768,6 +26569,7 @@ export namespace Prisma {
       | AccountUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[];
   };
+
   export type SessionUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -15795,6 +26597,7 @@ export namespace Prisma {
       | SessionUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[];
   };
+
   export type AuthenticatorUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -15826,6 +26629,7 @@ export namespace Prisma {
       | AuthenticatorScalarWhereInput
       | AuthenticatorScalarWhereInput[];
   };
+
   export type GameUpdateManyWithoutWhiteNestedInput = {
     create?:
       | XOR<GameCreateWithoutWhiteInput, GameUncheckedCreateWithoutWhiteInput>
@@ -15850,6 +26654,7 @@ export namespace Prisma {
       | GameUpdateManyWithWhereWithoutWhiteInput[];
     deleteMany?: GameScalarWhereInput | GameScalarWhereInput[];
   };
+
   export type GameUpdateManyWithoutBlackNestedInput = {
     create?:
       | XOR<GameCreateWithoutBlackInput, GameUncheckedCreateWithoutBlackInput>
@@ -15874,6 +26679,7 @@ export namespace Prisma {
       | GameUpdateManyWithWhereWithoutBlackInput[];
     deleteMany?: GameScalarWhereInput | GameScalarWhereInput[];
   };
+
   export type RatingUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
@@ -15898,6 +26704,7 @@ export namespace Prisma {
       | RatingUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[];
   };
+
   export type PuzzleRatingUpdateOneWithoutUserNestedInput = {
     create?: XOR<
       PuzzleRatingCreateWithoutUserInput,
@@ -15916,6 +26723,7 @@ export namespace Prisma {
       PuzzleRatingUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type GameAnalysisUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -15943,6 +26751,7 @@ export namespace Prisma {
       | GameAnalysisUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: GameAnalysisScalarWhereInput | GameAnalysisScalarWhereInput[];
   };
+
   export type PuzzleAttemptUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -15974,6 +26783,7 @@ export namespace Prisma {
       | PuzzleAttemptScalarWhereInput
       | PuzzleAttemptScalarWhereInput[];
   };
+
   export type PuzzleRushScoreUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16009,6 +26819,7 @@ export namespace Prisma {
       | PuzzleRushScoreScalarWhereInput
       | PuzzleRushScoreScalarWhereInput[];
   };
+
   export type MemorySessionUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16040,6 +26851,7 @@ export namespace Prisma {
       | MemorySessionScalarWhereInput
       | MemorySessionScalarWhereInput[];
   };
+
   export type VisionSessionUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16071,6 +26883,7 @@ export namespace Prisma {
       | VisionSessionScalarWhereInput
       | VisionSessionScalarWhereInput[];
   };
+
   export type PassportFlagUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16098,6 +26911,7 @@ export namespace Prisma {
       | PassportFlagUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: PassportFlagScalarWhereInput | PassportFlagScalarWhereInput[];
   };
+
   export type AccountUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16125,6 +26939,7 @@ export namespace Prisma {
       | AccountUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: AccountScalarWhereInput | AccountScalarWhereInput[];
   };
+
   export type SessionUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16152,6 +26967,7 @@ export namespace Prisma {
       | SessionUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: SessionScalarWhereInput | SessionScalarWhereInput[];
   };
+
   export type AuthenticatorUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16183,6 +26999,7 @@ export namespace Prisma {
       | AuthenticatorScalarWhereInput
       | AuthenticatorScalarWhereInput[];
   };
+
   export type GameUncheckedUpdateManyWithoutWhiteNestedInput = {
     create?:
       | XOR<GameCreateWithoutWhiteInput, GameUncheckedCreateWithoutWhiteInput>
@@ -16207,6 +27024,7 @@ export namespace Prisma {
       | GameUpdateManyWithWhereWithoutWhiteInput[];
     deleteMany?: GameScalarWhereInput | GameScalarWhereInput[];
   };
+
   export type GameUncheckedUpdateManyWithoutBlackNestedInput = {
     create?:
       | XOR<GameCreateWithoutBlackInput, GameUncheckedCreateWithoutBlackInput>
@@ -16231,6 +27049,7 @@ export namespace Prisma {
       | GameUpdateManyWithWhereWithoutBlackInput[];
     deleteMany?: GameScalarWhereInput | GameScalarWhereInput[];
   };
+
   export type RatingUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
@@ -16255,6 +27074,7 @@ export namespace Prisma {
       | RatingUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[];
   };
+
   export type PuzzleRatingUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<
       PuzzleRatingCreateWithoutUserInput,
@@ -16273,6 +27093,7 @@ export namespace Prisma {
       PuzzleRatingUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type GameAnalysisUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16300,6 +27121,7 @@ export namespace Prisma {
       | GameAnalysisUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: GameAnalysisScalarWhereInput | GameAnalysisScalarWhereInput[];
   };
+
   export type PuzzleAttemptUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16331,6 +27153,7 @@ export namespace Prisma {
       | PuzzleAttemptScalarWhereInput
       | PuzzleAttemptScalarWhereInput[];
   };
+
   export type PuzzleRushScoreUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16366,6 +27189,7 @@ export namespace Prisma {
       | PuzzleRushScoreScalarWhereInput
       | PuzzleRushScoreScalarWhereInput[];
   };
+
   export type MemorySessionUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16397,6 +27221,7 @@ export namespace Prisma {
       | MemorySessionScalarWhereInput
       | MemorySessionScalarWhereInput[];
   };
+
   export type VisionSessionUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16428,6 +27253,7 @@ export namespace Prisma {
       | VisionSessionScalarWhereInput
       | VisionSessionScalarWhereInput[];
   };
+
   export type PassportFlagUncheckedUpdateManyWithoutUserNestedInput = {
     create?:
       | XOR<
@@ -16455,6 +27281,7 @@ export namespace Prisma {
       | PassportFlagUpdateManyWithWhereWithoutUserInput[];
     deleteMany?: PassportFlagScalarWhereInput | PassportFlagScalarWhereInput[];
   };
+
   export type UserCreateNestedOneWithoutPassportFlagsInput = {
     create?: XOR<
       UserCreateWithoutPassportFlagsInput,
@@ -16463,6 +27290,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutPassportFlagsInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type UserUpdateOneRequiredWithoutPassportFlagsNestedInput = {
     create?: XOR<
       UserCreateWithoutPassportFlagsInput,
@@ -16479,6 +27307,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutPassportFlagsInput
     >;
   };
+
   export type UserCreateNestedOneWithoutAccountsInput = {
     create?: XOR<
       UserCreateWithoutAccountsInput,
@@ -16487,6 +27316,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutAccountsInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null;
     increment?: number;
@@ -16494,6 +27324,7 @@ export namespace Prisma {
     multiply?: number;
     divide?: number;
   };
+
   export type UserUpdateOneRequiredWithoutAccountsNestedInput = {
     create?: XOR<
       UserCreateWithoutAccountsInput,
@@ -16510,6 +27341,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutAccountsInput
     >;
   };
+
   export type UserCreateNestedOneWithoutSessionsInput = {
     create?: XOR<
       UserCreateWithoutSessionsInput,
@@ -16518,6 +27350,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutSessionsInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type UserUpdateOneRequiredWithoutSessionsNestedInput = {
     create?: XOR<
       UserCreateWithoutSessionsInput,
@@ -16534,6 +27367,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutSessionsInput
     >;
   };
+
   export type UserCreateNestedOneWithoutAuthenticatorInput = {
     create?: XOR<
       UserCreateWithoutAuthenticatorInput,
@@ -16542,6 +27376,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutAuthenticatorInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type IntFieldUpdateOperationsInput = {
     set?: number;
     increment?: number;
@@ -16549,9 +27384,11 @@ export namespace Prisma {
     multiply?: number;
     divide?: number;
   };
+
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean;
   };
+
   export type UserUpdateOneRequiredWithoutAuthenticatorNestedInput = {
     create?: XOR<
       UserCreateWithoutAuthenticatorInput,
@@ -16568,9 +27405,11 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutAuthenticatorInput
     >;
   };
+
   export type GameCreatemovesInput = {
     set: string[];
   };
+
   export type UserCreateNestedOneWithoutWhiteGamesInput = {
     create?: XOR<
       UserCreateWithoutWhiteGamesInput,
@@ -16579,6 +27418,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutWhiteGamesInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type UserCreateNestedOneWithoutBlackGamesInput = {
     create?: XOR<
       UserCreateWithoutBlackGamesInput,
@@ -16587,6 +27427,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutBlackGamesInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type GameAnalysisCreateNestedOneWithoutGameInput = {
     create?: XOR<
       GameAnalysisCreateWithoutGameInput,
@@ -16595,6 +27436,7 @@ export namespace Prisma {
     connectOrCreate?: GameAnalysisCreateOrConnectWithoutGameInput;
     connect?: GameAnalysisWhereUniqueInput;
   };
+
   export type GameAnalysisUncheckedCreateNestedOneWithoutGameInput = {
     create?: XOR<
       GameAnalysisCreateWithoutGameInput,
@@ -16603,10 +27445,12 @@ export namespace Prisma {
     connectOrCreate?: GameAnalysisCreateOrConnectWithoutGameInput;
     connect?: GameAnalysisWhereUniqueInput;
   };
+
   export type GameUpdatemovesInput = {
     set?: string[];
     push?: string | string[];
   };
+
   export type UserUpdateOneWithoutWhiteGamesNestedInput = {
     create?: XOR<
       UserCreateWithoutWhiteGamesInput,
@@ -16625,6 +27469,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutWhiteGamesInput
     >;
   };
+
   export type UserUpdateOneWithoutBlackGamesNestedInput = {
     create?: XOR<
       UserCreateWithoutBlackGamesInput,
@@ -16643,6 +27488,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutBlackGamesInput
     >;
   };
+
   export type GameAnalysisUpdateOneWithoutGameNestedInput = {
     create?: XOR<
       GameAnalysisCreateWithoutGameInput,
@@ -16661,6 +27507,7 @@ export namespace Prisma {
       GameAnalysisUncheckedUpdateWithoutGameInput
     >;
   };
+
   export type GameAnalysisUncheckedUpdateOneWithoutGameNestedInput = {
     create?: XOR<
       GameAnalysisCreateWithoutGameInput,
@@ -16679,6 +27526,7 @@ export namespace Prisma {
       GameAnalysisUncheckedUpdateWithoutGameInput
     >;
   };
+
   export type GameCreateNestedOneWithoutAnalysisInput = {
     create?: XOR<
       GameCreateWithoutAnalysisInput,
@@ -16687,6 +27535,7 @@ export namespace Prisma {
     connectOrCreate?: GameCreateOrConnectWithoutAnalysisInput;
     connect?: GameWhereUniqueInput;
   };
+
   export type UserCreateNestedOneWithoutAnalysesInput = {
     create?: XOR<
       UserCreateWithoutAnalysesInput,
@@ -16695,6 +27544,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutAnalysesInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type GameUpdateOneRequiredWithoutAnalysisNestedInput = {
     create?: XOR<
       GameCreateWithoutAnalysisInput,
@@ -16711,6 +27561,7 @@ export namespace Prisma {
       GameUncheckedUpdateWithoutAnalysisInput
     >;
   };
+
   export type UserUpdateOneRequiredWithoutAnalysesNestedInput = {
     create?: XOR<
       UserCreateWithoutAnalysesInput,
@@ -16727,6 +27578,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutAnalysesInput
     >;
   };
+
   export type UserCreateNestedOneWithoutRatingsInput = {
     create?: XOR<
       UserCreateWithoutRatingsInput,
@@ -16735,6 +27587,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutRatingsInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type FloatFieldUpdateOperationsInput = {
     set?: number;
     increment?: number;
@@ -16742,6 +27595,7 @@ export namespace Prisma {
     multiply?: number;
     divide?: number;
   };
+
   export type UserUpdateOneRequiredWithoutRatingsNestedInput = {
     create?: XOR<
       UserCreateWithoutRatingsInput,
@@ -16758,6 +27612,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutRatingsInput
     >;
   };
+
   export type UserCreateNestedOneWithoutPuzzleRatingInput = {
     create?: XOR<
       UserCreateWithoutPuzzleRatingInput,
@@ -16766,6 +27621,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutPuzzleRatingInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type UserUpdateOneRequiredWithoutPuzzleRatingNestedInput = {
     create?: XOR<
       UserCreateWithoutPuzzleRatingInput,
@@ -16782,6 +27638,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutPuzzleRatingInput
     >;
   };
+
   export type UserCreateNestedOneWithoutPuzzleAttemptsInput = {
     create?: XOR<
       UserCreateWithoutPuzzleAttemptsInput,
@@ -16790,6 +27647,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutPuzzleAttemptsInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type UserUpdateOneRequiredWithoutPuzzleAttemptsNestedInput = {
     create?: XOR<
       UserCreateWithoutPuzzleAttemptsInput,
@@ -16806,6 +27664,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutPuzzleAttemptsInput
     >;
   };
+
   export type UserCreateNestedOneWithoutPuzzleRushScoresInput = {
     create?: XOR<
       UserCreateWithoutPuzzleRushScoresInput,
@@ -16814,6 +27673,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutPuzzleRushScoresInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type UserUpdateOneRequiredWithoutPuzzleRushScoresNestedInput = {
     create?: XOR<
       UserCreateWithoutPuzzleRushScoresInput,
@@ -16830,6 +27690,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutPuzzleRushScoresInput
     >;
   };
+
   export type UserCreateNestedOneWithoutMemorySessionsInput = {
     create?: XOR<
       UserCreateWithoutMemorySessionsInput,
@@ -16838,6 +27699,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutMemorySessionsInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type UserUpdateOneRequiredWithoutMemorySessionsNestedInput = {
     create?: XOR<
       UserCreateWithoutMemorySessionsInput,
@@ -16854,6 +27716,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutMemorySessionsInput
     >;
   };
+
   export type UserCreateNestedOneWithoutVisionSessionsInput = {
     create?: XOR<
       UserCreateWithoutVisionSessionsInput,
@@ -16862,6 +27725,7 @@ export namespace Prisma {
     connectOrCreate?: UserCreateOrConnectWithoutVisionSessionsInput;
     connect?: UserWhereUniqueInput;
   };
+
   export type UserUpdateOneRequiredWithoutVisionSessionsNestedInput = {
     create?: XOR<
       UserCreateWithoutVisionSessionsInput,
@@ -16878,6 +27742,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutVisionSessionsInput
     >;
   };
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -16891,6 +27756,7 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>;
     not?: NestedStringFilter<$PrismaModel> | string;
   };
+
   export type NestedStringNullableFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null;
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
@@ -16904,6 +27770,7 @@ export namespace Prisma {
     endsWith?: string | StringFieldRefInput<$PrismaModel>;
     not?: NestedStringNullableFilter<$PrismaModel> | string | null;
   };
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null;
@@ -16914,6 +27781,7 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null;
   };
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>;
@@ -16924,6 +27792,7 @@ export namespace Prisma {
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
     not?: NestedDateTimeFilter<$PrismaModel> | Date | string;
   };
+
   export type NestedStringWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>;
     in?: string[] | ListStringFieldRefInput<$PrismaModel>;
@@ -16940,6 +27809,7 @@ export namespace Prisma {
     _min?: NestedStringFilter<$PrismaModel>;
     _max?: NestedStringFilter<$PrismaModel>;
   };
+
   export type NestedIntFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>;
     in?: number[] | ListIntFieldRefInput<$PrismaModel>;
@@ -16950,6 +27820,7 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>;
     not?: NestedIntFilter<$PrismaModel> | number;
   };
+
   export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null;
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null;
@@ -16969,6 +27840,7 @@ export namespace Prisma {
     _min?: NestedStringNullableFilter<$PrismaModel>;
     _max?: NestedStringNullableFilter<$PrismaModel>;
   };
+
   export type NestedIntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null;
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
@@ -16979,6 +27851,7 @@ export namespace Prisma {
     gte?: number | IntFieldRefInput<$PrismaModel>;
     not?: NestedIntNullableFilter<$PrismaModel> | number | null;
   };
+
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> =
     {
       equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null;
@@ -17001,6 +27874,7 @@ export namespace Prisma {
       _min?: NestedDateTimeNullableFilter<$PrismaModel>;
       _max?: NestedDateTimeNullableFilter<$PrismaModel>;
     };
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>;
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>;
@@ -17014,6 +27888,7 @@ export namespace Prisma {
     _min?: NestedDateTimeFilter<$PrismaModel>;
     _max?: NestedDateTimeFilter<$PrismaModel>;
   };
+
   export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null;
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null;
@@ -17029,6 +27904,7 @@ export namespace Prisma {
     _min?: NestedIntNullableFilter<$PrismaModel>;
     _max?: NestedIntNullableFilter<$PrismaModel>;
   };
+
   export type NestedFloatNullableFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel> | null;
     in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null;
@@ -17039,10 +27915,12 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>;
     not?: NestedFloatNullableFilter<$PrismaModel> | number | null;
   };
+
   export type NestedBoolFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>;
     not?: NestedBoolFilter<$PrismaModel> | boolean;
   };
+
   export type NestedIntWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel>;
     in?: number[] | ListIntFieldRefInput<$PrismaModel>;
@@ -17058,6 +27936,7 @@ export namespace Prisma {
     _min?: NestedIntFilter<$PrismaModel>;
     _max?: NestedIntFilter<$PrismaModel>;
   };
+
   export type NestedFloatFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>;
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>;
@@ -17068,6 +27947,7 @@ export namespace Prisma {
     gte?: number | FloatFieldRefInput<$PrismaModel>;
     not?: NestedFloatFilter<$PrismaModel> | number;
   };
+
   export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
     equals?: boolean | BooleanFieldRefInput<$PrismaModel>;
     not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean;
@@ -17084,6 +27964,7 @@ export namespace Prisma {
         Required<NestedJsonFilterBase<$PrismaModel>>
       >
     | OptionalFlat<Omit<Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>;
+
   export type NestedJsonFilterBase<$PrismaModel = never> = {
     equals?:
       | InputJsonValue
@@ -17106,6 +27987,7 @@ export namespace Prisma {
       | JsonFieldRefInput<$PrismaModel>
       | JsonNullValueFilter;
   };
+
   export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
     equals?: number | FloatFieldRefInput<$PrismaModel>;
     in?: number[] | ListFloatFieldRefInput<$PrismaModel>;
@@ -17121,6 +28003,7 @@ export namespace Prisma {
     _min?: NestedFloatFilter<$PrismaModel>;
     _max?: NestedFloatFilter<$PrismaModel>;
   };
+
   export type AccountCreateWithoutUserInput = {
     type: string;
     provider: string;
@@ -17135,6 +28018,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type AccountUncheckedCreateWithoutUserInput = {
     type: string;
     provider: string;
@@ -17149,6 +28033,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type AccountCreateOrConnectWithoutUserInput = {
     where: AccountWhereUniqueInput;
     create: XOR<
@@ -17156,22 +28041,26 @@ export namespace Prisma {
       AccountUncheckedCreateWithoutUserInput
     >;
   };
+
   export type AccountCreateManyUserInputEnvelope = {
     data: AccountCreateManyUserInput | AccountCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type SessionCreateWithoutUserInput = {
     sessionToken: string;
     expires: Date | string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type SessionUncheckedCreateWithoutUserInput = {
     sessionToken: string;
     expires: Date | string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type SessionCreateOrConnectWithoutUserInput = {
     where: SessionWhereUniqueInput;
     create: XOR<
@@ -17179,10 +28068,12 @@ export namespace Prisma {
       SessionUncheckedCreateWithoutUserInput
     >;
   };
+
   export type SessionCreateManyUserInputEnvelope = {
     data: SessionCreateManyUserInput | SessionCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type AuthenticatorCreateWithoutUserInput = {
     credentialID: string;
     providerAccountId: string;
@@ -17192,6 +28083,7 @@ export namespace Prisma {
     credentialBackedUp: boolean;
     transports?: string | null;
   };
+
   export type AuthenticatorUncheckedCreateWithoutUserInput = {
     credentialID: string;
     providerAccountId: string;
@@ -17201,6 +28093,7 @@ export namespace Prisma {
     credentialBackedUp: boolean;
     transports?: string | null;
   };
+
   export type AuthenticatorCreateOrConnectWithoutUserInput = {
     where: AuthenticatorWhereUniqueInput;
     create: XOR<
@@ -17208,10 +28101,12 @@ export namespace Prisma {
       AuthenticatorUncheckedCreateWithoutUserInput
     >;
   };
+
   export type AuthenticatorCreateManyUserInputEnvelope = {
     data: AuthenticatorCreateManyUserInput | AuthenticatorCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type GameCreateWithoutWhiteInput = {
     id?: string;
     roomId?: string | null;
@@ -17233,6 +28128,7 @@ export namespace Prisma {
     black?: UserCreateNestedOneWithoutBlackGamesInput;
     analysis?: GameAnalysisCreateNestedOneWithoutGameInput;
   };
+
   export type GameUncheckedCreateWithoutWhiteInput = {
     id?: string;
     roomId?: string | null;
@@ -17254,6 +28150,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
   };
+
   export type GameCreateOrConnectWithoutWhiteInput = {
     where: GameWhereUniqueInput;
     create: XOR<
@@ -17261,10 +28158,12 @@ export namespace Prisma {
       GameUncheckedCreateWithoutWhiteInput
     >;
   };
+
   export type GameCreateManyWhiteInputEnvelope = {
     data: GameCreateManyWhiteInput | GameCreateManyWhiteInput[];
     skipDuplicates?: boolean;
   };
+
   export type GameCreateWithoutBlackInput = {
     id?: string;
     roomId?: string | null;
@@ -17286,6 +28185,7 @@ export namespace Prisma {
     white?: UserCreateNestedOneWithoutWhiteGamesInput;
     analysis?: GameAnalysisCreateNestedOneWithoutGameInput;
   };
+
   export type GameUncheckedCreateWithoutBlackInput = {
     id?: string;
     roomId?: string | null;
@@ -17307,6 +28207,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     analysis?: GameAnalysisUncheckedCreateNestedOneWithoutGameInput;
   };
+
   export type GameCreateOrConnectWithoutBlackInput = {
     where: GameWhereUniqueInput;
     create: XOR<
@@ -17314,10 +28215,12 @@ export namespace Prisma {
       GameUncheckedCreateWithoutBlackInput
     >;
   };
+
   export type GameCreateManyBlackInputEnvelope = {
     data: GameCreateManyBlackInput | GameCreateManyBlackInput[];
     skipDuplicates?: boolean;
   };
+
   export type RatingCreateWithoutUserInput = {
     id?: string;
     variant?: string;
@@ -17329,6 +28232,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type RatingUncheckedCreateWithoutUserInput = {
     id?: string;
     variant?: string;
@@ -17340,6 +28244,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type RatingCreateOrConnectWithoutUserInput = {
     where: RatingWhereUniqueInput;
     create: XOR<
@@ -17347,10 +28252,12 @@ export namespace Prisma {
       RatingUncheckedCreateWithoutUserInput
     >;
   };
+
   export type RatingCreateManyUserInputEnvelope = {
     data: RatingCreateManyUserInput | RatingCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type PuzzleRatingCreateWithoutUserInput = {
     id?: string;
     rating?: number;
@@ -17360,6 +28267,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type PuzzleRatingUncheckedCreateWithoutUserInput = {
     id?: string;
     rating?: number;
@@ -17369,6 +28277,7 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type PuzzleRatingCreateOrConnectWithoutUserInput = {
     where: PuzzleRatingWhereUniqueInput;
     create: XOR<
@@ -17376,18 +28285,21 @@ export namespace Prisma {
       PuzzleRatingUncheckedCreateWithoutUserInput
     >;
   };
+
   export type GameAnalysisCreateWithoutUserInput = {
     id?: string;
     results: JsonNullValueInput | InputJsonValue;
     createdAt?: Date | string;
     game: GameCreateNestedOneWithoutAnalysisInput;
   };
+
   export type GameAnalysisUncheckedCreateWithoutUserInput = {
     id?: string;
     gameId: string;
     results: JsonNullValueInput | InputJsonValue;
     createdAt?: Date | string;
   };
+
   export type GameAnalysisCreateOrConnectWithoutUserInput = {
     where: GameAnalysisWhereUniqueInput;
     create: XOR<
@@ -17395,10 +28307,12 @@ export namespace Prisma {
       GameAnalysisUncheckedCreateWithoutUserInput
     >;
   };
+
   export type GameAnalysisCreateManyUserInputEnvelope = {
     data: GameAnalysisCreateManyUserInput | GameAnalysisCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type PuzzleAttemptCreateWithoutUserInput = {
     id?: string;
     puzzleId: string;
@@ -17408,6 +28322,7 @@ export namespace Prisma {
     usedHint?: boolean;
     createdAt?: Date | string;
   };
+
   export type PuzzleAttemptUncheckedCreateWithoutUserInput = {
     id?: string;
     puzzleId: string;
@@ -17417,6 +28332,7 @@ export namespace Prisma {
     usedHint?: boolean;
     createdAt?: Date | string;
   };
+
   export type PuzzleAttemptCreateOrConnectWithoutUserInput = {
     where: PuzzleAttemptWhereUniqueInput;
     create: XOR<
@@ -17424,10 +28340,12 @@ export namespace Prisma {
       PuzzleAttemptUncheckedCreateWithoutUserInput
     >;
   };
+
   export type PuzzleAttemptCreateManyUserInputEnvelope = {
     data: PuzzleAttemptCreateManyUserInput | PuzzleAttemptCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type PuzzleRushScoreCreateWithoutUserInput = {
     id?: string;
     mode: string;
@@ -17438,6 +28356,7 @@ export namespace Prisma {
     maxMistakes?: number | null;
     createdAt?: Date | string;
   };
+
   export type PuzzleRushScoreUncheckedCreateWithoutUserInput = {
     id?: string;
     mode: string;
@@ -17448,6 +28367,7 @@ export namespace Prisma {
     maxMistakes?: number | null;
     createdAt?: Date | string;
   };
+
   export type PuzzleRushScoreCreateOrConnectWithoutUserInput = {
     where: PuzzleRushScoreWhereUniqueInput;
     create: XOR<
@@ -17455,12 +28375,14 @@ export namespace Prisma {
       PuzzleRushScoreUncheckedCreateWithoutUserInput
     >;
   };
+
   export type PuzzleRushScoreCreateManyUserInputEnvelope = {
     data:
       | PuzzleRushScoreCreateManyUserInput
       | PuzzleRushScoreCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type MemorySessionCreateWithoutUserInput = {
     id?: string;
     mode: string;
@@ -17472,6 +28394,7 @@ export namespace Prisma {
     progressiveLevel?: number | null;
     createdAt?: Date | string;
   };
+
   export type MemorySessionUncheckedCreateWithoutUserInput = {
     id?: string;
     mode: string;
@@ -17483,6 +28406,7 @@ export namespace Prisma {
     progressiveLevel?: number | null;
     createdAt?: Date | string;
   };
+
   export type MemorySessionCreateOrConnectWithoutUserInput = {
     where: MemorySessionWhereUniqueInput;
     create: XOR<
@@ -17490,10 +28414,12 @@ export namespace Prisma {
       MemorySessionUncheckedCreateWithoutUserInput
     >;
   };
+
   export type MemorySessionCreateManyUserInputEnvelope = {
     data: MemorySessionCreateManyUserInput | MemorySessionCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type VisionSessionCreateWithoutUserInput = {
     id?: string;
     trainingMode: string;
@@ -17505,6 +28431,7 @@ export namespace Prisma {
     avgResponseTimeMs: number;
     createdAt?: Date | string;
   };
+
   export type VisionSessionUncheckedCreateWithoutUserInput = {
     id?: string;
     trainingMode: string;
@@ -17516,6 +28443,7 @@ export namespace Prisma {
     avgResponseTimeMs: number;
     createdAt?: Date | string;
   };
+
   export type VisionSessionCreateOrConnectWithoutUserInput = {
     where: VisionSessionWhereUniqueInput;
     create: XOR<
@@ -17523,20 +28451,24 @@ export namespace Prisma {
       VisionSessionUncheckedCreateWithoutUserInput
     >;
   };
+
   export type VisionSessionCreateManyUserInputEnvelope = {
     data: VisionSessionCreateManyUserInput | VisionSessionCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type PassportFlagCreateWithoutUserInput = {
     id?: string;
     flagCode: string;
     createdAt?: Date | string;
   };
+
   export type PassportFlagUncheckedCreateWithoutUserInput = {
     id?: string;
     flagCode: string;
     createdAt?: Date | string;
   };
+
   export type PassportFlagCreateOrConnectWithoutUserInput = {
     where: PassportFlagWhereUniqueInput;
     create: XOR<
@@ -17544,10 +28476,12 @@ export namespace Prisma {
       PassportFlagUncheckedCreateWithoutUserInput
     >;
   };
+
   export type PassportFlagCreateManyUserInputEnvelope = {
     data: PassportFlagCreateManyUserInput | PassportFlagCreateManyUserInput[];
     skipDuplicates?: boolean;
   };
+
   export type AccountUpsertWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput;
     update: XOR<
@@ -17559,6 +28493,7 @@ export namespace Prisma {
       AccountUncheckedCreateWithoutUserInput
     >;
   };
+
   export type AccountUpdateWithWhereUniqueWithoutUserInput = {
     where: AccountWhereUniqueInput;
     data: XOR<
@@ -17566,6 +28501,7 @@ export namespace Prisma {
       AccountUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type AccountUpdateManyWithWhereWithoutUserInput = {
     where: AccountScalarWhereInput;
     data: XOR<
@@ -17573,6 +28509,7 @@ export namespace Prisma {
       AccountUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type AccountScalarWhereInput = {
     AND?: AccountScalarWhereInput | AccountScalarWhereInput[];
     OR?: AccountScalarWhereInput[];
@@ -17591,6 +28528,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'Account'> | Date | string;
     updatedAt?: DateTimeFilter<'Account'> | Date | string;
   };
+
   export type SessionUpsertWithWhereUniqueWithoutUserInput = {
     where: SessionWhereUniqueInput;
     update: XOR<
@@ -17602,6 +28540,7 @@ export namespace Prisma {
       SessionUncheckedCreateWithoutUserInput
     >;
   };
+
   export type SessionUpdateWithWhereUniqueWithoutUserInput = {
     where: SessionWhereUniqueInput;
     data: XOR<
@@ -17609,6 +28548,7 @@ export namespace Prisma {
       SessionUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type SessionUpdateManyWithWhereWithoutUserInput = {
     where: SessionScalarWhereInput;
     data: XOR<
@@ -17616,6 +28556,7 @@ export namespace Prisma {
       SessionUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type SessionScalarWhereInput = {
     AND?: SessionScalarWhereInput | SessionScalarWhereInput[];
     OR?: SessionScalarWhereInput[];
@@ -17626,6 +28567,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'Session'> | Date | string;
     updatedAt?: DateTimeFilter<'Session'> | Date | string;
   };
+
   export type AuthenticatorUpsertWithWhereUniqueWithoutUserInput = {
     where: AuthenticatorWhereUniqueInput;
     update: XOR<
@@ -17637,6 +28579,7 @@ export namespace Prisma {
       AuthenticatorUncheckedCreateWithoutUserInput
     >;
   };
+
   export type AuthenticatorUpdateWithWhereUniqueWithoutUserInput = {
     where: AuthenticatorWhereUniqueInput;
     data: XOR<
@@ -17644,6 +28587,7 @@ export namespace Prisma {
       AuthenticatorUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type AuthenticatorUpdateManyWithWhereWithoutUserInput = {
     where: AuthenticatorScalarWhereInput;
     data: XOR<
@@ -17651,6 +28595,7 @@ export namespace Prisma {
       AuthenticatorUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type AuthenticatorScalarWhereInput = {
     AND?: AuthenticatorScalarWhereInput | AuthenticatorScalarWhereInput[];
     OR?: AuthenticatorScalarWhereInput[];
@@ -17664,6 +28609,7 @@ export namespace Prisma {
     credentialBackedUp?: BoolFilter<'Authenticator'> | boolean;
     transports?: StringNullableFilter<'Authenticator'> | string | null;
   };
+
   export type GameUpsertWithWhereUniqueWithoutWhiteInput = {
     where: GameWhereUniqueInput;
     update: XOR<
@@ -17675,6 +28621,7 @@ export namespace Prisma {
       GameUncheckedCreateWithoutWhiteInput
     >;
   };
+
   export type GameUpdateWithWhereUniqueWithoutWhiteInput = {
     where: GameWhereUniqueInput;
     data: XOR<
@@ -17682,6 +28629,7 @@ export namespace Prisma {
       GameUncheckedUpdateWithoutWhiteInput
     >;
   };
+
   export type GameUpdateManyWithWhereWithoutWhiteInput = {
     where: GameScalarWhereInput;
     data: XOR<
@@ -17689,6 +28637,7 @@ export namespace Prisma {
       GameUncheckedUpdateManyWithoutWhiteInput
     >;
   };
+
   export type GameScalarWhereInput = {
     AND?: GameScalarWhereInput | GameScalarWhereInput[];
     OR?: GameScalarWhereInput[];
@@ -17713,6 +28662,7 @@ export namespace Prisma {
     playedAt?: DateTimeNullableFilter<'Game'> | Date | string | null;
     createdAt?: DateTimeFilter<'Game'> | Date | string;
   };
+
   export type GameUpsertWithWhereUniqueWithoutBlackInput = {
     where: GameWhereUniqueInput;
     update: XOR<
@@ -17724,6 +28674,7 @@ export namespace Prisma {
       GameUncheckedCreateWithoutBlackInput
     >;
   };
+
   export type GameUpdateWithWhereUniqueWithoutBlackInput = {
     where: GameWhereUniqueInput;
     data: XOR<
@@ -17731,6 +28682,7 @@ export namespace Prisma {
       GameUncheckedUpdateWithoutBlackInput
     >;
   };
+
   export type GameUpdateManyWithWhereWithoutBlackInput = {
     where: GameScalarWhereInput;
     data: XOR<
@@ -17738,6 +28690,7 @@ export namespace Prisma {
       GameUncheckedUpdateManyWithoutBlackInput
     >;
   };
+
   export type RatingUpsertWithWhereUniqueWithoutUserInput = {
     where: RatingWhereUniqueInput;
     update: XOR<
@@ -17749,6 +28702,7 @@ export namespace Prisma {
       RatingUncheckedCreateWithoutUserInput
     >;
   };
+
   export type RatingUpdateWithWhereUniqueWithoutUserInput = {
     where: RatingWhereUniqueInput;
     data: XOR<
@@ -17756,6 +28710,7 @@ export namespace Prisma {
       RatingUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type RatingUpdateManyWithWhereWithoutUserInput = {
     where: RatingScalarWhereInput;
     data: XOR<
@@ -17763,6 +28718,7 @@ export namespace Prisma {
       RatingUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type RatingScalarWhereInput = {
     AND?: RatingScalarWhereInput | RatingScalarWhereInput[];
     OR?: RatingScalarWhereInput[];
@@ -17778,6 +28734,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<'Rating'> | Date | string;
     updatedAt?: DateTimeFilter<'Rating'> | Date | string;
   };
+
   export type PuzzleRatingUpsertWithoutUserInput = {
     update: XOR<
       PuzzleRatingUpdateWithoutUserInput,
@@ -17789,6 +28746,7 @@ export namespace Prisma {
     >;
     where?: PuzzleRatingWhereInput;
   };
+
   export type PuzzleRatingUpdateToOneWithWhereWithoutUserInput = {
     where?: PuzzleRatingWhereInput;
     data: XOR<
@@ -17796,6 +28754,7 @@ export namespace Prisma {
       PuzzleRatingUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type PuzzleRatingUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
@@ -17805,6 +28764,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRatingUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     rating?: IntFieldUpdateOperationsInput | number;
@@ -17814,6 +28774,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameAnalysisUpsertWithWhereUniqueWithoutUserInput = {
     where: GameAnalysisWhereUniqueInput;
     update: XOR<
@@ -17825,6 +28786,7 @@ export namespace Prisma {
       GameAnalysisUncheckedCreateWithoutUserInput
     >;
   };
+
   export type GameAnalysisUpdateWithWhereUniqueWithoutUserInput = {
     where: GameAnalysisWhereUniqueInput;
     data: XOR<
@@ -17832,6 +28794,7 @@ export namespace Prisma {
       GameAnalysisUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type GameAnalysisUpdateManyWithWhereWithoutUserInput = {
     where: GameAnalysisScalarWhereInput;
     data: XOR<
@@ -17839,6 +28802,7 @@ export namespace Prisma {
       GameAnalysisUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type GameAnalysisScalarWhereInput = {
     AND?: GameAnalysisScalarWhereInput | GameAnalysisScalarWhereInput[];
     OR?: GameAnalysisScalarWhereInput[];
@@ -17849,6 +28813,7 @@ export namespace Prisma {
     results?: JsonFilter<'GameAnalysis'>;
     createdAt?: DateTimeFilter<'GameAnalysis'> | Date | string;
   };
+
   export type PuzzleAttemptUpsertWithWhereUniqueWithoutUserInput = {
     where: PuzzleAttemptWhereUniqueInput;
     update: XOR<
@@ -17860,6 +28825,7 @@ export namespace Prisma {
       PuzzleAttemptUncheckedCreateWithoutUserInput
     >;
   };
+
   export type PuzzleAttemptUpdateWithWhereUniqueWithoutUserInput = {
     where: PuzzleAttemptWhereUniqueInput;
     data: XOR<
@@ -17867,6 +28833,7 @@ export namespace Prisma {
       PuzzleAttemptUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type PuzzleAttemptUpdateManyWithWhereWithoutUserInput = {
     where: PuzzleAttemptScalarWhereInput;
     data: XOR<
@@ -17874,6 +28841,7 @@ export namespace Prisma {
       PuzzleAttemptUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type PuzzleAttemptScalarWhereInput = {
     AND?: PuzzleAttemptScalarWhereInput | PuzzleAttemptScalarWhereInput[];
     OR?: PuzzleAttemptScalarWhereInput[];
@@ -17887,6 +28855,7 @@ export namespace Prisma {
     usedHint?: BoolFilter<'PuzzleAttempt'> | boolean;
     createdAt?: DateTimeFilter<'PuzzleAttempt'> | Date | string;
   };
+
   export type PuzzleRushScoreUpsertWithWhereUniqueWithoutUserInput = {
     where: PuzzleRushScoreWhereUniqueInput;
     update: XOR<
@@ -17898,6 +28867,7 @@ export namespace Prisma {
       PuzzleRushScoreUncheckedCreateWithoutUserInput
     >;
   };
+
   export type PuzzleRushScoreUpdateWithWhereUniqueWithoutUserInput = {
     where: PuzzleRushScoreWhereUniqueInput;
     data: XOR<
@@ -17905,6 +28875,7 @@ export namespace Prisma {
       PuzzleRushScoreUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type PuzzleRushScoreUpdateManyWithWhereWithoutUserInput = {
     where: PuzzleRushScoreScalarWhereInput;
     data: XOR<
@@ -17912,6 +28883,7 @@ export namespace Prisma {
       PuzzleRushScoreUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type PuzzleRushScoreScalarWhereInput = {
     AND?: PuzzleRushScoreScalarWhereInput | PuzzleRushScoreScalarWhereInput[];
     OR?: PuzzleRushScoreScalarWhereInput[];
@@ -17926,6 +28898,7 @@ export namespace Prisma {
     maxMistakes?: IntNullableFilter<'PuzzleRushScore'> | number | null;
     createdAt?: DateTimeFilter<'PuzzleRushScore'> | Date | string;
   };
+
   export type MemorySessionUpsertWithWhereUniqueWithoutUserInput = {
     where: MemorySessionWhereUniqueInput;
     update: XOR<
@@ -17937,6 +28910,7 @@ export namespace Prisma {
       MemorySessionUncheckedCreateWithoutUserInput
     >;
   };
+
   export type MemorySessionUpdateWithWhereUniqueWithoutUserInput = {
     where: MemorySessionWhereUniqueInput;
     data: XOR<
@@ -17944,6 +28918,7 @@ export namespace Prisma {
       MemorySessionUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type MemorySessionUpdateManyWithWhereWithoutUserInput = {
     where: MemorySessionScalarWhereInput;
     data: XOR<
@@ -17951,6 +28926,7 @@ export namespace Prisma {
       MemorySessionUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type MemorySessionScalarWhereInput = {
     AND?: MemorySessionScalarWhereInput | MemorySessionScalarWhereInput[];
     OR?: MemorySessionScalarWhereInput[];
@@ -17966,6 +28942,7 @@ export namespace Prisma {
     progressiveLevel?: IntNullableFilter<'MemorySession'> | number | null;
     createdAt?: DateTimeFilter<'MemorySession'> | Date | string;
   };
+
   export type VisionSessionUpsertWithWhereUniqueWithoutUserInput = {
     where: VisionSessionWhereUniqueInput;
     update: XOR<
@@ -17977,6 +28954,7 @@ export namespace Prisma {
       VisionSessionUncheckedCreateWithoutUserInput
     >;
   };
+
   export type VisionSessionUpdateWithWhereUniqueWithoutUserInput = {
     where: VisionSessionWhereUniqueInput;
     data: XOR<
@@ -17984,6 +28962,7 @@ export namespace Prisma {
       VisionSessionUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type VisionSessionUpdateManyWithWhereWithoutUserInput = {
     where: VisionSessionScalarWhereInput;
     data: XOR<
@@ -17991,6 +28970,7 @@ export namespace Prisma {
       VisionSessionUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type VisionSessionScalarWhereInput = {
     AND?: VisionSessionScalarWhereInput | VisionSessionScalarWhereInput[];
     OR?: VisionSessionScalarWhereInput[];
@@ -18006,6 +28986,7 @@ export namespace Prisma {
     avgResponseTimeMs?: IntFilter<'VisionSession'> | number;
     createdAt?: DateTimeFilter<'VisionSession'> | Date | string;
   };
+
   export type PassportFlagUpsertWithWhereUniqueWithoutUserInput = {
     where: PassportFlagWhereUniqueInput;
     update: XOR<
@@ -18017,6 +28998,7 @@ export namespace Prisma {
       PassportFlagUncheckedCreateWithoutUserInput
     >;
   };
+
   export type PassportFlagUpdateWithWhereUniqueWithoutUserInput = {
     where: PassportFlagWhereUniqueInput;
     data: XOR<
@@ -18024,6 +29006,7 @@ export namespace Prisma {
       PassportFlagUncheckedUpdateWithoutUserInput
     >;
   };
+
   export type PassportFlagUpdateManyWithWhereWithoutUserInput = {
     where: PassportFlagScalarWhereInput;
     data: XOR<
@@ -18031,6 +29014,7 @@ export namespace Prisma {
       PassportFlagUncheckedUpdateManyWithoutUserInput
     >;
   };
+
   export type PassportFlagScalarWhereInput = {
     AND?: PassportFlagScalarWhereInput | PassportFlagScalarWhereInput[];
     OR?: PassportFlagScalarWhereInput[];
@@ -18040,6 +29024,7 @@ export namespace Prisma {
     flagCode?: StringFilter<'PassportFlag'> | string;
     createdAt?: DateTimeFilter<'PassportFlag'> | Date | string;
   };
+
   export type UserCreateWithoutPassportFlagsInput = {
     id?: string;
     name?: string | null;
@@ -18062,6 +29047,7 @@ export namespace Prisma {
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutPassportFlagsInput = {
     id?: string;
     name?: string | null;
@@ -18084,6 +29070,7 @@ export namespace Prisma {
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutPassportFlagsInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -18091,6 +29078,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutPassportFlagsInput
     >;
   };
+
   export type UserUpsertWithoutPassportFlagsInput = {
     update: XOR<
       UserUpdateWithoutPassportFlagsInput,
@@ -18102,6 +29090,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutPassportFlagsInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -18109,6 +29098,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutPassportFlagsInput
     >;
   };
+
   export type UserUpdateWithoutPassportFlagsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18135,6 +29125,7 @@ export namespace Prisma {
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutPassportFlagsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18161,6 +29152,7 @@ export namespace Prisma {
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutAccountsInput = {
     id?: string;
     name?: string | null;
@@ -18183,6 +29175,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutAccountsInput = {
     id?: string;
     name?: string | null;
@@ -18205,6 +29198,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutAccountsInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -18212,6 +29206,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutAccountsInput
     >;
   };
+
   export type UserUpsertWithoutAccountsInput = {
     update: XOR<
       UserUpdateWithoutAccountsInput,
@@ -18223,6 +29218,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutAccountsInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -18230,6 +29226,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutAccountsInput
     >;
   };
+
   export type UserUpdateWithoutAccountsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18256,6 +29253,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutAccountsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18282,6 +29280,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutSessionsInput = {
     id?: string;
     name?: string | null;
@@ -18304,6 +29303,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutSessionsInput = {
     id?: string;
     name?: string | null;
@@ -18326,6 +29326,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutSessionsInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -18333,6 +29334,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutSessionsInput
     >;
   };
+
   export type UserUpsertWithoutSessionsInput = {
     update: XOR<
       UserUpdateWithoutSessionsInput,
@@ -18344,6 +29346,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutSessionsInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -18351,6 +29354,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutSessionsInput
     >;
   };
+
   export type UserUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18377,6 +29381,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18403,6 +29408,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutAuthenticatorInput = {
     id?: string;
     name?: string | null;
@@ -18425,6 +29431,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutAuthenticatorInput = {
     id?: string;
     name?: string | null;
@@ -18447,6 +29454,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutAuthenticatorInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -18454,6 +29462,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutAuthenticatorInput
     >;
   };
+
   export type UserUpsertWithoutAuthenticatorInput = {
     update: XOR<
       UserUpdateWithoutAuthenticatorInput,
@@ -18465,6 +29474,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutAuthenticatorInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -18472,6 +29482,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutAuthenticatorInput
     >;
   };
+
   export type UserUpdateWithoutAuthenticatorInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18498,6 +29509,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutAuthenticatorInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18524,6 +29536,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutWhiteGamesInput = {
     id?: string;
     name?: string | null;
@@ -18546,6 +29559,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutWhiteGamesInput = {
     id?: string;
     name?: string | null;
@@ -18568,6 +29582,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutWhiteGamesInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -18575,6 +29590,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutWhiteGamesInput
     >;
   };
+
   export type UserCreateWithoutBlackGamesInput = {
     id?: string;
     name?: string | null;
@@ -18597,6 +29613,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutBlackGamesInput = {
     id?: string;
     name?: string | null;
@@ -18619,6 +29636,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutBlackGamesInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -18626,18 +29644,21 @@ export namespace Prisma {
       UserUncheckedCreateWithoutBlackGamesInput
     >;
   };
+
   export type GameAnalysisCreateWithoutGameInput = {
     id?: string;
     results: JsonNullValueInput | InputJsonValue;
     createdAt?: Date | string;
     user: UserCreateNestedOneWithoutAnalysesInput;
   };
+
   export type GameAnalysisUncheckedCreateWithoutGameInput = {
     id?: string;
     userId: string;
     results: JsonNullValueInput | InputJsonValue;
     createdAt?: Date | string;
   };
+
   export type GameAnalysisCreateOrConnectWithoutGameInput = {
     where: GameAnalysisWhereUniqueInput;
     create: XOR<
@@ -18645,6 +29666,7 @@ export namespace Prisma {
       GameAnalysisUncheckedCreateWithoutGameInput
     >;
   };
+
   export type UserUpsertWithoutWhiteGamesInput = {
     update: XOR<
       UserUpdateWithoutWhiteGamesInput,
@@ -18656,6 +29678,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutWhiteGamesInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -18663,6 +29686,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutWhiteGamesInput
     >;
   };
+
   export type UserUpdateWithoutWhiteGamesInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18689,6 +29713,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutWhiteGamesInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18715,6 +29740,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUpsertWithoutBlackGamesInput = {
     update: XOR<
       UserUpdateWithoutBlackGamesInput,
@@ -18726,6 +29752,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutBlackGamesInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -18733,6 +29760,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutBlackGamesInput
     >;
   };
+
   export type UserUpdateWithoutBlackGamesInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18759,6 +29787,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutBlackGamesInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18785,6 +29814,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type GameAnalysisUpsertWithoutGameInput = {
     update: XOR<
       GameAnalysisUpdateWithoutGameInput,
@@ -18796,6 +29826,7 @@ export namespace Prisma {
     >;
     where?: GameAnalysisWhereInput;
   };
+
   export type GameAnalysisUpdateToOneWithWhereWithoutGameInput = {
     where?: GameAnalysisWhereInput;
     data: XOR<
@@ -18803,18 +29834,21 @@ export namespace Prisma {
       GameAnalysisUncheckedUpdateWithoutGameInput
     >;
   };
+
   export type GameAnalysisUpdateWithoutGameInput = {
     id?: StringFieldUpdateOperationsInput | string;
     results?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     user?: UserUpdateOneRequiredWithoutAnalysesNestedInput;
   };
+
   export type GameAnalysisUncheckedUpdateWithoutGameInput = {
     id?: StringFieldUpdateOperationsInput | string;
     userId?: StringFieldUpdateOperationsInput | string;
     results?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameCreateWithoutAnalysisInput = {
     id?: string;
     roomId?: string | null;
@@ -18836,6 +29870,7 @@ export namespace Prisma {
     white?: UserCreateNestedOneWithoutWhiteGamesInput;
     black?: UserCreateNestedOneWithoutBlackGamesInput;
   };
+
   export type GameUncheckedCreateWithoutAnalysisInput = {
     id?: string;
     roomId?: string | null;
@@ -18857,6 +29892,7 @@ export namespace Prisma {
     playedAt?: Date | string | null;
     createdAt?: Date | string;
   };
+
   export type GameCreateOrConnectWithoutAnalysisInput = {
     where: GameWhereUniqueInput;
     create: XOR<
@@ -18864,6 +29900,7 @@ export namespace Prisma {
       GameUncheckedCreateWithoutAnalysisInput
     >;
   };
+
   export type UserCreateWithoutAnalysesInput = {
     id?: string;
     name?: string | null;
@@ -18886,6 +29923,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutAnalysesInput = {
     id?: string;
     name?: string | null;
@@ -18908,6 +29946,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutAnalysesInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -18915,6 +29954,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutAnalysesInput
     >;
   };
+
   export type GameUpsertWithoutAnalysisInput = {
     update: XOR<
       GameUpdateWithoutAnalysisInput,
@@ -18926,6 +29966,7 @@ export namespace Prisma {
     >;
     where?: GameWhereInput;
   };
+
   export type GameUpdateToOneWithWhereWithoutAnalysisInput = {
     where?: GameWhereInput;
     data: XOR<
@@ -18933,6 +29974,7 @@ export namespace Prisma {
       GameUncheckedUpdateWithoutAnalysisInput
     >;
   };
+
   export type GameUpdateWithoutAnalysisInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18958,6 +30000,7 @@ export namespace Prisma {
     white?: UserUpdateOneWithoutWhiteGamesNestedInput;
     black?: UserUpdateOneWithoutBlackGamesNestedInput;
   };
+
   export type GameUncheckedUpdateWithoutAnalysisInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -18983,6 +30026,7 @@ export namespace Prisma {
       | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type UserUpsertWithoutAnalysesInput = {
     update: XOR<
       UserUpdateWithoutAnalysesInput,
@@ -18994,6 +30038,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutAnalysesInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -19001,6 +30046,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutAnalysesInput
     >;
   };
+
   export type UserUpdateWithoutAnalysesInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19027,6 +30073,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutAnalysesInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19053,6 +30100,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutRatingsInput = {
     id?: string;
     name?: string | null;
@@ -19075,6 +30123,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutRatingsInput = {
     id?: string;
     name?: string | null;
@@ -19097,6 +30146,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutRatingsInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -19104,6 +30154,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutRatingsInput
     >;
   };
+
   export type UserUpsertWithoutRatingsInput = {
     update: XOR<
       UserUpdateWithoutRatingsInput,
@@ -19115,6 +30166,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutRatingsInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -19122,6 +30174,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutRatingsInput
     >;
   };
+
   export type UserUpdateWithoutRatingsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19148,6 +30201,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutRatingsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19174,6 +30228,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutPuzzleRatingInput = {
     id?: string;
     name?: string | null;
@@ -19196,6 +30251,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutPuzzleRatingInput = {
     id?: string;
     name?: string | null;
@@ -19218,6 +30274,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutPuzzleRatingInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -19225,6 +30282,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutPuzzleRatingInput
     >;
   };
+
   export type UserUpsertWithoutPuzzleRatingInput = {
     update: XOR<
       UserUpdateWithoutPuzzleRatingInput,
@@ -19236,6 +30294,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutPuzzleRatingInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -19243,6 +30302,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutPuzzleRatingInput
     >;
   };
+
   export type UserUpdateWithoutPuzzleRatingInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19269,6 +30329,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutPuzzleRatingInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19295,6 +30356,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutPuzzleAttemptsInput = {
     id?: string;
     name?: string | null;
@@ -19317,6 +30379,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutPuzzleAttemptsInput = {
     id?: string;
     name?: string | null;
@@ -19339,6 +30402,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutPuzzleAttemptsInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -19346,6 +30410,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutPuzzleAttemptsInput
     >;
   };
+
   export type UserUpsertWithoutPuzzleAttemptsInput = {
     update: XOR<
       UserUpdateWithoutPuzzleAttemptsInput,
@@ -19357,6 +30422,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutPuzzleAttemptsInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -19364,6 +30430,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutPuzzleAttemptsInput
     >;
   };
+
   export type UserUpdateWithoutPuzzleAttemptsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19390,6 +30457,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutPuzzleAttemptsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19416,6 +30484,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutPuzzleRushScoresInput = {
     id?: string;
     name?: string | null;
@@ -19438,6 +30507,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutPuzzleRushScoresInput = {
     id?: string;
     name?: string | null;
@@ -19460,6 +30530,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutPuzzleRushScoresInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -19467,6 +30538,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutPuzzleRushScoresInput
     >;
   };
+
   export type UserUpsertWithoutPuzzleRushScoresInput = {
     update: XOR<
       UserUpdateWithoutPuzzleRushScoresInput,
@@ -19478,6 +30550,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutPuzzleRushScoresInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -19485,6 +30558,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutPuzzleRushScoresInput
     >;
   };
+
   export type UserUpdateWithoutPuzzleRushScoresInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19511,6 +30585,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutPuzzleRushScoresInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19537,6 +30612,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutMemorySessionsInput = {
     id?: string;
     name?: string | null;
@@ -19559,6 +30635,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutMemorySessionsInput = {
     id?: string;
     name?: string | null;
@@ -19581,6 +30658,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutMemorySessionsInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -19588,6 +30666,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutMemorySessionsInput
     >;
   };
+
   export type UserUpsertWithoutMemorySessionsInput = {
     update: XOR<
       UserUpdateWithoutMemorySessionsInput,
@@ -19599,6 +30678,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutMemorySessionsInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -19606,6 +30686,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutMemorySessionsInput
     >;
   };
+
   export type UserUpdateWithoutMemorySessionsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19632,6 +30713,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutMemorySessionsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19658,6 +30740,7 @@ export namespace Prisma {
     visionSessions?: VisionSessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type UserCreateWithoutVisionSessionsInput = {
     id?: string;
     name?: string | null;
@@ -19680,6 +30763,7 @@ export namespace Prisma {
     memorySessions?: MemorySessionCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagCreateNestedManyWithoutUserInput;
   };
+
   export type UserUncheckedCreateWithoutVisionSessionsInput = {
     id?: string;
     name?: string | null;
@@ -19702,6 +30786,7 @@ export namespace Prisma {
     memorySessions?: MemorySessionUncheckedCreateNestedManyWithoutUserInput;
     passportFlags?: PassportFlagUncheckedCreateNestedManyWithoutUserInput;
   };
+
   export type UserCreateOrConnectWithoutVisionSessionsInput = {
     where: UserWhereUniqueInput;
     create: XOR<
@@ -19709,6 +30794,7 @@ export namespace Prisma {
       UserUncheckedCreateWithoutVisionSessionsInput
     >;
   };
+
   export type UserUpsertWithoutVisionSessionsInput = {
     update: XOR<
       UserUpdateWithoutVisionSessionsInput,
@@ -19720,6 +30806,7 @@ export namespace Prisma {
     >;
     where?: UserWhereInput;
   };
+
   export type UserUpdateToOneWithWhereWithoutVisionSessionsInput = {
     where?: UserWhereInput;
     data: XOR<
@@ -19727,6 +30814,7 @@ export namespace Prisma {
       UserUncheckedUpdateWithoutVisionSessionsInput
     >;
   };
+
   export type UserUpdateWithoutVisionSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19753,6 +30841,7 @@ export namespace Prisma {
     memorySessions?: MemorySessionUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUpdateManyWithoutUserNestedInput;
   };
+
   export type UserUncheckedUpdateWithoutVisionSessionsInput = {
     id?: StringFieldUpdateOperationsInput | string;
     name?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -19779,6 +30868,7 @@ export namespace Prisma {
     memorySessions?: MemorySessionUncheckedUpdateManyWithoutUserNestedInput;
     passportFlags?: PassportFlagUncheckedUpdateManyWithoutUserNestedInput;
   };
+
   export type AccountCreateManyUserInput = {
     type: string;
     provider: string;
@@ -19793,12 +30883,14 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type SessionCreateManyUserInput = {
     sessionToken: string;
     expires: Date | string;
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type AuthenticatorCreateManyUserInput = {
     credentialID: string;
     providerAccountId: string;
@@ -19808,6 +30900,7 @@ export namespace Prisma {
     credentialBackedUp: boolean;
     transports?: string | null;
   };
+
   export type GameCreateManyWhiteInput = {
     id?: string;
     roomId?: string | null;
@@ -19828,6 +30921,7 @@ export namespace Prisma {
     playedAt?: Date | string | null;
     createdAt?: Date | string;
   };
+
   export type GameCreateManyBlackInput = {
     id?: string;
     roomId?: string | null;
@@ -19848,6 +30942,7 @@ export namespace Prisma {
     playedAt?: Date | string | null;
     createdAt?: Date | string;
   };
+
   export type RatingCreateManyUserInput = {
     id?: string;
     variant?: string;
@@ -19859,12 +30954,14 @@ export namespace Prisma {
     createdAt?: Date | string;
     updatedAt?: Date | string;
   };
+
   export type GameAnalysisCreateManyUserInput = {
     id?: string;
     gameId: string;
     results: JsonNullValueInput | InputJsonValue;
     createdAt?: Date | string;
   };
+
   export type PuzzleAttemptCreateManyUserInput = {
     id?: string;
     puzzleId: string;
@@ -19874,6 +30971,7 @@ export namespace Prisma {
     usedHint?: boolean;
     createdAt?: Date | string;
   };
+
   export type PuzzleRushScoreCreateManyUserInput = {
     id?: string;
     mode: string;
@@ -19884,6 +30982,7 @@ export namespace Prisma {
     maxMistakes?: number | null;
     createdAt?: Date | string;
   };
+
   export type MemorySessionCreateManyUserInput = {
     id?: string;
     mode: string;
@@ -19895,6 +30994,7 @@ export namespace Prisma {
     progressiveLevel?: number | null;
     createdAt?: Date | string;
   };
+
   export type VisionSessionCreateManyUserInput = {
     id?: string;
     trainingMode: string;
@@ -19906,11 +31006,13 @@ export namespace Prisma {
     avgResponseTimeMs: number;
     createdAt?: Date | string;
   };
+
   export type PassportFlagCreateManyUserInput = {
     id?: string;
     flagCode: string;
     createdAt?: Date | string;
   };
+
   export type AccountUpdateWithoutUserInput = {
     type?: StringFieldUpdateOperationsInput | string;
     provider?: StringFieldUpdateOperationsInput | string;
@@ -19925,6 +31027,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type AccountUncheckedUpdateWithoutUserInput = {
     type?: StringFieldUpdateOperationsInput | string;
     provider?: StringFieldUpdateOperationsInput | string;
@@ -19939,6 +31042,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type AccountUncheckedUpdateManyWithoutUserInput = {
     type?: StringFieldUpdateOperationsInput | string;
     provider?: StringFieldUpdateOperationsInput | string;
@@ -19953,24 +31057,28 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type SessionUpdateWithoutUserInput = {
     sessionToken?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type SessionUncheckedUpdateWithoutUserInput = {
     sessionToken?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type SessionUncheckedUpdateManyWithoutUserInput = {
     sessionToken?: StringFieldUpdateOperationsInput | string;
     expires?: DateTimeFieldUpdateOperationsInput | Date | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type AuthenticatorUpdateWithoutUserInput = {
     credentialID?: StringFieldUpdateOperationsInput | string;
     providerAccountId?: StringFieldUpdateOperationsInput | string;
@@ -19980,6 +31088,7 @@ export namespace Prisma {
     credentialBackedUp?: BoolFieldUpdateOperationsInput | boolean;
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
   };
+
   export type AuthenticatorUncheckedUpdateWithoutUserInput = {
     credentialID?: StringFieldUpdateOperationsInput | string;
     providerAccountId?: StringFieldUpdateOperationsInput | string;
@@ -19989,6 +31098,7 @@ export namespace Prisma {
     credentialBackedUp?: BoolFieldUpdateOperationsInput | boolean;
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
   };
+
   export type AuthenticatorUncheckedUpdateManyWithoutUserInput = {
     credentialID?: StringFieldUpdateOperationsInput | string;
     providerAccountId?: StringFieldUpdateOperationsInput | string;
@@ -19998,6 +31108,7 @@ export namespace Prisma {
     credentialBackedUp?: BoolFieldUpdateOperationsInput | boolean;
     transports?: NullableStringFieldUpdateOperationsInput | string | null;
   };
+
   export type GameUpdateWithoutWhiteInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -20023,6 +31134,7 @@ export namespace Prisma {
     black?: UserUpdateOneWithoutBlackGamesNestedInput;
     analysis?: GameAnalysisUpdateOneWithoutGameNestedInput;
   };
+
   export type GameUncheckedUpdateWithoutWhiteInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -20048,6 +31160,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
   };
+
   export type GameUncheckedUpdateManyWithoutWhiteInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -20072,6 +31185,7 @@ export namespace Prisma {
       | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameUpdateWithoutBlackInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -20097,6 +31211,7 @@ export namespace Prisma {
     white?: UserUpdateOneWithoutWhiteGamesNestedInput;
     analysis?: GameAnalysisUpdateOneWithoutGameNestedInput;
   };
+
   export type GameUncheckedUpdateWithoutBlackInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -20122,6 +31237,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     analysis?: GameAnalysisUncheckedUpdateOneWithoutGameNestedInput;
   };
+
   export type GameUncheckedUpdateManyWithoutBlackInput = {
     id?: StringFieldUpdateOperationsInput | string;
     roomId?: NullableStringFieldUpdateOperationsInput | string | null;
@@ -20146,6 +31262,7 @@ export namespace Prisma {
       | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type RatingUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     variant?: StringFieldUpdateOperationsInput | string;
@@ -20157,6 +31274,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type RatingUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     variant?: StringFieldUpdateOperationsInput | string;
@@ -20168,6 +31286,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type RatingUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     variant?: StringFieldUpdateOperationsInput | string;
@@ -20179,24 +31298,28 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameAnalysisUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     results?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
     game?: GameUpdateOneRequiredWithoutAnalysisNestedInput;
   };
+
   export type GameAnalysisUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     gameId?: StringFieldUpdateOperationsInput | string;
     results?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type GameAnalysisUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     gameId?: StringFieldUpdateOperationsInput | string;
     results?: JsonNullValueInput | InputJsonValue;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleAttemptUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     puzzleId?: StringFieldUpdateOperationsInput | string;
@@ -20206,6 +31329,7 @@ export namespace Prisma {
     usedHint?: BoolFieldUpdateOperationsInput | boolean;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleAttemptUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     puzzleId?: StringFieldUpdateOperationsInput | string;
@@ -20215,6 +31339,7 @@ export namespace Prisma {
     usedHint?: BoolFieldUpdateOperationsInput | boolean;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleAttemptUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     puzzleId?: StringFieldUpdateOperationsInput | string;
@@ -20224,6 +31349,7 @@ export namespace Prisma {
     usedHint?: BoolFieldUpdateOperationsInput | boolean;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRushScoreUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -20234,6 +31360,7 @@ export namespace Prisma {
     maxMistakes?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRushScoreUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -20244,6 +31371,7 @@ export namespace Prisma {
     maxMistakes?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PuzzleRushScoreUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -20254,6 +31382,7 @@ export namespace Prisma {
     maxMistakes?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type MemorySessionUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -20265,6 +31394,7 @@ export namespace Prisma {
     progressiveLevel?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type MemorySessionUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -20276,6 +31406,7 @@ export namespace Prisma {
     progressiveLevel?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type MemorySessionUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     mode?: StringFieldUpdateOperationsInput | string;
@@ -20287,6 +31418,7 @@ export namespace Prisma {
     progressiveLevel?: NullableIntFieldUpdateOperationsInput | number | null;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VisionSessionUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     trainingMode?: StringFieldUpdateOperationsInput | string;
@@ -20298,6 +31430,7 @@ export namespace Prisma {
     avgResponseTimeMs?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VisionSessionUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     trainingMode?: StringFieldUpdateOperationsInput | string;
@@ -20309,6 +31442,7 @@ export namespace Prisma {
     avgResponseTimeMs?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type VisionSessionUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     trainingMode?: StringFieldUpdateOperationsInput | string;
@@ -20320,23 +31454,35 @@ export namespace Prisma {
     avgResponseTimeMs?: IntFieldUpdateOperationsInput | number;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PassportFlagUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PassportFlagUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
   export type PassportFlagUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string;
     flagCode?: StringFieldUpdateOperationsInput | string;
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string;
   };
+
+  /**
+   * Batch Payload for updateMany & deleteMany & createMany
+   */
+
   export type BatchPayload = {
     count: number;
   };
+
+  /**
+   * DMMF
+   */
   export const dmmf: runtime.BaseDMMF;
 }

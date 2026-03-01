@@ -75,7 +75,9 @@ export function createRoom(
       timeControl.mode === 'unlimited' ? null : timeControl.minutes * 60 * 1000,
     activeClock: timeControl.mode === 'unlimited' ? null : 'white',
     clockLastUpdatedAt: timeControl.mode === 'unlimited' ? null : Date.now(),
-    clockInterval: null
+    clockInterval: null,
+    moveTimesWhiteMs: [],
+    moveTimesBlackMs: []
   };
   rooms.set(roomId, room);
   room.abortTimerStartedAt = Date.now();

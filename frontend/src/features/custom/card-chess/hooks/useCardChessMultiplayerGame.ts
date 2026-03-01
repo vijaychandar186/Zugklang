@@ -670,6 +670,8 @@ export function useCardChessMultiplayerGame(
       setGameStarted(true);
       setGameOver(isOver);
       setGameResult(isOver ? getGameResult(chess) : null);
+      setMyRatingDelta(null);
+      setOpponentRatingDelta(null);
       setDrawnCard(null);
       setNeedsDraw(!isOver);
       setDrawCount(0);

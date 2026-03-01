@@ -89,10 +89,12 @@ async function matchTwoPlayers(
 }> {
   const wsA = new WebSocket(`ws://127.0.0.1:${wsPort}?token=${tokenA}`);
   const wsB = new WebSocket(`ws://127.0.0.1:${wsPort}?token=${tokenB}`);
+  const connectedA = waitForMessage(wsA, (m) => m.type === 'connected');
+  const connectedB = waitForMessage(wsB, (m) => m.type === 'connected');
   await waitForOpen(wsA);
   await waitForOpen(wsB);
-  await waitForMessage(wsA, (m) => m.type === 'connected');
-  await waitForMessage(wsB, (m) => m.type === 'connected');
+  await connectedA;
+  await connectedB;
 
   wsA.send(
     JSON.stringify({
@@ -200,10 +202,12 @@ async function matchTwoPlayers(
     expect(body.status).toBe('ok');
     const wsA = new WebSocket(`ws://127.0.0.1:${wsPort}?token=user-a`);
     const wsB = new WebSocket(`ws://127.0.0.1:${wsPort}?token=user-b`);
+    const connectedA = waitForMessage(wsA, (m) => m.type === 'connected');
+    const connectedB = waitForMessage(wsB, (m) => m.type === 'connected');
     await waitForOpen(wsA);
     await waitForOpen(wsB);
-    await waitForMessage(wsA, (m) => m.type === 'connected');
-    await waitForMessage(wsB, (m) => m.type === 'connected');
+    await connectedA;
+    await connectedB;
     wsA.send(
       JSON.stringify({
         type: 'join_queue',
@@ -250,8 +254,9 @@ async function matchTwoPlayers(
   // ── ping / pong ────────────────────────────────────────────────────────────
   test('ping receives pong', async () => {
     const ws = new WebSocket(`ws://127.0.0.1:${wsPort}?token=ping-user`);
+    const connected = waitForMessage(ws, (m) => m.type === 'connected');
     await waitForOpen(ws);
-    await waitForMessage(ws, (m) => m.type === 'connected');
+    await connected;
 
     ws.send(JSON.stringify({ type: 'ping' }));
     const pong = await waitForMessage(ws, (m) => m.type === 'pong');
@@ -262,8 +267,9 @@ async function matchTwoPlayers(
   // ── invalid messages ───────────────────────────────────────────────────────
   test('malformed JSON results in error message', async () => {
     const ws = new WebSocket(`ws://127.0.0.1:${wsPort}?token=bad-json-user`);
+    const connected = waitForMessage(ws, (m) => m.type === 'connected');
     await waitForOpen(ws);
-    await waitForMessage(ws, (m) => m.type === 'connected');
+    await connected;
 
     ws.send('not valid json {{{');
     const err = (await waitForMessage(ws, (m) => m.type === 'error')) as {
@@ -276,8 +282,9 @@ async function matchTwoPlayers(
 
   test('unknown message type results in error message', async () => {
     const ws = new WebSocket(`ws://127.0.0.1:${wsPort}?token=unknown-msg-user`);
+    const connected = waitForMessage(ws, (m) => m.type === 'connected');
     await waitForOpen(ws);
-    await waitForMessage(ws, (m) => m.type === 'connected');
+    await connected;
 
     ws.send(JSON.stringify({ type: 'this_does_not_exist' }));
     const err = (await waitForMessage(ws, (m) => m.type === 'error')) as {
@@ -317,8 +324,9 @@ async function matchTwoPlayers(
     const ws = new WebSocket(
       `ws://127.0.0.1:${wsPort}?token=bad-room-sync-user`
     );
+    const connected = waitForMessage(ws, (m) => m.type === 'connected');
     await waitForOpen(ws);
-    await waitForMessage(ws, (m) => m.type === 'connected');
+    await connected;
 
     ws.send(
       JSON.stringify({
@@ -389,8 +397,9 @@ async function matchTwoPlayers(
 
   test('sync_card with invalid suit is rejected', async () => {
     const ws = new WebSocket(`ws://127.0.0.1:${wsPort}?token=bad-suit-user`);
+    const connected = waitForMessage(ws, (m) => m.type === 'connected');
     await waitForOpen(ws);
-    await waitForMessage(ws, (m) => m.type === 'connected');
+    await connected;
 
     ws.send(
       JSON.stringify({

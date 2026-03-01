@@ -21,3 +21,13 @@ export function handleSyncCard(
   const opponent = room.white.data.id === ws.data.id ? room.black : room.white;
   send(opponent, { type: 'card_synced', rank: msg.rank, suit: msg.suit });
 }
+
+export function handleSyncTriDMove(
+  ws: BunWS,
+  msg: { roomId: string; move: string }
+): void {
+  const room = rooms.get(msg.roomId);
+  if (!room || room.status !== 'active') return;
+  const opponent = room.white.data.id === ws.data.id ? room.black : room.white;
+  send(opponent, { type: 'trid_move_received', move: msg.move });
+}

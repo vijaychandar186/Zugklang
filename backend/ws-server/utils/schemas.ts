@@ -132,6 +132,11 @@ export const ClientMessageSchema = z.discriminatedUnion('type', [
     type: z.literal('rejoin_four_player_lobby'),
     lobbyId: z.string().uuid(),
     rejoinToken: z.string().uuid()
+  }),
+  z.object({
+    type: z.literal('sync_trid_move'),
+    roomId: z.string().uuid(),
+    move: z.string().max(300)
   })
 ]);
 export type ClientMessage = z.infer<typeof ClientMessageSchema>;

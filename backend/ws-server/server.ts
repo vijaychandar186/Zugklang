@@ -32,7 +32,11 @@ import {
   handleDeclineRematch
 } from './handlers/game';
 import { handleRejoinRoom, handleDisconnect } from './handlers/connection';
-import { handleSyncDice, handleSyncCard } from './handlers/sync';
+import {
+  handleSyncDice,
+  handleSyncCard,
+  handleSyncTriDMove
+} from './handlers/sync';
 import {
   handleCreateFourPlayerLobby,
   handleJoinFourPlayerLobby,
@@ -210,6 +214,9 @@ Bun.serve<SocketData>({
           break;
         case 'sync_card':
           handleSyncCard(ws, msg);
+          break;
+        case 'sync_trid_move':
+          handleSyncTriDMove(ws, msg);
           break;
         case 'create_four_player_lobby':
           handleCreateFourPlayerLobby(ws, msg);

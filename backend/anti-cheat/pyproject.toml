@@ -1,7 +1,7 @@
 [project]
-name = "anti-cheat"
+name = "zugklang-anti-cheat"
 version = "0.1.0"
-description = "Add your description here"
+description = "FastAPI-based chess anti-cheat service using behavioral ML analysis"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [

@@ -49,14 +49,15 @@ docker run -d --name zugklang-postgres \
 * [x] ~~Dice and card pick sound assets~~
 * [ ] Guest mode
 * [ ] AntiCheat validation
+* [ ] AntiCheat Ruff lint and formatter integration
 * [x] ~~Rated/Unrated~~
 * [ ] Invite through email
 * [ ] Elo calculation adjustment
-* [ ] Three Dimensional Chess
+* [x] ~~Three Dimensional Chess~~
 * [ ] Update dev dockerfile to use prisma dev postgres server
 
 ### Frontend
 
 * [x] ~~CSS files cleanup~~
-* [ ] Unit tests setup and coverage for core frontend logic/components
-* [ ] Integration tests for key frontend user flows
+* [ ] ~~Unit tests setup and coverage for core frontend logic/components~~
+* [ ] ~~Integration tests for key frontend user flows~~

@@ -18,6 +18,7 @@ Real-time WebSocket server for Zugklang multiplayer chess. Built with [Bun](http
   - [Client → Server Messages](#client--server-messages)
   - [Server → Client Messages](#server--client-messages)
 - [Scripts](#scripts)
+- [Testing](#testing)
 - [Rate Limiting](#rate-limiting)
 - [Supported Variants](#supported-variants)
 
@@ -527,11 +528,79 @@ All messages are JSON strings.
 |-----------------|----------------------------------|--------------------------------------|
 | `dev`           | `bun --watch server.ts`          | Start with hot reload                |
 | `start`         | `bun server.ts`                  | Start without hot reload             |
+| `test`          | `bun test`                       | Run all unit + integration tests     |
+| `test:coverage` | `./scripts/check-coverage.sh 85` | Run tests with coverage gate (85%)   |
 | `lint`          | `eslint .`                       | Run ESLint                           |
 | `lint:fix`      | `eslint . --fix && bun format`   | Auto-fix lint issues and format      |
 | `lint:strict`   | `eslint --max-warnings=0 .`      | Strict lint (no warnings allowed)    |
 | `format`        | `prettier --write .`             | Format all files                     |
 | `format:check`  | `prettier --check .`             | Check formatting without writing     |
+
+---
+
+## Testing
+
+All tests in this package use Bun's built-in test runner.
+
+Run from this directory:
+
+```bash
+cd /workspaces/Zugklang/backend/ws-server
+```
+
+### Common commands
+
+```bash
+# Run all non-skipped tests
+bun test
+
+# Run a single test file
+bun test tests/clock.test.ts
+
+# Run tests matching a name
+bun test -t "rejoin"
+
+# Run lint before pushing
+bun run lint
+```
+
+### End-to-end test toggle
+
+`tests/ws.e2e.test.ts` is intentionally skipped unless explicitly enabled.
+
+```bash
+# Enable ws e2e tests for this run
+RUN_WS_E2E=1 bun test tests/ws.e2e.test.ts
+
+# Or run all suites including e2e
+RUN_WS_E2E=1 bun test
+```
+
+### Coverage gate
+
+```bash
+# Fails if coverage is below 85%
+bun run test:coverage
+```
+
+### What each test file covers
+
+- `tests/auth.test.ts` — WebSocket token introspection and auth fallback behavior.
+- `tests/challenge.integration.test.ts` — challenge creation, joining, and cancellation flow.
+- `tests/chess.test.ts` — move application and illegal move rejection.
+- `tests/clock.test.ts` — timed clock projection, settling, broadcast, and timeout behavior.
+- `tests/connection.integration.test.ts` — reconnect token flow and disconnect abandonment logic.
+- `tests/fen.test.ts` — starting FEN selection and Chess960 constraints.
+- `tests/game.integration.test.ts` — in-game actions (draw, abort, resign, game-over, rematch).
+- `tests/http.integration.test.ts` — `/health` and `/admin/stats` behavior.
+- `tests/queue-game.integration.test.ts` — queue matchmaking + game flow interaction.
+- `tests/rateLimit.test.ts` — per-client message rate-limit enforcement and reset.
+- `tests/schemas.test.ts` — inbound WebSocket payload validation (Zod schema).
+- `tests/socket.test.ts` — socket send helper and room/opponent utility behavior.
+- `tests/state.test.ts` — rejoin token issuance/revocation state handling.
+- `tests/sync.integration.test.ts` — dice/card sync relay rules and guardrails.
+- `tests/validate.test.ts` — move square and promotion input validators.
+- `tests/ws.e2e.test.ts` — full server process + websocket client end-to-end scenarios.
 
 ---
 

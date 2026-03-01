@@ -40,10 +40,15 @@ export abstract class ChessGameSession {
   turn(): ChessJSColor {
     return this.game.turn();
   }
-  moves(options?: MoveOptions): string[] | Move[] {
+  moves(): string[];
+  moves(options: { verbose: true; square?: string }): Move[];
+  moves(options?: { verbose: false; square?: string }): string[];
+  moves(options?: MoveOptions): (string | Move)[] {
     return this.game.moves(options);
   }
-  history(options?: { verbose?: boolean }): string[] | Move[] {
+  history(options: { verbose: true }): Move[];
+  history(options?: { verbose: false }): string[];
+  history(options?: { verbose?: boolean }): (string | Move)[] {
     return this.game.history(options);
   }
   isGameOver(): boolean {

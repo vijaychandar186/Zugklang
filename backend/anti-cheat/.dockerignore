@@ -1,0 +1,14 @@
+# Exclude everything, then whitelist only what the image needs
+*
+
+!pyproject.toml
+!uv.lock
+!schema.prisma
+!src/
+!src/**
+!model/
+!model/**
+!input_data/
+!input_data/**
+!.env.base
+!start.sh

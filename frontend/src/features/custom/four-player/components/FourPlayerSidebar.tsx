@@ -50,7 +50,6 @@ import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { cn } from '@/lib/utils';
 import type { Team, MoveRecord } from '../engine';
 import type { FourPlayerLobbyPlayer } from '@/features/multiplayer/types';
-
 const TEAM_INFO: Record<
   Team,
   {
@@ -65,7 +64,6 @@ const TEAM_INFO: Record<
   g: { label: 'Green', cssVar: 'var(--four-player-green)', short: 'G' }
 };
 const TEAMS: Team[] = ['r', 'b', 'y', 'g'];
-
 function getLobbyPlayerName(
   player: FourPlayerLobbyPlayer | undefined
 ): string | null {
@@ -74,7 +72,6 @@ function getLobbyPlayerName(
   if (trimmed) return trimmed;
   return `Player ${player.playerId.slice(0, 6)}`;
 }
-
 function formatMovesText(moves: MoveRecord[]): string {
   const rounds: string[] = [];
   for (let i = 0; i < moves.length; i += 4) {
@@ -91,14 +88,12 @@ function formatMovesText(moves: MoveRecord[]): string {
   }
   return rounds.join('\n');
 }
-
 type MoveItemProps = {
   move: MoveRecord;
   index: number;
   isActive: boolean;
   onClick: (index: number) => void;
 };
-
 const MoveItem = memo(function MoveItem({
   move,
   index,
@@ -120,7 +115,6 @@ const MoveItem = memo(function MoveItem({
     </button>
   );
 });
-
 function FourPlayerMoveHistory({
   moves,
   viewingMoveIndex,
@@ -172,7 +166,6 @@ function FourPlayerMoveHistory({
     </ol>
   );
 }
-
 export function FourPlayerSidebar({
   lobbyPlayers,
   myTeam,
@@ -230,14 +223,12 @@ export function FourPlayerSidebar({
   const { copy, isCopied } = useClipboard();
   const currentInfo = TEAM_INFO[currentTeam];
   const isChecked = !isGameOver && game.isChecked;
-
   useEffect(() => {
     if (rematchDeclined) setRematchSent(false);
   }, [rematchDeclined]);
   useEffect(() => {
     if (!isGameOver) setRematchSent(false);
   }, [isGameOver]);
-
   const handleAbort = () => {
     if (soundEnabled) playSound('game-end');
     abortGame();
@@ -281,10 +272,8 @@ export function FourPlayerSidebar({
     );
     copy(gameState, 'state');
   };
-
   return (
     <SidebarPanel fullHeight>
-      {/* ── Header ────────────────────────────────────────────────────── */}
       <SidebarHeader
         title='Moves'
         actions={
@@ -367,7 +356,6 @@ export function FourPlayerSidebar({
         }
       />
 
-      {/* ── Team status table ─────────────────────────────────────────── */}
       <div className='border-b px-2 py-1.5'>
         <Table className='text-xs'>
           <TableHeader>
@@ -469,7 +457,6 @@ export function FourPlayerSidebar({
         </Table>
       </div>
 
-      {/* ── Draw offer banner ─────────────────────────────────────────── */}
       {drawOfferedBy &&
         (!myTeam || drawOfferedBy !== myTeam) &&
         !isGameOver && (
@@ -497,7 +484,6 @@ export function FourPlayerSidebar({
           </div>
         )}
 
-      {/* ── Move history ───────────────────────────────────────────────── */}
       <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
         <div className='px-4 py-2'>
           <FourPlayerMoveHistory
@@ -508,7 +494,6 @@ export function FourPlayerSidebar({
         </div>
       </ScrollArea>
 
-      {/* ── Navigation controls ────────────────────────────────────────── */}
       <NavigationControls
         viewingIndex={viewingMoveIndex + 1}
         totalPositions={moves.length + 1}
@@ -522,7 +507,6 @@ export function FourPlayerSidebar({
         onGoToNext={goToNext}
       />
 
-      {/* ── Footer ────────────────────────────────────────────────────── */}
       <div className='bg-muted/50 space-y-2 border-t p-2'>
         {(isGameOver || !gameStarted) && (
           <div className='flex flex-col gap-2 border-b pb-2'>
@@ -661,7 +645,6 @@ export function FourPlayerSidebar({
 
         {gameStarted && !isGameOver && (
           <div className='flex justify-center gap-1'>
-            {/* Draw offer — 4-player specific (team-based) */}
             <AlertDialog>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -698,7 +681,6 @@ export function FourPlayerSidebar({
               </AlertDialogContent>
             </AlertDialog>
 
-            {/* Abort / Resign */}
             <AlertDialog>
               <Tooltip>
                 <TooltipTrigger asChild>

@@ -19,6 +19,7 @@ interface SaveGameBody {
     increment: number;
   };
   startingFen: string;
+  rated?: boolean;
 }
 function toPgnResult(
   result: string,
@@ -100,7 +101,8 @@ export async function POST(req: NextRequest) {
       myColor,
       opponentUserId,
       timeControl,
-      startingFen
+      startingFen,
+      rated = true
     } = body;
     if (isAbortedGame(result, resultReason, moves.length)) {
       return NextResponse.json({ skipped: true, reason: 'abort' });
@@ -123,9 +125,6 @@ export async function POST(req: NextRequest) {
       if (timeControl.mode !== 'timed') return null;
       return getTimeCategory(timeControl.minutes, timeControl.increment);
     })();
-
-    // If the row already exists, repair missing player IDs and rating deltas
-    // when possible instead of returning early with incomplete data.
     if (roomId) {
       const existing = await prisma.game.findUnique({
         where: { roomId },
@@ -138,13 +137,13 @@ export async function POST(req: NextRequest) {
           whiteUserId: true,
           blackUserId: true,
           whiteRatingDelta: true,
-          blackRatingDelta: true
+          blackRatingDelta: true,
+          rated: true
         }
       });
       if (existing) {
         const whiteUserId = existing.whiteUserId ?? candidateWhiteUserId;
         const blackUserId = existing.blackUserId ?? candidateBlackUserId;
-
         if (
           whiteUserId !== existing.whiteUserId ||
           blackUserId !== existing.blackUserId
@@ -154,11 +153,10 @@ export async function POST(req: NextRequest) {
             data: { whiteUserId, blackUserId }
           });
         }
-
         let whiteRatingDelta = existing.whiteRatingDelta;
         let blackRatingDelta = existing.blackRatingDelta;
-
         const needsRatingBackfill =
+          existing.rated !== false &&
           whiteRatingDelta == null &&
           blackRatingDelta == null &&
           category !== null &&
@@ -167,7 +165,6 @@ export async function POST(req: NextRequest) {
           existing.gameType === 'multiplayer' &&
           whiteUserId &&
           blackUserId;
-
         if (needsRatingBackfill && category) {
           try {
             const [whiteRating, blackRating] = await Promise.all([
@@ -229,7 +226,6 @@ export async function POST(req: NextRequest) {
             );
           }
         }
-
         return NextResponse.json({
           gameId: existing.id,
           whiteRatingDelta,
@@ -237,10 +233,10 @@ export async function POST(req: NextRequest) {
         });
       }
     }
-
     const whiteUserId = candidateWhiteUserId;
     const blackUserId = candidateBlackUserId;
     const isRated =
+      rated !== false &&
       category !== null &&
       pgnResult !== '*' &&
       moves.length >= 2 &&
@@ -259,6 +255,7 @@ export async function POST(req: NextRequest) {
         moves,
         startingFen,
         timeControl,
+        rated: rated !== false,
         whitePregameRating: null,
         blackPregameRating: null,
         whiteRatingDelta: null,
@@ -296,7 +293,6 @@ export async function POST(req: NextRequest) {
           ]);
         }
       } catch (passportErr) {
-        // Keep game saving resilient if passport collection update fails.
         console.error('Failed to update passport flags:', passportErr);
       }
     }
@@ -361,7 +357,6 @@ export async function POST(req: NextRequest) {
           })
         ]);
       } catch (ratingErr) {
-        // Keep the game history row even if rating update fails.
         console.error('Failed to update ratings for saved game:', ratingErr);
       }
     }

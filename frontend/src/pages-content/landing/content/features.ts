@@ -5,7 +5,7 @@ export interface FeatureProps {
 }
 export const FEATURE_HEADING = 'Powerful Chess Features';
 export const featureList: string[] = [
-  'Stockfish 16',
+  'Stockfish 18',
   'Fairy-Stockfish',
   '10 Standard Variants',
   '4-Player Chess',
@@ -27,7 +27,7 @@ export const features: FeatureProps[] = [
   {
     title: 'Advanced AI Engines',
     description:
-      'Play against Stockfish 16 for standard chess or Fairy-Stockfish for variants. Adjust difficulty from beginner to grandmaster level across all game modes.',
+      'Play against Stockfish 18 for standard chess or Fairy-Stockfish for variants. Adjust difficulty from beginner to grandmaster level across all game modes.',
     href: '/play/computer'
   },
   {
@@ -117,6 +117,6 @@ export const features: FeatureProps[] = [
     title: 'Profile & History',
     description:
       'Track your games, ratings, and results over time. Review past games and monitor improvement across your play and training sessions.',
-    href: '/games'
+    href: '/history'
   }
 ];

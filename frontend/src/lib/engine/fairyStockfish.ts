@@ -54,7 +54,7 @@ export class FairyStockfishEngine {
       return;
     }
     try {
-      await loadScript('/fairy-stockfish/stockfish.js');
+      await loadScript('/engines/fairy-stockfish/stockfish.js');
       if (!window.Stockfish) {
         throw new Error('Stockfish factory not found after script load');
       }

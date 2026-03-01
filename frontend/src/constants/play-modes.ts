@@ -14,7 +14,7 @@ export const playModes: MenuCardItem[] = [
     icon: Icons.cpu,
     title: 'Vs Computer',
     description:
-      'Challenge Stockfish 16 at various difficulty levels. Standard chess and variants available.',
+      'Challenge Stockfish 18 at various difficulty levels. Standard chess and variants available.',
     actionText: 'Choose Mode'
   },
   {

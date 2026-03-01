@@ -40,25 +40,7 @@
       ]
     },
     {
-      "source": "/stockfish16/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/stockfish18/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/fairy-stockfish/(.*)",
+      "source": "/engines/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -77,15 +59,6 @@
     },
     {
       "source": "/theme/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/3d-assets/(.*)",
       "headers": [
         {
           "key": "Cache-Control",

@@ -5,12 +5,10 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { cognitiveModes } from '@/constants/cognitive-modes';
-
 export const metadata: Metadata = {
   title: 'Cognitive | Zugklang',
   description: 'Train your chess memory and board vision.'
 };
-
 export default function CognitivePage() {
   return (
     <PageContainer scrollable={true}>

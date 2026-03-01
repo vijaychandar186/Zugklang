@@ -10,7 +10,6 @@ export interface EngineToggleButtonProps {
   isOn: boolean;
   disabled?: boolean;
   onToggle: () => void;
-  /** Override the default tooltip text. */
   tooltip?: string;
 }
 export function EngineToggleButton({

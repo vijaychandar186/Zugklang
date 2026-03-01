@@ -15,6 +15,6 @@ export const config = {
     '/tools/:path*',
     '/practice/:path*',
     '/profile/:path*',
-    '/games/:path*'
+    '/history/:path*'
   ]
 };

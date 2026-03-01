@@ -28,7 +28,6 @@ export function BoardThemeSelector({
     : BOARD_THEMES.filter((theme) =>
         CORE_BOARD_THEME_NAMES.includes(theme.name)
       );
-
   return (
     <div className='space-y-3'>
       <Label>Board Theme</Label>

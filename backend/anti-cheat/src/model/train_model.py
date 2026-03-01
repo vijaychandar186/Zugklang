@@ -66,7 +66,7 @@ def train_model(days, tc, use_eval):
     directory = 'model/eval{}_tc{}_days{}/'.format(use_eval, tc, days)
     if not os.path.exists(directory):
         os.makedirs(directory)
-    tuned_model.save(directory+'model.SavedModel')
+    tuned_model.save(directory+'model.keras')
 
     # Keep a plot of training history
     fig=plt.figure(figsize=(12,8), dpi= 300, facecolor='w', edgecolor='k')

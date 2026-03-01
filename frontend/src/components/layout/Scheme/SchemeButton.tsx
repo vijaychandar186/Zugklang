@@ -1,20 +1,16 @@
 'use client';
-
 import * as React from 'react';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import { SCHEMES } from '@/components/layout/Scheme/constants';
 import { useSchemeConfig } from '@/components/providers/scheme-provider';
 import { SchemeModal } from '@/components/layout/Scheme/SchemeModal';
-
 export default function SchemeButton() {
   const { activeScheme, setActiveScheme, customColor } = useSchemeConfig();
   const [isOpen, setIsOpen] = React.useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
-
   const currentSchemeName =
     SCHEMES.find((scheme) => scheme.value === activeScheme)?.name || 'Select';
-
   return (
     <SchemeModal
       isOpen={isOpen}

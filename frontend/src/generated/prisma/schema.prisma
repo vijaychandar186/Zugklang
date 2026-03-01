@@ -126,6 +126,7 @@ model Game {
   whiteRatingDelta   Int?
   blackRatingDelta   Int?
   moveCount          Int
+  rated              Boolean       @default(true)
   playedAt           DateTime?
   createdAt          DateTime      @default(now())
   analysis           GameAnalysis?

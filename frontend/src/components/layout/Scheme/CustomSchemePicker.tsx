@@ -1,15 +1,12 @@
 'use client';
-
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSchemeConfig } from '@/components/providers/scheme-provider';
 import { Button } from '@/components/ui/button';
-
 interface CustomSchemePickerProps {
   customColor: string;
   activeScheme: string;
   disabled?: boolean;
 }
-
 function computeForeground(color: string) {
   const r = parseInt(color.slice(1, 3), 16);
   const g = parseInt(color.slice(3, 5), 16);
@@ -17,7 +14,6 @@ function computeForeground(color: string) {
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance > 0.5 ? '#000000' : '#ffffff';
 }
-
 export function CustomSchemePicker({
   customColor,
   disabled = false
@@ -26,17 +22,13 @@ export function CustomSchemePicker({
   const [timeoutId, setTimeoutId] = useState<ReturnType<
     typeof setTimeout
   > | null>(null);
-
   const handleColorChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       if (disabled) return;
-
       const newColor = event.target.value;
-
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-
       const newTimeoutId = setTimeout(() => {
         try {
           const newForeground = computeForeground(newColor);
@@ -57,12 +49,10 @@ export function CustomSchemePicker({
           console.warn('Error handling custom scheme color change:', error);
         }
       }, 100);
-
       setTimeoutId(newTimeoutId);
     },
     [disabled, timeoutId, setCustomColor, setCustomForeground]
   );
-
   useEffect(() => {
     return () => {
       if (timeoutId) {
@@ -70,7 +60,6 @@ export function CustomSchemePicker({
       }
     };
   }, [timeoutId]);
-
   return (
     <div className='relative'>
       <Button

@@ -199,6 +199,58 @@ Lichess insight URLs that most influenced the score. When a user cannot be
 scored (e.g. insufficient data), `error` is set and `score` / `insights`
 are `null`.
 
+### `POST /ws-monitor/start` (ws-server integration)
+
+Registers a new live game for timing-based anti-cheat monitoring.
+
+```json
+{
+  "game_id": "room-uuid",
+  "variant": "standard",
+  "time_control": { "mode": "timed", "minutes": 5, "increment": 0 },
+  "white_user_id": "user-a",
+  "black_user_id": "user-b",
+  "started_at_ms": 1735689600000
+}
+```
+
+### `POST /ws-monitor/move`
+
+Pushes a move event (recommended every move).
+
+```json
+{
+  "game_id": "room-uuid",
+  "ply": 17,
+  "event_at_ms": 1735689665000,
+  "move": {
+    "color": "white",
+    "uci": "e2e4",
+    "move_time_ms": 924
+  }
+}
+```
+
+### `POST /ws-monitor/end`
+
+Finalizes a game.
+
+```json
+{
+  "game_id": "room-uuid",
+  "event_at_ms": 1735689720000,
+  "reason": "resign",
+  "winner": "black"
+}
+```
+
+### `GET /ws-monitor/game/{game_id}`
+
+Returns live monitoring output for both players:
+- per-player `score` in `[0,1]`
+- `risk_level` (`low|medium|high`)
+- timing metrics and flags
+
 ---
 
 ## Docker

@@ -2,7 +2,6 @@ import logging
 import logging.handlers
 import os
 import pickle
-import pymongo
 import sys
 import time
 
@@ -13,7 +12,10 @@ from typing import Callable, Dict, Optional
 
 def initialize_logging_for_modules(log: logging.Logger) -> None:
     config = load_config()
-    log.setLevel(config['LOGGING_LEVEL'].upper())
+    # Backward compatibility:
+    # legacy modules used LOGGING_LEVEL, while current config uses LOG_LEVEL.
+    log_level = (config.get('LOGGING_LEVEL') or config.get('LOG_LEVEL') or 'INFO').upper()
+    log.setLevel(log_level)
     configure_logging(log)
 
 def load_config() -> Dict[str, str]:
@@ -112,13 +114,3 @@ def retry(
 
         return func(*args, **kwargs)
     return wrapper
-
-# Retry indefinitely mongo operations that failed due to connexion issues
-def mongo_retry(log: logging.Logger) -> Callable:
-    return partial(retry,
-            exception=pymongo.errors.ConnectionFailure,
-            delay=30,
-            backoff=1,
-            n_tries=None,
-            log=log
-            )

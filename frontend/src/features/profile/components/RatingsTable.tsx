@@ -6,7 +6,6 @@ import {
 } from '@/lib/ratings/timeCategory';
 import { formatVariantLabel } from '@/lib/chess/variantLabels';
 import { cn } from '@/lib/utils';
-
 interface RatingRow {
   variant: string;
   category: string;
@@ -19,15 +18,12 @@ interface PuzzleRatingRow {
   rd: number;
   gameCount: number;
 }
-
 const CATEGORY_ORDER: TimeCategory[] = [
   'bullet',
   'blitz',
   'rapid',
   'classical'
 ];
-
-// Standard variant is shown first, then the rest alphabetically by label.
 function sortedVariants(variants: string[]): string[] {
   return [...variants].sort((a, b) => {
     if (a === 'standard') return -1;
@@ -35,7 +31,6 @@ function sortedVariants(variants: string[]): string[] {
     return formatVariantLabel(a).localeCompare(formatVariantLabel(b));
   });
 }
-
 export function RatingsTable({
   ratings,
   puzzleRating,
@@ -45,7 +40,6 @@ export function RatingsTable({
   puzzleRating?: PuzzleRatingRow | null;
   className?: string;
 }) {
-  // Build a nested map: variant → category → RatingRow
   const byVariant = new Map<string, Map<string, RatingRow>>();
   for (const row of ratings) {
     if (!byVariant.has(row.variant)) {
@@ -53,9 +47,7 @@ export function RatingsTable({
     }
     byVariant.get(row.variant)!.set(row.category, row);
   }
-
   const variants = sortedVariants(Array.from(byVariant.keys()));
-
   return (
     <Card className={cn(className)}>
       <CardHeader className='pb-3'>
@@ -102,7 +94,6 @@ export function RatingsTable({
           );
         })}
 
-        {/* Puzzles always shown at the bottom */}
         <div>
           <p className='text-muted-foreground mb-1 text-xs font-semibold tracking-wide uppercase'>
             Puzzles
@@ -113,9 +104,7 @@ export function RatingsTable({
                 <span className='text-sm font-medium'>Puzzles</span>
                 <span className='text-muted-foreground text-xs'>
                   {puzzleRating
-                    ? `${puzzleRating.gameCount} ${
-                        puzzleRating.gameCount === 1 ? 'puzzle' : 'puzzles'
-                      } · RD ${Math.round(puzzleRating.rd)}`
+                    ? `${puzzleRating.gameCount} ${puzzleRating.gameCount === 1 ? 'puzzle' : 'puzzles'} · RD ${Math.round(puzzleRating.rd)}`
                     : 'No puzzles yet'}
                 </span>
               </div>

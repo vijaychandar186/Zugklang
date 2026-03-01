@@ -1,11 +1,9 @@
 'use client';
-
 import * as React from 'react';
 import { Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useInfobar, type InfobarContent } from '@/components/ui/infobar';
 import { cn } from '@/lib/utils';
-
 interface InfoButtonProps
   extends Omit<React.ComponentProps<typeof Button>, 'content'> {
   content: InfobarContent;
@@ -18,7 +16,6 @@ interface InfoButtonProps
     | 'link';
   size?: 'default' | 'sm' | 'lg' | 'icon';
 }
-
 export function InfoButton({
   content,
   className,
@@ -27,13 +24,11 @@ export function InfoButton({
   ...props
 }: InfoButtonProps) {
   const { setContent, setOpen } = useInfobar();
-
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setContent(content);
     setOpen(true);
     props.onClick?.(e);
   };
-
   return (
     <Button
       variant={variant}

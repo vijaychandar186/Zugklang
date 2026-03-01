@@ -3,10 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-import mongomock
-
 from config import Settings
-from data_preparation.prepare_data import build_data
 from db import db
 
 
@@ -90,24 +87,14 @@ async def _load_insights(usernames: list[str]) -> list[dict[str, Any]]:
 
 
 async def build_live_dataset(settings: Settings, users: list[str]) -> dict[tuple[int, int], dict[str, Any]]:
-    """Build model-ready data dictionary for a live username batch."""
-    if not users:
-        return {}
+    """Legacy API placeholder.
 
-    insight_docs = await _load_insights(users)
-    user_docs = await _load_users(users)
-    if not insight_docs or not user_docs:
-        return {}
-
-    # Reuse legacy pipeline by emulating Mongo collections in memory.
-    client = mongomock.MongoClient()
-    memdb = client["kaladin_live"]
-    insights_coll = memdb["insights"]
-    users_coll = memdb["users"]
-    insights_coll.insert_many(insight_docs)
-    users_coll.insert_many(user_docs)
-
-    return build_data(insights_coll, users_coll, live=1, live_user_list=users)
+    The Mongo-backed legacy pipeline has been removed from the runtime path.
+    """
+    raise NotImplementedError(
+        "build_live_dataset() relied on a legacy MongoDB compatibility pipeline "
+        "that is no longer supported. The active anti-cheat path is ws-monitor."
+    )
 
 
 def build_training_dataset(settings: Settings) -> None:

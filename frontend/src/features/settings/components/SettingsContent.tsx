@@ -1,5 +1,4 @@
 'use client';
-
 import { useTheme } from 'next-themes';
 import { useScheme } from '@/components/layout/Providers';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
@@ -16,14 +15,12 @@ import { FullscreenToggle } from './FullscreenToggle';
 import { SchemeSelector } from './SchemeSelector';
 import { PieceThemeSelector } from './PieceThemeSelector';
 import { SoundThemeSelector } from './SoundThemeSelector';
-
 type SettingsContentProps = {
   show3dToggle?: boolean;
   hideFullscreenOnMobile?: boolean;
   showThemeAssetSelectors?: boolean;
   showExtendedBoardThemes?: boolean;
 };
-
 export function SettingsContent({
   show3dToggle = true,
   hideFullscreenOnMobile = false,
@@ -44,7 +41,6 @@ export function SettingsContent({
   const setFullscreenEnabled = useChessStore((s) => s.setFullscreenEnabled);
   const { scheme, setScheme } = useScheme();
   const { theme, setTheme } = useTheme();
-
   const handleBoardThemeChange = (themeName: BoardThemeName) => {
     setBoardTheme(themeName);
   };
@@ -54,7 +50,6 @@ export function SettingsContent({
   const handleSoundThemeChange = (themeName: SoundThemeName) => {
     setSoundTheme(themeName);
   };
-
   return (
     <div className='space-y-6'>
       <BoardThemeSelector

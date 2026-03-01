@@ -8,6 +8,30 @@ import shap
 from common.utils import pickle_me, unpickle_me
 from tensorflow.keras.models import load_model
 
+
+def load_kaladin_model(directory):
+    """Load model from modern Keras formats and fail clearly for legacy-only exports."""
+    directory = Path(directory)
+    keras_path = directory / "model.keras"
+    h5_path = directory / "model.h5"
+    legacy_savedmodel = directory / "model.SavedModel"
+
+    if keras_path.exists():
+        return load_model(keras_path)
+    if h5_path.exists():
+        return load_model(h5_path)
+    if legacy_savedmodel.exists():
+        raise RuntimeError(
+            f"Unsupported legacy model format at {legacy_savedmodel}. "
+            "This environment uses Keras 3 (Python 3.13), which cannot load "
+            "legacy SavedModel checkpoints. Provide `model.keras` (preferred) "
+            "or `model.h5` in the same directory."
+        )
+    raise FileNotFoundError(
+        f"No model file found in {directory}. Expected one of: "
+        "`model.keras`, `model.h5`, `model.SavedModel`."
+    )
+
 def get_shap_explanations(users, shap_values, insights_location_dct):
     # Build shap explanations frame
     shap_list = []
@@ -27,7 +51,7 @@ def get_shap_explanations(users, shap_values, insights_location_dct):
 
 def train_shap_explainer(directory):
     directory = Path(directory)
-    model = load_model(directory / "model.SavedModel")
+    model = load_kaladin_model(directory)
     shap_data = unpickle_me(directory / "shap_data.pkl")
 
     # Train explainer

@@ -25,7 +25,7 @@ export function Hero() {
             <span className='bg-primary absolute inline-flex h-2 w-2 animate-ping rounded-full opacity-75'></span>
             <span className='bg-primary relative inline-flex h-2 w-2 rounded-full'></span>
           </span>
-          Powered by Stockfish 16
+          Powered by Stockfish 18
         </div>
 
         <div className='space-y-4'>

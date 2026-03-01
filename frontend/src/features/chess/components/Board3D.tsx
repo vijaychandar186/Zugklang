@@ -6,6 +6,7 @@ import { ANIMATION_CONFIG } from '@/features/chess/config/animation';
 import { ChessArrow } from '@/features/chess/types/visualization';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import Image from 'next/image';
+import { PIECE_3D_BASE, WOOD_TEXTURE_PATH } from '@/lib/public-paths';
 type PositionObject = Record<
   string,
   {
@@ -85,7 +86,7 @@ export function Board3D({
           }}
         >
           <Image
-            src={`/3d-assets/3d-pieces/${fileName}.svg`}
+            src={`${PIECE_3D_BASE}/${fileName}.svg`}
             alt={piece}
             width={100}
             height={100}
@@ -131,19 +132,19 @@ export function Board3D({
       boxShadow: 'var(--board-3d-shadow) 2px 24px 24px 8px',
       padding: '8px',
       background: 'var(--board-3d-background)',
-      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
+      backgroundImage: `url("${WOOD_TEXTURE_PATH}")`,
       backgroundSize: 'cover',
       overflow: 'visible'
     } as CSSProperties;
     const lightSquareStyle = {
       ...theme.lightSquareStyle,
-      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
+      backgroundImage: `url("${WOOD_TEXTURE_PATH}")`,
       backgroundSize: 'cover',
       backgroundBlendMode: 'overlay'
     } as CSSProperties;
     const darkSquareStyle = {
       ...theme.darkSquareStyle,
-      backgroundImage: 'url("/3d-assets/wood-texture.svg")',
+      backgroundImage: `url("${WOOD_TEXTURE_PATH}")`,
       backgroundSize: 'cover',
       backgroundBlendMode: 'overlay'
     } as CSSProperties;

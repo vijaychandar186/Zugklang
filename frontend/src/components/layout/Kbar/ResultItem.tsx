@@ -1,6 +1,5 @@
 import type { ActionId, ActionImpl } from 'kbar';
 import * as React from 'react';
-
 const ResultItem = React.forwardRef(
   (
     {
@@ -21,7 +20,6 @@ const ResultItem = React.forwardRef(
       );
       return action.ancestors.slice(index + 1);
     }, [action.ancestors, currentRootActionId]);
-
     return (
       <div
         ref={ref}
@@ -71,7 +69,5 @@ const ResultItem = React.forwardRef(
     );
   }
 );
-
 ResultItem.displayName = 'KBarResultItem';
-
 export default ResultItem;

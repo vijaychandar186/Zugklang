@@ -8,6 +8,7 @@ import {
   playRawSound,
   getSoundType
 } from '@/features/game/utils/sounds';
+import { ATOMIC_IMPACT_SOUND, ATOMIC_THREAT_SOUND } from '@/lib/public-paths';
 import type { ChessVariant } from '@/features/chess/config/variants';
 import { BOARD_STYLES } from '@/features/chess/config/board-themes';
 type PositionObject = Record<
@@ -129,9 +130,9 @@ export function useChessBoardLogic({
       playSound(soundType);
       if (variant === 'atomic') {
         if (isCapture) {
-          playRawSound('/variant/atomic/impact.mp3');
+          playRawSound(ATOMIC_IMPACT_SOUND);
         } else {
-          playRawSound('/variant/atomic/threat.mp3');
+          playRawSound(ATOMIC_THREAT_SOUND);
         }
       }
     },

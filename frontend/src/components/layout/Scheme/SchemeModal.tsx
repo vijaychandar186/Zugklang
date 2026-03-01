@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 import {
   Dialog,
@@ -20,9 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Paintbrush, Pipette, ChevronRight } from 'lucide-react';
 import { CustomSchemePicker } from './CustomSchemePicker';
 import { SCHEMES } from './constants';
-
 type SchemeKey = (typeof SCHEMES)[number]['value'];
-
 interface SchemeModalProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
@@ -34,9 +31,7 @@ interface SchemeModalProps {
   currentSchemeName: string;
   DialogTriggerButton: React.ReactNode;
 }
-
 const BUILTIN_SCHEMES = SCHEMES.filter((scheme) => scheme.value !== 'custom');
-
 export const SchemeModal: React.FC<SchemeModalProps> = ({
   isOpen,
   setIsOpen,
@@ -51,7 +46,6 @@ export const SchemeModal: React.FC<SchemeModalProps> = ({
   const handleColorPickerClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
-
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{DialogTriggerButton}</DialogTrigger>
@@ -71,9 +65,7 @@ export const SchemeModal: React.FC<SchemeModalProps> = ({
                   {currentSchemeName}
                 </div>
                 <ChevronRight
-                  className={`h-4 w-4 transition-transform duration-200 ${
-                    isDropdownOpen ? 'rotate-90' : ''
-                  }`}
+                  className={`h-4 w-4 transition-transform duration-200 ${isDropdownOpen ? 'rotate-90' : ''}`}
                 />
               </Button>
             </DropdownMenuTrigger>
@@ -101,9 +93,7 @@ export const SchemeModal: React.FC<SchemeModalProps> = ({
                   e.preventDefault();
                   setActiveScheme('custom');
                 }}
-                className={`flex cursor-pointer items-center justify-between focus:text-inherit data-[highlighted]:text-inherit ${
-                  activeScheme === 'custom' ? 'bg-accent' : ''
-                }`}
+                className={`flex cursor-pointer items-center justify-between focus:text-inherit data-[highlighted]:text-inherit ${activeScheme === 'custom' ? 'bg-accent' : ''}`}
               >
                 <span>Custom</span>
                 <div

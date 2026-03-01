@@ -13,31 +13,16 @@ import {
 } from '../engine/types';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { getPieceAssetPath } from '@/features/chess/config/media-themes';
-
-// ---------------------------------------------------------------------------
-// Layout constants
-// ---------------------------------------------------------------------------
-
-const DEFAULT_SQ = 36; // default square size in px
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
+const DEFAULT_SQ = 36;
 function isDark(row: number, col: number): boolean {
   return (row + col) % 2 === 1;
 }
-
-// ---------------------------------------------------------------------------
-// Piece image
-// ---------------------------------------------------------------------------
-
 interface PieceImageProps {
   type: string;
   color: 'w' | 'b';
   pieceTheme: string;
   size: number;
 }
-
 function PieceImage({ type, color, pieceTheme, size }: PieceImageProps) {
   const fileName = `${color}${type}`;
   return (
@@ -53,11 +38,6 @@ function PieceImage({ type, color, pieceTheme, size }: PieceImageProps) {
     />
   );
 }
-
-// ---------------------------------------------------------------------------
-// Single square
-// ---------------------------------------------------------------------------
-
 interface SquareProps {
   boardId: BoardId;
   row: number;
@@ -75,7 +55,6 @@ interface SquareProps {
   onClick: (sq: TriDSquare) => void;
   flipped: boolean;
 }
-
 function SquareCell({
   boardId,
   row,
@@ -93,33 +72,35 @@ function SquareCell({
   const sq: TriDSquare = { boardId, row, col };
   const key = squareKey(sq);
   const piece = pieces[key];
-
-  // Display row/col (flipped view)
   const displayRow = flipped ? BOARD_SIZES[boardId].rows - 1 - row : row;
   const displayCol = flipped ? BOARD_SIZES[boardId].cols - 1 - col : col;
-
   const dark = isDark(displayRow, displayCol);
-
-  // Use overlay Tailwind class for highlights; fall back to themed CSS vars
-  const isOverlay =
-    isSelected || isHighlighted || (isInCheck && piece?.type === 'k');
-  const baseStyle: React.CSSProperties = isOverlay
-    ? {}
-    : dark
-      ? boardTheme.darkSquareStyle
-      : boardTheme.lightSquareStyle;
-
-  let bgClass = '';
-  if (isSelected) bgClass = 'bg-yellow-400';
-  else if (isHighlighted && piece) bgClass = 'bg-orange-400';
-  else if (isHighlighted) bgClass = dark ? 'bg-[#cdd16f]' : 'bg-[#aaa23a]';
-  else if (isInCheck && piece?.type === 'k') bgClass = 'bg-red-500';
-
+  let highlightStyle: React.CSSProperties | undefined;
+  if (isSelected) highlightStyle = { backgroundColor: 'var(--trid-selected)' };
+  else if (isHighlighted && piece)
+    highlightStyle = { backgroundColor: 'var(--trid-legal-piece)' };
+  else if (isHighlighted)
+    highlightStyle = {
+      backgroundColor: dark
+        ? 'var(--trid-legal-dark)'
+        : 'var(--trid-legal-light)'
+    };
+  else if (isInCheck && piece?.type === 'k')
+    highlightStyle = { backgroundColor: 'var(--trid-check)' };
   return (
     <div
       key={key}
-      className={`${bgClass} relative flex cursor-pointer items-center justify-center`}
-      style={{ width: squareSize, height: squareSize, ...baseStyle }}
+      className='relative flex cursor-pointer items-center justify-center'
+      style={{
+        width: squareSize,
+        height: squareSize,
+        ...(highlightStyle
+          ? {}
+          : dark
+            ? boardTheme.darkSquareStyle
+            : boardTheme.lightSquareStyle),
+        ...highlightStyle
+      }}
       onClick={() => onClick(sq)}
     >
       {piece && (
@@ -133,11 +114,6 @@ function SquareCell({
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Single board renderer
-// ---------------------------------------------------------------------------
-
 interface BoardGridProps {
   boardId: BoardId;
   label: string;
@@ -158,7 +134,6 @@ interface BoardGridProps {
   canMoveBoard?: boolean;
   onBoardClick?: () => void;
 }
-
 function BoardGrid({
   boardId,
   label,
@@ -183,13 +158,18 @@ function BoardGrid({
   const cols = Array.from({ length: size.cols }, (_, i) =>
     flipped ? size.cols - 1 - i : i
   );
-
-  const ringClass = isSelectedBoard
-    ? 'ring-2 ring-yellow-400'
+  const ringStyle: React.CSSProperties = isSelectedBoard
+    ? {
+        outline: '2px solid var(--trid-board-selected-ring)',
+        outlineOffset: '0px'
+      }
     : canMoveBoard
-      ? 'ring-2 ring-blue-400 ring-opacity-60 cursor-pointer'
-      : '';
-
+      ? {
+          outline: '2px solid var(--trid-board-movable-ring)',
+          outlineOffset: '0px',
+          cursor: 'pointer'
+        }
+      : {};
   return (
     <div className='flex flex-col items-center gap-0.5'>
       <span
@@ -198,7 +178,8 @@ function BoardGrid({
         {label}
       </span>
       <div
-        className={`border-border/40 relative inline-block border ${ringClass}`}
+        className='border-border/40 relative inline-block border'
+        style={ringStyle}
         onClick={canMoveBoard && onBoardClick ? onBoardClick : undefined}
       >
         {rows.map((row) => (
@@ -232,11 +213,6 @@ function BoardGrid({
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Attack board slot indicator (for valid destination slots)
-// ---------------------------------------------------------------------------
-
 interface SlotDropzoneProps {
   boardId: AttackBoardId;
   slot: AttackBoardSlot;
@@ -244,7 +220,6 @@ interface SlotDropzoneProps {
   squareSize: number;
   onDrop: (boardId: AttackBoardId, slot: AttackBoardSlot) => void;
 }
-
 function SlotDropzone({
   boardId,
   slot,
@@ -255,19 +230,21 @@ function SlotDropzone({
   if (!isTarget) return null;
   return (
     <div
-      className='flex cursor-pointer items-center justify-center rounded border-2 border-dashed border-blue-400 bg-blue-400/20 text-[9px] font-bold text-blue-400 transition-colors hover:bg-blue-400/30'
-      style={{ width: 2 * squareSize, height: 2 * squareSize }}
+      className='flex cursor-pointer items-center justify-center rounded border-2 border-dashed text-[9px] font-bold transition-colors'
+      style={{
+        width: 2 * squareSize,
+        height: 2 * squareSize,
+        borderColor: 'var(--trid-slot-target)',
+        backgroundColor:
+          'color-mix(in oklch, var(--trid-slot-target) 20%, transparent)',
+        color: 'var(--trid-slot-target)'
+      }}
       onClick={() => onDrop(boardId, slot)}
     >
       ↓
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Main board component
-// ---------------------------------------------------------------------------
-
 interface TriDChessBoardProps {
   pieces: PieceMap;
   slots: AttackBoardSlots;
@@ -285,24 +262,27 @@ interface TriDChessBoardProps {
   squareSize?: number;
   pieceTheme?: string;
 }
-
-const FIXED_BOARDS: Array<{ id: BoardId; label: string }> = [
+const FIXED_BOARDS: Array<{
+  id: BoardId;
+  label: string;
+}> = [
   { id: 'bh', label: 'Black Home' },
   { id: 'n', label: 'Neutral Zone' },
   { id: 'wh', label: 'White Home' }
 ];
-
-const ATTACK_BOARD_INFO: Record<AttackBoardId, { label: string }> = {
+const ATTACK_BOARD_INFO: Record<
+  AttackBoardId,
+  {
+    label: string;
+  }
+> = {
   wa1: { label: 'WA1' },
   wa2: { label: 'WA2' },
   ba1: { label: 'BA1' },
   ba2: { label: 'BA2' }
 };
-
-// Which attack boards are on which side
 const LEFT_BOARDS: AttackBoardId[] = ['wa1', 'ba1'];
 const RIGHT_BOARDS: AttackBoardId[] = ['wa2', 'ba2'];
-
 const ALL_SLOTS_LEFT: AttackBoardSlot[] = [
   'left_high',
   'left_mid_high',
@@ -315,7 +295,6 @@ const ALL_SLOTS_RIGHT: AttackBoardSlot[] = [
   'right_mid_low',
   'right_low'
 ];
-
 function getBoardAtSlot(
   side: 'left' | 'right',
   slot: AttackBoardSlot,
@@ -327,7 +306,6 @@ function getBoardAtSlot(
   }
   return null;
 }
-
 export function TriDChessBoard({
   pieces,
   slots,
@@ -349,20 +327,15 @@ export function TriDChessBoard({
   const boardTheme = useBoardTheme();
   const inCheckColor: 'w' | 'b' | null = inCheck ? turn : null;
   const selectedKey = selectedSquare ? squareKey(selectedSquare) : null;
-
-  // When flipped, reverse both the fixed board order and the slot column order
-  // so the layout genuinely reflects the black-side perspective.
   const orderedFixedBoards = flipped
     ? [...FIXED_BOARDS].reverse()
     : FIXED_BOARDS;
   const leftSlots = flipped ? [...ALL_SLOTS_LEFT].reverse() : ALL_SLOTS_LEFT;
   const rightSlots = flipped ? [...ALL_SLOTS_RIGHT].reverse() : ALL_SLOTS_RIGHT;
-
   const renderSlot = useCallback(
     (side: 'left' | 'right', slot: AttackBoardSlot) => {
       const boardId = getBoardAtSlot(side, slot, slots);
       const isTarget = highlightedSlots.has(slot);
-
       const content = boardId ? (
         (() => {
           const isSelected = selectedBoardId === boardId;
@@ -407,7 +380,6 @@ export function TriDChessBoard({
           )}
         </div>
       );
-
       return <div key={slot}>{content}</div>;
     },
     [
@@ -428,17 +400,10 @@ export function TriDChessBoard({
       sq
     ]
   );
-
-  /**
-   * Side column layout: top group (first 2 slots = black attack board level) is
-   * anchored to the top; bottom group (last 2 slots = white attack board level)
-   * is anchored to the bottom. `justify-between` + `self-stretch` ensures the
-   * column fills the same height as the center column so WA boards align with WH.
-   */
   const renderSideColumn = useCallback(
     (side: 'left' | 'right', allSlots: AttackBoardSlot[]) => {
-      const topSlots = allSlots.slice(0, 2); // high + mid_high (black level)
-      const bottomSlots = allSlots.slice(2); // mid_low + low  (white level)
+      const topSlots = allSlots.slice(0, 2);
+      const bottomSlots = allSlots.slice(2);
       return (
         <div className='flex flex-col justify-between self-stretch'>
           <div className='flex flex-col gap-0.5'>
@@ -452,13 +417,10 @@ export function TriDChessBoard({
     },
     [renderSlot]
   );
-
   return (
     <div className='flex items-stretch justify-center gap-1 select-none'>
-      {/* Left side: attack boards (order respects flip) */}
       {renderSideColumn('left', leftSlots)}
 
-      {/* Center: three fixed boards (order respects flip) */}
       <div className='flex flex-col gap-2'>
         {orderedFixedBoards.map(({ id, label }) => (
           <BoardGrid
@@ -478,7 +440,6 @@ export function TriDChessBoard({
         ))}
       </div>
 
-      {/* Right side: attack boards (order respects flip) */}
       {renderSideColumn('right', rightSlots)}
     </div>
   );

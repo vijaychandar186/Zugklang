@@ -1,5 +1,4 @@
 'use client';
-
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -12,12 +11,10 @@ import {
 } from '@/components/ui/select';
 import { Icons } from '@/components/Icons';
 import { SCHEMES, type SchemeName } from '@/components/layout/Scheme/constants';
-
 type SchemeSelectorProps = {
   currentScheme: SchemeName;
   onSchemeChange: (scheme: SchemeName) => void;
 };
-
 export function SchemeSelector({
   currentScheme,
   onSchemeChange

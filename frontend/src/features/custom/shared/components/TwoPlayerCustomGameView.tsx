@@ -17,14 +17,13 @@ import {
 import { playSound, getSoundType } from '@/features/game/utils/sounds';
 import type { CapturedPieces } from '@/features/chess/types/core';
 import type { TimeControl } from '@/features/game/types/rules';
-
+import type { TwoPlayerPlayerInfo } from '@/features/chess/types/game-engine-contract';
 type MoveResult = {
   color: 'w' | 'b';
   san: string;
   captured?: unknown;
   promotion?: unknown;
 } | null;
-
 interface TwoPlayerCustomGameViewProps {
   currentFEN: string;
   gameStarted: boolean;
@@ -39,8 +38,16 @@ interface TwoPlayerCustomGameViewProps {
   sidebar: ReactNode;
   canMove?: boolean;
   loserColor?: 'w' | 'b' | null;
+  topPlayer?: TwoPlayerPlayerInfo;
+  bottomPlayer?: TwoPlayerPlayerInfo;
+  topPlayerExtras?: ReactNode;
+  bottomPlayerExtras?: ReactNode;
+  overlays?: ReactNode;
+  onPieceDrop?: (args: {
+    sourceSquare: string;
+    targetSquare: string | null;
+  }) => boolean;
 }
-
 export function TwoPlayerCustomGameView({
   currentFEN,
   gameStarted,
@@ -54,7 +61,13 @@ export function TwoPlayerCustomGameView({
   activeTimer,
   sidebar,
   canMove = true,
-  loserColor = null
+  loserColor = null,
+  topPlayer,
+  bottomPlayer,
+  topPlayerExtras,
+  bottomPlayerExtras,
+  overlays,
+  onPieceDrop: externalPieceDrop
 }: TwoPlayerCustomGameViewProps) {
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
@@ -65,22 +78,18 @@ export function TwoPlayerCustomGameView({
     black: []
   });
   const [materialAdvantage, setMaterialAdvantage] = useState(0);
-
   useAnalysisSync(currentFEN);
-
   useEffect(() => {
     if (!currentFEN) return;
     const caps = getCapturedPiecesFromFEN(currentFEN);
     setCaptured(caps);
     setMaterialAdvantage(getMaterialAdvantage(caps));
   }, [currentFEN]);
-
   useEffect(() => {
     if (gameOver && gameStarted && soundEnabled) {
       playSound('game-end');
     }
   }, [gameOver, gameStarted, soundEnabled]);
-
   function handlePieceDrop({
     sourceSquare,
     targetSquare
@@ -88,6 +97,8 @@ export function TwoPlayerCustomGameView({
     sourceSquare: string;
     targetSquare: string | null;
   }) {
+    if (externalPieceDrop)
+      return externalPieceDrop({ sourceSquare, targetSquare });
     if (!targetSquare) return false;
     let move = makeMove(sourceSquare, targetSquare);
     if (!move) move = makeMove(sourceSquare, targetSquare, 'q');
@@ -106,7 +117,6 @@ export function TwoPlayerCustomGameView({
     if (soundEnabled) playSound('illegal');
     return false;
   }
-
   const isActive = gameStarted && !gameOver && canMove;
   const orientation = boardFlipped ? ('black' as const) : ('white' as const);
   const hasTimer = timeControl.mode === 'timed';
@@ -116,7 +126,6 @@ export function TwoPlayerCustomGameView({
   const bottomColor = boardFlipped ? 'black' : 'white';
   const topTimerActive = activeTimer === topColor && !gameOver;
   const bottomTimerActive = activeTimer === bottomColor && !gameOver;
-
   const topCaptured = boardFlipped ? captured.black : captured.white;
   const bottomCaptured = boardFlipped ? captured.white : captured.black;
   const topAdvantage = boardFlipped
@@ -133,17 +142,30 @@ export function TwoPlayerCustomGameView({
     : materialAdvantage > 0
       ? materialAdvantage
       : undefined;
-
-  const topName = boardFlipped ? 'White' : 'Black';
-  const bottomName = boardFlipped ? 'Black' : 'White';
+  const topInfo: TwoPlayerPlayerInfo = topPlayer ?? {
+    name: boardFlipped ? 'White' : 'Black'
+  };
+  const bottomInfo: TwoPlayerPlayerInfo = bottomPlayer ?? {
+    name: boardFlipped ? 'Black' : 'White'
+  };
   const topPieceColor = boardFlipped ? ('white' as const) : ('black' as const);
   const bottomPieceColor = boardFlipped
     ? ('black' as const)
     : ('white' as const);
-
   return (
     <GameShell
-      topLeft={<PlayerInfo name={topName} />}
+      topLeft={
+        <>
+          <PlayerInfo
+            name={topInfo.name}
+            image={topInfo.image}
+            rating={topInfo.rating}
+            ratingDelta={topInfo.ratingDelta}
+            flagCode={topInfo.flagCode}
+          />
+          {topPlayerExtras}
+        </>
+      }
       topRight={
         <>
           <CapturedPiecesDisplay
@@ -156,7 +178,18 @@ export function TwoPlayerCustomGameView({
           )}
         </>
       }
-      bottomLeft={<PlayerInfo name={bottomName} />}
+      bottomLeft={
+        <>
+          <PlayerInfo
+            name={bottomInfo.name}
+            image={bottomInfo.image}
+            rating={bottomInfo.rating}
+            ratingDelta={bottomInfo.ratingDelta}
+            flagCode={bottomInfo.flagCode}
+          />
+          {bottomPlayerExtras}
+        </>
+      }
       bottomRight={
         <>
           <CapturedPiecesDisplay
@@ -200,6 +233,7 @@ export function TwoPlayerCustomGameView({
         </BoardContainer>
       }
       sidebar={sidebar}
+      overlays={overlays}
     />
   );
 }

@@ -1,5 +1,4 @@
 'use client';
-
 import * as React from 'react';
 import { Icons } from '@/components/Icons';
 import { SCHEMES } from '@/components/layout/Scheme/constants';
@@ -10,15 +9,12 @@ import {
   SidebarMenuItem
 } from '@/components/ui/sidebar';
 import { SchemeModal } from '@/components/layout/Scheme/SchemeModal';
-
 export default function SidebarSchemeButton() {
   const { activeScheme, setActiveScheme, customColor } = useSchemeConfig();
   const [isOpen, setIsOpen] = React.useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
-
   const currentSchemeName =
     SCHEMES.find((scheme) => scheme.value === activeScheme)?.name || 'Select';
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>

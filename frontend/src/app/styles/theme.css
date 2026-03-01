@@ -48,6 +48,17 @@
   --piece-drag-shadow: oklch(0 0 0 / 30%);
   --highlight-drop-alt: oklch(1 0 0 / 40%);
 
+  --highlight-piece-indicator: inset 0 0 0 3px oklch(0.55 0.18 240 / 50%);
+
+  --trid-selected: oklch(0.97 0.21 110 / 55%);
+  --trid-legal-piece: oklch(0.75 0.19 50 / 80%);
+  --trid-legal-light: oklch(0.88 0.18 95 / 60%);
+  --trid-legal-dark: oklch(0.65 0.14 95 / 70%);
+  --trid-check: oklch(0.55 0.22 25 / 85%);
+  --trid-board-selected-ring: oklch(0.97 0.21 110);
+  --trid-board-movable-ring: oklch(0.55 0.18 240 / 70%);
+  --trid-slot-target: oklch(0.55 0.18 240 / 70%);
+
   --board-default-dark: oklch(0.55 0.12 120);
   --board-default-light: oklch(0.92 0.04 105);
 

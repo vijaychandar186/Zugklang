@@ -1,5 +1,4 @@
 import { Icons } from '@/components/Icons';
-
 export interface NavItem {
   title: string;
   url: string;
@@ -12,15 +11,11 @@ export interface NavItem {
   isActive?: boolean;
   items?: NavItem[];
 }
-
 export interface NavItemWithChildren extends NavItem {
   items: NavItemWithChildren[];
 }
-
 export interface NavItemWithOptionalChildren extends NavItem {
   items?: NavItemWithChildren[];
 }
-
 export type MainNavItem = NavItemWithOptionalChildren;
-
 export type SidebarNavItem = NavItemWithChildren;

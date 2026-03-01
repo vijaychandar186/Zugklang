@@ -11,6 +11,7 @@ import {
 import { logger } from '../utils/logger';
 import { createRoom } from './queue';
 import { ABORT_TIMEOUT_MS } from '../config';
+import { antiCheatOnGameEnd, antiCheatOnMove } from '../services/antiCheat';
 
 function bothPlayersMovedAtLeastOnce(moves: string[]): boolean {
   return moves.length >= 2;
@@ -33,6 +34,11 @@ export function handleMove(
     send(ws, { type: 'error', message: 'Not your turn.' });
     return;
   }
+  const movedColor = ws.data.color!;
+  let moveTimeMs: number | undefined;
+  if (room.activeClock === movedColor && room.clockLastUpdatedAt !== null) {
+    moveTimeMs = Math.max(0, Date.now() - room.clockLastUpdatedAt);
+  }
   const { from, to, promotion } = msg;
   const legal = applyMove(room.position, from, to, promotion);
   if (!legal) {
@@ -52,6 +58,7 @@ export function handleMove(
       revokeRoomTokens(room);
       const timedOutColor = snapshot.activeClock!;
       const winner = timedOutColor === 'white' ? 'Black' : 'White';
+      const winnerColor = timedOutColor === 'white' ? 'black' : 'white';
       const payload = {
         type: 'game_over',
         result: `${winner} wins on time`,
@@ -62,6 +69,7 @@ export function handleMove(
       };
       send(room.white, payload);
       send(room.black, payload);
+      antiCheatOnGameEnd(room, 'timeout', winnerColor);
       logger.info('game_timeout', {
         roomId: roomId.slice(0, 8),
         timedOutColor
@@ -69,9 +77,18 @@ export function handleMove(
       return;
     }
   }
+  antiCheatOnMove(room, {
+    color: movedColor,
+    uci: `${from}${to}${promotion ?? ''}`,
+    moveTimeMs
+  });
   send(getOpponent(room, ws), { type: 'opponent_move', from, to, promotion });
+  // Broadcast server-authoritative move list to both players after every legal
+  // move. Clients use this to detect and correct any local position drift.
+  const positionSync = { type: 'position_sync', moves: [...room.moves] };
+  send(room.white, positionSync);
+  send(room.black, positionSync);
   if (room.activeClock !== null) {
-    const movedColor = ws.data.color!;
     if (movedColor === 'white' && room.whiteTimeMs !== null) {
       room.whiteTimeMs += room.timeControl.increment * 1000;
     } else if (movedColor === 'black' && room.blackTimeMs !== null) {
@@ -95,6 +112,7 @@ export function handleMove(
       revokeRoomTokens(r);
       const abandonedColor = r.position.turn;
       const winner = abandonedColor === 'white' ? 'Black' : 'White';
+      const winnerColor = abandonedColor === 'white' ? 'black' : 'white';
       const payload = {
         type: 'game_over',
         result: `${winner} wins — opponent abandoned`,
@@ -105,6 +123,7 @@ export function handleMove(
       };
       send(r.white, payload);
       send(r.black, payload);
+      antiCheatOnGameEnd(r, 'abandoned', winnerColor);
       logger.info('game_auto_aborted', {
         roomId: roomId!.slice(0, 8),
         moves: r.moves.length
@@ -134,6 +153,7 @@ export function handleResign(ws: BunWS): void {
   revokeRoomTokens(room);
   const isWhite = room.white.data.id === ws.data.id;
   const winner = isWhite ? 'Black' : 'White';
+  const winnerColor = isWhite ? 'black' : 'white';
   const payload = {
     type: 'game_over',
     result: `${winner} wins by resignation`,
@@ -144,6 +164,7 @@ export function handleResign(ws: BunWS): void {
   };
   send(room.white, payload);
   send(room.black, payload);
+  antiCheatOnGameEnd(room, 'resign', winnerColor);
   logger.info('game_resign', {
     roomId: roomId.slice(0, 8),
     resignedColor: isWhite ? 'white' : 'black'
@@ -179,6 +200,7 @@ export function handleAcceptDraw(ws: BunWS): void {
   };
   send(room.white, payload);
   send(room.black, payload);
+  antiCheatOnGameEnd(room, 'draw_agreement', null);
   logger.info('game_draw', { roomId: roomId.slice(0, 8) });
 }
 export function handleDeclineDraw(ws: BunWS): void {
@@ -215,6 +237,7 @@ export function handleAbort(ws: BunWS): void {
   };
   send(room.white, payload);
   send(room.black, payload);
+  antiCheatOnGameEnd(room, 'abort', null);
   logger.info('game_aborted', { roomId: roomId.slice(0, 8) });
 }
 export function handleOfferRematch(ws: BunWS): void {
@@ -275,6 +298,13 @@ export function handleGameOverNotify(
   };
   send(getOpponent(room, ws), gameOverPayload);
   send(ws, gameOverPayload);
+  const winner =
+    msg.reason === 'resign'
+      ? ws.data.color === 'white'
+        ? 'black'
+        : 'white'
+      : null;
+  antiCheatOnGameEnd(room, msg.reason, winner);
   logger.info('game_over', {
     roomId: roomId.slice(0, 8),
     result: msg.result,

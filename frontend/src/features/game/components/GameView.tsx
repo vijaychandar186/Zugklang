@@ -21,13 +21,11 @@ import { useAnalysisState } from '@/features/chess/stores/useAnalysisStore';
 import { GameType } from '@/features/chess/stores/useChessStore';
 import { ChessVariant } from '@/features/chess/utils/chess960';
 import { getEngineName } from '@/features/chess/config/variants';
-
 interface UserProfile {
   name: string | null;
   image: string | null;
   rating: number | null;
 }
-
 interface GameViewProps {
   serverOrientation?: 'white' | 'black';
   mode?: ChessMode;
@@ -35,7 +33,6 @@ interface GameViewProps {
   initialBoard3dEnabled?: boolean;
   variant?: ChessVariant;
 }
-
 export function GameView({
   serverOrientation,
   mode = 'play',
@@ -61,16 +58,13 @@ export function GameView({
     bottomTimerActive,
     currentFEN
   } = useGameView();
-
   const storeVariant = useChessStore((s) => s.variant);
   const playAs = useChessStore((s) => s.playAs);
   const { data: session } = useSession();
   const [myProfile, setMyProfile] = useState<UserProfile | null>(null);
   const isLocalRoute = initialGameType === 'local';
-
   const isTopStockfishForDisplay = isLocalRoute ? false : isTopStockfish;
   const isBottomStockfishForDisplay = isLocalRoute ? false : isBottomStockfish;
-
   useEffect(() => {
     if (!session?.user?.id || isLocalRoute) return;
     fetch(`/api/user/rating?variant=${storeVariant}`)
@@ -78,7 +72,6 @@ export function GameView({
       .then((data) => data && setMyProfile(data))
       .catch(() => {});
   }, [session?.user?.id, storeVariant, isLocalRoute]);
-
   const getPlayerName = (color: 'white' | 'black', isStockfish: boolean) => {
     if (isLocalRoute) {
       if (color === playAs) {
@@ -91,7 +84,6 @@ export function GameView({
     }
     return myProfile?.name ?? session?.user?.name ?? 'Player';
   };
-
   const getPlayerImage = (color: 'white' | 'black', isStockfish: boolean) => {
     if (isLocalRoute) {
       return color === playAs ? (session?.user?.image ?? null) : null;
@@ -101,18 +93,15 @@ export function GameView({
       ? (myProfile?.image ?? session?.user?.image ?? null)
       : null;
   };
-
   const getPlayerRating = (color: 'white' | 'black', isStockfish: boolean) => {
     if (isLocalRoute || isStockfish) return null;
     return color === playAs ? (myProfile?.rating ?? null) : null;
   };
-
   const setMode = useChessStore((s) => s.setMode);
   const { isAnalysisOn } = useAnalysisState();
   const isPlayMode = mode === 'play';
   const setGameType = useChessStore((s) => s.setGameType);
   const setVariant = useChessStore((s) => s.setVariant);
-
   useEffect(() => {
     setMode(mode);
   }, [mode, setMode]);
@@ -120,11 +109,9 @@ export function GameView({
     setGameType(initialGameType);
     setVariant(variant);
   }, [initialGameType, setGameType, variant, setVariant]);
-
   useGameTimer();
   useGameSave(initialGameType);
   useAnalysisSync(currentFEN);
-
   const makePlayerLeft = (color: 'white' | 'black', isStockfish: boolean) =>
     isPlayMode ? (
       <PlayerInfo
@@ -135,7 +122,6 @@ export function GameView({
         rating={getPlayerRating(color, isStockfish)}
       />
     ) : undefined;
-
   const makePlayerRight = (
     captured: typeof topCaptured,
     pieceColor: 'white' | 'black',
@@ -159,7 +145,6 @@ export function GameView({
       )}
     </>
   );
-
   return (
     <GameShell
       topLeft={makePlayerLeft(topColor, isTopStockfishForDisplay)}

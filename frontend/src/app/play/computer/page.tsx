@@ -15,7 +15,7 @@ export default function ComputerPlayMenuPage() {
       <MenuPageLayout
         icon={Icons.cpu}
         title='Vs Computer'
-        description='Challenge Stockfish 16 at various difficulty levels. From beginner to grandmaster strength.'
+        description='Challenge Stockfish 18 at various difficulty levels. From beginner to grandmaster strength.'
         backHref='/play'
         backLabel='Back to Play'
       >

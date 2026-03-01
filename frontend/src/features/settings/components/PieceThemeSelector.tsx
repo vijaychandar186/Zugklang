@@ -1,5 +1,4 @@
 'use client';
-
 import Image from 'next/image';
 import { Label } from '@/components/ui/label';
 import {
@@ -16,18 +15,15 @@ import {
   getPieceAssetPath,
   type PieceThemeName
 } from '@/features/chess/config/media-themes';
-
 type PieceThemeSelectorProps = {
   currentTheme: PieceThemeName;
   onThemeChange: (theme: PieceThemeName) => void;
 };
-
 export function PieceThemeSelector({
   currentTheme,
   onThemeChange
 }: PieceThemeSelectorProps) {
   const knightPreviewSrc = getPieceAssetPath(currentTheme, 'wn');
-
   return (
     <div className='space-y-3'>
       <Label htmlFor='piece-theme-selector'>Piece Theme</Label>

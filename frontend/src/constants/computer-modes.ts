@@ -6,7 +6,7 @@ export const computerModes: MenuCardItem[] = [
     icon: Icons.chessKing,
     title: 'Standard Chess',
     description:
-      'Face Stockfish 16 at your chosen difficulty. Perfect your tactics and strategy.',
+      'Face Stockfish 18 at your chosen difficulty. Perfect your tactics and strategy.',
     actionText: 'Play Now'
   },
   {

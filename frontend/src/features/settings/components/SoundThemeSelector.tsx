@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useRef, useState } from 'react';
 import { Icons } from '@/components/Icons';
 import { Button } from '@/components/ui/button';
@@ -17,12 +16,11 @@ import {
   SOUND_THEME_OPTIONS,
   type SoundThemeName
 } from '@/features/chess/config/media-themes';
-
+import { THEME_AUDIO_BASE } from '@/lib/public-paths';
 type SoundThemeSelectorProps = {
   currentTheme: SoundThemeName;
   onThemeChange: (theme: SoundThemeName) => void;
 };
-
 export function SoundThemeSelector({
   currentTheme,
   onThemeChange
@@ -30,7 +28,6 @@ export function SoundThemeSelector({
   const previewAudioRef = useRef<HTMLAudioElement | null>(null);
   const previewPathRef = useRef<string>('');
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
-
   useEffect(() => {
     return () => {
       if (previewAudioRef.current) {
@@ -39,9 +36,8 @@ export function SoundThemeSelector({
       }
     };
   }, []);
-
   const handlePreviewPlay = () => {
-    const path = `/theme/assets/${currentTheme}/move-self.mp3`;
+    const path = `${THEME_AUDIO_BASE}/${currentTheme}/move-self.mp3`;
     if (!previewAudioRef.current || previewPathRef.current !== path) {
       previewAudioRef.current = new Audio(path);
       previewPathRef.current = path;
@@ -56,7 +52,6 @@ export function SoundThemeSelector({
         audio.onended = () => setIsPreviewPlaying(false);
       });
   };
-
   return (
     <div className='space-y-3'>
       <Label htmlFor='sound-theme-selector'>Sound Theme</Label>

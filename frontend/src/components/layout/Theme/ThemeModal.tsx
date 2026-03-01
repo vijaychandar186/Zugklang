@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 import {
   Dialog,
@@ -10,9 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Moon, Sun, Laptop } from 'lucide-react';
-
 type ThemeMode = 'light' | 'dark' | 'system';
-
 interface ThemeModalProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
@@ -20,7 +17,6 @@ interface ThemeModalProps {
   onTransition: (newTheme: ThemeMode, e?: React.MouseEvent) => void;
   DialogTriggerButton: React.ReactNode;
 }
-
 const THEME_OPTIONS: {
   value: ThemeMode;
   label: string;
@@ -30,7 +26,6 @@ const THEME_OPTIONS: {
   { value: 'dark', label: 'Dark', icon: <Moon className='h-4 w-4' /> },
   { value: 'system', label: 'System', icon: <Laptop className='h-4 w-4' /> }
 ];
-
 export const ThemeModal: React.FC<ThemeModalProps> = ({
   isOpen,
   setIsOpen,

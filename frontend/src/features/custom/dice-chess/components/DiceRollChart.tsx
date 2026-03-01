@@ -16,21 +16,17 @@ import {
   type ChartConfig
 } from '@/components/ui/chart';
 import { type DicePiece, PIECE_NAMES } from '../stores/useDiceChessStore';
-
 type DiceRollChartProps = {
   diceRolls: DicePiece[];
   className?: string;
 };
-
 const PIECE_ORDER: DicePiece[] = ['k', 'q', 'b', 'n', 'r', 'p'];
-
 const chartConfig = {
   count: {
     label: 'Rolls',
     color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
-
 export function DiceRollChart({ diceRolls, className }: DiceRollChartProps) {
   const chartData = useMemo(() => {
     const counts: Record<DicePiece, number> = {
@@ -49,11 +45,8 @@ export function DiceRollChart({ diceRolls, className }: DiceRollChartProps) {
       count: counts[piece]
     }));
   }, [diceRolls]);
-
   const total = diceRolls.length;
-
   if (total === 0) return null;
-
   return (
     <Card className={className}>
       <CardHeader className='pb-3'>

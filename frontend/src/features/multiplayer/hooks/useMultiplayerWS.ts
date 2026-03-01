@@ -9,6 +9,7 @@ import type {
   OnOpponentMoveFn,
   OnServerGameOverFn,
   OnClockSyncFn,
+  OnPositionSyncFn,
   OnSyncDiceFn,
   OnSyncCardFn,
   OnFourPlayerLobbyStateFn,
@@ -144,6 +145,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const onOpponentMoveRef = useRef<OnOpponentMoveFn | null>(null);
   const onServerGameOverRef = useRef<OnServerGameOverFn | null>(null);
   const onClockSyncRef = useRef<OnClockSyncFn | null>(null);
+  const onPositionSyncRef = useRef<OnPositionSyncFn | null>(null);
   const onSyncDiceRef = useRef<OnSyncDiceFn | null>(null);
   const onSyncCardRef = useRef<OnSyncCardFn | null>(null);
   const onFourPlayerLobbyStateRef = useRef<OnFourPlayerLobbyStateFn | null>(
@@ -484,6 +486,9 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           rematchOffered: false
         }));
         break;
+      case 'position_sync':
+        onPositionSyncRef.current?.(msg.moves);
+        break;
       case 'dice_synced':
         onSyncDiceRef.current?.(msg.pieces);
         break;
@@ -527,7 +532,6 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
         );
         break;
       case 'four_player_player_disconnected':
-        // No WS state change needed — view can handle UX if desired
         break;
       case 'four_player_player_reconnected':
         onFourPlayerPlayerReconnectedRef.current?.(msg.playerId);
@@ -753,6 +757,9 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     },
     [sendRaw]
   );
+  const setOnPositionSync = useCallback((fn: OnPositionSyncFn | null) => {
+    onPositionSyncRef.current = fn;
+  }, []);
   const setOnSyncDice = useCallback((fn: OnSyncDiceFn | null) => {
     onSyncDiceRef.current = fn;
   }, []);
@@ -965,6 +972,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     setOnClockSync,
     sendDiceSync,
     sendCardSync,
+    setOnPositionSync,
     setOnSyncDice,
     setOnSyncCard,
     createFourPlayerLobby,

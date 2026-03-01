@@ -31,16 +31,11 @@ import SidebarSearchButton from '../Kbar/SidebarSearchButton';
 import { SidebarSchemeButton } from '../Scheme';
 import { SidebarThemeButton } from '../Theme';
 import SidebarUserMenu from './SidebarUserMenu';
-
 export default function AppSidebar() {
   const pathname = usePathname();
   const { isOpen } = useMediaQuery();
   const itemsToShow = useFilteredNavItems(navItems);
-
-  React.useEffect(() => {
-    // Side effects based on sidebar state changes
-  }, [isOpen]);
-
+  React.useEffect(() => {}, [isOpen]);
   return (
     <Sidebar collapsible='icon'>
       <SidebarHeader>

@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -11,13 +10,11 @@ import {
   DEFAULT_FLAG_CODE,
   normalizeFlagCode
 } from '@/features/settings/flags';
-
 type UserSettingsResponse = {
   name: string;
   email: string;
   flagCode: string;
 };
-
 export function SettingsPageView() {
   const [activePane, setActivePane] = useState<'game' | 'personal'>('game');
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +26,6 @@ export function SettingsPageView() {
   const [saveState, setSaveState] = useState<
     'idle' | 'saving' | 'saved' | 'error'
   >('idle');
-
   useEffect(() => {
     let mounted = true;
     fetch('/api/user/settings')
@@ -49,12 +45,10 @@ export function SettingsPageView() {
       mounted = false;
     };
   }, []);
-
   const hasUnsavedChanges = useMemo(
     () => normalizeFlagCode(flagCode) !== normalizeFlagCode(savedFlagCode),
     [flagCode, savedFlagCode]
   );
-
   const handleSave = async () => {
     setIsSaving(true);
     setSaveState('saving');
@@ -78,7 +72,6 @@ export function SettingsPageView() {
       setIsSaving(false);
     }
   };
-
   if (isLoading) {
     return (
       <div className='mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8'>
@@ -103,7 +96,6 @@ export function SettingsPageView() {
       </div>
     );
   }
-
   const normalizedFlagCode = normalizeFlagCode(flagCode);
   const buttonText = (() => {
     if (saveState === 'saving') return 'Saving…';
@@ -111,14 +103,12 @@ export function SettingsPageView() {
     if (saveState === 'error') return 'Retry save';
     return 'Save changes';
   })();
-
   const navButtonClass = (pane: 'game' | 'personal') =>
     `w-full justify-start transition-colors ${
       activePane === pane
         ? 'text-foreground'
         : 'text-muted-foreground hover:text-foreground active:text-foreground'
     }`;
-
   return (
     <div className='mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8'>
       <div className='space-y-1'>
@@ -200,7 +190,7 @@ export function SettingsPageView() {
                   <Link href='/profile'>Go to profile</Link>
                 </Button>
                 <Button variant='outline' asChild>
-                  <Link href='/games'>View game history</Link>
+                  <Link href='/history'>View game history</Link>
                 </Button>
               </div>
             </>

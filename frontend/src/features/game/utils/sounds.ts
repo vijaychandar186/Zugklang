@@ -1,6 +1,6 @@
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { DEFAULT_SOUND_THEME } from '@/features/chess/config/media-themes';
-
+import { NOTIFY_SOUND_PATH, THEME_AUDIO_BASE } from '@/lib/public-paths';
 export type SoundType =
   | 'game-start'
   | 'game-end'
@@ -31,25 +31,22 @@ const SOUND_FILES: Record<SoundType, string> = {
   'draw-offer': 'draw-offer.mp3'
 };
 const audioCache: Record<string, HTMLAudioElement> = {};
-
 function getSoundThemeName() {
   if (typeof window === 'undefined') return DEFAULT_SOUND_THEME;
   return useChessStore.getState().soundThemeName ?? DEFAULT_SOUND_THEME;
 }
-
 function getThemedSoundPath(type: SoundType) {
-  if (type === 'notify') return '/audio/sounds/notify.mp3';
-  return `/theme/assets/${getSoundThemeName()}/${SOUND_FILES[type]}`;
+  if (type === 'notify') return NOTIFY_SOUND_PATH;
+  return `${THEME_AUDIO_BASE}/${getSoundThemeName()}/${SOUND_FILES[type]}`;
 }
-
 function preloadSounds() {
   if (typeof window === 'undefined') return;
   const themeName = getSoundThemeName();
   (Object.keys(SOUND_FILES) as SoundType[]).forEach((type) => {
     const path =
       type === 'notify'
-        ? '/audio/sounds/notify.mp3'
-        : `/theme/assets/${themeName}/${SOUND_FILES[type]}`;
+        ? NOTIFY_SOUND_PATH
+        : `${THEME_AUDIO_BASE}/${themeName}/${SOUND_FILES[type]}`;
     if (audioCache[path]) return;
     const audio = new Audio(path);
     audio.preload = 'auto';

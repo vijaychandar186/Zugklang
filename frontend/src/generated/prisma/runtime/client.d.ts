@@ -22,44 +22,15 @@ import { RawValue } from '@prisma/client-runtime-utils';
 import { Sql } from '@prisma/client-runtime-utils';
 import { sql as sqltag } from '@prisma/client-runtime-utils';
 import { Value } from '@prisma/client-runtime-utils';
-
-/**
- * @param this
- */
 declare function $extends(
   this: Client,
   extension: ExtensionArgs | ((client: Client) => Client)
 ): Client;
-
-/**
- * Used by `@prisma/extension-accelerate` until we migrate it to a better API.
- */
 declare interface AccelerateEngineConfig extends EngineConfig {
-  /**
-   * Allows Accelerate to use runtime utilities from the client. These are
-   * necessary for `@prisma/extension-accelerate` to function correctly.
-   * See <https://github.com/prisma/prisma-extension-accelerate/blob/b6ffa853f038780f5ab2fc01bff584ca251f645b/src/extension.ts#L518>
-   */
   accelerateUtils: {
     resolveDatasourceUrl: () => string;
   };
 }
-
-/**
- * A stripped down interface of `fetch` that `@prisma/extension-accelerate`
- * relies on. It must be in sync with the corresponding definition in the
- * Accelerate extension.
- *
- * This is the actual interface exposed by the extension. We can't use the
- * custom fetch function provided by it as normal fetch because the API is
- * different. Notably, `headers` must be an object and not a `Headers`
- * instance, and `url` must be a `string` and not a `URL`.
- *
- * The return type is `Response` but we can't specify this in an exported type
- * because it would end up referencing external types from `@types/node` or DOM
- * which can fail typechecking depending on TypeScript configuration in a user's
- * project.
- */
 declare type AccelerateExtensionFetch = (
   url: string,
   options: {
@@ -68,33 +39,23 @@ declare type AccelerateExtensionFetch = (
     headers: Record<string, string>;
   }
 ) => Promise<unknown>;
-
 declare type AccelerateExtensionFetchDecorator = (
   fetch: AccelerateExtensionFetch
 ) => AccelerateExtensionFetch;
-
 export declare type Action =
   | keyof typeof DMMF_2.ModelAction
   | 'executeRaw'
   | 'queryRaw'
   | 'runCommandRaw';
-
 declare type ActiveConnectorType = Exclude<
   ConnectorType,
   'postgres' | 'prisma+postgres'
 >;
-
-/**
- * An interface that exposes some basic information about the
- * adapter like its name and provider type.
- */
 declare interface AdapterInfo {
   readonly provider: Provider;
   readonly adapterName: (typeof officialPrismaAdapters)[number] | (string & {});
 }
-
 export declare type Aggregate = '_count' | '_max' | '_min' | '_avg' | '_sum';
-
 export declare type AllModelsToStringIndex<
   TypeMap extends TypeMapDef,
   Args extends Record<string, any>,
@@ -108,15 +69,11 @@ export declare type AllModelsToStringIndex<
       [P in K]: Record<TypeMap['meta']['modelProps'], AllModels>;
     }
   : {};
-
 export { AnyNull };
-
 export { AnyNullClass };
-
 export declare type ApplyOmit<T, OmitConfig> = Compute<{
   [K in keyof T as OmitValue<OmitConfig, K> extends true ? never : K]: T[K];
 }>;
-
 export declare type Args<T, F extends Operation> = T extends {
   [K: symbol]: {
     types: {
@@ -130,9 +87,7 @@ export declare type Args<T, F extends Operation> = T extends {
 }
   ? T[symbol]['types']['operations'][F]['args']
   : any;
-
 export declare type Args_3<T, F extends Operation> = Args<T, F>;
-
 declare type ArgScalarType =
   | 'string'
   | 'int'
@@ -146,29 +101,15 @@ declare type ArgScalarType =
   | 'datetime'
   | 'bytes'
   | 'unknown';
-
 declare type ArgType = {
   scalarType: ArgScalarType;
   dbType?: string;
   arity: Arity;
 };
-
 declare type Arity = 'scalar' | 'list';
-
-/**
- * Attributes is a map from string to attribute values.
- *
- * Note: only the own enumerable keys are counted as valid attribute keys.
- */
 declare interface Attributes {
   [attributeKey: string]: AttributeValue | undefined;
 }
-
-/**
- * Attribute values may be any non-nullish primitive value except an object.
- *
- * null or undefined attribute values are invalid and will result in undefined behavior.
- */
 declare type AttributeValue =
   | string
   | number
@@ -176,35 +117,28 @@ declare type AttributeValue =
   | Array<null | undefined | string>
   | Array<null | undefined | number>
   | Array<null | undefined | boolean>;
-
 export declare type BaseDMMF = {
   readonly datamodel: Omit<DMMF_2.Datamodel, 'indexes'>;
 };
-
 declare type BatchArgs = {
   queries: BatchQuery[];
   transaction?: {
     isolationLevel?: IsolationLevel_2;
   };
 };
-
 declare type BatchInternalParams = {
   requests: RequestParams[];
   customDataProxyFetch?: AccelerateExtensionFetchDecorator;
 };
-
 declare type BatchQuery = {
   model: string | undefined;
   operation: string;
   args: JsArgs | RawQueryArgs;
 };
-
 declare type BatchQueryEngineResult<T> = QueryEngineResultData<T> | Error;
-
 declare type BatchQueryOptionsCb = (
   args: BatchQueryOptionsCbArgs
 ) => Promise<any>;
-
 declare type BatchQueryOptionsCbArgs = {
   args: BatchArgs;
   query: (
@@ -213,55 +147,40 @@ declare type BatchQueryOptionsCbArgs = {
   ) => Promise<unknown[]>;
   __internalParams: BatchInternalParams;
 };
-
 declare type BatchResponse = MultiBatchResponse | CompactedBatchResponse;
-
 declare type BatchTransactionOptions = {
   isolationLevel?: Transaction_2.IsolationLevel;
 };
-
-/**
- * Equivalent to `Uint8Array` before TypeScript 5.7, and `Uint8Array<ArrayBuffer>` in TypeScript 5.7 and beyond.
- */
 export declare type Bytes = ReturnType<Uint8Array['slice']>;
-
 export declare type Call<F extends Fn, P> = (F & {
   params: P;
 })['returns'];
-
 declare interface CallSite {
   getLocation(): LocationInFile | null;
 }
-
 export declare type Cast<A, W> = A extends W ? A : W;
-
 declare type Client =
   ReturnType<typeof getPrismaClient> extends new (
     optionsArg: PrismaClientOptions
   ) => infer T
     ? T
     : never;
-
 export declare type ClientArg = {
   [MethodName in string]: unknown;
 };
-
 export declare type ClientArgs = {
   client: ClientArg;
 };
-
 export declare type ClientBuiltInProp = keyof DynamicClientExtensionThisBuiltin<
   never,
   never,
   never
 >;
-
 export declare type ClientOptionDef =
   | undefined
   | {
       [K in string]: any;
     };
-
 export declare type ClientOtherOps = {
   $queryRaw<T = unknown>(
     query: TemplateStringsArray | Sql,
@@ -279,9 +198,7 @@ export declare type ClientOtherOps = {
   $executeRawUnsafe(query: string, ...values: any[]): PrismaPromise<number>;
   $runCommandRaw(command: InputJsonObject): PrismaPromise<JsonObject>;
 };
-
 declare type ColumnType = (typeof ColumnTypeEnum)[keyof typeof ColumnTypeEnum];
-
 declare const ColumnTypeEnum: {
   readonly Int32: 0;
   readonly Int64: 1;
@@ -316,7 +233,6 @@ declare const ColumnTypeEnum: {
   readonly UuidArray: 78;
   readonly UnknownNumber: 128;
 };
-
 declare type CompactedBatchResponse = {
   type: 'compacted';
   plan: QueryPlanNode;
@@ -325,54 +241,37 @@ declare type CompactedBatchResponse = {
   keys: string[];
   expectNonEmpty: boolean;
 };
-
 declare type CompilerWasmLoadingConfig = {
-  /**
-   * WASM-bindgen runtime for corresponding module
-   */
   getRuntime: () => Promise<{
     __wbg_set_wasm(exports: unknown): void;
     QueryCompiler: QueryCompilerConstructor;
   }>;
-  /**
-   * Loads the raw wasm module for the wasm compiler engine. This configuration is
-   * generated specifically for each type of client, eg. Node.js client and Edge
-   * clients will have different implementations.
-   * @remarks this is a callback on purpose, we only load the wasm if needed.
-   * @remarks only used by ClientEngine
-   */
   getQueryCompilerWasmModule: () => Promise<unknown>;
   importName: string;
 };
-
 export declare type Compute<T> = T extends Function
   ? T
   : {
       [K in keyof T]: T[K];
     } & unknown;
-
 export declare type ComputeDeep<T> = T extends Function
   ? T
   : {
       [K in keyof T]: ComputeDeep<T[K]>;
     } & unknown;
-
 declare type ComputedField = {
   name: string;
   needs: string[];
   compute: ResultArgsFieldCompute;
 };
-
 declare type ComputedFieldsMap = {
   [fieldName: string]: ComputedField;
 };
-
 declare type ConnectionInfo = {
   schemaName?: string;
   maxBindValues?: number;
   supportsRelationJoins: boolean;
 };
-
 declare type ConnectorType =
   | 'mysql'
   | 'mongodb'
@@ -382,31 +281,11 @@ declare type ConnectorType =
   | 'prisma+postgres'
   | 'sqlserver'
   | 'cockroachdb';
-
 declare interface Context {
-  /**
-   * Get a value from the context.
-   *
-   * @param key key which identifies a context value
-   */
   getValue(key: symbol): unknown;
-  /**
-   * Create a new context which inherits from this context and has
-   * the given key set to the given value.
-   *
-   * @param key context key for which to set the value
-   * @param value value to set for the given key
-   */
   setValue(key: symbol, value: unknown): Context;
-  /**
-   * Return a new context which inherits from this context but does
-   * not contain a value for the given key.
-   *
-   * @param key context key for which to clear a value
-   */
   deleteValue(key: symbol): Context;
 }
-
 declare type Context_2<T> = T extends {
   [K: symbol]: {
     ctx: infer C;
@@ -414,28 +293,19 @@ declare type Context_2<T> = T extends {
 }
   ? C &
       T & {
-        /**
-         * @deprecated Use `$name` instead.
-         */
         name?: string;
         $name?: string;
         $parent?: unknown;
       }
   : T & {
-      /**
-       * @deprecated Use `$name` instead.
-       */
       name?: string;
       $name?: string;
       $parent?: unknown;
     };
-
 export declare type Count<O> = {
   [K in keyof O]: Count<number>;
 } & {};
-
 export declare function createParam(name: string): Param<unknown, string>;
-
 declare class DataLoader<T = unknown> {
   private options;
   batches: {
@@ -447,32 +317,27 @@ declare class DataLoader<T = unknown> {
   private dispatchBatches;
   get [Symbol.toStringTag](): string;
 }
-
 declare type DataLoaderOptions<T> = {
   singleLoader: (request: T) => Promise<any>;
   batchLoader: (request: T[]) => Promise<any[]>;
   batchBy: (request: T) => string | undefined;
   batchOrder: (requestA: T, requestB: T) => number;
 };
-
 declare type Datamodel = ReadonlyDeep_2<{
   models: Model[];
   enums: DatamodelEnum[];
   types: Model[];
   indexes: Index[];
 }>;
-
 declare type DatamodelEnum = ReadonlyDeep_2<{
   name: string;
   values: EnumValue[];
   dbName?: string | null;
   documentation?: string;
 }>;
-
 declare function datamodelEnumToSchemaEnum(
   datamodelEnum: DatamodelEnum
 ): SchemaEnum;
-
 declare type DataRule =
   | {
       type: 'rowCountEq';
@@ -489,11 +354,8 @@ declare type DataRule =
   | {
       type: 'never';
     };
-
 export { DbNull };
-
 export { DbNullClass };
-
 export declare const Debug: typeof debugCreate & {
   enable(namespace: any): void;
   disable(): any;
@@ -501,17 +363,6 @@ export declare const Debug: typeof debugCreate & {
   log: (...args: string[]) => void;
   formatters: {};
 };
-
-/**
- * Create a new debug instance with the given namespace.
- *
- * @example
- * ```ts
- * import Debug from '@prisma/debug'
- * const debug = Debug('prisma:client')
- * debug('Hello World')
- * ```
- */
 declare function debugCreate(namespace: string): ((...args: any[]) => void) & {
   color: string;
   enabled: boolean;
@@ -519,23 +370,14 @@ declare function debugCreate(namespace: string): ((...args: any[]) => void) & {
   log: (...args: string[]) => void;
   extend: () => void;
 };
-
 export { Decimal };
-
-/**
- * Interface for any Decimal.js-like library
- * Allows us to accept Decimal.js from different
- * versions and some compatible alternatives
- */
 export declare interface DecimalJsLike {
   d: number[];
   e: number;
   s: number;
   toFixed(): string;
 }
-
 export declare type DefaultArgs = InternalArgs<{}, {}, {}, {}>;
-
 export declare type DefaultSelection<
   Payload extends OperationPayload,
   Args = {},
@@ -558,16 +400,13 @@ export declare type DefaultSelection<
       }>['default'],
       ExtractGlobalOmit<GlobalOmitOptions, Uncapitalize<Payload['name']>>
     >;
-
 export declare function defineDmmfProperty(
   target: object,
   runtimeDataModel: RuntimeDataModel
 ): void;
-
 declare function defineExtension(
   ext: ExtensionArgs | ((client: Client) => Client)
 ): (client: Client) => Client;
-
 declare const denylist: readonly [
   '$connect',
   '$disconnect',
@@ -575,21 +414,16 @@ declare const denylist: readonly [
   '$transaction',
   '$extends'
 ];
-
 declare type Deprecation = ReadonlyDeep_2<{
   sinceVersion: string;
   reason: string;
   plannedRemovalVersion?: string;
 }>;
-
 declare type DeserializedResponse = Array<Record<string, unknown>>;
-
 export declare function deserializeJsonResponse(result: unknown): unknown;
-
 export declare function deserializeRawResult(
   response: RawResponse
 ): DeserializedResponse;
-
 export declare type DevTypeMapDef = {
   meta: {
     modelProps: string;
@@ -603,13 +437,11 @@ export declare type DevTypeMapDef = {
     [Operation in PropertyKey]: DevTypeMapFnDef;
   };
 };
-
 export declare type DevTypeMapFnDef = {
   args: any;
   result: any;
   payload: OperationPayload;
 };
-
 export declare namespace DMMF {
   export {
     datamodelEnumToSchemaEnum,
@@ -651,7 +483,6 @@ export declare namespace DMMF {
     ReadonlyDeep_2 as ReadonlyDeep
   };
 }
-
 declare namespace DMMF_2 {
   export {
     datamodelEnumToSchemaEnum,
@@ -693,36 +524,23 @@ declare namespace DMMF_2 {
     ReadonlyDeep_2 as ReadonlyDeep
   };
 }
-
 export declare function dmmfToRuntimeDataModel(
   dmmfDataModel: DMMF_2.Datamodel
 ): RuntimeDataModel;
-
 declare type Document_2 = ReadonlyDeep_2<{
   datamodel: Datamodel;
   schema: Schema;
   mappings: Mappings;
 }>;
-
-/**
- * A generic driver adapter factory that allows the user to instantiate a
- * driver adapter. The query and result types are specific to the adapter.
- */
 declare interface DriverAdapterFactory<Query, Result> extends AdapterInfo {
-  /**
-   * Instantiate a driver adapter.
-   */
   connect(): Promise<Queryable<Query, Result>>;
 }
-
 declare type DynamicArgType =
   | ArgType
   | {
       arity: 'tuple';
       elements: ArgType[];
     };
-
-/** Client */
 export declare type DynamicClientExtensionArgs<
   C_,
   TypeMap extends TypeMapDef,
@@ -743,7 +561,6 @@ export declare type DynamicClientExtensionArgs<
     };
   };
 };
-
 export declare type DynamicClientExtensionThis<
   TypeMap extends TypeMapDef,
   TypeMapCb extends TypeMapCbDef,
@@ -770,7 +587,6 @@ export declare type DynamicClientExtensionThis<
     types: TypeMap['other'];
   };
 };
-
 export declare type DynamicClientExtensionThisBuiltin<
   TypeMap extends TypeMapDef,
   TypeMapCb extends TypeMapCbDef,
@@ -809,8 +625,6 @@ export declare type DynamicClientExtensionThisBuiltin<
   $disconnect(): Promise<void>;
   $connect(): Promise<void>;
 };
-
-/** Model */
 export declare type DynamicModelExtensionArgs<
   M_,
   TypeMap extends TypeMapDef,
@@ -837,16 +651,12 @@ export declare type DynamicModelExtensionArgs<
             } & {
               $name: ModelKey<TypeMap, K>;
             } & {
-              /**
-               * @deprecated Use `$name` instead.
-               */
               name: ModelKey<TypeMap, K>;
             };
           };
         }
       : never;
 };
-
 export declare type DynamicModelExtensionFluentApi<
   TypeMap extends TypeMapDef,
   M extends PropertyKey,
@@ -881,7 +691,6 @@ export declare type DynamicModelExtensionFluentApi<
       Null | Select<TypeMap['model'][M]['payload']['objects'][K], null>
     >;
 };
-
 export declare type DynamicModelExtensionFnResult<
   TypeMap extends TypeMapDef,
   M extends PropertyKey,
@@ -892,7 +701,6 @@ export declare type DynamicModelExtensionFnResult<
   ? DynamicModelExtensionFluentApi<TypeMap, M, P, Null> &
       PrismaPromise<DynamicModelExtensionFnResultBase<TypeMap, M, A, P> | Null>
   : PrismaPromise<DynamicModelExtensionFnResultBase<TypeMap, M, A, P>>;
-
 export declare type DynamicModelExtensionFnResultBase<
   TypeMap extends TypeMapDef,
   M extends PropertyKey,
@@ -904,10 +712,8 @@ export declare type DynamicModelExtensionFnResultBase<
   P & Operation,
   TypeMap['globalOmitOptions']
 >;
-
 export declare type DynamicModelExtensionFnResultNull<P extends PropertyKey> =
   P extends 'findUnique' | 'findFirst' ? null : never;
-
 export declare type DynamicModelExtensionOperationFn<
   TypeMap extends TypeMapDef,
   M extends PropertyKey,
@@ -931,7 +737,6 @@ export declare type DynamicModelExtensionOperationFn<
       P,
       DynamicModelExtensionFnResultNull<P>
     >;
-
 export declare type DynamicModelExtensionThis<
   TypeMap extends TypeMapDef,
   M extends PropertyKey,
@@ -955,8 +760,6 @@ export declare type DynamicModelExtensionThis<
     types: TypeMap['model'][M];
   };
 };
-
-/** Query */
 export declare type DynamicQueryExtensionArgs<
   Q_,
   TypeMap extends TypeMapDef
@@ -1017,7 +820,6 @@ export declare type DynamicQueryExtensionArgs<
           ? DynamicQueryExtensionCb<[TypeMap], 0, 'other', K>
           : never;
 };
-
 export declare type DynamicQueryExtensionCb<
   TypeMap extends TypeMapDef,
   _0 extends PropertyKey,
@@ -1026,7 +828,6 @@ export declare type DynamicQueryExtensionCb<
 > = <A extends DynamicQueryExtensionCbArgs<TypeMap, _0, _1, _2>>(
   args: A
 ) => Promise<TypeMap[_0][_1][_2]['result']>;
-
 export declare type DynamicQueryExtensionCbArgs<
   TypeMap extends TypeMapDef,
   _0 extends PropertyKey,
@@ -1048,7 +849,6 @@ export declare type DynamicQueryExtensionCbArgs<
     args: DynamicQueryExtensionCbArgsArgs<TypeMap, _0, _1, _2>
   ) => PrismaPromise<TypeMap[_0][_1]['operations'][_2]['result']>;
 };
-
 export declare type DynamicQueryExtensionCbArgsArgs<
   TypeMap extends TypeMapDef,
   _0 extends PropertyKey,
@@ -1057,8 +857,6 @@ export declare type DynamicQueryExtensionCbArgsArgs<
 > = _2 extends '$queryRaw' | '$executeRaw'
   ? Sql
   : TypeMap[_0][_1]['operations'][_2]['args'];
-
-/** Result */
 export declare type DynamicResultExtensionArgs<
   R_,
   TypeMap extends TypeMapDef
@@ -1080,7 +878,6 @@ export declare type DynamicResultExtensionArgs<
     };
   };
 };
-
 export declare type DynamicResultExtensionData<
   TypeMap extends TypeMapDef,
   M extends PropertyKey,
@@ -1092,7 +889,6 @@ export declare type DynamicResultExtensionData<
   },
   {}
 >;
-
 export declare type DynamicResultExtensionNeeds<
   TypeMap extends TypeMapDef,
   M extends PropertyKey,
@@ -1104,13 +900,9 @@ export declare type DynamicResultExtensionNeeds<
 } & {
   [N in keyof TypeMap['model'][M]['payload']['scalars']]?: boolean;
 };
-
 export { empty };
-
 export declare type EmptyToUnknown<T> = T;
-
 declare interface Engine<InteractiveTransactionPayload = unknown> {
-  /** The name of the engine. This is meant to be consumed externally */
   readonly name: string;
   onBeforeExit(callback: () => Promise<void>): void;
   start(): Promise<void>;
@@ -1140,7 +932,6 @@ declare interface Engine<InteractiveTransactionPayload = unknown> {
     info: Transaction_2.InteractiveTransactionInfo<unknown>
   ): Promise<void>;
 }
-
 declare interface EngineConfig {
   enableDebugLogs?: boolean;
   prismaPath?: string;
@@ -1151,49 +942,19 @@ declare interface EngineConfig {
   activeProvider?: string;
   logEmitter: LogEmitter;
   transactionOptions: Transaction_2.Options;
-  /**
-   * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-pg`.
-   */
   adapter?: SqlDriverAdapterFactory;
-  /**
-   * Prisma Accelerate URL allowing the client to connect through Accelerate instead of a direct database.
-   */
   accelerateUrl?: string;
-  /**
-   * The contents of the schema encoded into a string
-   */
   inlineSchema: string;
-  /**
-   * The helper for interaction with OTEL tracing
-   * @remarks enabling is determined by the client and @prisma/instrumentation package
-   */
   tracingHelper: TracingHelper;
-  /**
-   * Web Assembly module loading configuration
-   */
   compilerWasm?: CompilerWasmLoadingConfig;
-  /**
-   * SQL commenter plugins that add metadata to SQL queries as comments.
-   * Each plugin receives query context and returns key-value pairs.
-   */
   sqlCommenters?: SqlCommenterPlugin[];
-  /**
-   * Parameterization schema (ParamGraph) for schema-aware query parameterization.
-   * Enables precise parameterization based on DMMF metadata.
-   */
   parameterizationSchema: SerializedParamGraph;
-  /**
-   * Runtime data model for enum lookups during parameterization.
-   */
   runtimeDataModel: RuntimeDataModel;
 }
-
 declare type EngineEvent<E extends EngineEventType> = E extends QueryEventType
   ? QueryEvent
   : LogEvent;
-
 declare type EngineEventType = QueryEventType | LogEventType;
-
 declare type EngineSpan = {
   id: EngineSpanId;
   parentId: string | null;
@@ -1204,21 +965,15 @@ declare type EngineSpan = {
   attributes?: Record<string, unknown>;
   links?: EngineSpanId[];
 };
-
 declare type EngineSpanId = string;
-
 declare type EngineSpanKind = 'client' | 'internal';
-
 declare type EnumValue = ReadonlyDeep_2<{
   name: string;
   dbName: string | null;
 }>;
-
 export declare type Equals<A, B> =
   (<T>() => T extends A ? 1 : 2) extends <T>() => T extends B ? 1 : 2 ? 1 : 0;
-
 declare type ErrorFormat = 'pretty' | 'colorless' | 'minimal';
-
 declare type EventCallback<E extends ExtendedEventType> = [E] extends [
   'beforeExit'
 ]
@@ -1226,7 +981,6 @@ declare type EventCallback<E extends ExtendedEventType> = [E] extends [
   : [E] extends [LogLevel]
     ? (event: EngineEvent<E>) => void
     : never;
-
 export declare type Exact<A, W> =
   | (A extends unknown
       ? W extends A
@@ -1236,52 +990,36 @@ export declare type Exact<A, W> =
         : W
       : never)
   | (A extends Narrowable ? A : never);
-
-/**
- * Defines Exception.
- *
- * string or an object with one of (message or name or code) and optional stack
- */
 declare type Exception =
   | ExceptionWithCode
   | ExceptionWithMessage
   | ExceptionWithName
   | string;
-
 declare interface ExceptionWithCode {
   code: string | number;
   name?: string;
   message?: string;
   stack?: string;
 }
-
 declare interface ExceptionWithMessage {
   code?: string | number;
   message: string;
   name?: string;
   stack?: string;
 }
-
 declare interface ExceptionWithName {
   code?: string | number;
   message?: string;
   name: string;
   stack?: string;
 }
-
 declare type ExtendedEventType = LogLevel | 'beforeExit';
-
 declare interface ExtendedSpanOptions extends SpanOptions {
-  /** The name of the span */
   name: string;
   internal?: boolean;
-  /** Whether it propagates context (?=true) */
   active?: boolean;
-  /** The context to append the span to */
   context?: Context;
 }
-
-/** $extends, defineExtension */
 export declare interface ExtendsHook<
   Variant extends 'extends' | 'define',
   TypeMapCb extends TypeMapCbDef,
@@ -1350,14 +1088,11 @@ export declare interface ExtendsHook<
     };
   }[Variant];
 }
-
 export declare type ExtensionArgs = Optional<RequiredExtensionArgs>;
-
 declare namespace Extensions {
   export { defineExtension, getExtensionContext };
 }
 export { Extensions };
-
 declare namespace Extensions_2 {
   export {
     InternalArgs,
@@ -1398,7 +1133,6 @@ declare namespace Extensions_2 {
     RequiredExtensionArgs as UserArgs
   };
 }
-
 export declare type ExtractGlobalOmit<
   Options,
   ModelName extends string
@@ -1409,7 +1143,6 @@ export declare type ExtractGlobalOmit<
 }
   ? GlobalOmit
   : {};
-
 declare type Field = ReadonlyDeep_2<{
   kind: FieldKind;
   name: string;
@@ -1420,16 +1153,7 @@ declare type Field = ReadonlyDeep_2<{
   isReadOnly: boolean;
   isGenerated?: boolean;
   isUpdatedAt?: boolean;
-  /**
-   * Describes the data type in the same the way it is defined in the Prisma schema:
-   * BigInt, Boolean, Bytes, DateTime, Decimal, Float, Int, JSON, String, $ModelName
-   */
   type: string;
-  /**
-   * Native database type, if specified.
-   * For example, `@db.VarChar(191)` is encoded as `['VarChar', ['191']]`,
-   * `@db.Text` is encoded as `['Text', []]`.
-   */
   nativeType?: [string, string[]] | null;
   dbName?: string | null;
   hasDefaultValue: boolean;
@@ -1441,14 +1165,11 @@ declare type Field = ReadonlyDeep_2<{
   relationName?: string;
   documentation?: string;
 }>;
-
 declare type FieldDefault = ReadonlyDeep_2<{
   name: string;
   args: Array<string | number>;
 }>;
-
 declare type FieldDefaultScalar = string | boolean | number;
-
 declare type FieldInitializer =
   | {
       type: 'value';
@@ -1457,18 +1178,14 @@ declare type FieldInitializer =
   | {
       type: 'lastInsertId';
     };
-
 declare type FieldKind = 'scalar' | 'object' | 'enum' | 'unsupported';
-
 declare type FieldLocation =
   | 'scalar'
   | 'inputObjectTypes'
   | 'outputObjectTypes'
   | 'enumTypes'
   | 'fieldRefTypes';
-
 declare type FieldNamespace = 'model' | 'prisma';
-
 declare type FieldOperation =
   | {
       type: 'set';
@@ -1490,25 +1207,18 @@ declare type FieldOperation =
       type: 'divide';
       value: PrismaValue;
     };
-
-/**
- * A reference to a specific field of a specific model
- */
 export declare interface FieldRef<Model, FieldType> {
   readonly modelName: Model;
   readonly name: string;
   readonly typeName: FieldType;
   readonly isList: boolean;
 }
-
 declare type FieldRefAllowType = TypeRef<'scalar' | 'enumTypes'>;
-
 declare type FieldRefType = ReadonlyDeep_2<{
   name: string;
   allowTypes: FieldRefAllowType[];
   fields: SchemaArg[];
 }>;
-
 declare type FieldScalarType =
   | {
       type:
@@ -1531,11 +1241,9 @@ declare type FieldScalarType =
       type: 'bytes';
       encoding: 'array' | 'base64' | 'hex';
     };
-
 declare type FieldType = {
   arity: Arity;
 } & FieldScalarType;
-
 declare type FluentOperation =
   | 'findUnique'
   | 'findUniqueOrThrow'
@@ -1545,12 +1253,10 @@ declare type FluentOperation =
   | 'update'
   | 'upsert'
   | 'delete';
-
 export declare interface Fn<Params = unknown, Returns = unknown> {
   params: Params;
   returns: Returns;
 }
-
 declare type Fragment =
   | {
       type: 'stringChunk';
@@ -1569,7 +1275,6 @@ declare type Fragment =
       itemSuffix: string;
       groupSeparator: string;
     };
-
 export declare type GetAggregateResult<P extends OperationPayload, A> = {
   [K in keyof A as K extends Aggregate ? K : never]: K extends '_count'
     ? A[K] extends true
@@ -1579,11 +1284,9 @@ export declare type GetAggregateResult<P extends OperationPayload, A> = {
         [J in keyof A[K] & string]: P['scalars'][J] | null;
       };
 };
-
 export declare type GetBatchResult = {
   count: number;
 };
-
 export declare type GetCountResult<A> = A extends {
   select: infer S;
 }
@@ -1591,9 +1294,7 @@ export declare type GetCountResult<A> = A extends {
     ? number
     : Count<S>
   : number;
-
 declare function getExtensionContext<T>(that: T): Context_2<T>;
-
 export declare type GetFindResult<
   P extends OperationPayload,
   A,
@@ -1660,7 +1361,6 @@ export declare type GetFindResult<
             >
           : unknown)
       : DefaultSelection<P, A, GlobalOmitOptions>;
-
 export declare type GetGroupByResult<
   P extends OperationPayload,
   A
@@ -1681,7 +1381,6 @@ export declare type GetGroupByResult<
         }
       >
     : {}[];
-
 export declare type GetOmit<
   BaseKeys extends string,
   R extends InternalArgs['result'][string],
@@ -1691,18 +1390,15 @@ export declare type GetOmit<
     | boolean
     | ExtraType;
 };
-
 export declare type GetPayloadResult<
   Base extends Record<any, any>,
   R extends InternalArgs['result'][string]
 > = Omit<Base, GetPayloadResultExtensionKeys<R>> &
   GetPayloadResultExtensionObject<R>;
-
 export declare type GetPayloadResultExtensionKeys<
   R extends InternalArgs['result'][string],
   KR extends keyof R = string extends keyof R ? never : keyof R
 > = KR;
-
 export declare type GetPayloadResultExtensionObject<
   R extends InternalArgs['result'][string]
 > = {
@@ -1712,7 +1408,6 @@ export declare type GetPayloadResultExtensionObject<
     ? C
     : never;
 };
-
 export declare function getPrismaClient(config: GetPrismaClientConfig): {
   new (optionsArg: PrismaClientOptions): {
     _originalClient: any;
@@ -1729,14 +1424,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
     _activeProvider: string;
     _globalOmit?: GlobalOmitOptions | undefined;
     _extensions: MergedExtensionsList;
-    /**
-     * @remarks This is used internally by Policy, do not rename or remove
-     */
     _engine: Engine;
-    /**
-     * A fully constructed/applied Client that references the parent
-     * PrismaClient. This is used for Client extensions only.
-     */
     _appliedParent: any;
     _createPrismaPromise: PrismaPromiseFactory;
     $on<E extends ExtendedEventType>(
@@ -1744,95 +1432,39 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
       callback: EventCallback<E>
     ): any;
     $connect(): Promise<void>;
-    /**
-     * Disconnect from the database
-     */
     $disconnect(): Promise<void>;
-    /**
-     * Executes a raw query and always returns a number
-     */
     $executeRawInternal(
       transaction: PrismaPromiseTransaction | undefined,
       clientMethod: string,
       args: RawQueryArgs,
       middlewareArgsMapper?: MiddlewareArgsMapper<unknown, unknown>
     ): Promise<number>;
-    /**
-     * Executes a raw query provided through a safe tag function
-     * @see https://github.com/prisma/prisma/issues/7142
-     *
-     * @param query
-     * @param values
-     * @returns
-     */
     $executeRaw(
       query: TemplateStringsArray | Sql,
       ...values: any[]
     ): PrismaPromise_2<unknown, any>;
-    /**
-     * Unsafe counterpart of `$executeRaw` that is susceptible to SQL injections
-     * @see https://github.com/prisma/prisma/issues/7142
-     *
-     * @param query
-     * @param values
-     * @returns
-     */
     $executeRawUnsafe(
       query: string,
       ...values: RawValue[]
     ): PrismaPromise_2<unknown, any>;
-    /**
-     * Executes a raw command only for MongoDB
-     *
-     * @param command
-     * @returns
-     */
     $runCommandRaw(
       command: Record<string, JsInputValue>
     ): PrismaPromise_2<unknown, any>;
-    /**
-     * Executes a raw query and returns selected data
-     */
     $queryRawInternal(
       transaction: PrismaPromiseTransaction | undefined,
       clientMethod: string,
       args: RawQueryArgs,
       middlewareArgsMapper?: MiddlewareArgsMapper<unknown, unknown>
     ): Promise<any>;
-    /**
-     * Executes a raw query provided through a safe tag function
-     * @see https://github.com/prisma/prisma/issues/7142
-     *
-     * @param query
-     * @param values
-     * @returns
-     */
     $queryRaw(
       query: TemplateStringsArray | Sql,
       ...values: any[]
     ): PrismaPromise_2<unknown, any>;
-    /**
-     * Counterpart to $queryRaw, that returns strongly typed results
-     * @param typedSql
-     */
     $queryRawTyped(typedSql: UnknownTypedSql): PrismaPromise_2<unknown, any>;
-    /**
-     * Unsafe counterpart of `$queryRaw` that is susceptible to SQL injections
-     * @see https://github.com/prisma/prisma/issues/7142
-     *
-     * @param query
-     * @param values
-     * @returns
-     */
     $queryRawUnsafe(
       query: string,
       ...values: RawValue[]
     ): PrismaPromise_2<unknown, any>;
-    /**
-     * Execute a batch of requests in a transaction
-     * @param requests
-     * @param options
-     */
     _transactionWithArray({
       promises,
       options
@@ -1840,12 +1472,6 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
       promises: Array<PrismaPromise_2<any>>;
       options?: BatchTransactionOptions;
     }): Promise<any>;
-    /**
-     * Perform a long-running transaction
-     * @param callback
-     * @param options
-     * @returns
-     */
     _transactionWithCallback({
       callback,
       options
@@ -1854,18 +1480,7 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
       options?: Options;
     }): Promise<unknown>;
     _createItxClient(transaction: PrismaPromiseInteractiveTransaction): Client;
-    /**
-     * Execute queries within a transaction
-     * @param input a callback or a query list
-     * @param options to set timeouts (callback)
-     * @returns
-     */
     $transaction(input: any, options?: any): Promise<any>;
-    /**
-     * Runs the middlewares over params before executing a request
-     * @param internalParams
-     * @returns
-     */
     _request(internalParams: InternalRequestParams): Promise<any>;
     _executeRequest({
       args,
@@ -1880,43 +1495,21 @@ export declare function getPrismaClient(config: GetPrismaClientConfig): {
       otelParentCtx,
       customDataProxyFetch
     }: InternalRequestParams): Promise<any>;
-    /**
-     * Shortcut for checking a preview flag
-     * @param feature preview flag
-     * @returns
-     */
     _hasPreviewFlag(feature: string): boolean;
     $extends: typeof $extends;
     readonly [Symbol.toStringTag]: string;
   };
 };
-
-/**
- * Config that is stored into the generated client. When the generated client is
- * loaded, this same config is passed to {@link getPrismaClient} which creates a
- * closure with that config around a non-instantiated [[PrismaClient]].
- */
 export declare type GetPrismaClientConfig = {
   runtimeDataModel: RuntimeDataModel;
   previewFeatures: string[];
   clientVersion: string;
   engineVersion: string;
   activeProvider: ActiveConnectorType;
-  /**
-   * The contents of the schema encoded into a string
-   */
   inlineSchema: string;
-  /**
-   * Optional wasm loading configuration
-   */
   compilerWasm?: CompilerWasmLoadingConfig;
-  /**
-   * Parameterization schema for schema-aware query parameterization.
-   * Enables precise parameterization based on DMMF metadata.
-   */
   parameterizationSchema: SerializedParamGraph;
 };
-
 export declare type GetResult<
   Payload extends OperationPayload,
   Args,
@@ -1949,15 +1542,12 @@ export declare type GetResult<
   findRaw: JsonObject;
   aggregateRaw: JsonObject;
 }[OperationName];
-
 export declare function getRuntime(): GetRuntimeOutput;
-
 declare type GetRuntimeOutput = {
   id: RuntimeName;
   prettyName: string;
   isEdge: boolean;
 };
-
 export declare type GetSelect<
   Base extends Record<any, any>,
   R extends InternalArgs['result'][string],
@@ -1965,13 +1555,11 @@ export declare type GetSelect<
 > = {
   [K in KR | keyof Base]?: K extends KR ? boolean : Base[K];
 };
-
 declare type GlobalOmitOptions = {
   [modelName: string]: {
     [fieldName: string]: boolean;
   };
 };
-
 declare type HandleErrorParams = {
   args: JsArgs;
   error: any;
@@ -1981,23 +1569,8 @@ declare type HandleErrorParams = {
   modelName?: string;
   globalOmit?: GlobalOmitOptions;
 };
-
 declare type HrTime = [number, number];
-
-/**
- * Defines High-Resolution Time.
- *
- * The first number, HrTime[0], is UNIX Epoch time in seconds since 00:00:00 UTC on 1 January 1970.
- * The second number, HrTime[1], represents the partial second elapsed since Unix Epoch time represented by first number in nanoseconds.
- * For example, 2021-01-01T12:30:10.150Z in UNIX Epoch time in milliseconds is represented as 1609504210150.
- * The first number is calculated by converting and truncating the Epoch time in milliseconds to seconds:
- * HrTime[0] = Math.trunc(1609504210150 / 1000) = 1609504210.
- * The second number is calculated by converting the digits after the decimal point of the subtraction, (1609504210150 / 1000) - HrTime[0], to nanoseconds:
- * HrTime[1] = Number((1609504210.150 - HrTime[0]).toFixed(9)) * 1e9 = 150000000.
- * This is represented in HrTime format as [1609504210, 150000000].
- */
 declare type HrTime_2 = [number, number];
-
 declare type Index = ReadonlyDeep_2<{
   model: string;
   type: IndexType;
@@ -2008,16 +1581,13 @@ declare type Index = ReadonlyDeep_2<{
   clustered?: boolean;
   fields: IndexField[];
 }>;
-
 declare type IndexField = ReadonlyDeep_2<{
   name: string;
   sortOrder?: SortOrder;
   length?: number;
   operatorClass?: string;
 }>;
-
 declare type IndexType = 'id' | 'normal' | 'unique' | 'fulltext';
-
 declare type InMemoryOps = {
   pagination: Pagination | null;
   distinct: string[] | null;
@@ -2025,35 +1595,11 @@ declare type InMemoryOps = {
   linkingFields: string[] | null;
   nested: Record<string, InMemoryOps>;
 };
-
-/**
- * Matches a JSON array.
- * Unlike \`JsonArray\`, readonly arrays are assignable to this type.
- */
 export declare interface InputJsonArray
   extends ReadonlyArray<InputJsonValue | null> {}
-
-/**
- * Matches a JSON object.
- * Unlike \`JsonObject\`, this type allows undefined and read-only properties.
- */
 export declare type InputJsonObject = {
   readonly [Key in string]?: InputJsonValue | null;
 };
-
-/**
- * Matches any valid value that can be used as an input for operations like
- * create and update as the value of a JSON field. Unlike \`JsonValue\`, this
- * type allows read-only arrays and read-only object properties and disallows
- * \`null\` at the top level.
- *
- * \`null\` cannot be used as the value of a JSON field because its meaning
- * would be ambiguous. Use \`Prisma.JsonNull\` to store the JSON null value or
- * \`Prisma.DbNull\` to clear the JSON value and set the field to the database
- * NULL value instead.
- *
- * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-by-null-values
- */
 export declare type InputJsonValue =
   | string
   | number
@@ -2063,7 +1609,6 @@ export declare type InputJsonValue =
   | {
       toJSON(): unknown;
     };
-
 declare type InputType = ReadonlyDeep_2<{
   name: string;
   constraints: {
@@ -2077,26 +1622,15 @@ declare type InputType = ReadonlyDeep_2<{
   };
   fields: SchemaArg[];
 }>;
-
 declare type InputTypeRef = TypeRef<
   'scalar' | 'inputObjectTypes' | 'enumTypes' | 'fieldRefTypes'
 >;
-
 declare type InteractiveTransactionInfo<Payload = unknown> = {
-  /**
-   * Transaction ID returned by the query engine.
-   */
   id: string;
-  /**
-   * Arbitrary payload the meaning of which depends on the `Engine` implementation.
-   * It is currently not used in `LibraryEngine`.
-   */
   payload: Payload;
 };
-
 declare type InteractiveTransactionOptions<Payload> =
   Transaction_2.InteractiveTransactionInfo<Payload>;
-
 export declare type InternalArgs<
   R = {
     [K in string]: {
@@ -2136,82 +1670,54 @@ export declare type InternalArgs<
     [K in keyof C]: () => C[K];
   };
 };
-
 declare type InternalRequestParams = {
-  /**
-   * The original client method being called.
-   * Even though the rootField / operation can be changed,
-   * this method stays as it is, as it's what the user's
-   * code looks like
-   */
   clientMethod: string;
-  /**
-   * Name of js model that triggered the request. Might be used
-   * for warnings or error messages
-   */
   jsModelName?: string;
   callsite?: CallSite;
   transaction?: PrismaPromiseTransaction;
   unpacker?: Unpacker;
   otelParentCtx?: Context;
-  /** Used to "desugar" a user input into an "expanded" one */
   argsMapper?: (args?: UserArgs_2) => UserArgs_2;
-  /** Used to convert args for middleware and back */
   middlewareArgsMapper?: MiddlewareArgsMapper<unknown, unknown>;
-  /** Used for Accelerate client extension via Data Proxy */
   customDataProxyFetch?: AccelerateExtensionFetchDecorator;
 } & Omit<QueryMiddlewareParams, 'runInTransaction'>;
-
 export { isAnyNull };
-
 export { isDbNull };
-
 export { isJsonNull };
-
 declare type IsolationLevel =
   | 'READ UNCOMMITTED'
   | 'READ COMMITTED'
   | 'REPEATABLE READ'
   | 'SNAPSHOT'
   | 'SERIALIZABLE';
-
 declare type IsolationLevel_2 =
   | 'ReadUncommitted'
   | 'ReadCommitted'
   | 'RepeatableRead'
   | 'Snapshot'
   | 'Serializable';
-
 declare function isSkip(value: unknown): value is Skip;
-
 export declare function isTypedSql(value: unknown): value is UnknownTypedSql;
-
 export declare type ITXClientDenyList = (typeof denylist)[number];
-
 export declare const itxClientDenyList: readonly (string | symbol)[];
-
 declare interface Job {
   resolve: (data: any) => void;
   reject: (data: any) => void;
   request: any;
 }
-
 export { join };
-
 declare type JoinExpression = {
   child: QueryPlanNode;
   on: [left: string, right: string][];
   parentField: string;
   isRelationUnique: boolean;
 };
-
 export declare type JsArgs = {
   select?: Selection_2;
   include?: Selection_2;
   omit?: Omission;
   [argName: string]: JsInputValue;
 };
-
 export declare type JsInputValue =
   | null
   | undefined
@@ -2231,7 +1737,6 @@ export declare type JsInputValue =
   | {
       [key: string]: JsInputValue;
     };
-
 declare type JsonArgumentValue =
   | number
   | string
@@ -2242,48 +1747,30 @@ declare type JsonArgumentValue =
   | {
       [key: string]: JsonArgumentValue;
     };
-
-/**
- * From https://github.com/sindresorhus/type-fest/
- * Matches a JSON array.
- */
 export declare interface JsonArray extends Array<JsonValue> {}
-
 export declare type JsonBatchQuery = {
   batch: JsonQuery[];
   transaction?: {
     isolationLevel?: IsolationLevel_2;
   };
 };
-
 export declare interface JsonConvertible {
   toJSON(): unknown;
 }
-
 declare type JsonFieldSelection = {
   arguments?: Record<string, JsonArgumentValue> | RawTaggedValue;
   selection: JsonSelectionSet;
 };
-
 export { JsonNull };
-
 export { JsonNullClass };
-
-/**
- * From https://github.com/sindresorhus/type-fest/
- * Matches a JSON object.
- * This type can be useful to enforce some input to be JSON-compatible or as a super-type to be extended from.
- */
 export declare type JsonObject = {
   [Key in string]?: JsonValue;
 };
-
 export declare type JsonQuery = {
   modelName?: string;
   action: JsonQueryAction_2;
   query: JsonFieldSelection;
 };
-
 declare type JsonQueryAction =
   | 'findUnique'
   | 'findUniqueOrThrow'
@@ -2306,7 +1793,6 @@ declare type JsonQueryAction =
   | 'runCommandRaw'
   | 'findRaw'
   | 'aggregateRaw';
-
 declare type JsonQueryAction_2 =
   | 'findUnique'
   | 'findUniqueOrThrow'
@@ -2329,18 +1815,12 @@ declare type JsonQueryAction_2 =
   | 'runCommandRaw'
   | 'findRaw'
   | 'aggregateRaw';
-
 declare type JsonSelectionSet = {
   $scalars?: boolean;
   $composites?: boolean;
 } & {
   [fieldName: string]: boolean | JsonFieldSelection;
 };
-
-/**
- * From https://github.com/sindresorhus/type-fest/
- * Matches any valid JSON value.
- */
 export declare type JsonValue =
   | string
   | number
@@ -2348,7 +1828,6 @@ export declare type JsonValue =
   | JsonObject
   | JsonArray
   | null;
-
 export declare type JsOutputValue =
   | null
   | string
@@ -2362,50 +1841,21 @@ export declare type JsOutputValue =
   | {
       [key: string]: JsOutputValue;
     };
-
 export declare type JsPromise<T> = Promise<T> & {};
-
-/**
- * A pointer from the current {@link Span} to another span in the same trace or
- * in a different trace.
- * Few examples of Link usage.
- * 1. Batch Processing: A batch of elements may contain elements associated
- *    with one or more traces/spans. Since there can only be one parent
- *    SpanContext, Link is used to keep reference to SpanContext of all
- *    elements in the batch.
- * 2. Public Endpoint: A SpanContext in incoming client request on a public
- *    endpoint is untrusted from service provider perspective. In such case it
- *    is advisable to start a new trace with appropriate sampling decision.
- *    However, it is desirable to associate incoming SpanContext to new trace
- *    initiated on service provider side so two traces (from Client and from
- *    Service Provider) can be correlated.
- */
 declare interface Link {
-  /** The {@link SpanContext} of a linked span. */
   context: SpanContext;
-  /** A set of {@link SpanAttributes} on the link. */
   attributes?: SpanAttributes;
-  /** Count of attributes of the link that were dropped due to collection limits */
   droppedAttributesCount?: number;
 }
-
 declare type LocationInFile = {
   fileName: string;
   lineNumber: number | null;
   columnNumber: number | null;
 };
-
 declare type LogDefinition = {
   level: LogLevel;
   emit: 'stdout' | 'event';
 };
-
-/**
- * Typings for the events we emit.
- *
- * @remarks
- * If this is updated, our edge runtime shim needs to be updated as well.
- */
 declare type LogEmitter = {
   on<E extends EngineEventType>(
     event: E,
@@ -2414,41 +1864,19 @@ declare type LogEmitter = {
   emit(event: QueryEventType, payload: QueryEvent): boolean;
   emit(event: LogEventType, payload: LogEvent): boolean;
 };
-
 declare type LogEvent = {
   timestamp: Date;
   message: string;
   target: string;
 };
-
 declare type LogEventType = 'info' | 'warn' | 'error';
-
 declare type LogLevel = 'info' | 'query' | 'warn' | 'error';
-
-/**
- * Generates more strict variant of an enum which, unlike regular enum,
- * throws on non-existing property access. This can be useful in following situations:
- * - we have an API, that accepts both `undefined` and `SomeEnumType` as an input
- * - enum values are generated dynamically from DMMF.
- *
- * In that case, if using normal enums and no compile-time typechecking, using non-existing property
- * will result in `undefined` value being used, which will be accepted. Using strict enum
- * in this case will help to have a runtime exception, telling you that you are probably doing something wrong.
- *
- * Note: if you need to check for existence of a value in the enum you can still use either
- * `in` operator or `hasOwnProperty` function.
- *
- * @param definition
- * @returns
- */
 export declare function makeStrictEnum<
   T extends Record<PropertyKey, string | number>
 >(definition: T): T;
-
 export declare function makeTypedQueryFactory(
   sql: string
 ): (...values: any[]) => TypedSql<any[], unknown>;
-
 declare type Mappings = ReadonlyDeep_2<{
   modelOperations: ModelMapping[];
   otherOperations: {
@@ -2456,17 +1884,6 @@ declare type Mappings = ReadonlyDeep_2<{
     write: string[];
   };
 }>;
-
-/**
- * Class that holds the list of all extensions, applied to particular instance,
- * as well as resolved versions of the components that need to apply on
- * different levels. Main idea of this class: avoid re-resolving as much of the
- * stuff as possible when new extensions are added while also delaying the
- * resolve until the point it is actually needed. For example, computed fields
- * of the model won't be resolved unless the model is actually queried. Neither
- * adding extensions with `client` component only cause other components to
- * recompute.
- */
 declare class MergedExtensionsList {
   private head?;
   private constructor();
@@ -2480,7 +1897,6 @@ declare class MergedExtensionsList {
   getAllQueryCallbacks(jsModelName: string, operation: string): any;
   getAllBatchQueryCallbacks(): BatchQueryOptionsCb[];
 }
-
 export declare type MergeExtArgs<
   TypeMap extends TypeMapDef,
   ExtArgs extends Record<any, any>,
@@ -2491,12 +1907,10 @@ export declare type MergeExtArgs<
     AllModelsToStringIndex<TypeMap, Args, 'result'> &
     AllModelsToStringIndex<TypeMap, Args, 'model'>
 >;
-
 declare type MiddlewareArgsMapper<RequestArgs, MiddlewareArgs> = {
   requestArgsToMiddlewareArgs(requestArgs: RequestArgs): MiddlewareArgs;
   middlewareArgsToRequestArgs(middlewareArgs: MiddlewareArgs): RequestArgs;
 };
-
 declare type Model = ReadonlyDeep_2<{
   name: string;
   dbName: string | null;
@@ -2508,7 +1922,6 @@ declare type Model = ReadonlyDeep_2<{
   primaryKey: PrimaryKey | null;
   isGenerated?: boolean;
 }>;
-
 declare enum ModelAction {
   findUnique = 'findUnique',
   findUniqueOrThrow = 'findUniqueOrThrow',
@@ -2525,27 +1938,23 @@ declare enum ModelAction {
   delete = 'delete',
   deleteMany = 'deleteMany',
   groupBy = 'groupBy',
-  count = 'count', // TODO: count does not actually exist in DMMF
+  count = 'count',
   aggregate = 'aggregate',
   findRaw = 'findRaw',
   aggregateRaw = 'aggregateRaw'
 }
-
 export declare type ModelArg = {
   [MethodName in string]: unknown;
 };
-
 export declare type ModelArgs = {
   model: {
     [ModelName in string]: ModelArg;
   };
 };
-
 export declare type ModelKey<
   TypeMap extends TypeMapDef,
   M extends PropertyKey
 > = M extends keyof TypeMap['model'] ? M : Capitalize<M & string>;
-
 declare type ModelMapping = ReadonlyDeep_2<{
   model: string;
   plural: string;
@@ -2569,41 +1978,31 @@ declare type ModelMapping = ReadonlyDeep_2<{
   findRaw?: string | null;
   aggregateRaw?: string | null;
 }>;
-
 export declare type ModelQueryOptionsCb = (
   args: ModelQueryOptionsCbArgs
 ) => Promise<any>;
-
 export declare type ModelQueryOptionsCbArgs = {
   model: string;
   operation: string;
   args: JsArgs;
   query: (args: JsArgs) => Promise<unknown>;
 };
-
 declare type MultiBatchResponse = {
   type: 'multi';
   plans: QueryPlanNode[];
 };
-
 export declare type NameArgs = {
   name?: string;
 };
-
 export declare type Narrow<A> =
   | {
       [K in keyof A]: A[K] extends Function ? A[K] : Narrow<A[K]>;
     }
   | (A extends Narrowable ? A : never);
-
 export declare type Narrowable = string | number | bigint | boolean | [];
-
 export declare type NeverToUnknown<T> = [T] extends [never] ? unknown : T;
-
 export { NullTypes };
-
 export { ObjectEnumValue };
-
 declare const officialPrismaAdapters: readonly [
   '@prisma/adapter-planetscale',
   '@prisma/adapter-neon',
@@ -2614,18 +2013,14 @@ declare const officialPrismaAdapters: readonly [
   '@prisma/adapter-mssql',
   '@prisma/adapter-mariadb'
 ];
-
 export declare type Omission = Record<string, boolean | Skip>;
-
 declare type Omit_2<T, K extends string | number | symbol> = {
   [P in keyof T as P extends K ? never : P]: T[P];
 };
 export { Omit_2 as Omit };
-
 export declare type OmitValue<Omit, Key> = Key extends keyof Omit
   ? Omit[Key]
   : false;
-
 export declare type Operation =
   | 'findFirst'
   | 'findFirstOrThrow'
@@ -2651,7 +2046,6 @@ export declare type Operation =
   | 'findRaw'
   | 'aggregateRaw'
   | '$runCommandRaw';
-
 export declare type OperationPayload = {
   name: string;
   scalars: {
@@ -2664,30 +2058,22 @@ export declare type OperationPayload = {
     [CompositeName in string]: unknown;
   };
 };
-
 export declare type Optional<O, K extends keyof any = keyof O> = {
   [P in K & keyof O]?: O[P];
 } & {
   [P in Exclude<keyof O, K>]: O[P];
 };
-
 export declare type OptionalFlat<T> = {
   [K in keyof T]?: T[K];
 };
-
 export declare type OptionalKeys<O> = {
   [K in keyof O]-?: {} extends Pick_2<O, K> ? K : never;
 }[keyof O];
-
 declare type Options = {
-  /** Timeout for starting the transaction */
   maxWait?: number;
-  /** Timeout for the transaction body */
   timeout?: number;
-  /** Transaction isolation level */
   isolationLevel?: IsolationLevel_2;
 };
-
 export declare type Or<A extends 1 | 0, B extends 1 | 0> = {
   0: {
     0: 0;
@@ -2698,37 +2084,29 @@ export declare type Or<A extends 1 | 0, B extends 1 | 0> = {
     1: 1;
   };
 }[A][B];
-
 declare type OtherOperationMappings = ReadonlyDeep_2<{
   read: string[];
   write: string[];
 }>;
-
 declare type OutputType = ReadonlyDeep_2<{
   name: string;
   fields: SchemaField[];
 }>;
-
 declare type OutputTypeRef = TypeRef<
   'scalar' | 'outputObjectTypes' | 'enumTypes'
 >;
-
 declare type Pagination = {
   cursor: Record<string, PrismaValue> | null;
   take: number | null;
   skip: number | null;
 };
-
 export declare function Param<$Type, $Value extends string>(
   name: $Value
 ): Param<$Type, $Value>;
-
 export declare type Param<out $Type, $Value extends string> = {
   readonly name: $Value;
 };
-
 export declare type PatchFlat<O1, O2> = O1 & Omit_2<O2, keyof O1>;
-
 export declare type Path<O, P, Default = never> = O extends unknown
   ? P extends [infer K, ...infer R]
     ? K extends keyof O
@@ -2736,7 +2114,6 @@ export declare type Path<O, P, Default = never> = O extends unknown
       : Default
     : O
   : never;
-
 export declare type Payload<T, F extends Operation = never> = T extends {
   [K: symbol]: {
     types: {
@@ -2746,7 +2123,6 @@ export declare type Payload<T, F extends Operation = never> = T extends {
 }
   ? T[symbol]['types']['payload']
   : any;
-
 export declare type PayloadToResult<
   P,
   O extends Record_2<any, any> = RenameAndNestPayloadKeys<P>
@@ -2757,166 +2133,74 @@ export declare type PayloadToResult<
       ? PayloadToResult<O[K][K]>
       : O[K][K];
 };
-
 declare type Pick_2<T, K extends string | number | symbol> = {
   [P in keyof T as P extends K ? P : never]: T[P];
 };
 export { Pick_2 as Pick };
-
 declare interface PlaceholderFormat {
   prefix: string;
   hasNumbering: boolean;
 }
-
 declare type PrimaryKey = ReadonlyDeep_2<{
   name: string | null;
   fields: string[];
 }>;
-
 export { PrismaClientInitializationError };
-
 export { PrismaClientKnownRequestError };
-
-/**
- * Since Prisma 7, a PrismaClient needs either an adapter or an accelerateUrl.
- * The two options are mutually exclusive.
- */
 declare type PrismaClientMutuallyExclusiveOptions =
   | {
-      /**
-       * Instance of a Driver Adapter, e.g., like one provided by `@prisma/adapter-pg`.
-       */
       adapter: SqlDriverAdapterFactory;
       accelerateUrl?: never;
     }
   | {
-      /**
-       * Prisma Accelerate URL allowing the client to connect through Accelerate instead of a direct database.
-       */
       accelerateUrl: string;
       adapter?: never;
     };
-
 export declare type PrismaClientOptions =
   PrismaClientMutuallyExclusiveOptions & {
-    /**
-     * @default "colorless"
-     */
     errorFormat?: ErrorFormat;
-    /**
-     * The default values for Transaction options
-     * maxWait ?= 2000
-     * timeout ?= 5000
-     */
     transactionOptions?: Transaction_2.Options;
-    /**
-     * @example
-     * \`\`\`
-     * // Defaults to stdout
-     * log: ['query', 'info', 'warn']
-     *
-     * // Emit as events
-     * log: [
-     *  { emit: 'stdout', level: 'query' },
-     *  { emit: 'stdout', level: 'info' },
-     *  { emit: 'stdout', level: 'warn' }
-     * ]
-     * \`\`\`
-     * Read more in our [docs](https://pris.ly/d/logging).
-     */
     log?: Array<LogLevel | LogDefinition>;
     omit?: GlobalOmitOptions;
-    /**
-     * SQL commenter plugins that add metadata to SQL queries as comments.
-     * Comments follow the sqlcommenter format: https://google.github.io/sqlcommenter/
-     *
-     * @example
-     * ```ts
-     * new PrismaClient({
-     *   adapter: new PrismaPg({ connectionString }),
-     *   comments: [
-     *     traceContext(),
-     *     queryInsights(),
-     *   ],
-     * })
-     * ```
-     */
     comments?: SqlCommenterPlugin[];
-    /**
-     * @internal
-     * You probably don't want to use this. \`__internal\` is used by internal tooling.
-     */
     __internal?: {
       debug?: boolean;
-      /** This can be used for testing purposes */
       configOverride?: (config: GetPrismaClientConfig) => GetPrismaClientConfig;
     };
   };
-
 export { PrismaClientRustPanicError };
-
 export { PrismaClientUnknownRequestError };
-
 export { PrismaClientValidationError };
-
 declare type PrismaOperationSpec<TArgs, TAction = string> = {
   args: TArgs;
   action: TAction;
   model: string;
 };
-
 export declare interface PrismaPromise<T> extends Promise<T> {
   [Symbol.toStringTag]: 'PrismaPromise';
 }
-
-/**
- * Prisma's `Promise` that is backwards-compatible. All additions on top of the
- * original `Promise` are optional so that it can be backwards-compatible.
- * @see [[createPrismaPromise]]
- */
 declare interface PrismaPromise_2<
   TResult,
   TSpec extends PrismaOperationSpec<unknown> = any
 > extends Promise<TResult> {
   get spec(): TSpec;
-  /**
-   * Extension of the original `.then` function
-   * @param onfulfilled same as regular promises
-   * @param onrejected same as regular promises
-   * @param transaction transaction options
-   */
   then<R1 = TResult, R2 = never>(
     onfulfilled?: (value: TResult) => R1 | PromiseLike<R1>,
     onrejected?: (error: unknown) => R2 | PromiseLike<R2>,
     transaction?: PrismaPromiseTransaction
   ): Promise<R1 | R2>;
-  /**
-   * Extension of the original `.catch` function
-   * @param onrejected same as regular promises
-   * @param transaction transaction options
-   */
   catch<R = never>(
     onrejected?: ((reason: any) => R | PromiseLike<R>) | undefined | null,
     transaction?: PrismaPromiseTransaction
   ): Promise<TResult | R>;
-  /**
-   * Extension of the original `.finally` function
-   * @param onfinally same as regular promises
-   * @param transaction transaction options
-   */
   finally(
     onfinally?: (() => void) | undefined | null,
     transaction?: PrismaPromiseTransaction
   ): Promise<TResult>;
-  /**
-   * Called when executing a batch of regular tx
-   * @param transaction transaction options for batch tx
-   */
   requestTransaction?(
     transaction: PrismaPromiseBatchTransaction
   ): PromiseLike<unknown>;
 }
-
 declare type PrismaPromiseBatchTransaction = {
   kind: 'batch';
   id: number;
@@ -2924,35 +2208,21 @@ declare type PrismaPromiseBatchTransaction = {
   index: number;
   lock: PromiseLike<void>;
 };
-
 declare type PrismaPromiseCallback = (
   transaction?: PrismaPromiseTransaction
 ) => Promise<unknown>;
-
-/**
- * Creates a [[PrismaPromise]]. It is Prisma's implementation of `Promise` which
- * is essentially a proxy for `Promise`. All the transaction-compatible client
- * methods return one, this allows for pre-preparing queries without executing
- * them until `.then` is called. It's the foundation of Prisma's query batching.
- * @param callback that will be wrapped within our promise implementation
- * @see [[PrismaPromise]]
- * @returns
- */
 declare type PrismaPromiseFactory = <T extends PrismaOperationSpec<unknown>>(
   callback: PrismaPromiseCallback,
   op?: T
 ) => PrismaPromise_2<unknown>;
-
 declare type PrismaPromiseInteractiveTransaction<PayloadType = unknown> = {
   kind: 'itx';
   id: string;
   payload: PayloadType;
 };
-
 declare type PrismaPromiseTransaction<PayloadType = unknown> =
   | PrismaPromiseBatchTransaction
   | PrismaPromiseInteractiveTransaction<PayloadType>;
-
 declare type PrismaValue =
   | string
   | boolean
@@ -2962,7 +2232,6 @@ declare type PrismaValue =
   | Record<string, unknown>
   | PrismaValuePlaceholder
   | PrismaValueGenerator;
-
 declare type PrismaValueGenerator = {
   prisma__type: 'generatorCall';
   prisma__value: {
@@ -2970,7 +2239,6 @@ declare type PrismaValueGenerator = {
     args: PrismaValue[];
   };
 };
-
 declare type PrismaValuePlaceholder = {
   prisma__type: 'param';
   prisma__value: {
@@ -2978,57 +2246,40 @@ declare type PrismaValuePlaceholder = {
     type: string;
   };
 };
-
 export declare const PrivateResultType: unique symbol;
-
 declare type Provider = 'mysql' | 'postgres' | 'sqlite' | 'sqlserver';
-
 declare namespace Public {
   export { validator };
 }
 export { Public };
-
 declare namespace Public_2 {
   export { Args, Result, Payload, PrismaPromise, Operation, Exact };
 }
-
 declare type Query = ReadonlyDeep_2<{
   name: string;
   args: SchemaArg[];
   output: QueryOutput;
 }>;
-
 declare interface Queryable<Query, Result> extends AdapterInfo {
-  /**
-   * Execute a query and return its result.
-   */
   queryRaw(params: Query): Promise<Result>;
-  /**
-   * Execute a query and return the number of affected rows.
-   */
   executeRaw(params: Query): Promise<number>;
 }
-
 declare type QueryCompiler = {
   compile(request: string): {};
   compileBatch(batchRequest: string): BatchResponse;
   free(): void;
 };
-
 declare interface QueryCompilerConstructor {
   new (options: QueryCompilerOptions): QueryCompiler;
 }
-
 declare type QueryCompilerOptions = {
   datamodel: string;
   provider: Provider;
   connectionInfo: ConnectionInfo;
 };
-
 declare type QueryEngineResultData<T> = {
   data: T;
 };
-
 declare type QueryEvent = {
   timestamp: Date;
   query: string;
@@ -3036,9 +2287,7 @@ declare type QueryEvent = {
   duration: number;
   target: string;
 };
-
 declare type QueryEventType = 'query';
-
 declare type QueryIntrospectionBuiltinType =
   | 'int'
   | 'bigint'
@@ -3073,19 +2322,13 @@ declare type QueryIntrospectionBuiltinType =
   | 'time-array'
   | 'null'
   | 'unknown';
-
 declare type QueryMiddlewareParams = {
-  /** The model this is executed on */
   model?: string;
-  /** The action that is being handled */
   action: Action;
-  /** TODO what is this */
   dataPath: string[];
-  /** TODO what is this */
   runInTransaction: boolean;
   args?: UserArgs_2;
 };
-
 export declare type QueryOptions = {
   query: {
     [ModelName in string]:
@@ -3095,27 +2338,22 @@ export declare type QueryOptions = {
       | QueryOptionsCb;
   };
 };
-
 export declare type QueryOptionsCb = (args: QueryOptionsCbArgs) => Promise<any>;
-
 export declare type QueryOptionsCbArgs = {
   model?: string;
   operation: string;
   args: JsArgs | RawQueryArgs;
   query: (args: JsArgs | RawQueryArgs) => Promise<unknown>;
 };
-
 declare type QueryOutput = ReadonlyDeep_2<{
   name: string;
   isRequired: boolean;
   isList: boolean;
 }>;
-
 declare type QueryPlanBinding = {
   name: string;
   expr: QueryPlanNode;
 };
-
 declare type QueryPlanDbQuery =
   | {
       type: 'rawSql';
@@ -3131,7 +2369,6 @@ declare type QueryPlanDbQuery =
       argTypes: DynamicArgType[];
       chunkable: boolean;
     };
-
 declare type QueryPlanNode =
   | {
       type: 'value';
@@ -3262,51 +2499,40 @@ declare type QueryPlanNode =
         operations: InMemoryOps;
       };
     };
-
 export { raw };
-
 export declare type RawParameters = {
   __prismaRawParameters__: true;
   values: string;
 };
-
 export declare type RawQueryArgs =
   | Sql
   | UnknownTypedSql
   | [query: string, ...values: RawValue[]];
-
 declare type RawResponse = {
   columns: string[];
   types: QueryIntrospectionBuiltinType[];
   rows: unknown[][];
 };
-
 declare type RawTaggedValue = {
   $type: 'Raw';
   value: unknown;
 };
-
 export { RawValue };
-
 export declare type ReadonlyDeep<T> = {
   readonly [K in keyof T]: ReadonlyDeep<T[K]>;
 };
-
 declare type ReadonlyDeep_2<O> = {
   +readonly [K in keyof O]: ReadonlyDeep_2<O[K]>;
 };
-
 declare type Record_2<T extends string | number | symbol, U> = {
   [P in T]: U;
 };
 export { Record_2 as Record };
-
 export declare type RenameAndNestPayloadKeys<P> = {
   [K in keyof P as K extends 'scalars' | 'objects' | 'composites'
     ? keyof P[K]
     : never]: P[K];
 };
-
 declare type RequestBatchOptions<InteractiveTransactionPayload> = {
   transaction?: TransactionOptions_2<InteractiveTransactionPayload>;
   traceparent?: string;
@@ -3314,7 +2540,6 @@ declare type RequestBatchOptions<InteractiveTransactionPayload> = {
   containsWrite: boolean;
   customDataProxyFetch?: AccelerateExtensionFetchDecorator;
 };
-
 declare class RequestHandler {
   client: Client;
   dataloader: DataLoader<RequestParams>;
@@ -3325,10 +2550,6 @@ declare class RequestHandler {
     { dataPath, unpacker }: RequestParams,
     response: QueryEngineResultData<any>
   ): any;
-  /**
-   * Handles the error and logs it, logging the error is done synchronously waiting for the event
-   * handlers to finish.
-   */
   handleAndLogRequestError(params: HandleErrorParams): never;
   handleRequestError({
     error,
@@ -3343,7 +2564,6 @@ declare class RequestHandler {
   unpack(data: unknown, dataPath: string[], unpacker?: Unpacker): any;
   get [Symbol.toStringTag](): string;
 }
-
 declare type RequestOptions<InteractiveTransactionPayload> = {
   traceparent?: string;
   numTry?: number;
@@ -3351,7 +2571,6 @@ declare type RequestOptions<InteractiveTransactionPayload> = {
   isWrite: boolean;
   customDataProxyFetch?: AccelerateExtensionFetchDecorator;
 };
-
 declare type RequestParams = {
   modelName?: string;
   action: Action;
@@ -3369,7 +2588,6 @@ declare type RequestParams = {
   globalOmit?: GlobalOmitOptions;
   customDataProxyFetch?: AccelerateExtensionFetchDecorator;
 };
-
 declare type RequiredExtensionArgs = NameArgs &
   ResultArgs &
   ModelArgs &
@@ -3377,11 +2595,9 @@ declare type RequiredExtensionArgs = NameArgs &
   QueryOptions;
 export { RequiredExtensionArgs };
 export { RequiredExtensionArgs as UserArgs };
-
 export declare type RequiredKeys<O> = {
   [K in keyof O]-?: {} extends Pick_2<O, K> ? never : K;
 }[keyof O];
-
 export declare type Result<T, A, F extends Operation> = T extends {
   [K: symbol]: {
     types: {
@@ -3400,9 +2616,7 @@ export declare type Result<T, A, F extends Operation> = T extends {
       {},
       F
     >;
-
 export declare type Result_2<T, A, F extends Operation> = Result<T, A, F>;
-
 declare namespace Result_3 {
   export {
     Count,
@@ -3422,26 +2636,21 @@ declare namespace Result_3 {
     ExtractGlobalOmit
   };
 }
-
 export declare type ResultArg = {
   [FieldName in string]: ResultFieldDefinition;
 };
-
 export declare type ResultArgs = {
   result: {
     [ModelName in string]: ResultArg;
   };
 };
-
 export declare type ResultArgsFieldCompute = (model: any) => unknown;
-
 export declare type ResultFieldDefinition = {
   needs?: {
     [FieldName in string]: boolean;
   };
   compute: ResultArgsFieldCompute;
 };
-
 declare type ResultNode =
   | {
       type: 'affectedRows';
@@ -3457,19 +2666,14 @@ declare type ResultNode =
       dbName: string;
       fieldType: FieldType;
     };
-
 export declare type Return<T> = T extends (...args: any[]) => infer R ? R : T;
-
 export declare type RuntimeDataModel = {
   readonly models: Record<string, RuntimeModel>;
   readonly enums: Record<string, RuntimeEnum>;
   readonly types: Record<string, RuntimeModel>;
 };
-
 declare type RuntimeEnum = Omit<DMMF_2.DatamodelEnum, 'name'>;
-
 declare type RuntimeModel = Omit<DMMF_2.Model, 'name'>;
-
 declare type RuntimeName =
   | 'workerd'
   | 'deno'
@@ -3478,7 +2682,6 @@ declare type RuntimeName =
   | 'bun'
   | 'edge-light'
   | '';
-
 declare type Schema = ReadonlyDeep_2<{
   rootQueryType?: string;
   rootMutationType?: string;
@@ -3498,7 +2701,6 @@ declare type Schema = ReadonlyDeep_2<{
     prisma?: FieldRefType[];
   };
 }>;
-
 declare type SchemaArg = ReadonlyDeep_2<{
   name: string;
   comment?: string;
@@ -3509,12 +2711,10 @@ declare type SchemaArg = ReadonlyDeep_2<{
   requiresOtherFields?: string[];
   deprecation?: Deprecation;
 }>;
-
 declare type SchemaEnum = ReadonlyDeep_2<{
   name: string;
   values: string[];
 }>;
-
 declare type SchemaField = ReadonlyDeep_2<{
   name: string;
   isNullable?: boolean;
@@ -3523,9 +2723,7 @@ declare type SchemaField = ReadonlyDeep_2<{
   deprecation?: Deprecation;
   documentation?: string;
 }>;
-
 export declare type Select<T, U> = T extends U ? T : never;
-
 export declare type SelectablePayloadFields<K extends PropertyKey, O> =
   | {
       objects: {
@@ -3537,7 +2735,6 @@ export declare type SelectablePayloadFields<K extends PropertyKey, O> =
         [k in K]: O;
       };
     };
-
 export declare type SelectField<
   P extends SelectablePayloadFields<any, any>,
   K extends PropertyKey
@@ -3550,20 +2747,12 @@ export declare type SelectField<
       }
     ? P['composites'][K]
     : never;
-
 declare type Selection_2 = Record<string, boolean | Skip | JsArgs>;
 export { Selection_2 as Selection };
-
-/**
- * Serialized format stored in the generated client.
- */
 declare interface SerializedParamGraph {
-  /** String table (field names, enum names, root keys) */
   strings: string[];
-  /** Base64url-encoded binary blob for structural data */
   graph: string;
 }
-
 export declare function serializeJsonQuery({
   modelName,
   action,
@@ -3578,7 +2767,6 @@ export declare function serializeJsonQuery({
   globalOmit,
   wrapRawValues
 }: SerializeParams): JsonQuery;
-
 declare type SerializeParams = {
   runtimeDataModel: RuntimeDataModel;
   modelName?: string;
@@ -3593,344 +2781,76 @@ declare type SerializeParams = {
   globalOmit?: GlobalOmitOptions;
   wrapRawValues?: boolean;
 };
-
 declare class Skip {
   constructor(param?: symbol);
   ifUndefined<T>(value: T | undefined): T | Skip;
 }
-
 export declare const skip: Skip;
-
 declare type SortOrder = 'asc' | 'desc';
-
-/**
- * An interface that represents a span. A span represents a single operation
- * within a trace. Examples of span might include remote procedure calls or a
- * in-process function calls to sub-components. A Trace has a single, top-level
- * "root" Span that in turn may have zero or more child Spans, which in turn
- * may have children.
- *
- * Spans are created by the {@link Tracer.startSpan} method.
- */
 declare interface Span {
-  /**
-   * Returns the {@link SpanContext} object associated with this Span.
-   *
-   * Get an immutable, serializable identifier for this span that can be used
-   * to create new child spans. Returned SpanContext is usable even after the
-   * span ends.
-   *
-   * @returns the SpanContext object associated with this Span.
-   */
   spanContext(): SpanContext;
-  /**
-   * Sets an attribute to the span.
-   *
-   * Sets a single Attribute with the key and value passed as arguments.
-   *
-   * @param key the key for this attribute.
-   * @param value the value for this attribute. Setting a value null or
-   *              undefined is invalid and will result in undefined behavior.
-   */
   setAttribute(key: string, value: SpanAttributeValue): this;
-  /**
-   * Sets attributes to the span.
-   *
-   * @param attributes the attributes that will be added.
-   *                   null or undefined attribute values
-   *                   are invalid and will result in undefined behavior.
-   */
   setAttributes(attributes: SpanAttributes): this;
-  /**
-   * Adds an event to the Span.
-   *
-   * @param name the name of the event.
-   * @param [attributesOrStartTime] the attributes that will be added; these are
-   *     associated with this event. Can be also a start time
-   *     if type is {@type TimeInput} and 3rd param is undefined
-   * @param [startTime] start time of the event.
-   */
   addEvent(
     name: string,
     attributesOrStartTime?: SpanAttributes | TimeInput,
     startTime?: TimeInput
   ): this;
-  /**
-   * Adds a single link to the span.
-   *
-   * Links added after the creation will not affect the sampling decision.
-   * It is preferred span links be added at span creation.
-   *
-   * @param link the link to add.
-   */
   addLink(link: Link): this;
-  /**
-   * Adds multiple links to the span.
-   *
-   * Links added after the creation will not affect the sampling decision.
-   * It is preferred span links be added at span creation.
-   *
-   * @param links the links to add.
-   */
   addLinks(links: Link[]): this;
-  /**
-   * Sets a status to the span. If used, this will override the default Span
-   * status. Default is {@link SpanStatusCode.UNSET}. SetStatus overrides the value
-   * of previous calls to SetStatus on the Span.
-   *
-   * @param status the SpanStatus to set.
-   */
   setStatus(status: SpanStatus): this;
-  /**
-   * Updates the Span name.
-   *
-   * This will override the name provided via {@link Tracer.startSpan}.
-   *
-   * Upon this update, any sampling behavior based on Span name will depend on
-   * the implementation.
-   *
-   * @param name the Span name.
-   */
   updateName(name: string): this;
-  /**
-   * Marks the end of Span execution.
-   *
-   * Call to End of a Span MUST not have any effects on child spans. Those may
-   * still be running and can be ended later.
-   *
-   * Do not return `this`. The Span generally should not be used after it
-   * is ended so chaining is not desired in this context.
-   *
-   * @param [endTime] the time to set as Span's end time. If not provided,
-   *     use the current time as the span's end time.
-   */
   end(endTime?: TimeInput): void;
-  /**
-   * Returns the flag whether this span will be recorded.
-   *
-   * @returns true if this Span is active and recording information like events
-   *     with the `AddEvent` operation and attributes using `setAttributes`.
-   */
   isRecording(): boolean;
-  /**
-   * Sets exception as a span event
-   * @param exception the exception the only accepted values are string or Error
-   * @param [time] the time to set as Span's event time. If not provided,
-   *     use the current time.
-   */
   recordException(exception: Exception, time?: TimeInput): void;
 }
-
-/**
- * @deprecated please use {@link Attributes}
- */
 declare type SpanAttributes = Attributes;
-
-/**
- * @deprecated please use {@link AttributeValue}
- */
 declare type SpanAttributeValue = AttributeValue;
-
 declare type SpanCallback<R> = (span?: Span, context?: Context) => R;
-
-/**
- * A SpanContext represents the portion of a {@link Span} which must be
- * serialized and propagated along side of a {@link Baggage}.
- */
 declare interface SpanContext {
-  /**
-   * The ID of the trace that this span belongs to. It is worldwide unique
-   * with practically sufficient probability by being made as 16 randomly
-   * generated bytes, encoded as a 32 lowercase hex characters corresponding to
-   * 128 bits.
-   */
   traceId: string;
-  /**
-   * The ID of the Span. It is globally unique with practically sufficient
-   * probability by being made as 8 randomly generated bytes, encoded as a 16
-   * lowercase hex characters corresponding to 64 bits.
-   */
   spanId: string;
-  /**
-   * Only true if the SpanContext was propagated from a remote parent.
-   */
   isRemote?: boolean;
-  /**
-   * Trace flags to propagate.
-   *
-   * It is represented as 1 byte (bitmap). Bit to represent whether trace is
-   * sampled or not. When set, the least significant bit documents that the
-   * caller may have recorded trace data. A caller who does not record trace
-   * data out-of-band leaves this flag unset.
-   *
-   * see {@link TraceFlags} for valid flag values.
-   */
   traceFlags: number;
-  /**
-   * Tracing-system-specific info to propagate.
-   *
-   * The tracestate field value is a `list` as defined below. The `list` is a
-   * series of `list-members` separated by commas `,`, and a list-member is a
-   * key/value pair separated by an equals sign `=`. Spaces and horizontal tabs
-   * surrounding `list-members` are ignored. There can be a maximum of 32
-   * `list-members` in a `list`.
-   * More Info: https://www.w3.org/TR/trace-context/#tracestate-field
-   *
-   * Examples:
-   *     Single tracing system (generic format):
-   *         tracestate: rojo=00f067aa0ba902b7
-   *     Multiple tracing systems (with different formatting):
-   *         tracestate: rojo=00f067aa0ba902b7,congo=t61rcWkgMzE
-   */
   traceState?: TraceState;
 }
-
 declare enum SpanKind {
-  /** Default value. Indicates that the span is used internally. */
   INTERNAL = 0,
-  /**
-   * Indicates that the span covers server-side handling of an RPC or other
-   * remote request.
-   */
   SERVER = 1,
-  /**
-   * Indicates that the span covers the client-side wrapper around an RPC or
-   * other remote request.
-   */
   CLIENT = 2,
-  /**
-   * Indicates that the span describes producer sending a message to a
-   * broker. Unlike client and server, there is no direct critical path latency
-   * relationship between producer and consumer spans.
-   */
   PRODUCER = 3,
-  /**
-   * Indicates that the span describes consumer receiving a message from a
-   * broker. Unlike client and server, there is no direct critical path latency
-   * relationship between producer and consumer spans.
-   */
   CONSUMER = 4
 }
-
-/**
- * Options needed for span creation
- */
 declare interface SpanOptions {
-  /**
-   * The SpanKind of a span
-   * @default {@link SpanKind.INTERNAL}
-   */
   kind?: SpanKind;
-  /** A span's attributes */
   attributes?: SpanAttributes;
-  /** {@link Link}s span to other spans */
   links?: Link[];
-  /** A manually specified start time for the created `Span` object. */
   startTime?: TimeInput;
-  /** The new span should be a root span. (Ignore parent from context). */
   root?: boolean;
 }
-
 declare interface SpanStatus {
-  /** The status code of this message. */
   code: SpanStatusCode;
-  /** A developer-facing error message. */
   message?: string;
 }
-
-/**
- * An enumeration of status codes.
- */
 declare enum SpanStatusCode {
-  /**
-   * The default status.
-   */
   UNSET = 0,
-  /**
-   * The operation has been validated by an Application developer or
-   * Operator to have completed successfully.
-   */
   OK = 1,
-  /**
-   * The operation contains an error.
-   */
   ERROR = 2
 }
-
 export { Sql };
-
-/**
- * Information about a compacted batch query (e.g. multiple independent
- * `findUnique` queries automatically merged into a single `SELECT` SQL
- * statement).
- */
 declare interface SqlCommenterCompactedQueryInfo {
-  /**
-   * The model name (e.g., "User", "Post").
-   */
   readonly modelName: string;
-  /**
-   * The Prisma operation (e.g., "findUnique").
-   */
   readonly action: SqlCommenterQueryAction;
-  /**
-   * The full query objects (selections, arguments, etc.).
-   * Specifics of the query representation are not part of the public API yet.
-   */
   readonly queries: ReadonlyArray<unknown>;
 }
-
-/**
- * Context provided to SQL commenter plugins.
- */
 export declare interface SqlCommenterContext {
-  /**
-   * Information about the Prisma query being executed.
-   */
   readonly query: SqlCommenterQueryInfo;
-  /**
-   * Raw SQL query generated from this Prisma query.
-   *
-   * It is always available when `PrismaClient` connects to the database and
-   * renders SQL queries directly.
-   *
-   * When using Prisma Accelerate, SQL rendering happens on Accelerate side and the raw
-   * SQL strings are not yet available when SQL commenter plugins are executed.
-   */
   readonly sql?: string;
 }
-
-/**
- * A SQL commenter plugin that returns key-value pairs to be added as comments.
- * Return an empty object to add no comments. Keys with undefined values will be omitted.
- *
- * @example
- * ```ts
- * const myPlugin: SqlCommenterPlugin = (context) => {
- *   return {
- *     application: 'my-app',
- *     model: context.query.modelName ?? 'raw',
- *     // Conditional key - will be omitted if ctx.sql is undefined
- *     sqlLength: context.sql ? String(context.sql.length) : undefined,
- *   }
- * }
- * ```
- */
 export declare interface SqlCommenterPlugin {
   (context: SqlCommenterContext): SqlCommenterTags;
 }
-
-/**
- * Prisma query type corresponding to this SQL query.
- */
 declare type SqlCommenterQueryAction = JsonQueryAction;
-
-/**
- * Information about the query or queries being executed.
- *
- * - `single`: A single query is being executed
- * - `compacted`: Multiple queries have been compacted into a single SQL statement
- */
 export declare type SqlCommenterQueryInfo =
   | ({
       readonly type: 'single';
@@ -3938,137 +2858,45 @@ export declare type SqlCommenterQueryInfo =
   | ({
       readonly type: 'compacted';
     } & SqlCommenterCompactedQueryInfo);
-
-/**
- * Information about a single Prisma query.
- */
 export declare interface SqlCommenterSingleQueryInfo {
-  /**
-   * The model name (e.g., "User", "Post"). Undefined for raw queries.
-   */
   readonly modelName?: string;
-  /**
-   * The Prisma operation (e.g., "findMany", "createOne", "queryRaw").
-   */
   readonly action: SqlCommenterQueryAction;
-  /**
-   * The full query object (selection, arguments, etc.).
-   * Specifics of the query representation are not part of the public API yet.
-   */
   readonly query: unknown;
 }
-
-/**
- * Key-value pairs to add as SQL comments.
- * Keys with undefined values will be omitted from the final comment.
- */
 export declare type SqlCommenterTags = {
   readonly [key: string]: string | undefined;
 };
-
 declare interface SqlDriverAdapter extends SqlQueryable {
-  /**
-   * Execute multiple SQL statements separated by semicolon.
-   */
   executeScript(script: string): Promise<void>;
-  /**
-   * Start new transaction.
-   */
   startTransaction(isolationLevel?: IsolationLevel): Promise<Transaction>;
-  /**
-   * Optional method that returns extra connection info
-   */
   getConnectionInfo?(): ConnectionInfo;
-  /**
-   * Dispose of the connection and release any resources.
-   */
   dispose(): Promise<void>;
 }
-
 export declare interface SqlDriverAdapterFactory
   extends DriverAdapterFactory<SqlQuery, SqlResultSet> {
   connect(): Promise<SqlDriverAdapter>;
 }
-
 declare type SqlQuery = {
   sql: string;
   args: Array<unknown>;
   argTypes: Array<ArgType>;
 };
-
 declare interface SqlQueryable extends Queryable<SqlQuery, SqlResultSet> {}
-
 declare interface SqlResultSet {
-  /**
-   * List of column types appearing in a database query, in the same order as `columnNames`.
-   * They are used within the Query Engine to convert values from JS to Quaint values.
-   */
   columnTypes: Array<ColumnType>;
-  /**
-   * List of column names appearing in a database query, in the same order as `columnTypes`.
-   */
   columnNames: Array<string>;
-  /**
-   * List of rows retrieved from a database query.
-   * Each row is a list of values, whose length matches `columnNames` and `columnTypes`.
-   */
   rows: Array<Array<unknown>>;
-  /**
-   * The last ID of an `INSERT` statement, if any.
-   * This is required for `AUTO_INCREMENT` columns in databases based on MySQL and SQLite.
-   */
   lastInsertId?: string;
 }
-
 export { sqltag };
-
-/**
- * Defines TimeInput.
- *
- * hrtime, epoch milliseconds, performance.now() or Date
- */
 declare type TimeInput = HrTime_2 | number | Date;
-
 export declare type ToTuple<T> = T extends any[] ? T : [T];
-
 declare interface TraceState {
-  /**
-   * Create a new TraceState which inherits from this TraceState and has the
-   * given key set.
-   * The new entry will always be added in the front of the list of states.
-   *
-   * @param key key of the TraceState entry.
-   * @param value value of the TraceState entry.
-   */
   set(key: string, value: string): TraceState;
-  /**
-   * Return a new TraceState which inherits from this TraceState but does not
-   * contain the given key.
-   *
-   * @param key the key for the TraceState entry to be removed.
-   */
   unset(key: string): TraceState;
-  /**
-   * Returns the value to which the specified key is mapped, or `undefined` if
-   * this map contains no mapping for the key.
-   *
-   * @param key with which the specified value is to be associated.
-   * @returns the value to which the specified key is mapped, or `undefined` if
-   *     this map contains no mapping for the key.
-   */
   get(key: string): string | undefined;
-  /**
-   * Serializes the TraceState to a `list` as defined below. The `list` is a
-   * series of `list-members` separated by commas `,`, and a list-member is a
-   * key/value pair separated by an equals sign `=`. Spaces and horizontal tabs
-   * surrounding `list-members` are ignored. There can be a maximum of 32
-   * `list-members` in a `list`.
-   *
-   * @returns the serialized string.
-   */
   serialize(): string;
 }
-
 declare interface TracingHelper {
   isEnabled(): boolean;
   getTraceParent(context?: Context): string;
@@ -4079,22 +2907,11 @@ declare interface TracingHelper {
     callback: SpanCallback<R>
   ): R;
 }
-
 declare interface Transaction extends AdapterInfo, SqlQueryable {
-  /**
-   * Transaction options.
-   */
   readonly options: TransactionOptions;
-  /**
-   * Commit the transaction.
-   */
   commit(): Promise<void>;
-  /**
-   * Roll back the transaction.
-   */
   rollback(): Promise<void>;
 }
-
 declare namespace Transaction_2 {
   export {
     IsolationLevel_2 as IsolationLevel,
@@ -4103,15 +2920,12 @@ declare namespace Transaction_2 {
     TransactionHeaders
   };
 }
-
 declare type TransactionHeaders = {
   traceparent?: string;
 };
-
 declare type TransactionOptions = {
   usePhantomQuery: boolean;
 };
-
 declare type TransactionOptions_2<InteractiveTransactionPayload> =
   | {
       kind: 'itx';
@@ -4121,31 +2935,25 @@ declare type TransactionOptions_2<InteractiveTransactionPayload> =
       kind: 'batch';
       options: BatchTransactionOptions;
     };
-
 export declare class TypedSql<Values extends readonly unknown[], Result> {
   [PrivateResultType]: Result;
   constructor(sql: string, values: Values);
   get sql(): string;
   get values(): Values;
 }
-
 export declare type TypeMapCbDef = Fn<
   {
     extArgs: InternalArgs;
   },
   TypeMapDef
 >;
-
-/** Shared */
 export declare type TypeMapDef = Record<any, any>;
-
 declare type TypeRef<AllowedLocations extends FieldLocation> = {
   isList: boolean;
   type: string;
   location: AllowedLocations;
   namespace?: FieldNamespace;
 };
-
 declare namespace Types {
   export {
     Result_3 as Result,
@@ -4160,16 +2968,12 @@ declare namespace Types {
   };
 }
 export { Types };
-
 declare type uniqueIndex = ReadonlyDeep_2<{
   name: string;
   fields: string[];
 }>;
-
 export declare type UnknownTypedSql = TypedSql<unknown[], unknown>;
-
 declare type Unpacker = (data: any) => any;
-
 export declare type UnwrapPayload<P> = {} extends P
   ? unknown
   : {
@@ -4185,9 +2989,7 @@ export declare type UnwrapPayload<P> = {} extends P
           ? (S & UnwrapPayload<C>) | Select<P[K], null>
           : never;
     };
-
 export declare type UnwrapPromise<P> = P extends Promise<infer R> ? R : P;
-
 export declare type UnwrapTuple<Tuple extends readonly unknown[]> = {
   [K in keyof Tuple]: K extends `${number}`
     ? Tuple[K] extends PrismaPromise<infer X>
@@ -4195,12 +2997,7 @@ export declare type UnwrapTuple<Tuple extends readonly unknown[]> = {
       : UnwrapPromise<Tuple[K]>
     : UnwrapPromise<Tuple[K]>;
 };
-
-/**
- * Input that flows from the user into the Client.
- */
 declare type UserArgs_2 = any;
-
 declare namespace Utils {
   export {
     EmptyToUnknown,
@@ -4235,7 +3032,6 @@ declare namespace Utils {
     JsPromise
   };
 }
-
 declare type ValidationError =
   | {
       error_identifier: 'RELATION_VIOLATION';
@@ -4283,15 +3079,12 @@ declare type ValidationError =
         child: string;
       };
     };
-
 declare function validator<V>(): <S>(select: Exact<S, V>) => S;
-
 declare function validator<
   C,
   M extends Exclude<keyof C, `$${string}`>,
   O extends keyof C[M] & Operation
 >(client: C, model: M, operation: O): <S>(select: Exact<S, Args<C[M], O>>) => S;
-
 declare function validator<
   C,
   M extends Exclude<keyof C, `$${string}`>,
@@ -4303,13 +3096,10 @@ declare function validator<
   operation: O,
   prop: P
 ): <S>(select: Exact<S, Args<C[M], O>[P]>) => S;
-
 export { Value };
-
 export declare const warnOnce: (
   key: string,
   message: string,
   ...args: unknown[]
 ) => void;
-
 export {};

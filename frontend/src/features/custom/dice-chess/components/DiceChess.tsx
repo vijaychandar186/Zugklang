@@ -2,6 +2,7 @@
 import { useState, forwardRef, useImperativeHandle, useEffect } from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
+import { DICE_FACES } from '@/lib/public-paths';
 type DiceValue = 1 | 2 | 3 | 4 | 5 | 6;
 type DiceChessProps = {
   size?: number;
@@ -15,22 +16,6 @@ type DiceChessProps = {
 type DiceChessRef = {
   rollDice: (value?: DiceValue) => void;
 };
-const WHITE_FACES = [
-  '/theme/pieces/staunton/white-king.svg',
-  '/theme/pieces/staunton/white-queen.svg',
-  '/theme/pieces/staunton/white-bishop.svg',
-  '/theme/pieces/staunton/white-knight.svg',
-  '/theme/pieces/staunton/white-rook.svg',
-  '/theme/pieces/staunton/white-pawn.svg'
-];
-const BLACK_FACES = [
-  '/theme/pieces/staunton/black-king.svg',
-  '/theme/pieces/staunton/black-queen.svg',
-  '/theme/pieces/staunton/black-bishop.svg',
-  '/theme/pieces/staunton/black-knight.svg',
-  '/theme/pieces/staunton/black-rook.svg',
-  '/theme/pieces/staunton/black-pawn.svg'
-];
 const BOX_ROTATION: Record<DiceValue, string> = {
   1: 'rotateX(90deg) rotateY(0deg) rotateZ(0deg)',
   2: 'rotateX(0deg) rotateY(0deg) rotateZ(0deg)',
@@ -71,7 +56,7 @@ const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
       targetValue,
       rolling = false,
       disabled = false,
-      faces = WHITE_FACES,
+      faces = DICE_FACES.white,
       className
     },
     ref
@@ -125,7 +110,7 @@ const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
               }}
             >
               <Image
-                src={faces[face - 1] || WHITE_FACES[face - 1]}
+                src={faces[face - 1] || DICE_FACES.white[face - 1]}
                 alt={`Face ${face}`}
                 width={size}
                 height={size}
@@ -140,5 +125,5 @@ const DiceChess = forwardRef<DiceChessRef, DiceChessProps>(
   }
 );
 DiceChess.displayName = 'DiceChess';
-export { DiceChess, WHITE_FACES, BLACK_FACES };
+export { DiceChess };
 export type { DiceChessProps, DiceChessRef, DiceValue };

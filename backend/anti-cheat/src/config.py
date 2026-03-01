@@ -18,6 +18,9 @@ class Settings(BaseSettings):
     days_list:  list[int] = [180]
 
     database_url: str = "postgresql://postgres:postgres@localhost:5432/kaladin"
+    ws_monitor_token: str | None = None
+    ws_monitor_retention_minutes: int = 120
+    ws_monitor_persist: int = 1
 
     @field_validator("log_level", mode="before")
     @classmethod

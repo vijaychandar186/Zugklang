@@ -414,7 +414,6 @@ export const useChessStore = create<ChessStore>()(
           timeControl,
           whiteTime: timers.whiteTime,
           blackTime: timers.blackTime,
-          // Multiplayer clock becomes authoritative only after first WS clock sync.
           activeTimer: null,
           lastActiveTimestamp: null,
           playingAgainstStockfish: false

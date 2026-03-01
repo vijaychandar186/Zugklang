@@ -24,30 +24,21 @@ import {
 import { GAME_THREE_D_CHESS_KEY } from '@/lib/storage/keys';
 import { createLazyStorage } from '@/lib/storage/lazyStorage';
 import type { TimeControl } from '@/features/game/types/rules';
-
 export type SelectionMode = 'piece' | 'board';
-
 interface PendingPromotion {
   from: TriDSquare;
   to: TriDSquare;
 }
-
 interface PendingBoardArrival {
   boardId: AttackBoardId;
   toSlot: AttackBoardSlot;
-  /** Key for the identity landing square (same local row/col on the moved board) */
   identityKey: string;
-  /** Key for the rot-180 landing square (1-row, 1-col on the moved board) */
   rot180Key: string;
 }
-
 interface TriDChessStore {
-  // Game state
   gameState: TriDGameState;
   gameStarted: boolean;
   viewingIndex: number;
-
-  // UI state
   selected: TriDSquare | null;
   selectedBoardId: AttackBoardId | null;
   selectionMode: SelectionMode;
@@ -56,15 +47,11 @@ interface TriDChessStore {
   pendingPromotion: PendingPromotion | null;
   pendingBoardArrival: PendingBoardArrival | null;
   inCheck: boolean;
-
-  // Time control
   timeControl: TimeControl;
   whiteTime: number | null;
   blackTime: number | null;
   activeTimer: 'white' | 'black' | null;
   lastActiveTimestamp: number | null;
-
-  // Actions
   startNewGame: (timeControl?: TimeControl) => void;
   selectSquare: (sq: TriDSquare) => void;
   selectAttackBoard: (boardId: AttackBoardId) => void;
@@ -73,24 +60,18 @@ interface TriDChessStore {
   completePromotion: (piece: PieceType) => void;
   cancelPromotion: () => void;
   setSelectionMode: (mode: SelectionMode) => void;
-
-  // Navigation
   goToStart: () => void;
   goToEnd: () => void;
   goToPrev: () => void;
   goToNext: () => void;
   goToMove: (index: number) => void;
-
-  // Timer
   tickTimer: () => void;
   setGameOver: (over: boolean) => void;
   setGameResult: (result: string | null) => void;
 }
-
 function computeInCheck(state: TriDGameState): boolean {
   return getCurrentCheck(state);
 }
-
 export const useTriDChessStore = create<TriDChessStore>()(
   persist(
     (set, get) => ({
@@ -110,7 +91,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
       blackTime: null,
       activeTimer: null,
       lastActiveTimestamp: null,
-
       startNewGame: (timeControl) => {
         const tc = timeControl ?? {
           mode: 'unlimited',
@@ -137,7 +117,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
           lastActiveTimestamp: tc.mode === 'timed' ? Date.now() : null
         });
       },
-
       selectSquare: (sq) => {
         const {
           gameState,
@@ -147,10 +126,7 @@ export const useTriDChessStore = create<TriDChessStore>()(
           pendingBoardArrival
         } = get();
         if (!gameStarted || gameState.isOver) return;
-        // Only interact with live position
         if (viewingIndex !== gameState.snapshots.length - 1) return;
-
-        // If we're waiting for an arrival choice, handle that first
         if (pendingBoardArrival) {
           const key = squareKey(sq);
           if (
@@ -161,7 +137,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
               key === pendingBoardArrival.rot180Key ? 'rot180' : 'identity';
             get().chooseBoardArrival(choice);
           } else {
-            // Clicked elsewhere — cancel
             set({
               pendingBoardArrival: null,
               highlightedSquares: new Set(),
@@ -170,12 +145,8 @@ export const useTriDChessStore = create<TriDChessStore>()(
           }
           return;
         }
-
         const piece = gameState.pieces[squareKey(sq)];
-
-        // If something already selected, try to move
         if (selected) {
-          // Clicking own piece of same colour: re-select
           if (piece && piece.color === gameState.turn) {
             const legal = getLegalMoves(sq, gameState);
             set({
@@ -186,8 +157,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
             });
             return;
           }
-
-          // Try the move
           const needs = requiresPromotion(selected, sq, gameState);
           if (needs) {
             set({
@@ -197,7 +166,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
             });
             return;
           }
-
           const result = applyPieceMove(gameState, selected, sq);
           if (result) {
             const { nextState } = result;
@@ -228,13 +196,9 @@ export const useTriDChessStore = create<TriDChessStore>()(
             });
             return;
           }
-
-          // Move failed: deselect
           set({ selected: null, highlightedSquares: new Set() });
           return;
         }
-
-        // Nothing selected: select this square if it's current player's piece
         if (piece && piece.color === gameState.turn) {
           const legal = getLegalMoves(sq, gameState);
           set({
@@ -245,15 +209,12 @@ export const useTriDChessStore = create<TriDChessStore>()(
           });
         }
       },
-
       selectAttackBoard: (boardId) => {
         const { gameState, viewingIndex, gameStarted } = get();
         if (!gameStarted || gameState.isOver) return;
         if (viewingIndex !== gameState.snapshots.length - 1) return;
-
         const legalSlots = getLegalBoardMoves(boardId, gameState);
         if (legalSlots.length === 0) return;
-
         set({
           selectedBoardId: boardId,
           selected: null,
@@ -261,12 +222,9 @@ export const useTriDChessStore = create<TriDChessStore>()(
           highlightedSquares: new Set()
         });
       },
-
       moveAttackBoard: (boardId, toSlot) => {
         const { gameState, highlightedSlots } = get();
         if (!highlightedSlots.has(toSlot)) return;
-
-        // Check if the moving board has exactly 1 passenger
         const size = BOARD_SIZES[boardId];
         let passengerRow = -1;
         let passengerCol = -1;
@@ -280,9 +238,7 @@ export const useTriDChessStore = create<TriDChessStore>()(
             }
           }
         }
-
         if (pieceCount === 1) {
-          // Offer the two arrival choices (identity and rot-180)
           const identityKey = squareKey({
             boardId,
             row: passengerRow,
@@ -302,11 +258,8 @@ export const useTriDChessStore = create<TriDChessStore>()(
           });
           return;
         }
-
-        // 0 passengers — apply directly
         const result = applyBoardMove(gameState, boardId, toSlot);
         if (!result) return;
-
         const { nextState } = result;
         const newCheck = computeInCheck(nextState);
         const tc = get().timeControl;
@@ -334,11 +287,9 @@ export const useTriDChessStore = create<TriDChessStore>()(
             activeTimer && !nextState.isOver ? Date.now() : null
         });
       },
-
       chooseBoardArrival: (choice) => {
         const { gameState, pendingBoardArrival } = get();
         if (!pendingBoardArrival) return;
-
         const result = applyBoardMove(
           gameState,
           pendingBoardArrival.boardId,
@@ -349,7 +300,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
           set({ pendingBoardArrival: null, highlightedSquares: new Set() });
           return;
         }
-
         const { nextState } = result;
         const newCheck = computeInCheck(nextState);
         const tc = get().timeControl;
@@ -378,7 +328,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
             activeTimer && !nextState.isOver ? Date.now() : null
         });
       },
-
       completePromotion: (piece) => {
         const { gameState, pendingPromotion } = get();
         if (!pendingPromotion) return;
@@ -400,9 +349,7 @@ export const useTriDChessStore = create<TriDChessStore>()(
           set({ pendingPromotion: null });
         }
       },
-
       cancelPromotion: () => set({ pendingPromotion: null }),
-
       setSelectionMode: (mode) =>
         set({
           selectionMode: mode,
@@ -412,7 +359,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
           highlightedSlots: new Set(),
           pendingBoardArrival: null
         }),
-
       goToStart: () => {
         const { gameState } = get();
         const snap = gameState.snapshots[0];
@@ -423,10 +369,8 @@ export const useTriDChessStore = create<TriDChessStore>()(
           highlightedSquares: new Set(),
           highlightedSlots: new Set()
         });
-        // We display the snapshot state inline - viewingIndex drives it
         void snap;
       },
-
       goToEnd: () => {
         const { gameState } = get();
         const last = gameState.snapshots.length - 1;
@@ -438,7 +382,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
           highlightedSlots: new Set()
         });
       },
-
       goToPrev: () => {
         const { viewingIndex } = get();
         if (viewingIndex > 0) {
@@ -451,7 +394,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
           });
         }
       },
-
       goToNext: () => {
         const { viewingIndex, gameState } = get();
         if (viewingIndex < gameState.snapshots.length - 1) {
@@ -464,7 +406,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
           });
         }
       },
-
       goToMove: (index) => {
         const { gameState } = get();
         const posIdx = Math.min(index + 1, gameState.snapshots.length - 1);
@@ -476,7 +417,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
           highlightedSlots: new Set()
         });
       },
-
       tickTimer: () => {
         const { activeTimer, whiteTime, blackTime, gameState } = get();
         if (!activeTimer || gameState.isOver) return;
@@ -512,12 +452,10 @@ export const useTriDChessStore = create<TriDChessStore>()(
           }
         }
       },
-
       setGameOver: (over) => {
         const { gameState } = get();
         set({ gameState: { ...gameState, isOver: over } });
       },
-
       setGameResult: (result) => {
         const { gameState } = get();
         set({ gameState: { ...gameState, result } });
@@ -526,7 +464,9 @@ export const useTriDChessStore = create<TriDChessStore>()(
     {
       name: GAME_THREE_D_CHESS_KEY,
       storage: createLazyStorage((state: unknown) => {
-        const s = state as { gameStarted?: boolean };
+        const s = state as {
+          gameStarted?: boolean;
+        };
         return s.gameStarted === true;
       }),
       partialize: (state) => ({
@@ -550,7 +490,6 @@ export const useTriDChessStore = create<TriDChessStore>()(
       }),
       onRehydrateStorage: () => (state) => {
         if (!state) return;
-        // Rehydrate Sets (they're serialized as arrays)
         state.highlightedSquares = new Set();
         state.highlightedSlots = new Set();
         state.selected = null;
@@ -559,12 +498,9 @@ export const useTriDChessStore = create<TriDChessStore>()(
         state.pendingBoardArrival = null;
         state.selectionMode = 'piece';
         if (!state.gameState) state.gameState = createInitialState();
-        // Ensure field added in later versions is present after rehydration
         if (state.gameState.enPassantTarget === undefined)
           (state.gameState as TriDGameState).enPassantTarget = null;
         state.inCheck = computeInCheck(state.gameState);
-
-        // Adjust timer for elapsed time
         if (
           state.activeTimer &&
           state.lastActiveTimestamp &&
@@ -603,6 +539,4 @@ export const useTriDChessStore = create<TriDChessStore>()(
     }
   )
 );
-
-// Re-export for convenience
 export { getKingSquare };

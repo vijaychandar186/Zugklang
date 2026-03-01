@@ -1,9 +1,9 @@
 import Image from 'next/image';
+import { CHECKERS_PIECE } from '@/lib/public-paths';
 const PIECE_KEYS = ['P', 'R', 'N', 'B', 'Q', 'K'] as const;
 const COLORS = ['w', 'b'] as const;
 function CheckerPiece({ color }: { color: 'w' | 'b' }) {
-  const svgPath =
-    color === 'w' ? '/checkers/white-large.svg' : '/checkers/black-large.svg';
+  const svgPath = color === 'w' ? CHECKERS_PIECE.white : CHECKERS_PIECE.black;
   return (
     <div
       style={{

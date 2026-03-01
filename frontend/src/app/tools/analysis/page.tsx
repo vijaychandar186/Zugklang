@@ -6,7 +6,7 @@ import { BOARD_3D_ENABLED_COOKIE } from '@/features/chess/config/board';
 export const metadata: Metadata = {
   title: 'Analysis Board | Zugklang',
   description:
-    'Analyze chess positions with Stockfish 16. Set up your own positions, import PGN/FEN, and continue games against the computer.'
+    'Analyze chess positions with Stockfish 18. Set up your own positions, import PGN/FEN, and continue games against the computer.'
 };
 export default async function AnalysisPage({
   searchParams

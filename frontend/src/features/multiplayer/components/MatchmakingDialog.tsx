@@ -17,6 +17,7 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { Icons } from '@/components/Icons';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import type { TimeControl, TimeControlMode } from '@/features/game/types/rules';
 import type { ChallengeColor, MultiplayerStatus } from '../types';
@@ -28,9 +29,13 @@ interface MatchmakingDialogProps {
   errorMessage: string | null;
   pendingChallengeId: string | null;
   initialChallengeId?: string;
-  onFindGame: (timeControl: TimeControl) => void;
+  onFindGame: (timeControl: TimeControl, rated: boolean) => void;
   onCancel: () => void;
-  onCreateChallenge: (timeControl: TimeControl, color: ChallengeColor) => void;
+  onCreateChallenge: (
+    timeControl: TimeControl,
+    color: ChallengeColor,
+    rated: boolean
+  ) => void;
   onCancelChallenge: () => void;
 }
 type Mode = 'random' | 'friend';
@@ -54,6 +59,7 @@ export function MatchmakingDialog({
   const [minutes, setMinutes] = useState(10);
   const [increment, setIncrement] = useState(0);
   const [color, setColor] = useState<ChallengeColor>('random');
+  const [rated, setRated] = useState(true);
   const [linkCopied, setLinkCopied] = useState(false);
   const isMatched = status === 'matched';
   const isSearching = status === 'waiting';
@@ -68,6 +74,7 @@ export function MatchmakingDialog({
       setMinutes(10);
       setIncrement(0);
       setColor('random');
+      setRated(true);
       if (!initialChallengeId) setMode('random');
     }
   }, [open, initialChallengeId]);
@@ -81,9 +88,9 @@ export function MatchmakingDialog({
     minutes: timerMode === 'timed' ? minutes : 0,
     increment: timerMode === 'timed' ? increment : 0
   });
-  const handleFindGame = () => onFindGame(buildTimeControl());
+  const handleFindGame = () => onFindGame(buildTimeControl(), rated);
   const handleCreateChallenge = () =>
-    onCreateChallenge(buildTimeControl(), color);
+    onCreateChallenge(buildTimeControl(), color, rated);
   const handleCancelRandom = () => {
     onCancel();
     onOpenChange(false);
@@ -171,6 +178,13 @@ export function MatchmakingDialog({
           </div>
         </>
       )}
+
+      <div className='flex items-center justify-between pt-1'>
+        <Label htmlFor='rated-toggle' className='cursor-pointer select-none'>
+          Rated
+        </Label>
+        <Switch id='rated-toggle' checked={rated} onCheckedChange={setRated} />
+      </div>
     </div>
   );
   return (

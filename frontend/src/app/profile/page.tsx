@@ -62,7 +62,6 @@ export default async function ProfilePage() {
     ]
   );
   if (!user) redirect('/signin');
-
   return (
     <PageContainer scrollable={true}>
       <Navbar />

@@ -1,5 +1,4 @@
 'use client';
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { toast } from 'sonner';
@@ -39,18 +38,15 @@ import {
   TEAM_ROTATIONS,
   type FourPlayerSyncSnapshot
 } from '../store';
-
 const TEAM_LABEL: Record<Team, string> = {
   r: 'Red',
   b: 'Blue',
   y: 'Yellow',
   g: 'Green'
 };
-
 interface FourPlayerMultiplayerViewProps {
   lobbyId?: string;
 }
-
 function getDisplayName(
   player: {
     displayName: string | null;
@@ -63,7 +59,6 @@ function getDisplayName(
   }
   return `Player ${player.playerId.slice(0, 6)}`;
 }
-
 function formatTimeLabel(mins: number): string {
   if (mins < 60) return `${mins} min`;
   const hours = Math.floor(mins / 60);
@@ -71,7 +66,6 @@ function formatTimeLabel(mins: number): string {
   if (remainingMins === 0) return `${hours} hr`;
   return `${hours} hr ${remainingMins} min`;
 }
-
 function formatIncrementLabel(secs: number): string {
   if (secs === 0) return 'No increment';
   if (secs < 60) return `+${secs} sec`;
@@ -80,7 +74,6 @@ function formatIncrementLabel(secs: number): string {
   if (remainingSecs === 0) return `+${mins} min`;
   return `+${mins} min ${remainingSecs} sec`;
 }
-
 function formatTimeControl(tc: TimeControl): string {
   if (tc.mode === 'unlimited') return 'Unlimited';
   const time = formatTimeLabel(tc.minutes);
@@ -88,7 +81,6 @@ function formatTimeControl(tc: TimeControl): string {
     return `${time} · ${formatIncrementLabel(tc.increment)}`;
   return time;
 }
-
 function toResultReason(result: string | null): string {
   if (!result) return 'elimination';
   const lower = result.toLowerCase();
@@ -99,7 +91,6 @@ function toResultReason(result: string | null): string {
   if (lower.includes('time') || lower.includes('timeout')) return 'timeout';
   return 'elimination';
 }
-
 function toResultCode(
   winner: Team | null,
   myTeam: Team,
@@ -109,7 +100,6 @@ function toResultCode(
   if (result?.toLowerCase().includes('draw')) return '1/2-1/2';
   return '*';
 }
-
 export function FourPlayerMultiplayerView({
   lobbyId: initialLobbyId
 }: FourPlayerMultiplayerViewProps) {
@@ -142,13 +132,10 @@ export function FourPlayerMultiplayerView({
   const rejoinPendingRef = useRef(false);
   const applyingRemoteStateRef = useRef(false);
   const lastSnapshotRef = useRef<string>('');
-
-  // Time control state (for pre-lobby creation)
   const [timerMode, setTimerMode] = useState<TimeControlMode>('unlimited');
   const [minutes, setMinutes] = useState(10);
   const [increment, setIncrement] = useState(0);
   const [inviteCopied, setInviteCopied] = useState(false);
-
   const gameStarted = useFourPlayerStore((s) => s.gameStarted);
   const isGameOver = useFourPlayerStore((s) => s.isGameOver);
   const currentTeam = useFourPlayerStore((s) => s.currentTeam);
@@ -160,7 +147,6 @@ export function FourPlayerMultiplayerView({
   const gameResult = useFourPlayerStore((s) => s.gameResult);
   const winner = useFourPlayerStore((s) => s.winner);
   const gameId = useFourPlayerStore((s) => s.gameId);
-
   const lobbyStarted = lobby?.started ?? false;
   const lobbyId = lobby?.lobbyId ?? null;
   const currentLobbyId = lobbyId;
@@ -170,7 +156,6 @@ export function FourPlayerMultiplayerView({
   );
   const myTeam = me?.team ?? null;
   const isLeader = !!(me && lobby && lobby.leaderId === me.playerId);
-
   useEffect(() => {
     if (!lobby?.players?.length) return;
     setStablePlayersByTeam((prev) => {
@@ -181,35 +166,24 @@ export function FourPlayerMultiplayerView({
       return next;
     });
   }, [lobby?.players]);
-
   useEffect(() => {
     if (lobby) return;
     setStablePlayersByTeam({});
   }, [lobby]);
-
   useEffect(() => {
-    // Switch storage to multiplayer mode so the local game's localStorage key is
-    // never read from or written to while this view is active.
     setFourPlayerStorageMode(true);
     useFourPlayerStore.persist.rehydrate();
-
     const fpSession = loadFourPlayerSession();
     const storeState = useFourPlayerStore.getState();
-    // Check BEFORE resetting — determines whether to hide the dialog for a rejoin attempt
     const hadActiveGame = storeState.gameStarted && !storeState.isGameOver;
-
-    // Always reset so stale `gameStarted` never blocks the leader's fresh game init
     useFourPlayerStore
       .getState()
       .setTimeControl({ mode: 'unlimited', minutes: 0, increment: 0 });
     useFourPlayerStore.getState().resetGame();
     useFourPlayerStore.getState().setRestrictedTeam(null);
-
     if (fpSession && hadActiveGame) {
-      // Active session exists — hide lobby dialog while we attempt reconnect
       setLobbyDialogOpen(false);
     }
-    // Clear any ?lobby= param from the URL (e.g. when arriving via invite link)
     if (typeof window !== 'undefined') {
       const url = new URL(window.location.href);
       if (url.searchParams.has('lobby')) {
@@ -222,18 +196,15 @@ export function FourPlayerMultiplayerView({
       useFourPlayerStore.getState().setRestrictedTeam(null);
     };
   }, []);
-
   useEffect(() => {
     useFourPlayerStore.getState().setRestrictedTeam(myTeam);
     if (myTeam) {
       useFourPlayerStore.getState().setOrientation(TEAM_ROTATIONS[myTeam]);
     }
   }, [myTeam]);
-
   useEffect(() => {
     preConnect();
   }, [preConnect]);
-
   useEffect(() => {
     setOnFourPlayerLobbyState((nextLobby) => {
       setLobby(nextLobby);
@@ -244,13 +215,11 @@ export function FourPlayerMultiplayerView({
     });
     setOnFourPlayerLobbyRejoined((lobbyState) => {
       rejoinPendingRef.current = false;
-      // Suppress the next sync broadcast so we don't send stale state
       applyingRemoteStateRef.current = true;
       setLobby(lobbyState);
       setLobbyDialogOpen(false);
     });
     setOnFourPlayerPlayerReconnected((_reconnectedPlayerId) => {
-      // Re-broadcast current game state so the reconnected player catches up
       if (lobbyId && gameStarted) {
         const snap = useFourPlayerStore.getState().createSyncSnapshot();
         sendFourPlayerStateSync(lobbyId, JSON.stringify(snap));
@@ -262,9 +231,7 @@ export function FourPlayerMultiplayerView({
         applyingRemoteStateRef.current = true;
         useFourPlayerStore.getState().applySyncSnapshot(snapshot);
         lastSnapshotRef.current = rawState;
-      } catch {
-        // Ignore malformed state payloads.
-      }
+      } catch {}
     });
     return () => {
       setOnFourPlayerLobbyState(null);
@@ -283,7 +250,6 @@ export function FourPlayerMultiplayerView({
     gameStarted,
     sendFourPlayerStateSync
   ]);
-
   useEffect(() => {
     if (!playerId || joinAttempted || !initialLobbyId) return;
     joinFourPlayerLobby(
@@ -300,9 +266,6 @@ export function FourPlayerMultiplayerView({
     session?.user?.image,
     session?.user?.name
   ]);
-
-  // Attempt to rejoin an active game after page refresh
-  // Note: gameStarted is always false here (reset on mount), so we rely on fpSession alone
   useEffect(() => {
     if (!playerId || rejoinAttempted) return;
     const fpSession = loadFourPlayerSession();
@@ -311,8 +274,6 @@ export function FourPlayerMultiplayerView({
     rejoinPendingRef.current = true;
     rejoinFourPlayerLobby(fpSession.lobbyId, fpSession.rejoinToken);
   }, [playerId, rejoinAttempted, rejoinFourPlayerLobby]);
-
-  // If the server returns an error while a rejoin is pending, reset to lobby creation
   useEffect(() => {
     if (!rejoinPendingRef.current || !errorMessage) return;
     rejoinPendingRef.current = false;
@@ -324,22 +285,17 @@ export function FourPlayerMultiplayerView({
     useFourPlayerStore.getState().setRestrictedTeam(null);
     setLobbyDialogOpen(true);
   }, [errorMessage]);
-
-  // Clear session when game ends so a future refresh shows the lobby dialog
   useEffect(() => {
     if (isGameOver) {
       clearFourPlayerSession();
     }
   }, [isGameOver]);
-
-  // Save 4-player game to history when game ends
   const savedFourPlayerGameRef = useRef<string | null>(null);
   useEffect(() => {
     if (!isGameOver || !currentLobbyId || !session?.user?.id || !myTeam) return;
     const saveKey = `${currentLobbyId}:${gameId}`;
     if (savedFourPlayerGameRef.current === saveKey) return;
     savedFourPlayerGameRef.current = saveKey;
-
     const result = toResultCode(winner, myTeam, gameResult);
     const resultReason = toResultReason(gameResult);
     const tc = lobby?.timeControl ?? {
@@ -347,7 +303,6 @@ export function FourPlayerMultiplayerView({
       minutes: 0,
       increment: 0
     };
-
     fetch('/api/games', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -377,7 +332,6 @@ export function FourPlayerMultiplayerView({
     lobby,
     gameId
   ]);
-
   useEffect(() => {
     if (!lobbyStarted || !isLeader || !lobbyId || !lobby) return;
     const state = useFourPlayerStore.getState();
@@ -390,12 +344,10 @@ export function FourPlayerMultiplayerView({
       sendFourPlayerStateSync(lobbyId, payload);
     }
   }, [isLeader, lobby, lobbyId, lobbyStarted, sendFourPlayerStateSync]);
-
   useEffect(() => {
     if (!lobbyStarted || !lobbyId) return;
     if (!myTeam) return;
     if (!gameStarted && !isGameOver) return;
-
     const snapshot = useFourPlayerStore.getState().createSyncSnapshot();
     const serialized = JSON.stringify(snapshot);
     if (applyingRemoteStateRef.current) {
@@ -421,12 +373,10 @@ export function FourPlayerMultiplayerView({
     activeTimer,
     gameResult
   ]);
-
   const inviteLink = useMemo(() => {
     if (!currentLobbyId || typeof window === 'undefined') return '';
     return `${window.location.origin}${window.location.pathname}?lobby=${currentLobbyId}`;
   }, [currentLobbyId]);
-
   const handleCreateLobby = useCallback(() => {
     const timeControl: TimeControl = {
       mode: timerMode,
@@ -446,10 +396,9 @@ export function FourPlayerMultiplayerView({
     session?.user?.name,
     timerMode
   ]);
-
   const handleLeaveLobby = useCallback(() => {
     if (!currentLobbyId) return;
-    leaveFourPlayerLobby(currentLobbyId); // also clears session storage
+    leaveFourPlayerLobby(currentLobbyId);
     setLobby(null);
     setLobbyDialogOpen(true);
     useFourPlayerStore
@@ -458,17 +407,14 @@ export function FourPlayerMultiplayerView({
     useFourPlayerStore.getState().resetGame();
     useFourPlayerStore.getState().setRestrictedTeam(null);
   }, [currentLobbyId, leaveFourPlayerLobby]);
-
   const handleStartLobby = useCallback(() => {
     if (!currentLobbyId) return;
     startFourPlayerLobby(currentLobbyId);
   }, [currentLobbyId, startFourPlayerLobby]);
-
   const handleRandomizeColors = useCallback(() => {
     if (!currentLobbyId || !isLeader || lobby?.started) return;
     shuffleFourPlayerLobby(currentLobbyId);
   }, [currentLobbyId, isLeader, lobby?.started, shuffleFourPlayerLobby]);
-
   const handleAssignTeam = useCallback(
     (team: Team, nextPlayerId: string) => {
       if (!currentLobbyId || !isLeader || lobby?.started) return;
@@ -477,7 +423,6 @@ export function FourPlayerMultiplayerView({
     },
     [assignFourPlayerTeam, currentLobbyId, isLeader, lobby?.started]
   );
-
   const copyInviteLink = useCallback(() => {
     if (!inviteLink) return;
     navigator.clipboard.writeText(inviteLink).then(() => {
@@ -490,7 +435,6 @@ export function FourPlayerMultiplayerView({
     const timer = setTimeout(() => setInviteCopied(false), 2000);
     return () => clearTimeout(timer);
   }, [inviteCopied]);
-
   const lobbyPlayers = lobby?.players ?? [];
   const sidebarPlayers = useMemo(() => {
     if (!lobby) return undefined;
@@ -509,7 +453,6 @@ export function FourPlayerMultiplayerView({
   const startDisabled = !isLeader || filledSeats !== 4 || !!lobby?.started;
   const randomizeDisabled = !isLeader || !!lobby?.started || filledSeats < 2;
   const canAssignColors = isLeader && !lobby?.started && filledSeats >= 2;
-
   return (
     <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
       <div className='flex min-w-0 flex-col items-center gap-2'>

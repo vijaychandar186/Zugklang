@@ -1,5 +1,4 @@
 'use client';
-
 import type { ComponentType, SVGProps } from 'react';
 import Image from 'next/image';
 import * as FlagIcons from 'country-flag-icons/react/3x2';
@@ -8,19 +7,15 @@ import {
   isFallbackFlagCode,
   normalizeFlagCode
 } from '@/features/settings/flags';
-
 type FlagComponent = ComponentType<SVGProps<SVGSVGElement>>;
-
 type CountryFlagProps = {
   code?: string | null;
   className?: string;
   title?: string;
 };
-
 export function CountryFlag({ code, className, title }: CountryFlagProps) {
   const normalizedCode = normalizeFlagCode(code);
   const Flag = (FlagIcons as Record<string, FlagComponent>)[normalizedCode];
-
   if (!Flag || isFallbackFlagCode(normalizedCode)) {
     return (
       <Image
@@ -32,7 +27,6 @@ export function CountryFlag({ code, className, title }: CountryFlagProps) {
       />
     );
   }
-
   return (
     <Flag
       className={className}

@@ -1,5 +1,4 @@
 import { NavItem } from '@/types/navitem';
-
 export const navItems: NavItem[] = [
   {
     title: 'Home',
@@ -121,7 +120,7 @@ export const navItems: NavItem[] = [
   },
   {
     title: 'History',
-    url: '/games',
+    url: '/history',
     icon: 'book',
     shortcut: ['g', 'g']
   },

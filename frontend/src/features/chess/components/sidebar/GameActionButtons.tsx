@@ -17,35 +17,18 @@ import {
   TooltipContent,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-
-/**
- * Shared draw-offer and resign/abort action buttons used by all two-player
- * game sidebars (standard chess, custom variants).
- *
- * Place inside a flex row; the buttons render inline without their own
- * background or border — the parent section provides those.
- */
 export interface GameActionButtonsProps {
   gameOver: boolean;
   gameStarted: boolean;
-  /** true when moves < 2 — shows abort instead of resign */
   canAbort: boolean;
   isLocalGame?: boolean;
   isMultiplayer?: boolean;
-  /**
-   * During a live multiplayer game the draw button should be enabled
-   * (the game is in progress). Outside a live game (waiting, finished) it
-   * should be disabled.  Has no effect when isMultiplayer is false.
-   */
   isLiveGame?: boolean;
-  /** Called when the draw trigger is clicked (before the confirm dialog). */
   onDrawTrigger?: () => void;
-  /** Called when the draw is confirmed in the dialog. */
   onDrawConfirm: () => void;
   onResign: () => void;
   onAbort: () => void;
 }
-
 export function GameActionButtons({
   gameOver,
   gameStarted,
@@ -60,7 +43,6 @@ export function GameActionButtons({
 }: GameActionButtonsProps) {
   return (
     <>
-      {/* ── Draw offer ──────────────────────────────────────────────── */}
       <AlertDialog>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -110,7 +92,6 @@ export function GameActionButtons({
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* ── Abort / Resign ──────────────────────────────────────────── */}
       <AlertDialog>
         <Tooltip>
           <TooltipTrigger asChild>

@@ -9,7 +9,7 @@ export const FAQList: FAQProps[] = [
   {
     question: 'What chess engines does Zugklang use?',
     answer:
-      'Zugklang uses two engines: Stockfish 16 for standard chess and Fairy-Stockfish for chess variants like Atomic, Racing Kings, and more. Both run directly in your browser using WebAssembly for fast, responsive gameplay.',
+      'Zugklang uses two engines: Stockfish 18 for standard chess and Fairy-Stockfish for chess variants like Atomic, Racing Kings, and more. Both run directly in your browser using WebAssembly for fast, responsive gameplay.',
     value: 'item-1'
   },
   {

@@ -1,5 +1,4 @@
 'use client';
-
 import * as React from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -18,10 +17,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem
 } from '@/components/ui/sidebar';
-
 export default function SidebarUserMenu() {
   const { data: session, status } = useSession();
-
   if (status === 'loading') {
     return (
       <SidebarMenu>
@@ -31,7 +28,6 @@ export default function SidebarUserMenu() {
       </SidebarMenu>
     );
   }
-
   if (!session) {
     return (
       <SidebarMenu>
@@ -46,7 +42,6 @@ export default function SidebarUserMenu() {
       </SidebarMenu>
     );
   }
-
   const initials =
     session.user?.name
       ?.split(' ')
@@ -54,7 +49,6 @@ export default function SidebarUserMenu() {
       .join('')
       .toUpperCase()
       .slice(0, 2) ?? '?';
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -109,7 +103,7 @@ export default function SidebarUserMenu() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className='cursor-pointer'>
-              <Link href='/games'>
+              <Link href='/history'>
                 <History className='mr-2 h-4 w-4' />
                 History
               </Link>

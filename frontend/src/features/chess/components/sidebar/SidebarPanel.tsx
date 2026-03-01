@@ -5,10 +5,6 @@ export interface SidebarPanelProps {
   children: ReactNode;
   className?: string;
   flexible?: boolean;
-  /**
-   * Makes the panel fill the sidebar column height (lg:h-full).
-   * Use for the primary game sidebar panel in GameShell-based layouts.
-   */
   fullHeight?: boolean;
 }
 export function SidebarPanel({

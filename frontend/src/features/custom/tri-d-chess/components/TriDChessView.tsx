@@ -24,9 +24,6 @@ import { PlayerClock } from '@/features/chess/components/PlayerClock';
 import { GameShell } from '@/features/chess/components/GameShell';
 import { TwoPlayerCustomSidebar } from '@/features/custom/shared/components/TwoPlayerCustomSidebar';
 import { TwoPlayerCustomSetupDialog } from '@/features/custom/shared/components/TwoPlayerCustomSetupDialog';
-
-// ── Setup dialog ─────────────────────────────────────────────────────────────
-
 function TriDSetupDialog({
   open,
   onOpenChange
@@ -53,11 +50,7 @@ function TriDSetupDialog({
     />
   );
 }
-
-// ── Promotion dialog ─────────────────────────────────────────────────────────
-
 const PROMOTE_PIECES: PieceType[] = ['q', 'r', 'b', 'n'];
-
 function PromotionDialog({
   color,
   pieceTheme,
@@ -96,12 +89,8 @@ function PromotionDialog({
     </Dialog>
   );
 }
-
-// ── Main view ────────────────────────────────────────────────────────────────
-
 const BOARD_CONTAINER_CLASS =
   'lg:h-[min(70vw,calc(100dvh-180px),820px)] xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)] [&>[data-board-container]]:h-full';
-
 export function TriDChessView({
   initialPieceTheme = 'classic'
 }: {
@@ -109,7 +98,6 @@ export function TriDChessView({
 }) {
   const boardViewportRef = useRef<HTMLDivElement | null>(null);
   const [squareSize, setSquareSize] = useState(36);
-
   const {
     gameState,
     gameStarted,
@@ -139,34 +127,25 @@ export function TriDChessView({
     setGameOver,
     setGameResult
   } = useTriDChessStore();
-
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const storePieceTheme = useChessStore((s) => s.pieceThemeName);
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const flipBoard = useChessStore((s) => s.flipBoard);
-
-  // Avoid SSR/client pieceTheme mismatch
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), []);
   const pieceTheme = isMounted ? storePieceTheme : initialPieceTheme;
-
-  // Timer tick
   useEffect(() => {
     if (timeControl.mode !== 'timed' || gameState.isOver || !gameStarted)
       return;
     const id = setInterval(() => tickTimer(), 1000);
     return () => clearInterval(id);
   }, [timeControl.mode, gameState.isOver, gameStarted, tickTimer]);
-
-  // Game-start sound
   const prevGameStarted = useRef(false);
   useEffect(() => {
     if (gameStarted && !prevGameStarted.current && soundEnabled)
       playSound('game-start');
     prevGameStarted.current = gameStarted;
   }, [gameStarted, soundEnabled]);
-
-  // Move sounds
   const prevMoveCount = useRef(gameState.moveHistory.length);
   useEffect(() => {
     const moves = gameState.moveHistory;
@@ -191,8 +170,6 @@ export function TriDChessView({
     const isPromotion = !!last.promotion;
     playSound(getSoundType(isCapture, isCheck, isCastle, isPromotion, true));
   }, [gameState.moveHistory, soundEnabled]);
-
-  // Dynamic square sizing via ResizeObserver
   useLayoutEffect(() => {
     const el = boardViewportRef.current;
     if (!el) return;
@@ -221,13 +198,11 @@ export function TriDChessView({
       if (raf) cancelAnimationFrame(raf);
     };
   }, []);
-
   const isActive =
     gameStarted &&
     !gameState.isOver &&
     viewingIndex === gameState.snapshots.length - 1;
   const hasTimer = timeControl.mode === 'timed';
-
   const snapshot =
     gameState.snapshots[viewingIndex] ??
     gameState.snapshots[gameState.snapshots.length - 1];
@@ -239,13 +214,10 @@ export function TriDChessView({
     viewingIndex === gameState.snapshots.length - 1
       ? gameState.slots
       : snapshot.slots;
-
   const topColor = boardFlipped ? 'white' : 'black';
   const bottomColor = boardFlipped ? 'black' : 'white';
   const topTimerActive = activeTimer === topColor && !gameState.isOver;
   const bottomTimerActive = activeTimer === bottomColor && !gameState.isOver;
-
-  // Sidebar data
   const moves = useMemo(
     () => gameState.moveHistory.map((m) => m.san),
     [gameState.moveHistory]
@@ -276,12 +248,10 @@ export function TriDChessView({
       </div>
     );
   }, [gameStarted, gameState.isOver, gameState.turn, pendingBoardArrival]);
-
   const topName = boardFlipped ? 'White' : 'Black';
   const bottomName = boardFlipped ? 'Black' : 'White';
   const topTime = boardFlipped ? whiteTime : blackTime;
   const bottomTime = boardFlipped ? blackTime : whiteTime;
-
   return (
     <GameShell
       topLeft={<PlayerInfo name={topName} />}

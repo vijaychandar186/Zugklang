@@ -7,6 +7,10 @@ import { buildPosition } from '../utils/chess';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
 import {
+  antiCheatOnGameEnd,
+  antiCheatOnGameStart
+} from '../services/antiCheat';
+import {
   ABORT_TIMEOUT_MS,
   ELO_QUEUE_ENABLED,
   RATING_BAND_BASE,
@@ -78,6 +82,7 @@ export function createRoom(
     clockInterval: null
   };
   rooms.set(roomId, room);
+  antiCheatOnGameStart(room);
   room.abortTimerStartedAt = Date.now();
   room.abortTimer = setTimeout(() => {
     const r = rooms.get(roomId);
@@ -89,6 +94,7 @@ export function createRoom(
     revokeRoomTokens(r);
     const abandonedColor = r.position.turn;
     const winner = abandonedColor === 'white' ? 'Black' : 'White';
+    const winnerColor = abandonedColor === 'white' ? 'black' : 'white';
     const payload = {
       type: 'game_over',
       result: `${winner} wins — opponent abandoned`,
@@ -99,6 +105,7 @@ export function createRoom(
     };
     send(r.white, payload);
     send(r.black, payload);
+    antiCheatOnGameEnd(r, 'abandoned', winnerColor);
     logger.info('game_auto_aborted', {
       roomId: roomId.slice(0, 8),
       moves: r.moves.length
@@ -160,6 +167,7 @@ export function createRoom(
     stopRoomClock(r);
     revokeRoomTokens(r);
     const winner = timedOutColor === 'white' ? 'Black' : 'White';
+    const winnerColor = timedOutColor === 'white' ? 'black' : 'white';
     const payload = {
       type: 'game_over',
       result: `${winner} wins on time`,
@@ -170,6 +178,7 @@ export function createRoom(
     };
     send(r.white, payload);
     send(r.black, payload);
+    antiCheatOnGameEnd(r, 'timeout', winnerColor);
     logger.info('game_timeout', {
       roomId: roomId.slice(0, 8),
       timedOutColor

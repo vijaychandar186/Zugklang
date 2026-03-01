@@ -4,13 +4,11 @@ import { MenuPageLayout } from '@/components/layout/MenuPageLayout';
 import { GameModeCard } from '@/pages-content/play-menu/components/GameModeCard';
 import { Icons } from '@/components/Icons';
 import { customMultiplayerModes } from '@/constants/custom-multiplayer-modes';
-
 export const metadata: Metadata = {
   title: 'Custom Multiplayer | Zugklang',
   description:
     'Play Dice Chess, Card Chess, or Four Player Chess online with friends.'
 };
-
 export default function CustomMultiplayerMenuPage() {
   return (
     <PageContainer scrollable={true}>

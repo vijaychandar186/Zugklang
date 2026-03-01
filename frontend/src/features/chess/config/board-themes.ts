@@ -189,7 +189,6 @@ export const BOARD_THEMES: BoardTheme[] = [
     label: 'Pewter'
   }
 ];
-
 export const CORE_BOARD_THEME_NAMES: BoardThemeName[] = [
   'default',
   'blue',

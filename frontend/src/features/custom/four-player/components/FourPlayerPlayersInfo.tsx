@@ -1,14 +1,11 @@
 'use client';
-
 import { PlayerInfo } from '@/features/chess/components/PlayerInfo';
 import { useFourPlayerStore } from '../store';
 import type { Team } from '../engine';
 import type { FourPlayerLobbyPlayer } from '@/features/multiplayer/types';
 import { cn } from '@/lib/utils';
 import { formatTime } from '@/features/game/utils/formatting';
-
 const TEAM_ORDER: Team[] = ['r', 'b', 'y', 'g'];
-
 const TEAM_INFO: Record<
   Team,
   {
@@ -21,12 +18,10 @@ const TEAM_INFO: Record<
   y: { label: 'Yellow', cssVar: 'var(--four-player-yellow)' },
   g: { label: 'Green', cssVar: 'var(--four-player-green)' }
 };
-
 interface FourPlayerPlayersInfoProps {
   lobbyPlayers?: FourPlayerLobbyPlayer[];
   myTeam?: Team | null;
 }
-
 export function FourPlayerPlayersInfo({
   lobbyPlayers,
   myTeam
@@ -37,10 +32,8 @@ export function FourPlayerPlayersInfo({
   const gameStarted = useFourPlayerStore((s) => s.gameStarted);
   const isGameOver = useFourPlayerStore((s) => s.isGameOver);
   const timeControl = useFourPlayerStore((s) => s.timeControl);
-
   const isMultiplayer = !!lobbyPlayers;
   const hasTimer = timeControl.mode !== 'unlimited';
-
   return (
     <div className='grid w-full grid-cols-1 gap-2 sm:grid-cols-2'>
       {TEAM_ORDER.map((team) => {
@@ -53,7 +46,6 @@ export function FourPlayerPlayersInfo({
         const time = teamTimes[team];
         const timerActive =
           hasTimer && gameStarted && !isGameOver && activeTimer === team;
-
         return (
           <div
             key={team}

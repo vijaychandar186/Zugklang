@@ -7,6 +7,7 @@ import { useCardChessStore } from '../stores/useCardChessStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
 import { playRawSound } from '@/features/game/utils/sounds';
+import { CARD_SOUND_PATH } from '@/lib/public-paths';
 interface CardPanelProps {
   turnColor: 'w' | 'b';
 }
@@ -14,7 +15,6 @@ export function CardPanel({ turnColor }: CardPanelProps) {
   const { drawnCard, isDrawing, needsDraw, drawCard, drawCount, game } =
     useCardChessStore();
   const soundEnabled = useChessStore((s) => s.soundEnabled);
-
   const prevDrawnCardRef = useRef(drawnCard);
   useEffect(() => {
     if (
@@ -22,11 +22,10 @@ export function CardPanel({ turnColor }: CardPanelProps) {
       drawnCard !== null &&
       soundEnabled
     ) {
-      playRawSound('/custom/sounds/cards.mp3');
+      playRawSound(CARD_SOUND_PATH);
     }
     prevDrawnCardRef.current = drawnCard;
   }, [drawnCard, soundEnabled]);
-
   const handleDraw = useCallback(() => {
     if (!needsDraw || isDrawing) return;
     drawCard(turnColor);

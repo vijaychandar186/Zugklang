@@ -1,11 +1,9 @@
 import type { InfobarContent } from '@/components/ui/infobar';
-
 type InfoEntry = {
   objective: string;
   rules: string[];
   tips?: string[];
 };
-
 const MODE_INFO_BY_HREF: Record<string, InfoEntry> = {
   '/play/computer': {
     objective:
@@ -372,7 +370,6 @@ const MODE_INFO_BY_HREF: Record<string, InfoEntry> = {
     ]
   }
 };
-
 function toTitleFromHref(href: string): string {
   const last = href.split('/').filter(Boolean).at(-1) ?? 'mode';
   return last
@@ -380,11 +377,9 @@ function toTitleFromHref(href: string): string {
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
 }
-
 export function getModeInfoForPath(pathname: string): InfobarContent | null {
   const data = MODE_INFO_BY_HREF[pathname];
   if (!data) return null;
-
   return {
     title: toTitleFromHref(pathname),
     sections: [
@@ -407,14 +402,12 @@ export function getModeInfoForPath(pathname: string): InfobarContent | null {
     ]
   };
 }
-
 export function getModeInfoContent(
   href: string,
   title: string,
   description: string
 ): InfobarContent {
   const data = MODE_INFO_BY_HREF[href];
-
   if (!data) {
     return {
       title,
@@ -430,7 +423,6 @@ export function getModeInfoContent(
       ]
     };
   }
-
   return {
     title,
     sections: [

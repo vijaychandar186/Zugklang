@@ -21,6 +21,8 @@ docker run -d --name zugklang-postgres \
 * [x] ~~Stockfish 18 integration~~
 * [ ] Redis setup
 * [ ] BullMQ setup
+* [ ] Kubernetes setup
+* [ ] GitHub Secrets setup
 * [ ] Fix docker-compose-prod
 
 ### Payments
@@ -30,6 +32,8 @@ docker run -d --name zugklang-postgres \
 ### Observability
 
 * [ ] OpenTelemetry setup
+* [ ] Prometheus setup
+* [ ] Grafana setup
 * [ ] Sentry integration
 
 ### Features
@@ -45,7 +49,7 @@ docker run -d --name zugklang-postgres \
 * [x] ~~Dice and card pick sound assets~~
 * [ ] Guest mode
 * [ ] AntiCheat validation
-* [ ] Rated/Unrated
+* [x] ~~Rated/Unrated~~
 * [ ] Invite through email
 * [ ] Elo calculation adjustment
 * [ ] Three Dimensional Chess

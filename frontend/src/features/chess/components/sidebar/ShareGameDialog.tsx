@@ -16,17 +16,9 @@ import {
   formatMovesText,
   formatPGN
 } from '@/features/chess/hooks/useClipboard';
-
 interface ShareGameDialogProps {
-  /** Button / element that opens the dialog. */
   trigger: ReactNode;
-  /** Pass true for local (hot-seat) games so PGN uses "White"/"Black" names. */
   isLocalGame?: boolean;
-  /**
-   * Explicit game data.  When provided, these values are used instead of
-   * reading from the chess store.  Useful for custom-variant sidebars that
-   * maintain their own state (card chess, dice chess, tri-d chess, …).
-   */
   moves?: string[];
   positionHistory?: string[];
   viewingIndex?: number;
@@ -34,15 +26,6 @@ interface ShareGameDialogProps {
   gameResult?: string | null;
   playAs?: 'white' | 'black';
 }
-
-/**
- * Share-game dialog reused by ChessSidebar (all chess modes incl. multiplayer),
- * TwoPlayerCustomSidebar, and any future sidebar that needs FEN / PGN /
- * move-list copying.
- *
- * When called without explicit data props it falls back to the chess store
- * (standard chess modes).  Pass explicit data for custom variant modes.
- */
 export function ShareGameDialog({
   trigger,
   isLocalGame = false,
@@ -55,15 +38,12 @@ export function ShareGameDialog({
 }: ShareGameDialogProps) {
   const store = useChessState();
   const { copy, isCopied } = useClipboard();
-
-  // Prefer explicit props, fall back to store values.
   const moves = movesProp ?? store.moves;
   const positionHistory = positionHistoryProp ?? store.positionHistory;
   const viewingIndex = viewingIndexProp ?? store.viewingIndex;
   const gameOver = gameOverProp ?? store.gameOver;
   const gameResult = gameResultProp ?? store.gameResult;
   const playAs = playAsProp ?? store.playAs;
-
   const handleCopyFEN = () => {
     const fen = positionHistory[viewingIndex] ?? positionHistory[0];
     if (fen) copy(fen, 'fen');
@@ -74,7 +54,6 @@ export function ShareGameDialog({
       'pgn'
     );
   const handleCopyMoves = () => copy(formatMovesText(moves), 'moves');
-
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>

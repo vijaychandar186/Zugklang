@@ -8,7 +8,7 @@ import { Footer } from '@/pages-content/landing/components/Footer';
 export const metadata: Metadata = {
   title: 'Zugklang | Where Strategy Meets Symphony',
   description:
-    'Experience chess with immersive audio feedback and premium aesthetics. Play against Stockfish 16, analyze games, and improve your skills.'
+    'Experience chess with immersive audio feedback and premium aesthetics. Play against Stockfish 18, analyze games, and improve your skills.'
 };
 function Divider() {
   return <hr className='border-border w-full' />;

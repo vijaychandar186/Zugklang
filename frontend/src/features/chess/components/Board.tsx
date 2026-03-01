@@ -34,7 +34,6 @@ export type UnifiedChessBoardProps = {
 };
 const PIECE_KEYS = ['P', 'R', 'N', 'B', 'Q', 'K'] as const;
 const COLORS = ['w', 'b'] as const;
-
 function buildThemedPieces(
   pieceThemeName: string,
   loserColor: 'w' | 'b' | null
@@ -64,7 +63,6 @@ function buildThemedPieces(
   }
   return pieces;
 }
-
 export function UnifiedChessBoard({
   position,
   boardOrientation = 'white',

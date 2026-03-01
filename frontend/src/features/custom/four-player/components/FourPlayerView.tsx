@@ -4,6 +4,7 @@ import { defaultPieces } from 'react-chessboard';
 import { FourPlayerBoard } from './FourPlayerBoard';
 import { FourPlayerSidebar } from './FourPlayerSidebar';
 import { FourPlayerGameDialog } from './FourPlayerGameDialog';
+import { GameShell } from '@/features/chess/components/GameShell';
 import { useFourPlayerStore, setFourPlayerStorageMode } from '../store';
 import type { Team, PieceType } from '../engine';
 const TEAM_INFO: Record<
@@ -66,8 +67,6 @@ export function FourPlayerView() {
   } = useFourPlayerStore();
   const [newGameOpen, setNewGameOpen] = useState(false);
   useEffect(() => {
-    // Ensure local storage mode is active (in case we navigated from the
-    // multiplayer view) and reload persisted state from the local game key.
     setFourPlayerStorageMode(false);
     useFourPlayerStore.persist.rehydrate();
   }, []);
@@ -84,31 +83,28 @@ export function FourPlayerView() {
     setNewGameOpen(true);
   };
   return (
-    <div className='flex min-h-screen flex-col gap-4 px-1 py-4 sm:px-4 lg:h-screen lg:flex-row lg:items-center lg:justify-center lg:gap-8 lg:overflow-hidden lg:px-6'>
-      <div className='flex min-w-0 flex-col items-center gap-2'>
-        <div className='mx-auto w-full sm:w-[400px] lg:w-[min(calc(100dvh-120px),calc(100vw-clamp(20rem,24vw,30rem)-6rem))]'>
+    <GameShell
+      boardArea={
+        <div className='mx-auto w-full sm:w-[400px] lg:w-[min(calc(100dvh-180px),calc(100vw-clamp(20rem,22vw,30rem)-6rem))]'>
           <FourPlayerBoard />
         </div>
-      </div>
-
-      <div className='flex w-full flex-col gap-2 sm:h-[400px] lg:h-[min(calc(100dvh-120px),calc(100vw-clamp(20rem,24vw,30rem)-6rem))] lg:min-h-0 lg:w-[clamp(20rem,24vw,30rem)] lg:shrink-0 lg:overflow-hidden'>
-        <div className='lg:min-h-0 lg:flex-1 lg:overflow-hidden'>
-          <FourPlayerSidebar onNewGame={handleNewGame} />
-        </div>
-      </div>
-
-      {pendingPromotion && game.pendingPromotion && (
-        <PromotionDialog
-          team={game.pendingPromotion.piece.team}
-          onSelect={completePromotion}
-        />
-      )}
-
-      <FourPlayerGameDialog
-        open={newGameOpen}
-        onOpenChange={setNewGameOpen}
-        onStart={handleStartGame}
-      />
-    </div>
+      }
+      sidebar={<FourPlayerSidebar onNewGame={handleNewGame} />}
+      overlays={
+        <>
+          {pendingPromotion && game.pendingPromotion && (
+            <PromotionDialog
+              team={game.pendingPromotion.piece.team}
+              onSelect={completePromotion}
+            />
+          )}
+          <FourPlayerGameDialog
+            open={newGameOpen}
+            onOpenChange={setNewGameOpen}
+            onStart={handleStartGame}
+          />
+        </>
+      }
+    />
   );
 }

@@ -1,5 +1,4 @@
 'use client';
-
 import * as React from 'react';
 import { Icons } from '@/components/Icons';
 import ThemeToggle from '@/components/layout/Theme/ThemeToggle';
@@ -8,7 +7,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem
 } from '@/components/ui/sidebar';
-
 export default function SidebarThemeButton() {
   return (
     <SidebarMenu>

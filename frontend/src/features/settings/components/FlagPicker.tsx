@@ -1,5 +1,4 @@
 'use client';
-
 import { useMemo } from 'react';
 import {
   Combobox,
@@ -16,13 +15,11 @@ import {
   getCountryDisplayName,
   normalizeFlagCode
 } from '@/features/settings/flags';
-
 type FlagPickerProps = {
   value: string;
   onValueChange: (flagCode: string) => void;
   disabled?: boolean;
 };
-
 export function FlagPicker({
   value,
   onValueChange,
@@ -40,7 +37,6 @@ export function FlagPicker({
     []
   );
   const selectedItem = flagItems.find((item) => item.code === normalizedValue);
-
   return (
     <Combobox
       items={flagItems}

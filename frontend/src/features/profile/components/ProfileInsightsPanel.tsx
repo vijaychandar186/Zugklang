@@ -1,5 +1,4 @@
 'use client';
-
 import { useMemo, useState } from 'react';
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts';
 import {
@@ -32,11 +31,9 @@ import {
 import { StatsGrid } from './StatsGrid';
 import { RatingsTable } from './RatingsTable';
 import { formatVariantLabel } from '@/lib/chess/variantLabels';
-
 type SpeedFilter = 'all' | 'bullet' | 'blitz' | 'rapid' | 'classical';
 type DatePreset = 'all' | 'today' | 'week' | 'month' | 'year' | 'custom';
 type ResultFilter = 'all' | 'wins' | 'losses' | 'draws';
-
 type GameForInsights = {
   variant: string;
   result: string;
@@ -46,7 +43,6 @@ type GameForInsights = {
   createdAt: string;
   playedAt: string | null;
 };
-
 type RatingsRow = {
   variant: string;
   category: string;
@@ -54,65 +50,53 @@ type RatingsRow = {
   rd: number;
   gameCount: number;
 };
-
 type PuzzleRatingRow = {
   rating: number;
   rd: number;
   gameCount: number;
 } | null;
-
 type ProfileInsightsPanelProps = {
   games: GameForInsights[];
   userId: string;
   ratings: RatingsRow[];
   puzzleRating: PuzzleRatingRow;
 };
-
 const chartConfig = {
   games: {
     label: 'Games',
     color: 'var(--primary)'
   }
 } satisfies ChartConfig;
-
 function getPlayedDate(game: GameForInsights): Date | null {
   const value = game.playedAt ?? game.createdAt;
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? null : date;
 }
-
 function getStandardSpeedCategory(game: GameForInsights): SpeedFilter | null {
   if (game.variant !== 'standard') return null;
-
   const timeControl =
     typeof game.timeControl === 'object' && game.timeControl !== null
       ? (game.timeControl as Record<string, unknown>)
       : null;
   if (!timeControl) return null;
-
   const mode = typeof timeControl.mode === 'string' ? timeControl.mode : null;
   if (mode === 'unlimited') return 'classical';
   if (mode !== 'timed') return null;
-
   const minutes =
     typeof timeControl.minutes === 'number' ? timeControl.minutes : null;
   const increment =
     typeof timeControl.increment === 'number' ? timeControl.increment : null;
-
   if (minutes === null || increment === null) return null;
   return getTimeCategory(minutes, increment);
 }
-
 function normalizeRange(preset: DatePreset, from: string, to: string) {
   if (preset === 'all')
     return { start: null as Date | null, end: null as Date | null };
-
   const now = new Date();
   const start = new Date(now);
   start.setHours(0, 0, 0, 0);
   const end = new Date(now);
   end.setHours(23, 59, 59, 999);
-
   if (preset === 'today') return { start, end };
   if (preset === 'week') {
     const weekStart = new Date(start);
@@ -129,19 +113,16 @@ function normalizeRange(preset: DatePreset, from: string, to: string) {
     yearStart.setDate(yearStart.getDate() - 364);
     return { start: yearStart, end };
   }
-
   const customStart = from ? new Date(`${from}T00:00:00`) : null;
   const customEnd = to ? new Date(`${to}T23:59:59.999`) : null;
   return { start: customStart, end: customEnd };
 }
-
 function labelForDate(date: Date) {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric'
   }).format(date);
 }
-
 export function ProfileInsightsPanel({
   games,
   userId,
@@ -161,12 +142,10 @@ export function ProfileInsightsPanel({
       ),
     [games]
   );
-
   const { start, end } = useMemo(
     () => normalizeRange(datePreset, customFrom, customTo),
     [datePreset, customFrom, customTo]
   );
-
   const filteredGames = useMemo(
     () =>
       games.filter((game) => {
@@ -177,10 +156,8 @@ export function ProfileInsightsPanel({
         ) {
           return false;
         }
-
         if (game.whiteUserId !== userId && game.blackUserId !== userId)
           return false;
-
         if (
           speedFilter !== 'all' &&
           getStandardSpeedCategory(game) !== speedFilter
@@ -198,22 +175,18 @@ export function ProfileInsightsPanel({
         if (resultFilter === 'wins' && !isWin) return false;
         if (resultFilter === 'losses' && (isWin || isDraw)) return false;
         if (resultFilter === 'draws' && !isDraw) return false;
-
         const playedDate = getPlayedDate(game);
         if (!playedDate) return false;
         if (start && playedDate < start) return false;
         if (end && playedDate > end) return false;
-
         return true;
       }),
     [games, userId, speedFilter, variantFilter, resultFilter, start, end]
   );
-
   const stats = useMemo(() => {
     let wins = 0;
     let losses = 0;
     let draws = 0;
-
     for (const game of filteredGames) {
       const isWhite = game.whiteUserId === userId;
       if (game.result === '1/2-1/2') {
@@ -227,7 +200,6 @@ export function ProfileInsightsPanel({
         losses++;
       }
     }
-
     return {
       wins,
       losses,
@@ -235,18 +207,19 @@ export function ProfileInsightsPanel({
       total: wins + losses + draws
     };
   }, [filteredGames, userId]);
-
   const chartData = useMemo(() => {
     const byDay = new Map<
       string,
-      { iso: string; label: string; games: number }
+      {
+        iso: string;
+        label: string;
+        games: number;
+      }
     >();
-
     for (const game of filteredGames) {
       const playedDate = getPlayedDate(game);
       if (!playedDate) continue;
       const dayKey = playedDate.toISOString().slice(0, 10);
-
       const current = byDay.get(dayKey);
       if (current) {
         current.games += 1;
@@ -258,21 +231,18 @@ export function ProfileInsightsPanel({
         });
       }
     }
-
     const sorted = Array.from(byDay.values()).sort((a, b) =>
       a.iso.localeCompare(b.iso)
     );
     if (sorted.length > 0) return sorted;
     return [{ iso: 'empty', label: 'No data', games: 0 }];
   }, [filteredGames]);
-
   const speedLabel =
     speedFilter === 'all' ? 'All speeds' : TIME_CATEGORY_LABELS[speedFilter];
   const variantLabel =
     variantFilter === 'all'
       ? 'All variants'
       : formatVariantLabel(variantFilter);
-
   const variantRecords = useMemo(() => {
     const completedGames = games.filter(
       (game) =>
@@ -283,9 +253,13 @@ export function ProfileInsightsPanel({
     );
     const recordByVariant = new Map<
       string,
-      { games: number; wins: number; losses: number; draws: number }
+      {
+        games: number;
+        wins: number;
+        losses: number;
+        draws: number;
+      }
     >();
-
     for (const game of completedGames) {
       const isWhite = game.whiteUserId === userId;
       const existing = recordByVariant.get(game.variant) ?? {
@@ -307,7 +281,6 @@ export function ProfileInsightsPanel({
       }
       recordByVariant.set(game.variant, existing);
     }
-
     return Array.from(recordByVariant.entries())
       .map(([variant, record]) => ({
         variant,
@@ -317,7 +290,6 @@ export function ProfileInsightsPanel({
       }))
       .sort((a, b) => b.games - a.games);
   }, [games, userId]);
-
   return (
     <div className='grid gap-4 lg:grid-cols-2 lg:items-stretch'>
       <Card className='h-full min-h-[560px]'>

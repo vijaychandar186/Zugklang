@@ -283,14 +283,14 @@ export const useCardChessStore = create<CardChessStore>()(
             if (mapping.type === 'p' && mapping.file) {
               if (piece.type === 'p' && square[0] === mapping.file) {
                 squares[square] = {
-                  boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+                  boxShadow: 'var(--highlight-piece-indicator)',
                   borderRadius: '4px'
                 };
               }
             } else {
               if (piece.type === mapping.type) {
                 squares[square] = {
-                  boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+                  boxShadow: 'var(--highlight-piece-indicator)',
                   borderRadius: '4px'
                 };
               }
@@ -381,14 +381,14 @@ export const useCardChessStore = create<CardChessStore>()(
                 if (mapping.type === 'p' && mapping.file) {
                   if (piece.type === 'p' && square[0] === mapping.file) {
                     highlightedSquares[square] = {
-                      boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+                      boxShadow: 'var(--highlight-piece-indicator)',
                       borderRadius: '4px'
                     };
                   }
                 } else {
                   if (piece.type === mapping.type) {
                     highlightedSquares[square] = {
-                      boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+                      boxShadow: 'var(--highlight-piece-indicator)',
                       borderRadius: '4px'
                     };
                   }

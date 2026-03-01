@@ -100,10 +100,8 @@ export class ChessSession {
       const startFen = this.game.header().FEN || STARTING_FEN;
       const replay = new Chess(startFen, variantToRules(this._variant));
       const sanMoves = this.game.history();
-
       this._moves = [];
       this._history = [startFen];
-
       for (const san of sanMoves) {
         const applied = replay.move(san);
         if (!applied) continue;

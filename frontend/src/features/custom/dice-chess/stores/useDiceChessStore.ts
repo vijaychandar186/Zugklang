@@ -185,7 +185,7 @@ export const useDiceChessStore = create<DiceChessStore>()(
             ) {
               const square = String.fromCharCode(97 + c) + (8 - r);
               squares[square] = {
-                boxShadow: 'inset 0 0 0 3px rgba(59, 130, 246, 0.5)',
+                boxShadow: 'var(--highlight-piece-indicator)',
                 borderRadius: '4px'
               };
             }

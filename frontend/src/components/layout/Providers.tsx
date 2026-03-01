@@ -18,10 +18,8 @@ import { ChessStoreInitializer } from '@/components/providers/chess-store-initia
 import { KbarProvider } from '@/components/providers/kbar-provider';
 import { SchemeSyncProvider } from '@/components/providers/scheme-sync-provider';
 import { SCHEMES, type SchemeName } from '@/components/layout/Scheme/constants';
-
 const DEFAULT_CUSTOM_COLOR = '#52525b';
 const DEFAULT_CUSTOM_FOREGROUND = '#ffffff';
-
 type SchemeContextValue = {
   scheme: SchemeName;
   setScheme: (scheme: SchemeName) => void;
@@ -30,9 +28,7 @@ type SchemeContextValue = {
   customForeground: string;
   setCustomForeground: (color: string) => void;
 };
-
 const SchemeContext = createContext<SchemeContextValue | null>(null);
-
 export function useScheme() {
   const context = useContext(SchemeContext);
   if (!context) {
@@ -40,7 +36,6 @@ export function useScheme() {
   }
   return context;
 }
-
 interface ProvidersProps {
   children: React.ReactNode;
   initialBoardTheme?: string;
@@ -51,11 +46,9 @@ interface ProvidersProps {
   initialCustomColor?: string;
   initialCustomForeground?: string;
 }
-
 function isValidHexColor(color: string | undefined): color is string {
   return !!color && /^#[0-9A-Fa-f]{6}$/.test(color);
 }
-
 export function Providers({
   children,
   initialBoardTheme,
@@ -88,7 +81,6 @@ export function Providers({
       ? initialCustomForeground
       : DEFAULT_CUSTOM_FOREGROUND
   );
-
   const schemeValue = useMemo(
     () => ({
       scheme,
@@ -100,7 +92,6 @@ export function Providers({
     }),
     [scheme, customColor, customForeground]
   );
-
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>

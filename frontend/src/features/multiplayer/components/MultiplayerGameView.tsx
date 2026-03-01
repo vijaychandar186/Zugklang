@@ -24,7 +24,6 @@ import { useSession } from 'next-auth/react';
 import { useMultiplayerWS, loadSession } from '../hooks/useMultiplayerWS';
 import {
   ABORT_TIMEOUT_MS,
-  ABANDON_TIMEOUT_MS,
   ABORT_COUNTDOWN_VISIBILITY_DELAY_MS
 } from '../config';
 import { Icons } from '@/components/Icons';
@@ -37,70 +36,7 @@ import {
   DEFAULT_FLAG_CODE,
   normalizeFlagCode
 } from '@/features/settings/flags';
-
-function SignalIndicator({
-  wsStatus,
-  latencyMs
-}: {
-  wsStatus: string;
-  latencyMs: number | null;
-}) {
-  if (wsStatus === 'error' || wsStatus === 'idle' || latencyMs === null)
-    return null;
-  if (latencyMs <= 80)
-    return (
-      <Icons.signal
-        className='h-4 w-4 text-green-500'
-        aria-label={`${latencyMs}ms`}
-      />
-    );
-  if (latencyMs <= 150)
-    return (
-      <Icons.signalHigh
-        className='h-4 w-4 text-green-400'
-        aria-label={`${latencyMs}ms`}
-      />
-    );
-  if (latencyMs <= 300)
-    return (
-      <Icons.signalMedium
-        className='h-4 w-4 text-yellow-500'
-        aria-label={`${latencyMs}ms`}
-      />
-    );
-  return (
-    <Icons.signalLow
-      className='h-4 w-4 text-red-500'
-      aria-label={`${latencyMs}ms`}
-    />
-  );
-}
-
-function AbandonCountdown({ disconnectedAt }: { disconnectedAt: number }) {
-  const [secsLeft, setSecsLeft] = useState(() =>
-    Math.max(
-      0,
-      Math.ceil((ABANDON_TIMEOUT_MS - (Date.now() - disconnectedAt)) / 1000)
-    )
-  );
-  useEffect(() => {
-    const id = setInterval(() => {
-      setSecsLeft(
-        Math.max(
-          0,
-          Math.ceil((ABANDON_TIMEOUT_MS - (Date.now() - disconnectedAt)) / 1000)
-        )
-      );
-    }, 500);
-    return () => clearInterval(id);
-  }, [disconnectedAt]);
-  return (
-    <span className='animate-pulse text-xs text-yellow-500'>
-      Reconnecting… Auto-abandon in {secsLeft}s
-    </span>
-  );
-}
-
+import { SignalIndicator, AbandonCountdown } from './PlayerStatusIndicators';
 function AbortCountdown({ startedAt }: { startedAt: number }) {
   const [secsLeft, setSecsLeft] = useState(() =>
     Math.max(0, Math.ceil((ABORT_TIMEOUT_MS - (Date.now() - startedAt)) / 1000))
@@ -122,13 +58,11 @@ function AbortCountdown({ startedAt }: { startedAt: number }) {
     </span>
   );
 }
-
 interface MultiplayerGameViewProps {
   variant?: ChessVariant;
   initialBoard3dEnabled?: boolean;
   challengeId?: string;
 }
-
 export function MultiplayerGameView({
   variant = 'standard',
   initialBoard3dEnabled,
@@ -140,7 +74,6 @@ export function MultiplayerGameView({
   const [sessionRestorePending, setSessionRestorePending] = useState(true);
   const [pendingMoves, setPendingMoves] = useState<string[] | null>(null);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
-
   const {
     gameId,
     topColor,
@@ -155,7 +88,6 @@ export function MultiplayerGameView({
     topTimerActive,
     bottomTimerActive
   } = useGameView();
-
   const setVariant = useChessStore((s) => s.setVariant);
   const setGameType = useChessStore((s) => s.setGameType);
   const startMultiplayerGame = useChessStore((s) => s.startMultiplayerGame);
@@ -172,13 +104,13 @@ export function MultiplayerGameView({
   const { isAnalysisOn } = useAnalysisState();
   const { endAnalysis } = useAnalysisActions();
   const currentFEN = useChessStore((s) => s.currentFEN);
-
+  const [positionResetKey, setPositionResetKey] = useState(0);
+  const serverMovesRef = useRef<string[]>([]);
   const [myRating, setMyRating] = useState<number | null>(null);
   const [myRatingDelta, setMyRatingDelta] = useState<number | null>(null);
   const [opponentRatingDelta, setOpponentRatingDelta] = useState<number | null>(
     null
   );
-
   const ratingCategory = useMemo(() => {
     const tc = ws.timeControl;
     if (!tc) return null;
@@ -186,7 +118,6 @@ export function MultiplayerGameView({
     if (tc.mode !== 'timed') return null;
     return getTimeCategory(tc.minutes, tc.increment);
   }, [ws.timeControl]);
-
   useEffect(() => {
     if (!session?.user?.id) {
       setMyRating(null);
@@ -197,12 +128,14 @@ export function MultiplayerGameView({
     fetch(`/api/user/rating?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then(
-        (data: { rating: number | null } | null) =>
-          data && setMyRating(data.rating)
+        (
+          data: {
+            rating: number | null;
+          } | null
+        ) => data && setMyRating(data.rating)
       )
       .catch(() => {});
   }, [session?.user?.id, variant, ratingCategory]);
-
   const [myFlagCode, setMyFlagCode] = useState(DEFAULT_FLAG_CODE);
   useEffect(() => {
     if (!session?.user?.id) {
@@ -211,15 +144,17 @@ export function MultiplayerGameView({
     }
     fetch('/api/user/settings')
       .then((r) => (r.ok ? r.json() : null))
-      .then((data: { flagCode?: string | null } | null) =>
-        setMyFlagCode(normalizeFlagCode(data?.flagCode))
+      .then(
+        (
+          data: {
+            flagCode?: string | null;
+          } | null
+        ) => setMyFlagCode(normalizeFlagCode(data?.flagCode))
       )
       .catch(() => setMyFlagCode(DEFAULT_FLAG_CODE));
   }, [session?.user?.id]);
-
   const [opponentRating, setOpponentRating] = useState<number | null>(null);
   const [opponentFlagCode, setOpponentFlagCode] = useState(DEFAULT_FLAG_CODE);
-
   const opponentUserId = useMemo(() => {
     const me = session?.user?.id ?? null;
     if (me) {
@@ -229,7 +164,6 @@ export function MultiplayerGameView({
     if (!ws.myColor) return null;
     return ws.myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
   }, [session?.user?.id, ws.myColor, ws.whiteUserId, ws.blackUserId]);
-
   useEffect(() => {
     if (!opponentUserId) {
       setOpponentRating(null);
@@ -247,8 +181,8 @@ export function MultiplayerGameView({
       })
       .catch(() => setOpponentFlagCode(DEFAULT_FLAG_CODE));
   }, [opponentUserId, variant, ratingCategory]);
-
   const savedRoomIdRef = useRef<string | null>(null);
+  const isRatedGameRef = useRef(true);
   const saveMultiplayerGame = useCallback(
     (
       result: string,
@@ -265,6 +199,7 @@ export function MultiplayerGameView({
       const startingFen =
         positionHistory[0] ??
         'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1';
+      const rated = isRatedGameRef.current;
       fetch('/api/games', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -278,7 +213,8 @@ export function MultiplayerGameView({
           myColor,
           opponentUserId,
           timeControl,
-          startingFen
+          startingFen,
+          rated
         })
       })
         .then((r) => (r.ok ? r.json() : null))
@@ -316,7 +252,8 @@ export function MultiplayerGameView({
                     myColor,
                     opponentUserId,
                     timeControl,
-                    startingFen
+                    startingFen,
+                    rated
                   })
                 })
                   .then((r) => (r.ok ? r.json() : null))
@@ -350,21 +287,17 @@ export function MultiplayerGameView({
     },
     [ws.roomId, ws.myColor, moves, variant, timeControl, positionHistory]
   );
-
   useEffect(() => {
     setVariant(variant);
     setGameType('multiplayer');
   }, [variant, setVariant, setGameType]);
-
   useGameTimer();
   useAnalysisSync(currentFEN);
-
   useEffect(() => {
     if (matchmakingOpen && !ws.isSecondaryTab) {
       ws.preConnect();
     }
   }, [matchmakingOpen, ws.isSecondaryTab]);
-
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const savedSession = loadSession();
@@ -385,7 +318,6 @@ export function MultiplayerGameView({
       );
     }
   }, []);
-
   useEffect(() => {
     if (!sessionRestorePending) return;
     if (
@@ -398,7 +330,6 @@ export function MultiplayerGameView({
       setSessionRestorePending(false);
     }
   }, [sessionRestorePending, ws.status]);
-
   useEffect(() => {
     if (ws.isSecondaryTab) return;
     if (ws.status === 'matched' && ws.myColor) {
@@ -433,7 +364,6 @@ export function MultiplayerGameView({
     ws.movesToReplay,
     startMultiplayerGame
   ]);
-
   useEffect(() => {
     if (ws.isSecondaryTab) return;
     if (ws.status === 'rejoined' && ws.myColor) {
@@ -458,7 +388,6 @@ export function MultiplayerGameView({
     ws.movesToReplay,
     startMultiplayerGame
   ]);
-
   useEffect(() => {
     if (sessionRestorePending) return;
     if (
@@ -470,7 +399,6 @@ export function MultiplayerGameView({
       setMatchmakingOpen(true);
     }
   }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
-
   useEffect(() => {
     if (sessionRestorePending) return;
     if (!ws.isSecondaryTab) return;
@@ -481,7 +409,6 @@ export function MultiplayerGameView({
       ws.status === 'error';
     setMatchmakingOpen(showDialog);
   }, [sessionRestorePending, ws.status, ws.isSecondaryTab]);
-
   useEffect(() => {
     ws.setOnServerGameOver((result, reason, whiteUserId, blackUserId) => {
       if (reason !== 'checkmate') {
@@ -492,7 +419,6 @@ export function MultiplayerGameView({
     });
     return () => ws.setOnServerGameOver(null);
   }, [ws.setOnServerGameOver, setGameResult, setGameOver, saveMultiplayerGame]);
-
   useEffect(() => {
     ws.setOnClockSync((whiteTimeMs, blackTimeMs, activeClock) => {
       const toSeconds = (ms: number | null) =>
@@ -505,7 +431,35 @@ export function MultiplayerGameView({
     });
     return () => ws.setOnClockSync(null);
   }, [ws.setOnClockSync, setTimerSnapshot]);
-
+  const [serverSyncGeneration, setServerSyncGeneration] = useState(0);
+  useEffect(() => {
+    ws.setOnPositionSync((serverMoves) => {
+      serverMovesRef.current = serverMoves;
+      setServerSyncGeneration((g) => g + 1);
+    });
+    return () => ws.setOnPositionSync(null);
+  }, [ws.setOnPositionSync]);
+  useEffect(() => {
+    if (
+      serverSyncGeneration === 0 ||
+      !gameStarted ||
+      gameOver ||
+      pendingMoves !== null
+    )
+      return;
+    const serverMoves = serverMovesRef.current;
+    if (serverMoves.length !== movesCount) {
+      const myColor = ws.myColor ?? 'white';
+      const tc = ws.timeControl ?? {
+        mode: 'unlimited' as const,
+        minutes: 0,
+        increment: 0
+      };
+      startMultiplayerGame(myColor, tc, ws.startingFen || undefined);
+      setPendingMoves(serverMoves);
+      setPositionResetKey((k) => k + 1);
+    }
+  }, [serverSyncGeneration]);
   useEffect(() => {
     if (gameOver && ws.status === 'playing') {
       const myColor = ws.myColor ?? 'white';
@@ -513,9 +467,9 @@ export function MultiplayerGameView({
       ws.notifyGameOver(pgnResult, 'checkmate');
     }
   }, [gameOver]);
-
   const handleFindGame = useCallback(
-    async (timeControl: TimeControl) => {
+    async (timeControl: TimeControl, rated: boolean) => {
+      isRatedGameRef.current = rated;
       let rating = 700;
       try {
         const category =
@@ -528,7 +482,9 @@ export function MultiplayerGameView({
           `/api/user/rating?variant=${encodeURIComponent(variant)}&category=${encodeURIComponent(category)}`
         );
         if (res.ok) {
-          const data = (await res.json()) as { rating: number };
+          const data = (await res.json()) as {
+            rating: number;
+          };
           rating = data.rating;
         }
       } catch {}
@@ -542,9 +498,9 @@ export function MultiplayerGameView({
     },
     [ws.joinQueue, variant, session]
   );
-
   const handleCreateChallenge = useCallback(
-    (timeControl: TimeControl, color: ChallengeColor) => {
+    (timeControl: TimeControl, color: ChallengeColor, rated: boolean) => {
+      isRatedGameRef.current = rated;
       ws.createChallenge(
         variant,
         timeControl,
@@ -555,11 +511,9 @@ export function MultiplayerGameView({
     },
     [ws.createChallenge, variant, session]
   );
-
   const handleCancelSearch = useCallback(() => {
     ws.leaveQueue();
   }, [ws.leaveQueue]);
-
   const handleFindNewGame = useCallback(() => {
     ws.disconnect();
     setPendingMoves(null);
@@ -568,11 +522,9 @@ export function MultiplayerGameView({
     setOpponentRatingDelta(null);
     setMatchmakingOpen(true);
   }, [ws.disconnect]);
-
   const handleMovesReplayed = useCallback(() => {
     setPendingMoves(null);
   }, []);
-
   const abortStartedAt = ws.abortStartedAt;
   const [abortVisible, setAbortVisible] = useState(false);
   useEffect(() => {
@@ -593,7 +545,6 @@ export function MultiplayerGameView({
     const t = setTimeout(() => setAbortVisible(true), remaining);
     return () => clearTimeout(t);
   }, [abortStartedAt, gameStarted, gameOver, movesCount]);
-
   const showOpponentAbortCountdown =
     abortVisible &&
     abortStartedAt !== null &&
@@ -604,7 +555,6 @@ export function MultiplayerGameView({
     abortStartedAt !== null &&
     ((movesCount === 0 && playAs === 'white') ||
       (movesCount === 1 && playAs === 'black'));
-
   const isMe = (color: 'white' | 'black') => color === (ws.myColor ?? playAs);
   const getPlayerName = (color: 'white' | 'black') => {
     if (isMe(color)) return session?.user?.name ?? 'You';
@@ -626,10 +576,7 @@ export function MultiplayerGameView({
     if (isMe(color)) return myFlagCode;
     return opponentFlagCode;
   };
-
   const showIndicator = gameStarted && !gameOver;
-
-  // Build the left side of a player row (info + connection indicators).
   const makePlayerLeft = (color: 'white' | 'black') => (
     <>
       <PlayerInfo
@@ -665,8 +612,6 @@ export function MultiplayerGameView({
       )}
     </>
   );
-
-  // Build the right side of a player row (captured pieces + timer).
   const makePlayerRight = (
     captured: typeof topCaptured,
     pieceColor: 'white' | 'black',
@@ -686,7 +631,6 @@ export function MultiplayerGameView({
       )}
     </>
   );
-
   return (
     <GameShell
       topLeft={makePlayerLeft(topColor)}
@@ -710,7 +654,7 @@ export function MultiplayerGameView({
       boardArea={
         <BoardContainer>
           <ChessBoard
-            key={gameId}
+            key={`${gameId}-${positionResetKey}`}
             serverOrientation={ws.myColor || 'white'}
             initialBoard3dEnabled={initialBoard3dEnabled}
             onPlayerMove={ws.sendMove}

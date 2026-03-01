@@ -16,12 +16,10 @@ import {
   type ChartConfig
 } from '@/components/ui/chart';
 import { type CardRank } from '../stores/useCardChessStore';
-
 type CardDrawChartProps = {
   cardDraws: CardRank[];
   className?: string;
 };
-
 const RANK_ORDER: CardRank[] = [
   '2',
   '3',
@@ -37,14 +35,12 @@ const RANK_ORDER: CardRank[] = [
   'K',
   'A'
 ];
-
 const chartConfig = {
   count: {
     label: 'Draws',
     color: 'var(--chart-2)'
   }
 } satisfies ChartConfig;
-
 export function CardDrawChart({ cardDraws, className }: CardDrawChartProps) {
   const chartData = useMemo(() => {
     const counts: Record<CardRank, number> = {
@@ -70,11 +66,8 @@ export function CardDrawChart({ cardDraws, className }: CardDrawChartProps) {
       count: counts[rank]
     }));
   }, [cardDraws]);
-
   const total = cardDraws.length;
-
   if (total === 0) return null;
-
   return (
     <Card className={className}>
       <CardHeader className='pb-3'>

@@ -7,5 +7,4 @@ export const SCHEMES = [
   { name: 'Notebook', value: 'notebook' },
   { name: 'Custom', value: 'custom' }
 ] as const;
-
 export type SchemeName = (typeof SCHEMES)[number]['value'];

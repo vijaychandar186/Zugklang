@@ -9,7 +9,6 @@ export type MultiplayerStatus =
   | 'playing'
   | 'game_over'
   | 'error';
-
 export interface FourPlayerLobbyPlayer {
   playerId: string;
   userId: string | null;
@@ -18,7 +17,6 @@ export interface FourPlayerLobbyPlayer {
   team: Team;
   isLeader: boolean;
 }
-
 export interface FourPlayerLobbyState {
   lobbyId: string;
   leaderId: string;
@@ -139,6 +137,10 @@ export type ServerMessage =
       message: string;
     }
   | {
+      type: 'position_sync';
+      moves: string[];
+    }
+  | {
       type: 'dice_synced';
       pieces: [string, string, string];
     }
@@ -185,8 +187,6 @@ export type ClientMessage =
       type: 'join_queue';
       variant: string;
       timeControl: TimeControl;
-      /** Player's current rating for this variant+category.
-       *  Forwarded to the server for ELO-based matchmaking. */
       rating?: number;
       displayName?: string;
       userImage?: string | null;
@@ -346,6 +346,7 @@ export type OnClockSyncFn = (
   blackTimeMs: number | null,
   activeClock: 'white' | 'black' | null
 ) => void;
+export type OnPositionSyncFn = (moves: string[]) => void;
 export type OnSyncDiceFn = (pieces: [string, string, string]) => void;
 export type OnSyncCardFn = (rank: string, suit: string) => void;
 export type OnFourPlayerLobbyStateFn = (state: FourPlayerLobbyState) => void;
@@ -404,6 +405,7 @@ export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   sendCardSync: (rank: string, suit: string) => void;
   setOnSyncDice: (fn: OnSyncDiceFn | null) => void;
   setOnSyncCard: (fn: OnSyncCardFn | null) => void;
+  setOnPositionSync: (fn: OnPositionSyncFn | null) => void;
   createFourPlayerLobby: (
     displayName?: string,
     userImage?: string | null,

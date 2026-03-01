@@ -1,10 +1,7 @@
 'use client';
-
 import { useScheme } from '@/components/layout/Providers';
 import type { SchemeName } from '@/components/layout/Scheme/constants';
-
 export type SchemeKey = SchemeName;
-
 export function useSchemeConfig() {
   const {
     scheme,
@@ -14,7 +11,6 @@ export function useSchemeConfig() {
     customForeground,
     setCustomForeground
   } = useScheme();
-
   return {
     activeScheme: scheme,
     setActiveScheme: setScheme,

@@ -11,11 +11,6 @@ import {
 import { playSound } from '@/features/game/utils/sounds';
 import type { SoundType } from '@/features/game/utils/sounds';
 import { TimeControl } from '@/features/game/types/rules';
-
-// Tracks whether the store is currently being used by the multiplayer view.
-// When true, no game state is read from or written to localStorage — the server
-// is the source of truth for multiplayer games, so local persistence would only
-// cause state pollution when switching back to the local game.
 let fourPlayerIsMultiplayer = false;
 export function setFourPlayerStorageMode(isMultiplayer: boolean): void {
   fourPlayerIsMultiplayer = isMultiplayer;
@@ -31,9 +26,14 @@ function createFourPlayerStorage() {
       if (typeof localStorage === 'undefined') return;
       if (fourPlayerIsMultiplayer) return;
       try {
-        const parsed = JSON.parse(value) as { state?: unknown };
+        const parsed = JSON.parse(value) as {
+          state?: unknown;
+        };
         const s = parsed?.state as
-          | { moves?: unknown[]; gameStarted?: boolean }
+          | {
+              moves?: unknown[];
+              gameStarted?: boolean;
+            }
           | undefined;
         if (
           s &&
@@ -79,7 +79,6 @@ interface TeamTimes {
   y: number | null;
   g: number | null;
 }
-
 export interface FourPlayerSyncSnapshot {
   moves: MoveRecord[];
   viewingMoveIndex: number;

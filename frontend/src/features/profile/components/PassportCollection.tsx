@@ -1,16 +1,13 @@
 'use client';
-
 import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CountryFlag } from '@/components/ui/country-flag';
 import { FLAG_OPTIONS, normalizeFlagCode } from '@/features/settings/flags';
 import { cn } from '@/lib/utils';
-
 type PassportCollectionProps = {
   collectedFlagCodes: string[];
 };
-
 function resolveCountryName(
   regionNames: Intl.DisplayNames | null,
   code: string
@@ -22,7 +19,6 @@ function resolveCountryName(
     return code;
   }
 }
-
 export function PassportCollection({
   collectedFlagCodes
 }: PassportCollectionProps) {
@@ -47,7 +43,6 @@ export function PassportCollection({
       return null;
     }
   })();
-
   return (
     <section className='space-y-4 rounded-xl border p-4'>
       <div className='flex items-center justify-between gap-3'>

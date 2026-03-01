@@ -1,6 +1,5 @@
 import { Icons } from '@/components/Icons';
 import type { MenuCardItem } from './play-modes';
-
 export const cognitiveModes: MenuCardItem[] = [
   {
     href: '/practice/cognitive/memory',

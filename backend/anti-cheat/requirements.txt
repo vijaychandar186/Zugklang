@@ -6,8 +6,6 @@ python-dotenv
 httpx
 prisma
 bson
-pymongo
-mongomock
 numpy
 pandas
 pyarrow

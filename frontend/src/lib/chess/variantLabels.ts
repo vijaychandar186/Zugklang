@@ -14,7 +14,6 @@ export const VARIANT_LABELS: Record<string, string> = {
   'four-player': '4-Player Chess',
   'tri-d': 'Tri-D Chess'
 };
-
 export function formatVariantLabel(variant: string): string {
   return VARIANT_LABELS[variant] ?? variant;
 }

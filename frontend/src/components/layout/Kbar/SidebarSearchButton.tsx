@@ -1,5 +1,4 @@
 'use client';
-
 import { Search } from 'lucide-react';
 import { useKBar } from 'kbar';
 import {
@@ -7,10 +6,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem
 } from '@/components/ui/sidebar';
-
 export default function SidebarSearchButton() {
   const { query } = useKBar();
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>

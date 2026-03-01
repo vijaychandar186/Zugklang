@@ -1,5 +1,4 @@
 'use client';
-
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -15,7 +14,6 @@ import {
   useInfobar
 } from '@/components/ui/infobar';
 import { getModeInfoForPath } from '@/config/mode-infoconfig';
-
 const defaultData = {
   title: 'Mode Guide',
   sections: [
@@ -27,7 +25,6 @@ const defaultData = {
     }
   ]
 };
-
 export function InfoSidebar({
   ...props
 }: React.ComponentProps<typeof Infobar>) {
@@ -38,7 +35,6 @@ export function InfoSidebar({
     [pathname]
   );
   const data = content || routeContent || defaultData;
-
   return (
     <Infobar {...props}>
       <InfobarHeader className='flex flex-row items-start justify-between gap-2 border-b px-3 py-3'>

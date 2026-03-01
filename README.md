@@ -2,7 +2,7 @@
 
 > Where Strategy Meets Symphony
 
-A modern full-stack chess platform featuring Stockfish 16 engine integration, real-time online multiplayer, immersive audio feedback, game analysis, puzzles, opening explorer, and more.
+A modern full-stack chess platform featuring Stockfish 18 engine integration, real-time online multiplayer, immersive audio feedback, game analysis, puzzles, opening explorer, and more.
 
 ---
 
@@ -12,7 +12,7 @@ Zugklang combines a **Next.js frontend** with a **Bun-powered WebSocket server**
 
 ### Features
 
-- **Engine Play** — Stockfish 16 (WASM) with adjustable difficulty
+- **Engine Play** — Stockfish 18 (WASM) with adjustable difficulty
 - **Online Multiplayer** — Real-time WebSocket matchmaking, challenges, and game rooms
 - **Game Analysis** — Move-by-move engine evaluation and best move suggestions
 - **Training Tools** — Puzzles, opening explorer, vision and memory drills

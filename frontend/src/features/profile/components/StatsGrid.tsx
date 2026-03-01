@@ -12,7 +12,6 @@ export function StatsGrid({ wins, losses, draws, total }: StatsGridProps) {
     { label: 'Losses', value: losses, className: 'text-red-500' },
     { label: 'Draws', value: draws, className: 'text-yellow-500' }
   ];
-
   return (
     <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
       {stats.map((s) => (

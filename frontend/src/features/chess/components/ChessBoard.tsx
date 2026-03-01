@@ -27,21 +27,14 @@ import { useCrazyhousePocket } from '../variants/crazyhouse/hooks/useCrazyhouseP
 import { buildCheckerPieces } from '@/features/chess/variants/checkers-chess/components/CheckerPieces';
 import type { OnOpponentMoveFn } from '@/features/multiplayer/types';
 import type { Square, Move } from '@/lib/chess/chess';
-
 interface ChessBoardProps {
   serverOrientation?: 'white' | 'black';
   initialBoard3dEnabled?: boolean;
-  /**
-   * When provided the board operates in multiplayer mode: moves are forwarded
-   * to the server and opponent moves arrive externally.
-   * Omit entirely for local / vs-computer play.
-   */
   onPlayerMove?: (from: string, to: string, promotion?: string) => void;
   setOnOpponentMove?: (fn: OnOpponentMoveFn | null) => void;
   movesToReplay?: string[] | null;
   onMovesReplayed?: () => void;
 }
-
 export function ChessBoard({
   serverOrientation,
   initialBoard3dEnabled,
@@ -51,8 +44,6 @@ export function ChessBoard({
   onMovesReplayed
 }: ChessBoardProps) {
   const isMultiplayer = !!onPlayerMove;
-
-  // ── Store state ────────────────────────────────────────────────────────────
   const {
     mode,
     gameType,
@@ -75,7 +66,6 @@ export function ChessBoard({
     autoFlipBoard,
     variant
   } = useChessState();
-
   const {
     setGameOver,
     setGameResult,
@@ -86,33 +76,20 @@ export function ChessBoard({
     goToEnd,
     flipBoard
   } = useChessActions();
-
-  // Always call — switchTimer is only used in single-player mode.
   const { switchTimer } = useTimerState();
-
   const isLocalGame = gameType === 'local';
   const isPlayMode = mode === 'play';
-
-  // In play mode use playAs; in analysis mode use playerColor.
   const effectivePlayAs = isMultiplayer || isPlayMode ? playAs : playerColor;
-
-  // ── Analysis ───────────────────────────────────────────────────────────────
   const { isAnalysisOn } = useAnalysisState();
   const { uciLines } = useEngineAnalysis();
   const { showBestMoveArrow, showThreatArrow } = useAnalysisConfig();
   const { turn: analysisTurn } = useAnalysisPosition();
   const theme = useBoardTheme();
-
-  // ── Engine (disabled in multiplayer via enabled:false) ────────────────────
   const stockfishEnabled =
     !isMultiplayer && ((isPlayMode && !isLocalGame) || playingAgainstStockfish);
   const useFairy = usesFairyEngine(variant);
   const useStandardEngine = !useFairy;
-
-  // ── Opponent-move tracking ref (multiplayer) ───────────────────────────────
   const isApplyingOpponentMoveRef = useRef(false);
-
-  // ── onMoveExecuted: diverges between single-player and multiplayer ─────────
   const onMoveExecuted = useCallback(
     (move: Move) => {
       if (isMultiplayer) {
@@ -144,12 +121,9 @@ export function ChessBoard({
       recordMoveDepth
     ]
   );
-
   const onPremoveAdded = useCallback(() => {
     if (soundEnabled) playSound('premove');
   }, [soundEnabled]);
-
-  // ── Board logic (shared) ──────────────────────────────────────────────────
   const {
     isMounted,
     position,
@@ -184,14 +158,10 @@ export function ChessBoard({
     enablePremoves: !isMultiplayer && stockfishEnabled && isPlayMode,
     onPremoveAdded: isMultiplayer ? undefined : onPremoveAdded
   });
-
-  // Stable refs so effects can reference latest versions without re-running.
   const executeMoveRef = useRef(executeMove);
   executeMoveRef.current = executeMove;
   const makeDropMoveRef = useRef(makeDropMove);
   makeDropMoveRef.current = makeDropMove;
-
-  // ── Engine hooks ──────────────────────────────────────────────────────────
   const executeDropMove = useCallback(
     (san: string) => {
       const move = makeDropMove(san);
@@ -206,7 +176,6 @@ export function ChessBoard({
     },
     [makeDropMove, isMultiplayer, onPlayerMove, onMoveExecuted]
   );
-
   useStockfish({
     game,
     fen: currentFEN,
@@ -219,7 +188,6 @@ export function ChessBoard({
     soundEnabled,
     playSound
   });
-
   useFairyStockfish({
     game,
     fen: currentFEN,
@@ -234,8 +202,6 @@ export function ChessBoard({
     soundEnabled,
     playSound
   });
-
-  // ── Multiplayer: register opponent-move handler ────────────────────────────
   useEffect(() => {
     if (!isMultiplayer || !setOnOpponentMove) return;
     const applyOpponentMove: OnOpponentMoveFn = (from, to, promotion) => {
@@ -250,8 +216,6 @@ export function ChessBoard({
     setOnOpponentMove(applyOpponentMove);
     return () => setOnOpponentMove(null);
   }, [isMultiplayer, setOnOpponentMove]);
-
-  // ── Multiplayer: replay moves on rejoin ────────────────────────────────────
   useEffect(() => {
     if (!isMultiplayer || !movesToReplay || movesToReplay.length === 0) return;
     for (const moveStr of movesToReplay) {
@@ -268,8 +232,6 @@ export function ChessBoard({
     }
     onMovesReplayed?.();
   }, [movesToReplay, onMovesReplayed, isMultiplayer]);
-
-  // ── Analysis arrows ───────────────────────────────────────────────────────
   const analysisArrows = useChessArrows({
     isAnalysisOn,
     uciLines,
@@ -279,29 +241,26 @@ export function ChessBoard({
     gameTurn,
     analysisTurn
   });
-
-  // ── Loser highlight ───────────────────────────────────────────────────────
   const loserColor = useMemo((): 'w' | 'b' | null => {
     if (!gameOver) return null;
     const outcome = game.outcome();
     if (!outcome || outcome.winner === undefined) return null;
     return outcome.winner === 'w' ? 'b' : 'w';
   }, [gameOver, game]);
-
-  // ── Board orientation ─────────────────────────────────────────────────────
-  const effectiveBoardOrientation = isPlayMode
-    ? boardFlipped
-      ? playAs === 'white'
-        ? 'black'
-        : 'white'
-      : playAs
-    : boardOrientation;
+  const effectiveBoardOrientation: 'white' | 'black' =
+    variant === 'racingKings'
+      ? 'white'
+      : isPlayMode
+        ? boardFlipped
+          ? playAs === 'white'
+            ? 'black'
+            : 'white'
+          : playAs
+        : boardOrientation;
   const resolvedOrientation =
     isMounted && hasHydrated
       ? effectiveBoardOrientation
       : serverOrientation || 'white';
-
-  // ── Variant extras ────────────────────────────────────────────────────────
   const variantModule = variantRegistry.getModule(variant);
   const {
     selectedDropPiece,
@@ -317,7 +276,6 @@ export function ChessBoard({
     onMoveExecuted: () => {},
     isGameOver: gameOver || (isPlayMode && !gameStarted)
   });
-
   const wrappedSquareClick = useCallback(
     ({ square }: { square: string }) => {
       if (selectedDropPiece) {
@@ -334,7 +292,6 @@ export function ChessBoard({
       handleSquareClick
     ]
   );
-
   const mergedSquareStyles = useMemo(() => {
     const base = isMounted && hasHydrated ? squareStyles : {};
     if (!selectedDropPiece) return base;
@@ -346,13 +303,10 @@ export function ChessBoard({
     selectedDropPiece,
     dropSquareStyles
   ]);
-
   const checkerPieces = useMemo(
     () => (variant === 'checkersChess' ? buildCheckerPieces() : undefined),
     [variant]
   );
-
-  // ── Game-over detection ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isPlayMode || !gameStarted) return;
     if (game.isGameOver()) {
@@ -393,18 +347,14 @@ export function ChessBoard({
     soundEnabled,
     variant
   ]);
-
   const onNewGame = useCallback(() => {
     if (soundEnabled) playSound('game-start');
     clearState();
   }, [clearState, soundEnabled]);
-
   useEffect(() => {
     setOnNewGame(onNewGame);
     return () => setOnNewGame(() => {});
   }, [onNewGame, setOnNewGame]);
-
-  // ── Render ────────────────────────────────────────────────────────────────
   const boardProps = {
     position,
     boardOrientation: resolvedOrientation,
@@ -422,14 +372,11 @@ export function ChessBoard({
     loserColor,
     ...(checkerPieces ? { pieces: checkerPieces } : {})
   };
-
   const shouldShow3d =
     isMounted && hasHydrated
       ? board3dEnabled
       : (initialBoard3dEnabled ?? false);
-
   const BoardOverlayComponent = variantModule?.components?.BoardOverlay;
-
   return (
     <>
       <div className='relative'>

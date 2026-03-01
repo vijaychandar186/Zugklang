@@ -13,8 +13,8 @@ from fastapi import FastAPI
 from config import settings
 from api.routes import router
 from db import connect_db, disconnect_db
-from model.explainer import load_explainer
 from util import get_logger
+from ws_monitor.repository import ensure_ws_monitor_schema
 
 logging.getLogger("tensorflow").setLevel(logging.ERROR)
 log = get_logger(__name__, settings.log_level)
@@ -22,24 +22,19 @@ log = get_logger(__name__, settings.log_level)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load every model explainer once at startup; release on shutdown."""
+    """Initialize DB and ws-monitor schema; close DB on shutdown."""
     await connect_db()
-    app.state.explainers = {}
-    for cfg in settings.model_configs:
-        use_eval, tc, days = cfg
-        model_dir = settings.model_dir / f"eval{use_eval}_tc{tc}_days{days}"
-        app.state.explainers[cfg] = load_explainer(model_dir)
-        log.info(f"Loaded SHAP explainer  use_eval={use_eval}  tc={tc}  days={days}")
+    if settings.ws_monitor_persist:
+        await ensure_ws_monitor_schema()
     yield
-    app.state.explainers.clear()
     await disconnect_db()
 
 
 app = FastAPI(
     title="Kaladin Anti-Cheat",
     description=(
-        "Real-time chess engine detection using a multi-branch CNN "
-        "trained on Lichess game insights, with SHAP explanations."
+        "Real-time anti-cheat monitoring for ws-server games "
+        "with live timing-based scoring and persistence."
     ),
     version="2.0.0",
     lifespan=lifespan,

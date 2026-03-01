@@ -44,13 +44,6 @@ import { playSound } from '@/features/game/utils/sounds';
 import { CrazyhousePocket } from './CrazyhousePocket';
 import type { PieceSymbol } from '@/lib/chess/chess';
 import type { MultiplayerStatus } from '@/features/multiplayer/types';
-
-// ── Multiplayer-specific prop bundle ────────────────────────────────────────
-
-/**
- * When provided, enables multiplayer-specific UI: draw-offer banner, rematch
- * flow, analysis lockout during live game, and custom new-game handler.
- */
 export interface MultiplayerSidebarProps {
   status: MultiplayerStatus;
   drawOffered: boolean;
@@ -65,19 +58,12 @@ export interface MultiplayerSidebarProps {
   onAcceptRematch: () => void;
   onDeclineRematch: () => void;
   onFindNewGame: () => void;
-  /** Rating delta shown in the game-over panel after a rated game. */
   ratingDelta?: number | null;
 }
-
 interface ChessSidebarProps {
   mode: ChessMode;
-  /**
-   * Optional multiplayer extension.  When absent the sidebar behaves as a
-   * standard local/computer game sidebar.
-   */
   multiplayer?: MultiplayerSidebarProps;
 }
-
 export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
   const router = useRouter();
   const {
@@ -100,12 +86,10 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
     selectedDropPiece,
     engineConfig
   } = useChessState();
-
   const isLocalGame = gameType === 'local';
   const isPlayMode = mode === 'play';
   const isAnalysisMode = mode === 'analysis';
   const isMultiplayer = !!multiplayer;
-
   const {
     goToStart,
     goToEnd,
@@ -121,24 +105,17 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
     stopPlayingFromPosition,
     setSelectedDropPiece
   } = useChessActions();
-
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { startAnalysis, endAnalysis } = useAnalysisActions();
-
   const [newGameOpen, setNewGameOpen] = useState(false);
-  // Tracks whether local "rematch sent" button has been pressed.
   const [rematchSent, setRematchSent] = useState(false);
   const hasAutoPlayed = useRef(false);
-
-  // Reset rematch state when opponent declines or a new game begins.
   useEffect(() => {
     if (multiplayer?.rematchDeclined) setRematchSent(false);
   }, [multiplayer?.rematchDeclined]);
   useEffect(() => {
     if (!gameOver) setRematchSent(false);
   }, [gameOver]);
-
-  // Analysis mode: jump to start automatically on first load.
   useEffect(() => {
     if (
       isAnalysisMode &&
@@ -149,8 +126,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
       setTimeout(() => goToStart(), 100);
     }
   }, [isAnalysisMode, positionHistory.length, goToStart]);
-
-  // Play mode (non-multiplayer): open new-game dialog when no game is active.
   useEffect(() => {
     if (
       !isMultiplayer &&
@@ -170,45 +145,32 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
     gameOver,
     moves.length
   ]);
-
   const canGoBack = viewingIndex > 0;
   const canGoForward = viewingIndex < positionHistory.length - 1;
   const canAbort = moves.length < 2;
-
-  /**
-   * During a live multiplayer game, analysis is unavailable (server hasn't
-   * finished the game yet, so the position is still live).
-   */
   const isLiveGame =
     isMultiplayer &&
     (multiplayer!.status === 'playing' || (gameStarted && !gameOver));
-
   const { isPlaying, togglePlay } = usePlayback({
     currentIndex: viewingIndex,
     totalItems: positionHistory.length,
     onNext: goToNext
   });
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
-
   const handleResign = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('You resigned');
     setGameOver(true);
     multiplayer?.onResign();
   };
-
   const handleAbort = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Game Aborted');
     setGameOver(true);
     multiplayer?.onAbort();
   };
-
   const handleDrawTrigger = () => {
     if (soundEnabled) playSound('draw-offer');
   };
-
   const handleDrawConfirm = () => {
     if (isMultiplayer) {
       multiplayer!.onOfferDraw();
@@ -218,14 +180,12 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
     setGameResult('Draw by agreement');
     setGameOver(true);
   };
-
   const handleAcceptOpponentDraw = () => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Draw by agreement');
     setGameOver(true);
     multiplayer!.onAcceptDraw();
   };
-
   const handleNewGame = () => {
     if (isMultiplayer) {
       multiplayer!.onFindNewGame();
@@ -233,40 +193,29 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
       setNewGameOpen(true);
     }
   };
-
   const handleToggleAnalysis = () => {
     if (isAnalysisOn) endAnalysis();
     else startAnalysis();
   };
-
   const handleFlipBoard = () => {
     if (isPlayMode) flipBoard();
     else toggleBoardOrientation();
   };
-
   const handlePlayFromPosition = (color: 'white' | 'black') => {
     startPlayingFromPosition(color);
   };
-
-  // ── Crazyhouse pocket ─────────────────────────────────────────────────────
-
   const isCrazyhouse = variant === 'crazyhouse';
   const isGameActive = isPlayMode && gameStarted && !gameOver;
   const emptyPocket = { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 };
   const whitePocket = isCrazyhouse ? game.getPocket('w') : emptyPocket;
   const blackPocket = isCrazyhouse ? game.getPocket('b') : emptyPocket;
-
   const handlePocketSelect = (role: PieceSymbol) => {
     if (!isGameActive) return;
     setSelectedDropPiece(selectedDropPiece === role ? null : role);
   };
-
-  // ── Render ────────────────────────────────────────────────────────────────
-
   return (
     <>
       <SidebarPanel fullHeight>
-        {/* ── Header ────────────────────────────────────────────────────── */}
         <SidebarHeader
           title='Moves'
           actions={
@@ -387,7 +336,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
           }
         />
 
-        {/* ── Multiplayer: draw-offer banner ─────────────────────────────── */}
         {isMultiplayer && multiplayer!.drawOffered && !gameOver && (
           <div className='shrink-0 space-y-2 border-b bg-blue-500/10 px-4 py-3'>
             <p className='text-center text-sm font-medium text-blue-600 dark:text-blue-400'>
@@ -413,7 +361,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
           </div>
         )}
 
-        {/* ── Crazyhouse pockets ─────────────────────────────────────────── */}
         {isCrazyhouse && isPlayMode && (
           <div className='flex shrink-0 flex-col gap-2 border-b px-4 py-2'>
             <div className='flex items-center justify-between'>
@@ -469,7 +416,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
           </div>
         )}
 
-        {/* ── Move history ───────────────────────────────────────────────── */}
         <ScrollArea className='h-[180px] lg:h-0 lg:min-h-0 lg:flex-1'>
           <div className='px-4 py-2'>
             <MoveHistory
@@ -486,7 +432,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
           </div>
         </ScrollArea>
 
-        {/* ── Navigation controls ────────────────────────────────────────── */}
         <NavigationControls
           viewingIndex={viewingIndex}
           totalPositions={positionHistory.length}
@@ -500,10 +445,8 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
           onGoToNext={goToNext}
         />
 
-        {/* ── Play-mode footer ───────────────────────────────────────────── */}
         {isPlayMode && (
           <div className='bg-muted/50 space-y-2 border-t p-2'>
-            {/* Game-over / pre-game panel */}
             {(gameOver || !gameStarted) && (
               <GameOverPanel
                 gameResult={gameResult || 'No active game'}
@@ -523,7 +466,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
               />
             )}
 
-            {/* Multiplayer: opponent sent rematch */}
             {isMultiplayer && gameOver && multiplayer!.rematchOffered && (
               <div className='space-y-2 rounded-md border bg-purple-500/10 px-3 py-2'>
                 <p className='text-center text-sm font-medium text-purple-600 dark:text-purple-400'>
@@ -549,7 +491,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
               </div>
             )}
 
-            {/* Multiplayer: send rematch button */}
             {isMultiplayer &&
               gameOver &&
               !multiplayer!.rematchOffered &&
@@ -576,7 +517,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
               </p>
             )}
 
-            {/* ── Action bar ─────────────────────────────────────────────── */}
             <div className='flex items-center gap-1'>
               <SettingsButton />
               <FlipBoardButton onFlip={handleFlipBoard} />
@@ -611,7 +551,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
         )}
       </SidebarPanel>
 
-      {/* New-game dialogs — only for non-multiplayer modes */}
       {!isMultiplayer &&
         (isLocalGame ? (
           <LocalGameSelectionDialog

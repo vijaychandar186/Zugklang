@@ -64,7 +64,7 @@ function UserMenuContent() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild className='cursor-pointer'>
-          <Link href='/games'>
+          <Link href='/history'>
             <History className='mr-2 h-4 w-4' />
             History
           </Link>

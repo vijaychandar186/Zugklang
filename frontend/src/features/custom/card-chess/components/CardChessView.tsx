@@ -12,7 +12,6 @@ import { TwoPlayerCustomGameView } from '@/features/custom/shared/components/Two
 import { TwoPlayerCustomSidebar } from '@/features/custom/shared/components/TwoPlayerCustomSidebar';
 import { TwoPlayerCustomSetupDialog } from '@/features/custom/shared/components/TwoPlayerCustomSetupDialog';
 import { useTwoPlayerCustomTimer } from '@/features/custom/shared/hooks/useTwoPlayerCustomTimer';
-
 function CardSetupDialog({
   open,
   onOpenChange
@@ -46,8 +45,11 @@ function CardSetupDialog({
     />
   );
 }
-
-export function CardChessView({ canMove }: { canMove?: boolean } = {}) {
+export function CardChessView({
+  canMove
+}: {
+  canMove?: boolean;
+} = {}) {
   const {
     currentFEN,
     gameStarted,
@@ -73,19 +75,15 @@ export function CardChessView({ canMove }: { canMove?: boolean } = {}) {
     setGameOver,
     setGameResult
   } = useCardChessStore();
-
   useTwoPlayerCustomTimer(useCardChessStore);
-
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const flipBoard = useChessStore((s) => s.flipBoard);
   const { isAnalysisOn, isInitialized } = useAnalysisState();
   const { startAnalysis, endAnalysis } = useAnalysisActions();
-
   const loserColor = useMemo((): 'w' | 'b' | null => {
     if (!gameOver || !game.isCheckmate()) return null;
     return game.turn();
   }, [gameOver, game]);
-
   return (
     <TwoPlayerCustomGameView
       currentFEN={currentFEN}

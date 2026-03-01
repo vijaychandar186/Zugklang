@@ -10,7 +10,7 @@ Play standard chess and 9 variants against Stockfish and Fairy-Stockfish, plus c
 
 ### Chess Engines
 
-- **Stockfish 16** — One of the strongest chess engines in the world, running fully in-browser via WebAssembly
+- **Stockfish 18** — One of the strongest chess engines in the world, running fully in-browser via WebAssembly
 - **Fairy-Stockfish** — Extended engine for chess variants, also WASM-powered with no server calls
 - **Probabilistic AI** — Gaussian distribution difficulty curve for human-like, unpredictable opponents; adjustable from beginner to grandmaster
 

@@ -1,4 +1,3 @@
-from pymongo import MongoClient
 import datetime
 from sklearn.model_selection import train_test_split
 import glob
@@ -235,9 +234,7 @@ if __name__ == '__main__':
     log = logging.getLogger(__file__)
     log.setLevel('DEBUG')
     configure_logging(log)
-
-    # Connect to mongodb
-    client = MongoClient()
-    db = client['lichess']
-    build_data(db.insight_202111, db.user_202111, live=0)
-    log.debug('run completed successfully')
+    raise RuntimeError(
+        "Direct MongoDB execution path was removed. "
+        "Run data preparation through the current service pipeline instead."
+    )

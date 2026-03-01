@@ -6,6 +6,7 @@ import {
   getIncrement
 } from '@/lib/chess/timeControl';
 import { getEngineName } from '@/features/chess/config/variants';
+import type { ChessVariant } from '@/features/chess/config/variants';
 export interface TimerSlice {
   timeControl: TimeControl;
   whiteTime: number | null;
@@ -35,7 +36,7 @@ type TimerSliceStore = TimerSlice & {
   gameOver: boolean;
   gameResult?: string | null;
   playAs: 'white' | 'black';
-  variant: any;
+  variant: ChessVariant;
 };
 export const createTimerSlice: StateCreator<
   TimerSliceStore,

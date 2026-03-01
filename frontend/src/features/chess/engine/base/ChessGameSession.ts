@@ -2,6 +2,7 @@ import {
   Chess,
   ChessJSColor,
   ChessJSMove as Move,
+  MoveOptions,
   ChessJSPieceType,
   PieceSymbol,
   ShortMove
@@ -39,11 +40,11 @@ export abstract class ChessGameSession {
   turn(): ChessJSColor {
     return this.game.turn();
   }
-  moves(options?: { verbose?: boolean; square?: string }): string[] | Move[] {
-    return this.game.moves(options as any);
+  moves(options?: MoveOptions): string[] | Move[] {
+    return this.game.moves(options);
   }
   history(options?: { verbose?: boolean }): string[] | Move[] {
-    return this.game.history(options as any);
+    return this.game.history(options);
   }
   isGameOver(): boolean {
     return this.game.isGameOver();
@@ -101,7 +102,9 @@ export abstract class ChessGameSession {
   getPocket?(color: ChessJSColor): Record<PieceSymbol, number>;
   getDropSquares?(): string[];
   getAdjacentOccupied?(square: string, excludePawns?: boolean): string[];
-  protected onMovePlayed(move: Move): void {}
+  protected onMovePlayed(_move: Move): void {
+    void _move;
+  }
   getUnderlyingGame(): Chess {
     return this.game;
   }

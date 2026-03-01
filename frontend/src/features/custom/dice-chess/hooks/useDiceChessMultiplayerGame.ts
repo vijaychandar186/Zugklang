@@ -423,14 +423,14 @@ export function useDiceChessMultiplayerGame(
       if (moveObj) applyMove(moveObj, true);
     });
     return () => ws.setOnOpponentMove(null);
-  }, [ws.setOnOpponentMove, applyMove]);
+  }, [ws, ws.setOnOpponentMove, applyMove]);
   useEffect(() => {
     ws.setOnServerGameOver((result) => {
       setGameOver(true);
       setGameResult(result);
     });
     return () => ws.setOnServerGameOver(null);
-  }, [ws.setOnServerGameOver]);
+  }, [ws, ws.setOnServerGameOver]);
   useEffect(() => {
     const roomId = ws.roomId;
     const myColorNow = ws.myColor ?? 'white';
@@ -510,7 +510,7 @@ export function useDiceChessMultiplayerGame(
       setActiveClock(active);
     });
     return () => ws.setOnClockSync(null);
-  }, [ws.setOnClockSync]);
+  }, [ws, ws.setOnClockSync]);
   useEffect(() => {
     ws.setOnSyncDice((pieces) => {
       const chess = chessRef.current;
@@ -525,7 +525,7 @@ export function useDiceChessMultiplayerGame(
       if (soundEnabledRef.current) playRawSound(DICE_SOUND_PATH);
     });
     return () => ws.setOnSyncDice(null);
-  }, [ws.setOnSyncDice]);
+  }, [ws, ws.setOnSyncDice]);
   useEffect(() => {
     if (!activeClock || gameOver) return;
     const id = setInterval(() => {
@@ -596,7 +596,7 @@ export function useDiceChessMultiplayerGame(
       }, 800);
       return () => clearTimeout(t);
     }
-  }, [ws.status, ws.myColor, startGameFromFresh]);
+  }, [ws, ws.status, ws.myColor, startGameFromFresh]);
   useEffect(() => {
     if (ws.status === 'rejoined' && ws.myColor) {
       const movesToReplay = ws.movesToReplay ?? [];
@@ -605,7 +605,7 @@ export function useDiceChessMultiplayerGame(
       ws.setPlaying();
       setMatchmakingOpen(false);
     }
-  }, [ws.status, ws.myColor]);
+  }, [ws, ws.status, ws.myColor, startGameFromFresh]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const saved = loadSession();
@@ -623,7 +623,7 @@ export function useDiceChessMultiplayerGame(
         session?.user?.image ?? undefined
       );
     }
-  }, []);
+  }, [ws, challengeId, session?.user?.name, session?.user?.image]);
   useEffect(() => {
     if (!sessionRestorePending) return;
     if (
@@ -649,7 +649,7 @@ export function useDiceChessMultiplayerGame(
   }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
   useEffect(() => {
     if (matchmakingOpen && !ws.isSecondaryTab) ws.preConnect();
-  }, [matchmakingOpen, ws.isSecondaryTab]);
+  }, [ws, matchmakingOpen, ws.isSecondaryTab]);
   const handleFindGame = useCallback(
     async (timeControl: Parameters<typeof ws.joinQueue>[1]) => {
       let rating = 700;
@@ -678,7 +678,7 @@ export function useDiceChessMultiplayerGame(
         rating
       );
     },
-    [ws.joinQueue, session]
+    [ws, session]
   );
   const handleCreateChallenge = useCallback(
     (
@@ -693,7 +693,7 @@ export function useDiceChessMultiplayerGame(
         session?.user?.image ?? undefined
       );
     },
-    [ws.createChallenge, session]
+    [ws, session]
   );
   const handleFindNewGame = useCallback(() => {
     ws.disconnect();
@@ -716,30 +716,27 @@ export function useDiceChessMultiplayerGame(
     setLoserColor(null);
     setHighlightedSquares({});
     setMatchmakingOpen(true);
-  }, [ws.disconnect]);
+  }, [ws]);
   const handleResign = useCallback(() => {
     if (soundEnabled) playSound('game-end');
     setGameResult('You resigned');
     setGameOver(true);
     ws.resign();
-  }, [soundEnabled, ws.resign]);
+  }, [ws, soundEnabled]);
   const handleAbort = useCallback(() => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Game Aborted');
     setGameOver(true);
     ws.abort();
-  }, [soundEnabled, ws.abort]);
-  const handleOfferDraw = useCallback(() => ws.offerDraw(), [ws.offerDraw]);
+  }, [ws, soundEnabled]);
+  const handleOfferDraw = useCallback(() => ws.offerDraw(), [ws]);
   const handleAcceptDraw = useCallback(() => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Draw by agreement');
     setGameOver(true);
     ws.acceptDraw();
-  }, [soundEnabled, ws.acceptDraw]);
-  const handleDeclineDraw = useCallback(
-    () => ws.declineDraw(),
-    [ws.declineDraw]
-  );
+  }, [ws, soundEnabled]);
+  const handleDeclineDraw = useCallback(() => ws.declineDraw(), [ws]);
   const goToStart = useCallback(() => {
     setViewingIndex(0);
     setCurrentFEN(positionHistoryRef.current[0]!);

@@ -1,6 +1,6 @@
 import { ChessVariant } from '@/features/chess/config/variants';
 import type { Move } from '@/lib/chess/chess';
-type HookFunction = (params: any) => any;
+type HookFunction = (params: unknown) => unknown;
 export type VariantModule = {
   hooks?: {
     useOverlay?: HookFunction;
@@ -8,9 +8,9 @@ export type VariantModule = {
     useThreats?: HookFunction;
   };
   components?: {
-    Overlay?: React.ComponentType<any>;
-    Pocket?: React.ComponentType<any>;
-    BoardOverlay?: React.ComponentType<any>;
+    Overlay?: React.ComponentType<Record<string, unknown>>;
+    Pocket?: React.ComponentType<Record<string, unknown>>;
+    BoardOverlay?: React.ComponentType<Record<string, unknown>>;
   };
   sounds?: {
     onMove?: (move: Move, isCapture: boolean) => void;

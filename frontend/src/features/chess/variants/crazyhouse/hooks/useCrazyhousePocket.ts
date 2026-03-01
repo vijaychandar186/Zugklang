@@ -36,14 +36,17 @@ export function useCrazyhousePocket({
   const opponentColorShort = playerColor === 'white' ? 'b' : 'w';
   const isPlayerTurn = game.turn() === playerColorShort;
   const playerPocket = useMemo(() => {
+    void currentFEN;
     if (!isCrazyhouse) return { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 };
     return game.getPocket(playerColorShort);
   }, [game, isCrazyhouse, playerColorShort, currentFEN]);
   const opponentPocket = useMemo(() => {
+    void currentFEN;
     if (!isCrazyhouse) return { p: 0, n: 0, b: 0, r: 0, q: 0, k: 0 };
     return game.getPocket(opponentColorShort);
   }, [game, isCrazyhouse, opponentColorShort, currentFEN]);
   const dropSquares = useMemo(() => {
+    void currentFEN;
     if (!isCrazyhouse || !selectedDropPiece || !isPlayerTurn) return [];
     return game.getDropSquares();
   }, [game, isCrazyhouse, selectedDropPiece, isPlayerTurn, currentFEN]);

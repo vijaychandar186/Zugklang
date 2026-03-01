@@ -6,7 +6,6 @@ import {
   type AttackBoardId,
   type AttackBoardSlot,
   type PieceType,
-  type Color,
   squareKey,
   BOARD_SIZES
 } from '../engine/types';

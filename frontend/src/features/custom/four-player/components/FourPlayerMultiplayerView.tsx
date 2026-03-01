@@ -210,7 +210,7 @@ export function FourPlayerMultiplayerView({
       setLobby(nextLobby);
       if (nextLobby.started) setLobbyDialogOpen(false);
     });
-    setOnFourPlayerLobbyStarted((_lobbyId, _startedAt, _timeControl) => {
+    setOnFourPlayerLobbyStarted(() => {
       setLobbyDialogOpen(false);
     });
     setOnFourPlayerLobbyRejoined((lobbyState) => {
@@ -219,7 +219,7 @@ export function FourPlayerMultiplayerView({
       setLobby(lobbyState);
       setLobbyDialogOpen(false);
     });
-    setOnFourPlayerPlayerReconnected((_reconnectedPlayerId) => {
+    setOnFourPlayerPlayerReconnected(() => {
       if (lobbyId && gameStarted) {
         const snap = useFourPlayerStore.getState().createSyncSnapshot();
         sendFourPlayerStateSync(lobbyId, JSON.stringify(snap));

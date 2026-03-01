@@ -40,7 +40,7 @@ const MODE_INFO_BY_HREF: Record<string, InfoEntry> = {
   },
   '/play/custom-multiplayer': {
     objective:
-      'Get matched online and play Dice Chess or Card Chess live against another player.',
+      'Get matched online and play Dice Chess, Card Chess, or Tri-D Chess live against another player.',
     rules: [
       'Matchmaking and challenge links work identically to standard multiplayer.',
       'The dice roll or card draw is enforced client-side for the active player each turn.',
@@ -301,6 +301,21 @@ const MODE_INFO_BY_HREF: Record<string, InfoEntry> = {
     rules: [
       'Card ranks map to move permissions for specific piece types.',
       'Card management changes strategic planning each turn.'
+    ]
+  },
+  '/play/custom-multiplayer/tri-d': {
+    objective:
+      'Checkmate your opponent across three stacked boards and four movable attack boards — live online.',
+    rules: [
+      'Seven boards total: three fixed 4×4 levels and four movable 2×2 attack boards.',
+      'On your turn, either move a piece OR reposition one of your movable attack boards.',
+      'Moves are relayed peer-to-peer — both clients apply the same engine rules independently.',
+      'Standard multiplayer features apply: resign, draw offer, rematch, and rejoin on disconnect.'
+    ],
+    tips: [
+      'Use "Play with Friend" in the matchmaking dialog to generate a shareable invite link.',
+      'Attack board repositioning can open surprise lines of attack against your opponent.',
+      'Rejoin is supported — if you disconnect, the game waits 30 seconds before ending.'
     ]
   },
   '/play/custom/tri-d': {

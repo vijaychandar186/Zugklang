@@ -3,7 +3,12 @@ import { notFound } from 'next/navigation';
 import { CardChessMultiplayerView } from '@/features/custom/card-chess/components/CardChessMultiplayerView';
 import { DiceChessMultiplayerView } from '@/features/custom/dice-chess/components/DiceChessMultiplayerView';
 import { FourPlayerMultiplayerView } from '@/features/custom/four-player/components/FourPlayerMultiplayerView';
-type CustomMultiplayerSlug = 'card-chess' | 'dice-chess' | 'four-player';
+import { TriDChessMultiplayerView } from '@/features/custom/tri-d-chess/components/TriDChessMultiplayerView';
+type CustomMultiplayerSlug =
+  | 'card-chess'
+  | 'dice-chess'
+  | 'four-player'
+  | 'tri-d';
 const VARIANT_META: Record<
   CustomMultiplayerSlug,
   {
@@ -25,6 +30,11 @@ const VARIANT_META: Record<
     title: 'Four Player Multiplayer | Zugklang',
     description:
       'Play Four Player Chess online in a shared lobby with leader-controlled game start.'
+  },
+  'tri-d': {
+    title: 'Tri-D Chess Multiplayer | Zugklang',
+    description:
+      'Play Star Trek Tri-D Chess online — get matched with a random opponent or invite a friend.'
   }
 };
 function isValidSlug(slug: string): slug is CustomMultiplayerSlug {
@@ -67,5 +77,7 @@ export default async function CustomMultiplayerVariantPage({
     return <CardChessMultiplayerView challengeId={challenge} />;
   if (variant === 'dice-chess')
     return <DiceChessMultiplayerView challengeId={challenge} />;
+  if (variant === 'tri-d')
+    return <TriDChessMultiplayerView challengeId={challenge} />;
   return <FourPlayerMultiplayerView lobbyId={lobby} />;
 }

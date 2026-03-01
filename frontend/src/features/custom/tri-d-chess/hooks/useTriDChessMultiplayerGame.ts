@@ -5,25 +5,18 @@ import {
   useCallback,
   useRef,
   useMemo,
-  type ReactNode
+  type ReactNode,
+  createElement
 } from 'react';
 import { useSession } from 'next-auth/react';
 import { getTimeCategory } from '@/lib/ratings/timeCategory';
-import { Chess } from '@/lib/chess/chess';
-import type { ChessJSMove } from '@/lib/chess/chess';
-import { STARTING_FEN } from '@/features/chess/config/constants';
 import {
   useMultiplayerWS,
   loadSession
 } from '@/features/multiplayer/hooks/useMultiplayerWS';
 import { MatchmakingDialog } from '@/features/multiplayer/components/MatchmakingDialog';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
-import {
-  playSound,
-  getSoundType,
-  playRawSound
-} from '@/features/game/utils/sounds';
-import { CARD_SOUND_PATH } from '@/lib/public-paths';
+import { playSound } from '@/features/game/utils/sounds';
 import {
   SignalIndicator,
   AbandonCountdown
@@ -32,124 +25,136 @@ import {
   DEFAULT_FLAG_CODE,
   normalizeFlagCode
 } from '@/features/settings/flags';
-import {
-  type CardRank,
-  type CardSuit,
-  type PlayingCard,
-  type CardResult,
-  CARD_TO_PIECE,
-  PIECE_NAMES
-} from '../stores/useCardChessStore';
 import type { ChallengeColor } from '@/features/multiplayer/types';
 import type {
   TwoPlayerPlayerInfo,
   TwoPlayerMultiplayerSidebarProps
 } from '@/features/chess/types/game-engine-contract';
-import { createElement } from 'react';
-const VARIANT = 'card-chess';
-function createDeck(): PlayingCard[] {
-  const ranks: CardRank[] = [
-    '2',
-    '3',
-    '4',
-    '5',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    'J',
-    'Q',
-    'K',
-    'A'
+import {
+  type TriDSquare,
+  type AttackBoardId,
+  type AttackBoardSlot,
+  type PieceType,
+  type PieceMap,
+  squareKey,
+  parseSquareKey,
+  BOARD_SIZES
+} from '../engine/types';
+import {
+  type TriDGameState,
+  createInitialState,
+  applyPieceMove,
+  applyBoardMove,
+  getCurrentCheck,
+  getLegalMoves,
+  getLegalBoardMoves,
+  requiresPromotion
+} from '../engine/gameEngine';
+
+const VARIANT = 'tri-d';
+
+// Move encoding / decoding
+// Piece: "P:{fromKey}:{toKey}" or "P:{fromKey}:{toKey}:{promotion}"
+// Board: "B:{boardId}:{fromSlot}:{toSlot}" or "B:{boardId}:{fromSlot}:{toSlot}:{arrivalChoice}"
+function encodeTriDMove(
+  type: 'piece',
+  from: TriDSquare,
+  to: TriDSquare,
+  promotion?: PieceType
+): string;
+function encodeTriDMove(
+  type: 'board',
+  boardId: AttackBoardId,
+  fromSlot: AttackBoardSlot,
+  toSlot: AttackBoardSlot,
+  arrivalChoice?: 'identity' | 'rot180'
+): string;
+function encodeTriDMove(type: 'piece' | 'board', ...args: unknown[]): string {
+  if (type === 'piece') {
+    const [from, to, promotion] = args as [
+      TriDSquare,
+      TriDSquare,
+      PieceType | undefined
+    ];
+    const base = `P:${squareKey(from)}:${squareKey(to)}`;
+    return promotion ? `${base}:${promotion}` : base;
+  }
+  const [boardId, fromSlot, toSlot, arrivalChoice] = args as [
+    AttackBoardId,
+    AttackBoardSlot,
+    AttackBoardSlot,
+    ('identity' | 'rot180') | undefined
   ];
-  const suits: CardSuit[] = ['H', 'D', 'C', 'S'];
-  const deck: PlayingCard[] = [];
-  for (const suit of suits) {
-    for (const rank of ranks) {
-      deck.push({ rank, suit });
-    }
-  }
-  return deck;
+  const base = `B:${boardId}:${fromSlot}:${toSlot}`;
+  return arrivalChoice ? `${base}:${arrivalChoice}` : base;
 }
-function shuffleDeck(deck: PlayingCard[]): PlayingCard[] {
-  const shuffled = [...deck];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j]!, shuffled[i]!];
-  }
-  return shuffled;
+
+interface DecodedPieceMove {
+  kind: 'piece';
+  from: TriDSquare;
+  to: TriDSquare;
+  promotion?: PieceType;
 }
-function getPieceName(card: PlayingCard): string {
-  const mapping = CARD_TO_PIECE[card.rank];
-  if (mapping.type === 'p' && mapping.file) {
-    return `${mapping.file}-Pawn`;
-  }
-  return PIECE_NAMES[mapping.type];
+interface DecodedBoardMove {
+  kind: 'board';
+  boardId: AttackBoardId;
+  fromSlot: AttackBoardSlot;
+  toSlot: AttackBoardSlot;
+  arrivalChoice: 'identity' | 'rot180';
 }
-function checkCardHasValidMoves(game: Chess, card: PlayingCard): boolean {
-  const mapping = CARD_TO_PIECE[card.rank];
-  const moves = game.moves({ verbose: true }) as {
-    piece: string;
-    from: string;
-  }[];
-  if (mapping.type === 'p' && mapping.file) {
-    return moves.some((m) => m.piece === 'p' && m.from[0] === mapping.file);
+function decodeTriDMove(
+  encoded: string
+): DecodedPieceMove | DecodedBoardMove | null {
+  if (encoded.startsWith('P:')) {
+    const parts = encoded.slice(2).split(':');
+    // fromKey = parts[0]:parts[1]:parts[2], toKey = parts[3]:parts[4]:parts[5], promotion? = parts[6]
+    if (parts.length < 6) return null;
+    const from = parseSquareKey(`${parts[0]}:${parts[1]}:${parts[2]}`);
+    const to = parseSquareKey(`${parts[3]}:${parts[4]}:${parts[5]}`);
+    const promotion = parts[6] as PieceType | undefined;
+    return { kind: 'piece', from, to, promotion };
   }
-  return moves.some((m) => m.piece === mapping.type);
-}
-export function getHighlightsForCard(
-  game: Chess,
-  card: PlayingCard
-): Record<string, React.CSSProperties> {
-  const mapping = CARD_TO_PIECE[card.rank];
-  const squares: Record<string, React.CSSProperties> = {};
-  const board = game.board();
-  for (let r = 0; r < 8; r++) {
-    for (let c = 0; c < 8; c++) {
-      const p = board[r]?.[c];
-      if (!p || p.color !== game.turn()) continue;
-      const square = String.fromCharCode(97 + c) + (8 - r);
-      if (mapping.type === 'p' && mapping.file) {
-        if (p.type === 'p' && square[0] === mapping.file) {
-          squares[square] = {
-            boxShadow: 'var(--highlight-piece-indicator)',
-            borderRadius: '4px'
-          };
-        }
-      } else {
-        if (p.type === mapping.type) {
-          squares[square] = {
-            boxShadow: 'var(--highlight-piece-indicator)',
-            borderRadius: '4px'
-          };
-        }
-      }
-    }
+  if (encoded.startsWith('B:')) {
+    const parts = encoded.slice(2).split(':');
+    // boardId:fromSlot:toSlot[:arrivalChoice]
+    // fromSlot and toSlot may contain underscores so we split carefully
+    // Format: B:{boardId}:{fromSlot}:{toSlot}[:{arrivalChoice}]
+    // boardId = parts[0], rest are named slots
+    if (parts.length < 3) return null;
+    const boardId = parts[0] as AttackBoardId;
+    // slots may be multi-word (underscores already preserved as single tokens)
+    const fromSlot = parts[1] as AttackBoardSlot;
+    const toSlot = parts[2] as AttackBoardSlot;
+    const arrivalChoice =
+      parts[3] === 'rot180' ? 'rot180' : ('identity' as const);
+    return { kind: 'board', boardId, fromSlot, toSlot, arrivalChoice };
   }
-  return squares;
-}
-function getGameResult(game: Chess): string | null {
-  if (game.isCheckmate())
-    return `${game.turn() === 'w' ? 'Black' : 'White'} wins by checkmate`;
-  if (game.isStalemate()) return 'Draw by stalemate';
-  if (game.isDraw()) return 'Draw';
-  if (game.isInsufficientMaterial()) return 'Draw — insufficient material';
   return null;
 }
+
+function countPiecesOnBoard(pieces: PieceMap, boardId: AttackBoardId): number {
+  const size = BOARD_SIZES[boardId];
+  let count = 0;
+  for (let r = 0; r < size.rows; r++) {
+    for (let c = 0; c < size.cols; c++) {
+      if (pieces[squareKey({ boardId, row: r, col: c })]) count++;
+    }
+  }
+  return count;
+}
+
 function toResultReason(result: string | null): string {
   if (!result) return 'unknown';
   const lower = result.toLowerCase();
   if (lower.includes('abort')) return 'abort';
-  if (lower.includes('checkmate')) return 'checkmate';
   if (lower.includes('resign')) return 'resign';
   if (lower.includes('time') || lower.includes('timeout')) return 'timeout';
   if (lower.includes('draw') && lower.includes('agreement'))
     return 'draw_agreement';
   if (lower.includes('stalemate')) return 'stalemate';
-  if (lower.includes('insufficient')) return 'insufficient_material';
-  return 'unknown';
+  return 'checkmate';
 }
+
 function toResultCode(
   result: string | null,
   playAs: 'white' | 'black'
@@ -170,23 +175,31 @@ function toResultCode(
   if (lower.includes('draw')) return '1/2-1/2';
   return '*';
 }
-export interface CardChessMultiplayerGame {
-  currentFEN: string;
+
+export interface PendingBoardArrivalState {
+  boardId: AttackBoardId;
+  toSlot: AttackBoardSlot;
+  identityKey: string;
+  rot180Key: string;
+}
+
+export interface PendingPromotionState {
+  from: TriDSquare;
+  to: TriDSquare;
+}
+
+export interface TriDChessMultiplayerGame {
+  gameState: TriDGameState;
   gameStarted: boolean;
   gameOver: boolean;
-  highlightedSquares: Record<string, React.CSSProperties>;
-  loserColor: 'w' | 'b' | null;
-  canDrag: boolean;
-  moves: string[];
-  positionHistory: string[];
   viewingIndex: number;
-  turn: 'w' | 'b';
-  drawnCard: CardResult | null;
-  isDrawing: boolean;
-  needsDraw: boolean;
-  drawCount: number;
-  isInCheck: boolean;
-  cardDrawHistory: CardRank[];
+  inCheck: boolean;
+  highlightedSquares: Set<string>;
+  highlightedSlots: Set<AttackBoardSlot>;
+  selected: TriDSquare | null;
+  selectedBoardId: AttackBoardId | null;
+  pendingBoardArrival: PendingBoardArrivalState | null;
+  pendingPromotion: PendingPromotionState | null;
   whiteTimeSecs: number | null;
   blackTimeSecs: number | null;
   activeClock: 'white' | 'black' | null;
@@ -195,24 +208,29 @@ export interface CardChessMultiplayerGame {
   topPlayerExtras: ReactNode;
   bottomPlayerExtras: ReactNode;
   gameResult: string | null;
-  ratingDelta: number | null;
   overlays: ReactNode;
   multiplayerSidebarProps: TwoPlayerMultiplayerSidebarProps;
   isMyTurn: boolean;
-  onPieceDrop: (args: {
-    sourceSquare: string;
-    targetSquare: string | null;
-  }) => boolean;
-  onDrawCard: () => void;
+  isActive: boolean;
+  moves: string[];
+  positionHistory: string[];
+  turn: 'w' | 'b';
+  onSquareClick: (sq: TriDSquare) => void;
+  onAttackBoardClick: (id: AttackBoardId) => void;
+  onSlotClick: (id: AttackBoardId, slot: AttackBoardSlot) => void;
+  onChooseBoardArrival: (choice: 'identity' | 'rot180') => void;
+  onCompletePromotion: (piece: PieceType) => void;
+  onCancelPromotion: () => void;
   goToStart: () => void;
   goToEnd: () => void;
   goToPrev: () => void;
   goToNext: () => void;
   goToMove: (idx: number) => void;
 }
-export function useCardChessMultiplayerGame(
+
+export function useTriDChessMultiplayerGame(
   challengeId?: string
-): CardChessMultiplayerGame {
+): TriDChessMultiplayerGame {
   const ws = useMultiplayerWS();
   const { data: session } = useSession();
   const [myRating, setMyRating] = useState<number | null>(null);
@@ -223,43 +241,52 @@ export function useCardChessMultiplayerGame(
   );
   const [myFlagCode, setMyFlagCode] = useState(DEFAULT_FLAG_CODE);
   const [opponentFlagCode, setOpponentFlagCode] = useState(DEFAULT_FLAG_CODE);
-  const chessRef = useRef(new Chess());
-  const positionHistoryRef = useRef<string[]>([STARTING_FEN]);
-  const [currentFEN, setCurrentFEN] = useState(STARTING_FEN);
-  const [moves, setMoves] = useState<string[]>([]);
-  const [positionHistory, setPositionHistory] = useState<string[]>([
-    STARTING_FEN
-  ]);
-  const [viewingIndex, setViewingIndex] = useState(0);
-  const [turn, setTurn] = useState<'w' | 'b'>('w');
+
+  const gameStateRef = useRef<TriDGameState>(createInitialState());
+  const [gameState, setGameState] = useState<TriDGameState>(
+    gameStateRef.current
+  );
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [gameResult, setGameResult] = useState<string | null>(null);
-  const [loserColor, setLoserColor] = useState<'w' | 'b' | null>(null);
-  const deckRef = useRef<PlayingCard[]>(shuffleDeck(createDeck()));
-  const discardPileRef = useRef<PlayingCard[]>([]);
-  const drawCountRef = useRef(0);
-  const [drawnCard, setDrawnCard] = useState<CardResult | null>(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [needsDraw, setNeedsDraw] = useState(true);
-  const [drawCount, setDrawCount] = useState(0);
-  const [isInCheck, setIsInCheck] = useState(false);
-  const [cardDrawHistory, setCardDrawHistory] = useState<CardRank[]>([]);
-  const [highlightedSquares, setHighlightedSquares] = useState<
-    Record<string, React.CSSProperties>
-  >({});
+  const [viewingIndex, setViewingIndex] = useState(0);
+  const [inCheck, setInCheck] = useState(false);
+  const [highlightedSquares, setHighlightedSquares] = useState<Set<string>>(
+    new Set()
+  );
+  const [highlightedSlots, setHighlightedSlots] = useState<
+    Set<AttackBoardSlot>
+  >(new Set());
+  const [selected, setSelected] = useState<TriDSquare | null>(null);
+  const [selectedBoardId, setSelectedBoardId] = useState<AttackBoardId | null>(
+    null
+  );
+  const [pendingBoardArrival, setPendingBoardArrival] =
+    useState<PendingBoardArrivalState | null>(null);
+  const [pendingPromotion, setPendingPromotion] =
+    useState<PendingPromotionState | null>(null);
+
   const [whiteTimeSecs, setWhiteTimeSecs] = useState<number | null>(null);
   const [blackTimeSecs, setBlackTimeSecs] = useState<number | null>(null);
   const [activeClock, setActiveClock] = useState<'white' | 'black' | null>(
     null
   );
+
   const [matchmakingOpen, setMatchmakingOpen] = useState(false);
   const [sessionRestorePending, setSessionRestorePending] = useState(true);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
   const savedRoomIdRef = useRef<string | null>(null);
+  const moveSansRef = useRef<string[]>([]);
+  const [moves, setMoves] = useState<string[]>([]);
+  const positionHistory = useMemo(
+    () => gameState.snapshots.map(() => ''),
+    [gameState.snapshots]
+  );
+
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const setBoardFlipped = useChessStore((s) => s.setBoardFlipped);
+
   const myColor = ws.myColor;
   const serverOrientation = myColor === 'black' ? 'black' : 'white';
   const boardOrientation = boardFlipped
@@ -269,12 +296,17 @@ export function useCardChessMultiplayerGame(
     : serverOrientation;
   const topColor = boardOrientation === 'white' ? 'black' : 'white';
   const bottomColor = boardOrientation === 'white' ? 'white' : 'black';
+
   const isMyTurn =
     gameStarted &&
     !gameOver &&
     myColor !== null &&
-    ((myColor === 'white' && turn === 'w') ||
-      (myColor === 'black' && turn === 'b'));
+    ((myColor === 'white' && gameState.turn === 'w') ||
+      (myColor === 'black' && gameState.turn === 'b'));
+
+  const viewingLive = viewingIndex === gameState.snapshots.length - 1;
+  const isActive = gameStarted && !gameOver && viewingLive;
+
   const opponentUserId = useMemo(() => {
     const me = session?.user?.id ?? null;
     if (me) {
@@ -284,6 +316,7 @@ export function useCardChessMultiplayerGame(
     if (!ws.myColor) return null;
     return ws.myColor === 'white' ? ws.blackUserId : ws.whiteUserId;
   }, [session?.user?.id, ws.myColor, ws.whiteUserId, ws.blackUserId]);
+
   const ratingCategory = useMemo(() => {
     const tc = ws.timeControl;
     if (!tc) return null;
@@ -291,6 +324,7 @@ export function useCardChessMultiplayerGame(
     if (tc.mode !== 'timed') return null;
     return getTimeCategory(tc.minutes, tc.increment);
   }, [ws.timeControl]);
+
   useEffect(() => {
     if (!session?.user?.id) {
       setMyRating(null);
@@ -300,15 +334,12 @@ export function useCardChessMultiplayerGame(
     if (ratingCategory) params.set('category', ratingCategory);
     fetch(`/api/user/rating?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : null))
-      .then(
-        (
-          data: {
-            rating: number | null;
-          } | null
-        ) => setMyRating(data?.rating ?? 700)
+      .then((data: { rating: number | null } | null) =>
+        setMyRating(data?.rating ?? 700)
       )
       .catch(() => setMyRating(700));
   }, [session?.user?.id, ratingCategory]);
+
   useEffect(() => {
     if (!session?.user?.id) {
       setMyFlagCode(DEFAULT_FLAG_CODE);
@@ -316,15 +347,12 @@ export function useCardChessMultiplayerGame(
     }
     fetch('/api/user/settings')
       .then((r) => (r.ok ? r.json() : null))
-      .then(
-        (
-          data: {
-            flagCode?: string | null;
-          } | null
-        ) => setMyFlagCode(normalizeFlagCode(data?.flagCode))
+      .then((data: { flagCode?: string | null } | null) =>
+        setMyFlagCode(normalizeFlagCode(data?.flagCode))
       )
       .catch(() => setMyFlagCode(DEFAULT_FLAG_CODE));
   }, [session?.user?.id]);
+
   useEffect(() => {
     if (!opponentUserId) {
       setOpponentRating(null);
@@ -337,185 +365,290 @@ export function useCardChessMultiplayerGame(
     fetch(`/api/users/${opponentUserId}?${params.toString()}`)
       .then((r) => (r.ok ? r.json() : null))
       .then(
-        (
-          data: {
-            rating?: number | null;
-            flagCode?: string | null;
-          } | null
-        ) => {
+        (data: { rating?: number | null; flagCode?: string | null } | null) => {
           setOpponentRating(data?.rating ?? 700);
           setOpponentFlagCode(normalizeFlagCode(data?.flagCode));
         }
       )
       .catch(() => setOpponentFlagCode(DEFAULT_FLAG_CODE));
   }, [opponentUserId, ratingCategory]);
-  const sendCardSyncRef = useRef(ws.sendCardSync);
-  sendCardSyncRef.current = ws.sendCardSync;
-  const soundEnabledRef = useRef(soundEnabled);
-  soundEnabledRef.current = soundEnabled;
-  const doDrawCard = useCallback(() => {
-    const chess = chessRef.current;
-    const isInCheckNow = chess.isCheck();
-    setIsDrawing(true);
-    setTimeout(() => {
-      let currentDeck = deckRef.current;
-      let currentDiscardPile = discardPileRef.current;
-      if (currentDeck.length === 0) {
-        currentDeck = shuffleDeck([...currentDiscardPile]);
-        currentDiscardPile = [];
-      }
-      const cardFromDeck = currentDeck[0]!;
-      deckRef.current = currentDeck.slice(1);
-      discardPileRef.current = currentDiscardPile;
-      const hasValidMoves = checkCardHasValidMoves(chess, cardFromDeck);
-      const pieceName = getPieceName(cardFromDeck);
-      const cardResult: CardResult = {
-        card: cardFromDeck,
-        hasValidMoves,
-        pieceName
-      };
-      const newDrawCount = drawCountRef.current + 1;
-      drawCountRef.current = newDrawCount;
-      setDrawnCard(cardResult);
-      setIsDrawing(false);
-      setNeedsDraw(false);
-      setDrawCount(newDrawCount);
-      setCardDrawHistory((prev) => [...prev, cardFromDeck.rank]);
-      setHighlightedSquares(
-        hasValidMoves ? getHighlightsForCard(chess, cardFromDeck) : {}
-      );
-      sendCardSyncRef.current(cardFromDeck.rank, cardFromDeck.suit);
-      if (soundEnabledRef.current) playRawSound(CARD_SOUND_PATH);
-      if (!hasValidMoves) {
-        if (isInCheckNow && newDrawCount >= 5) {
-          const loser = chess.turn();
-          const winner = loser === 'w' ? 'Black' : 'White';
-          const result = `${winner} wins — ${loser === 'w' ? 'White' : 'Black'} cannot escape check after 5 draws`;
-          setGameOver(true);
-          setGameResult(result);
-        } else {
-          setTimeout(doDrawCard, 1200);
-        }
-      }
-    }, 600);
-  }, []);
-  const drawCard = useCallback(() => {
-    if (!isMyTurn || isDrawing || !needsDraw) return;
-    doDrawCard();
-  }, [isMyTurn, isDrawing, needsDraw, doDrawCard]);
-  const applyMove = useCallback(
-    (moveObj: ChessJSMove, isOpponent: boolean) => {
-      const chess = chessRef.current;
-      const newFEN = chess.fen();
-      const newTurn = chess.turn();
-      const isOver = chess.isGameOver();
-      const result = isOver ? getGameResult(chess) : null;
-      const newHistory = [...positionHistoryRef.current, newFEN];
-      positionHistoryRef.current = newHistory;
-      setCurrentFEN(newFEN);
-      setTurn(newTurn);
-      setMoves((prev) => [...prev, moveObj.san]);
-      setPositionHistory(newHistory);
-      setViewingIndex(newHistory.length - 1);
-      setDrawnCard(null);
-      setNeedsDraw(!isOver);
-      setDrawCount(0);
-      drawCountRef.current = 0;
-      setHighlightedSquares({});
-      setIsInCheck(chess.isCheck());
-      if (soundEnabled) {
-        const isCapture = moveObj.captured !== undefined;
-        const isCheck = chess.isCheck();
-        const isCastle = moveObj.san === 'O-O' || moveObj.san === 'O-O-O';
-        const isPromotion = moveObj.promotion !== undefined;
-        playSound(
-          getSoundType(isCapture, isCheck, isCastle, isPromotion, !isOpponent)
-        );
-      }
-      if (isOver) {
+
+  const sendTriDMoveSyncRef = useRef(ws.sendTriDMoveSync);
+  sendTriDMoveSyncRef.current = ws.sendTriDMoveSync;
+
+  const applyMoveToState = useCallback(
+    (nextState: TriDGameState, san: string, isOpponent: boolean) => {
+      gameStateRef.current = nextState;
+      const newInCheck = getCurrentCheck(nextState);
+      const newSans = [...moveSansRef.current, san];
+      moveSansRef.current = newSans;
+      setGameState(nextState);
+      setViewingIndex(nextState.snapshots.length - 1);
+      setInCheck(newInCheck);
+      setMoves(newSans);
+      setHighlightedSquares(new Set());
+      setHighlightedSlots(new Set());
+      setSelected(null);
+      setSelectedBoardId(null);
+      setPendingBoardArrival(null);
+      setPendingPromotion(null);
+      if (nextState.isOver) {
         setGameOver(true);
-        setGameResult(result);
-        setLoserColor(chess.isCheckmate() ? chess.turn() : null);
-        if (!isOpponent) {
-          const reason = chess.isCheckmate() ? 'checkmate' : 'draw';
-          ws.notifyGameOver(result ?? 'Game over', reason);
+        setGameResult(nextState.result);
+        if (!isOpponent && nextState.result) {
+          ws.notifyGameOver(nextState.result, toResultReason(nextState.result));
         }
+      }
+      if (soundEnabled) {
+        if (nextState.isOver) playSound('game-end');
+        else playSound(isOpponent ? 'move-opponent' : 'move-self');
       }
     },
     [soundEnabled, ws]
   );
-  const onPieceDrop = useCallback(
-    ({
-      sourceSquare,
-      targetSquare
-    }: {
-      sourceSquare: string;
-      targetSquare: string | null;
-    }): boolean => {
-      if (!targetSquare) return false;
-      if (!isMyTurn || needsDraw || isDrawing || gameOver) {
-        if (soundEnabled) playSound('illegal');
-        return false;
-      }
-      const chess = chessRef.current;
-      const piece = chess.get(sourceSquare);
-      if (!piece) return false;
-      if (drawnCard) {
-        const mapping = CARD_TO_PIECE[drawnCard.card.rank];
-        if (mapping.type === 'p' && mapping.file) {
-          if (piece.type !== 'p' || sourceSquare[0] !== mapping.file) {
-            if (soundEnabled) playSound('illegal');
-            return false;
+
+  const onSquareClick = useCallback(
+    (sq: TriDSquare) => {
+      if (!isActive || !isMyTurn) return;
+      const state = gameStateRef.current;
+      const sqKey = squareKey(sq);
+
+      // If pending arrival, clicking a highlighted square resolves arrival
+      if (pendingBoardArrival) {
+        if (
+          sqKey === pendingBoardArrival.identityKey ||
+          sqKey === pendingBoardArrival.rot180Key
+        ) {
+          const choice =
+            sqKey === pendingBoardArrival.rot180Key ? 'rot180' : 'identity';
+          const result = applyBoardMove(
+            state,
+            pendingBoardArrival.boardId,
+            pendingBoardArrival.toSlot,
+            choice
+          );
+          if (result) {
+            const encoded = encodeTriDMove(
+              'board',
+              pendingBoardArrival.boardId,
+              result.move.type === 'board' ? result.move.fromSlot : 'left_low',
+              pendingBoardArrival.toSlot,
+              choice
+            );
+            sendTriDMoveSyncRef.current(encoded);
+            applyMoveToState(result.nextState, result.move.san, false);
           }
-        } else {
-          if (piece.type !== mapping.type) {
-            if (soundEnabled) playSound('illegal');
-            return false;
-          }
+          setPendingBoardArrival(null);
+          return;
         }
-        if (!drawnCard.hasValidMoves) return false;
+        // Click elsewhere cancels pending arrival
+        setPendingBoardArrival(null);
+        setHighlightedSquares(new Set());
+        return;
       }
-      let moveObj = chess.move({
-        from: sourceSquare,
-        to: targetSquare
-      }) as ChessJSMove | null;
-      if (!moveObj) {
-        moveObj = chess.move({
-          from: sourceSquare,
-          to: targetSquare,
-          promotion: 'q'
-        }) as ChessJSMove | null;
+
+      const piece = state.pieces[sqKey];
+      // If a square is already selected and we click a highlighted destination
+      if (selected && highlightedSquares.has(sqKey)) {
+        if (requiresPromotion(selected, sq, state)) {
+          setPendingPromotion({ from: selected, to: sq });
+          setSelected(null);
+          setHighlightedSquares(new Set());
+          return;
+        }
+        const result = applyPieceMove(state, selected, sq);
+        if (result) {
+          const encoded = encodeTriDMove('piece', selected, sq);
+          sendTriDMoveSyncRef.current(encoded);
+          applyMoveToState(result.nextState, result.move.san, false);
+          setSelected(null);
+          setHighlightedSquares(new Set());
+        }
+        return;
       }
-      if (!moveObj) {
-        if (soundEnabled) playSound('illegal');
-        return false;
+
+      // Select own piece
+      if (piece && piece.color === state.turn) {
+        const legalDests = getLegalMoves(sq, state);
+        setSelected(sq);
+        setSelectedBoardId(null);
+        setHighlightedSquares(new Set(legalDests.map(squareKey)));
+        setHighlightedSlots(new Set());
+        return;
       }
-      if (drawnCard) {
-        discardPileRef.current = [...discardPileRef.current, drawnCard.card];
-      }
-      applyMove(moveObj, false);
-      ws.sendMove(sourceSquare, targetSquare, moveObj.promotion);
-      return true;
+
+      // Deselect
+      setSelected(null);
+      setHighlightedSquares(new Set());
     },
     [
+      isActive,
       isMyTurn,
-      needsDraw,
-      isDrawing,
-      gameOver,
-      drawnCard,
-      soundEnabled,
-      applyMove,
-      ws
+      selected,
+      highlightedSquares,
+      pendingBoardArrival,
+      applyMoveToState
     ]
   );
+
+  const onAttackBoardClick = useCallback(
+    (id: AttackBoardId) => {
+      if (!isActive || !isMyTurn) return;
+      if (pendingBoardArrival) {
+        setPendingBoardArrival(null);
+        setHighlightedSquares(new Set());
+        return;
+      }
+      const state = gameStateRef.current;
+      const legalSlots = getLegalBoardMoves(id, state);
+      if (legalSlots.length === 0) return;
+      setSelectedBoardId(id);
+      setSelected(null);
+      setHighlightedSlots(new Set(legalSlots));
+      setHighlightedSquares(new Set());
+    },
+    [isActive, isMyTurn, pendingBoardArrival]
+  );
+
+  const onSlotClick = useCallback(
+    (id: AttackBoardId, slot: AttackBoardSlot) => {
+      if (!isActive || !isMyTurn) return;
+      if (!highlightedSlots.has(slot)) return;
+      const state = gameStateRef.current;
+      const pieceCount = countPiecesOnBoard(state.pieces, id);
+      if (pieceCount === 1) {
+        // Need arrival choice
+        const size = BOARD_SIZES[id];
+        let passengerRow = -1;
+        let passengerCol = -1;
+        for (let r = 0; r < size.rows; r++) {
+          for (let c = 0; c < size.cols; c++) {
+            if (state.pieces[squareKey({ boardId: id, row: r, col: c })]) {
+              passengerRow = r;
+              passengerCol = c;
+            }
+          }
+        }
+        const identityKey = squareKey({
+          boardId: id,
+          row: passengerRow,
+          col: passengerCol
+        });
+        const rot180Key = squareKey({
+          boardId: id,
+          row: size.rows - 1 - passengerRow,
+          col: size.cols - 1 - passengerCol
+        });
+        setPendingBoardArrival({
+          boardId: id,
+          toSlot: slot,
+          identityKey,
+          rot180Key
+        });
+        setHighlightedSquares(new Set([identityKey, rot180Key]));
+        setHighlightedSlots(new Set());
+        setSelectedBoardId(null);
+        return;
+      }
+      // Apply directly
+      const result = applyBoardMove(state, id, slot);
+      if (result) {
+        const encoded = encodeTriDMove(
+          'board',
+          id,
+          result.move.type === 'board' ? result.move.fromSlot : 'left_low',
+          slot
+        );
+        sendTriDMoveSyncRef.current(encoded);
+        applyMoveToState(result.nextState, result.move.san, false);
+      }
+      setSelectedBoardId(null);
+      setHighlightedSlots(new Set());
+    },
+    [isActive, isMyTurn, highlightedSlots, applyMoveToState]
+  );
+
+  const onChooseBoardArrival = useCallback(
+    (choice: 'identity' | 'rot180') => {
+      if (!pendingBoardArrival) return;
+      const state = gameStateRef.current;
+      const result = applyBoardMove(
+        state,
+        pendingBoardArrival.boardId,
+        pendingBoardArrival.toSlot,
+        choice
+      );
+      if (result) {
+        const encoded = encodeTriDMove(
+          'board',
+          pendingBoardArrival.boardId,
+          result.move.type === 'board' ? result.move.fromSlot : 'left_low',
+          pendingBoardArrival.toSlot,
+          choice
+        );
+        sendTriDMoveSyncRef.current(encoded);
+        applyMoveToState(result.nextState, result.move.san, false);
+      }
+      setPendingBoardArrival(null);
+    },
+    [pendingBoardArrival, applyMoveToState]
+  );
+
+  const onCompletePromotion = useCallback(
+    (piece: PieceType) => {
+      if (!pendingPromotion) return;
+      const state = gameStateRef.current;
+      const result = applyPieceMove(
+        state,
+        pendingPromotion.from,
+        pendingPromotion.to,
+        piece
+      );
+      if (result) {
+        const encoded = encodeTriDMove(
+          'piece',
+          pendingPromotion.from,
+          pendingPromotion.to,
+          piece
+        );
+        sendTriDMoveSyncRef.current(encoded);
+        applyMoveToState(result.nextState, result.move.san, false);
+      }
+      setPendingPromotion(null);
+    },
+    [pendingPromotion, applyMoveToState]
+  );
+
+  const onCancelPromotion = useCallback(() => {
+    setPendingPromotion(null);
+  }, []);
+
   useEffect(() => {
-    ws.setOnOpponentMove((from, to, promotion) => {
-      const chess = chessRef.current;
-      const moveObj = chess.move({ from, to, promotion }) as ChessJSMove | null;
-      if (moveObj) applyMove(moveObj, true);
+    ws.setOnTriDMoveReceived((encoded) => {
+      const decoded = decodeTriDMove(encoded);
+      if (!decoded) return;
+      const state = gameStateRef.current;
+      if (decoded.kind === 'piece') {
+        const result = applyPieceMove(
+          state,
+          decoded.from,
+          decoded.to,
+          decoded.promotion
+        );
+        if (result) applyMoveToState(result.nextState, result.move.san, true);
+      } else {
+        const result = applyBoardMove(
+          state,
+          decoded.boardId,
+          decoded.toSlot,
+          decoded.arrivalChoice
+        );
+        if (result) applyMoveToState(result.nextState, result.move.san, true);
+      }
     });
-    return () => ws.setOnOpponentMove(null);
-  }, [ws, ws.setOnOpponentMove, applyMove]);
+    return () => ws.setOnTriDMoveReceived(null);
+  }, [ws, ws.setOnTriDMoveReceived, applyMoveToState]);
+
   useEffect(() => {
     ws.setOnServerGameOver((result) => {
       setGameOver(true);
@@ -523,6 +656,7 @@ export function useCardChessMultiplayerGame(
     });
     return () => ws.setOnServerGameOver(null);
   }, [ws, ws.setOnServerGameOver]);
+
   useEffect(() => {
     const roomId = ws.roomId;
     const myColorNow = ws.myColor ?? 'white';
@@ -534,7 +668,7 @@ export function useCardChessMultiplayerGame(
     const oppUserId = myColorNow === 'white' ? ws.blackUserId : ws.whiteUserId;
     const payload = {
       roomId,
-      moves,
+      moves: moveSansRef.current,
       variant: VARIANT,
       gameType: 'multiplayer',
       result: resultCode,
@@ -546,7 +680,7 @@ export function useCardChessMultiplayerGame(
         minutes: 0,
         increment: 0
       },
-      startingFen: positionHistory[0] ?? STARTING_FEN
+      startingFen: ''
     };
     const save = (body: typeof payload) =>
       fetch('/api/games', {
@@ -579,7 +713,7 @@ export function useCardChessMultiplayerGame(
           }
         )
         .catch((err) =>
-          console.error('Failed to save card multiplayer game:', err)
+          console.error('Failed to save tri-d multiplayer game:', err)
         );
     save(payload);
   }, [
@@ -589,10 +723,9 @@ export function useCardChessMultiplayerGame(
     ws.blackUserId,
     ws.timeControl,
     gameOver,
-    gameResult,
-    moves,
-    positionHistory
+    gameResult
   ]);
+
   useEffect(() => {
     ws.setOnClockSync((wMs, bMs, active) => {
       const toSecs = (ms: number | null) =>
@@ -603,26 +736,7 @@ export function useCardChessMultiplayerGame(
     });
     return () => ws.setOnClockSync(null);
   }, [ws, ws.setOnClockSync]);
-  useEffect(() => {
-    ws.setOnSyncCard((rank, suit) => {
-      const chess = chessRef.current;
-      const card: PlayingCard = {
-        rank: rank as CardRank,
-        suit: suit as CardSuit
-      };
-      const hasValidMoves = checkCardHasValidMoves(chess, card);
-      const pieceName = getPieceName(card);
-      setDrawnCard({ card, hasValidMoves, pieceName });
-      setNeedsDraw(false);
-      setIsDrawing(false);
-      setIsInCheck(chess.isCheck());
-      setHighlightedSquares(
-        hasValidMoves ? getHighlightsForCard(chess, card) : {}
-      );
-      if (soundEnabledRef.current) playRawSound(CARD_SOUND_PATH);
-    });
-    return () => ws.setOnSyncCard(null);
-  }, [ws, ws.setOnSyncCard]);
+
   useEffect(() => {
     if (!activeClock || gameOver) return;
     const id = setInterval(() => {
@@ -638,52 +752,29 @@ export function useCardChessMultiplayerGame(
     }, 1000);
     return () => clearInterval(id);
   }, [activeClock, gameOver]);
-  const startGameFromFresh = useCallback(
-    (replayMoves?: string[]) => {
-      const chess = new Chess();
-      const history: string[] = [STARTING_FEN];
-      const sanMoves: string[] = [];
-      if (replayMoves) {
-        for (const uci of replayMoves) {
-          const from = uci.slice(0, 2);
-          const to = uci.slice(2, 4);
-          const promotion = uci[4] || undefined;
-          const mo = chess.move({ from, to, promotion }) as ChessJSMove | null;
-          if (mo) {
-            sanMoves.push(mo.san);
-            history.push(chess.fen());
-          }
-        }
-      }
-      chessRef.current = chess;
-      positionHistoryRef.current = history;
-      deckRef.current = shuffleDeck(createDeck());
-      discardPileRef.current = [];
-      drawCountRef.current = 0;
-      const fen = chess.fen();
-      const isOver = chess.isGameOver();
-      setCurrentFEN(fen);
-      setTurn(chess.turn());
-      setMoves(sanMoves);
-      setPositionHistory(history);
-      setViewingIndex(history.length - 1);
-      setGameStarted(true);
-      setGameOver(isOver);
-      setGameResult(isOver ? getGameResult(chess) : null);
-      setMyRatingDelta(null);
-      setOpponentRatingDelta(null);
-      setDrawnCard(null);
-      setNeedsDraw(!isOver);
-      setDrawCount(0);
-      setIsDrawing(false);
-      setIsInCheck(chess.isCheck());
-      setCardDrawHistory([]);
-      setLoserColor(null);
-      setHighlightedSquares({});
-      setBoardFlipped(false);
-    },
-    [setBoardFlipped]
-  );
+
+  const startGameFromFresh = useCallback(() => {
+    const initialState = createInitialState();
+    gameStateRef.current = initialState;
+    moveSansRef.current = [];
+    setGameState(initialState);
+    setViewingIndex(0);
+    setGameStarted(true);
+    setGameOver(false);
+    setGameResult(null);
+    setMyRatingDelta(null);
+    setOpponentRatingDelta(null);
+    setInCheck(false);
+    setHighlightedSquares(new Set());
+    setHighlightedSlots(new Set());
+    setSelected(null);
+    setSelectedBoardId(null);
+    setPendingBoardArrival(null);
+    setPendingPromotion(null);
+    setMoves([]);
+    setBoardFlipped(false);
+  }, [setBoardFlipped]);
+
   useEffect(() => {
     if (ws.status === 'matched' && ws.myColor) {
       const t = setTimeout(() => {
@@ -696,19 +787,21 @@ export function useCardChessMultiplayerGame(
           url.searchParams.delete('challenge');
           window.history.replaceState({}, '', url.toString());
         }
+        if (soundEnabled) playSound('game-start');
       }, 800);
       return () => clearTimeout(t);
     }
-  }, [ws, ws.status, ws.myColor, startGameFromFresh]);
+  }, [ws, ws.status, ws.myColor, startGameFromFresh, soundEnabled]);
+
   useEffect(() => {
     if (ws.status === 'rejoined' && ws.myColor) {
-      const movesToReplay = ws.movesToReplay ?? [];
-      startGameFromFresh(movesToReplay);
-      if (movesToReplay.length > 0) ws.clearMovesToReplay();
+      // Tri-D doesn't support move replay on rejoin (custom protocol)
+      startGameFromFresh();
       ws.setPlaying();
       setMatchmakingOpen(false);
     }
   }, [ws, ws.status, ws.myColor, startGameFromFresh]);
+
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const saved = loadSession();
@@ -727,6 +820,7 @@ export function useCardChessMultiplayerGame(
       );
     }
   }, [ws, challengeId, session?.user?.name, session?.user?.image]);
+
   useEffect(() => {
     if (!sessionRestorePending) return;
     if (
@@ -739,6 +833,7 @@ export function useCardChessMultiplayerGame(
       setSessionRestorePending(false);
     }
   }, [sessionRestorePending, ws.status]);
+
   useEffect(() => {
     if (sessionRestorePending) return;
     if (
@@ -750,11 +845,11 @@ export function useCardChessMultiplayerGame(
       setMatchmakingOpen(true);
     }
   }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
+
   useEffect(() => {
-    if (matchmakingOpen && !ws.isSecondaryTab) {
-      ws.preConnect();
-    }
+    if (matchmakingOpen && !ws.isSecondaryTab) ws.preConnect();
   }, [ws, matchmakingOpen, ws.isSecondaryTab]);
+
   const handleFindGame = useCallback(
     async (timeControl: Parameters<typeof ws.joinQueue>[1]) => {
       let rating = 700;
@@ -769,9 +864,7 @@ export function useCardChessMultiplayerGame(
           `/api/user/rating?variant=${encodeURIComponent(VARIANT)}&category=${encodeURIComponent(category)}`
         );
         if (res.ok) {
-          const data = (await res.json()) as {
-            rating: number;
-          };
+          const data = (await res.json()) as { rating: number };
           rating = data.rating;
         }
       } catch {}
@@ -785,6 +878,7 @@ export function useCardChessMultiplayerGame(
     },
     [ws, session]
   );
+
   const handleCreateChallenge = useCallback(
     (
       timeControl: Parameters<typeof ws.createChallenge>[1],
@@ -800,89 +894,83 @@ export function useCardChessMultiplayerGame(
     },
     [ws, session]
   );
+
   const handleFindNewGame = useCallback(() => {
     ws.disconnect();
+    const initialState = createInitialState();
+    gameStateRef.current = initialState;
+    moveSansRef.current = [];
+    setGameState(initialState);
     setGameStarted(false);
     setGameOver(false);
     setGameResult(null);
     setMoves([]);
-    const chess = new Chess();
-    chessRef.current = chess;
-    positionHistoryRef.current = [STARTING_FEN];
-    deckRef.current = shuffleDeck(createDeck());
-    discardPileRef.current = [];
-    drawCountRef.current = 0;
-    setCurrentFEN(STARTING_FEN);
-    setPositionHistory([STARTING_FEN]);
     setViewingIndex(0);
-    setTurn('w');
-    setDrawnCard(null);
-    setNeedsDraw(true);
-    setDrawCount(0);
-    setIsDrawing(false);
-    setIsInCheck(false);
-    setCardDrawHistory([]);
+    setInCheck(false);
+    setHighlightedSquares(new Set());
+    setHighlightedSlots(new Set());
+    setSelected(null);
+    setSelectedBoardId(null);
+    setPendingBoardArrival(null);
+    setPendingPromotion(null);
     setMyRatingDelta(null);
     setOpponentRatingDelta(null);
-    setLoserColor(null);
-    setHighlightedSquares({});
     setMatchmakingOpen(true);
   }, [ws]);
+
   const handleResign = useCallback(() => {
     if (soundEnabled) playSound('game-end');
     setGameResult('You resigned');
     setGameOver(true);
     ws.resign();
   }, [ws, soundEnabled]);
+
   const handleAbort = useCallback(() => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Game Aborted');
     setGameOver(true);
     ws.abort();
   }, [ws, soundEnabled]);
-  const handleOfferDraw = useCallback(() => {
-    ws.offerDraw();
-  }, [ws]);
+
+  const handleOfferDraw = useCallback(() => ws.offerDraw(), [ws]);
   const handleAcceptDraw = useCallback(() => {
     if (soundEnabled) playSound('game-end');
     setGameResult('Draw by agreement');
     setGameOver(true);
     ws.acceptDraw();
   }, [ws, soundEnabled]);
-  const handleDeclineDraw = useCallback(() => {
-    ws.declineDraw();
-  }, [ws]);
+  const handleDeclineDraw = useCallback(() => ws.declineDraw(), [ws]);
+
   const goToStart = useCallback(() => {
     setViewingIndex(0);
-    setCurrentFEN(positionHistoryRef.current[0]!);
+    setGameState(
+      gameStateRef.current.snapshots[0]
+        ? {
+            ...gameStateRef.current,
+            pieces: gameStateRef.current.snapshots[0].pieces,
+            slots: gameStateRef.current.snapshots[0].slots
+          }
+        : gameStateRef.current
+    );
   }, []);
   const goToEnd = useCallback(() => {
-    const last = positionHistoryRef.current.length - 1;
-    setViewingIndex(last);
-    setCurrentFEN(positionHistoryRef.current[last]!);
+    setViewingIndex(gameStateRef.current.snapshots.length - 1);
+    setGameState(gameStateRef.current);
   }, []);
   const goToPrev = useCallback(() => {
-    setViewingIndex((prev) => {
-      if (prev <= 0) return prev;
-      const next = prev - 1;
-      setCurrentFEN(positionHistoryRef.current[next]!);
-      return next;
-    });
+    setViewingIndex((prev) => Math.max(0, prev - 1));
   }, []);
   const goToNext = useCallback(() => {
-    setViewingIndex((prev) => {
-      const last = positionHistoryRef.current.length - 1;
-      if (prev >= last) return prev;
-      const next = prev + 1;
-      setCurrentFEN(positionHistoryRef.current[next]!);
-      return next;
-    });
+    setViewingIndex((prev) =>
+      Math.min(prev + 1, gameStateRef.current.snapshots.length - 1)
+    );
   }, []);
   const goToMove = useCallback((idx: number) => {
-    const posIdx = Math.min(idx + 1, positionHistoryRef.current.length - 1);
-    setViewingIndex(posIdx);
-    setCurrentFEN(positionHistoryRef.current[posIdx]!);
+    setViewingIndex(
+      Math.min(idx + 1, gameStateRef.current.snapshots.length - 1)
+    );
   }, []);
+
   const showIndicator = gameStarted && !gameOver;
   const isMe = (color: 'white' | 'black') => color === (ws.myColor ?? 'white');
   const getPlayerInfo = (color: 'white' | 'black'): TwoPlayerPlayerInfo => ({
@@ -896,8 +984,10 @@ export function useCardChessMultiplayerGame(
     ratingDelta: isMe(color) ? myRatingDelta : opponentRatingDelta,
     flagCode: isMe(color) ? myFlagCode : opponentFlagCode
   });
+
   const topPlayerInfo = getPlayerInfo(topColor);
   const bottomPlayerInfo = getPlayerInfo(bottomColor);
+
   const topPlayerExtras: ReactNode = showIndicator
     ? topColor !== (ws.myColor ?? 'white') && ws.opponentDisconnected
       ? createElement(AbandonCountdown, {
@@ -911,6 +1001,7 @@ export function useCardChessMultiplayerGame(
               : ws.latencyMs
         })
     : null;
+
   const bottomPlayerExtras: ReactNode = showIndicator
     ? createElement(SignalIndicator, {
         wsStatus: ws.status,
@@ -920,6 +1011,7 @@ export function useCardChessMultiplayerGame(
             : ws.latencyMs
       })
     : null;
+
   const secondaryTabOverlay: ReactNode =
     ws.isSecondaryTab &&
     (ws.status === 'playing' ||
@@ -950,6 +1042,7 @@ export function useCardChessMultiplayerGame(
           )
         )
       : null;
+
   const overlays: ReactNode = createElement(
     'div',
     null,
@@ -967,7 +1060,7 @@ export function useCardChessMultiplayerGame(
         }
       },
       status: ws.status,
-      variantLabel: 'Card Chess',
+      variantLabel: 'Tri-D Chess',
       errorMessage: ws.errorMessage,
       pendingChallengeId: ws.pendingChallengeId,
       initialChallengeId: activeChallengeId,
@@ -977,6 +1070,7 @@ export function useCardChessMultiplayerGame(
       onCancelChallenge: ws.cancelChallenge
     })
   );
+
   const multiplayerSidebarProps: TwoPlayerMultiplayerSidebarProps = {
     status: ws.status,
     drawOffered: ws.drawOffered,
@@ -993,23 +1087,19 @@ export function useCardChessMultiplayerGame(
     onFindNewGame: handleFindNewGame,
     ratingDelta: myRatingDelta
   };
+
   return {
-    currentFEN,
+    gameState,
     gameStarted,
     gameOver,
-    highlightedSquares,
-    loserColor,
-    canDrag: isMyTurn && !needsDraw && !isDrawing,
-    moves,
-    positionHistory,
     viewingIndex,
-    turn,
-    drawnCard,
-    isDrawing,
-    needsDraw,
-    drawCount,
-    isInCheck,
-    cardDrawHistory,
+    inCheck,
+    highlightedSquares,
+    highlightedSlots,
+    selected,
+    selectedBoardId,
+    pendingBoardArrival,
+    pendingPromotion,
     whiteTimeSecs,
     blackTimeSecs,
     activeClock,
@@ -1018,12 +1108,19 @@ export function useCardChessMultiplayerGame(
     topPlayerExtras,
     bottomPlayerExtras,
     gameResult,
-    ratingDelta: myRatingDelta,
     overlays,
     multiplayerSidebarProps,
     isMyTurn,
-    onPieceDrop,
-    onDrawCard: drawCard,
+    isActive,
+    moves,
+    positionHistory,
+    turn: gameState.turn,
+    onSquareClick,
+    onAttackBoardClick,
+    onSlotClick,
+    onChooseBoardArrival,
+    onCompletePromotion,
+    onCancelPromotion,
     goToStart,
     goToEnd,
     goToPrev,

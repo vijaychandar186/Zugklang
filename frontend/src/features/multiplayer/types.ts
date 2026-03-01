@@ -180,6 +180,10 @@ export type ServerMessage =
       lobbyId: string;
       fromPlayerId: string;
       state: string;
+    }
+  | {
+      type: 'trid_move_received';
+      move: string;
     };
 export type ChallengeColor = 'white' | 'black' | 'random';
 export type ClientMessage =
@@ -304,6 +308,11 @@ export type ClientMessage =
       type: 'rejoin_four_player_lobby';
       lobbyId: string;
       rejoinToken: string;
+    }
+  | {
+      type: 'sync_trid_move';
+      roomId: string;
+      move: string;
     };
 export interface MultiplayerWSState {
   status: MultiplayerStatus;
@@ -365,6 +374,7 @@ export type OnFourPlayerStateSyncFn = (
   fromPlayerId: string,
   state: string
 ) => void;
+export type OnTriDMoveReceivedFn = (move: string) => void;
 export interface UseMultiplayerWSReturn extends MultiplayerWSState {
   joinQueue: (
     variant: string,
@@ -431,6 +441,8 @@ export interface UseMultiplayerWSReturn extends MultiplayerWSState {
     fn: OnFourPlayerPlayerReconnectedFn | null
   ) => void;
   setOnFourPlayerStateSync: (fn: OnFourPlayerStateSyncFn | null) => void;
+  sendTriDMoveSync: (move: string) => void;
+  setOnTriDMoveReceived: (fn: OnTriDMoveReceivedFn | null) => void;
   offerRematch: () => void;
   acceptRematch: () => void;
   declineRematch: () => void;

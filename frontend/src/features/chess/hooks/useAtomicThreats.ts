@@ -43,6 +43,7 @@ export function useAtomicThreats({
   currentFEN: string;
 }): AtomicOverlay[] {
   return useMemo(() => {
+    void currentFEN;
     if (variant !== 'atomic') return [];
     const overlays: AtomicOverlay[] = [];
     const usedSquares = new Set<string>();
@@ -97,6 +98,7 @@ export function useAtomicThreats({
     }
     return overlays;
   }, [
+    game,
     currentFEN,
     variant,
     playerColor,

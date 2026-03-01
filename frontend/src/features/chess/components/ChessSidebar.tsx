@@ -81,7 +81,6 @@ export function ChessSidebar({ mode, multiplayer }: ChessSidebarProps) {
     soundEnabled,
     hasHydrated,
     game,
-    currentFEN,
     variant,
     selectedDropPiece,
     engineConfig

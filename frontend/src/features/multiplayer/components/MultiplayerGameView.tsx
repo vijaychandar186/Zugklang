@@ -285,7 +285,7 @@ export function MultiplayerGameView({
         )
         .catch((err) => console.error('Failed to save multiplayer game:', err));
     },
-    [ws.roomId, ws.myColor, moves, variant, timeControl, positionHistory]
+    [ws, moves, variant, timeControl, positionHistory]
   );
   useEffect(() => {
     setVariant(variant);
@@ -297,7 +297,7 @@ export function MultiplayerGameView({
     if (matchmakingOpen && !ws.isSecondaryTab) {
       ws.preConnect();
     }
-  }, [matchmakingOpen, ws.isSecondaryTab]);
+  }, [ws, matchmakingOpen, ws.isSecondaryTab]);
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const savedSession = loadSession();
@@ -317,7 +317,7 @@ export function MultiplayerGameView({
         session?.user?.image ?? undefined
       );
     }
-  }, []);
+  }, [ws, challengeId, session?.user?.name, session?.user?.image, variant]);
   useEffect(() => {
     if (!sessionRestorePending) return;
     if (
@@ -360,11 +360,13 @@ export function MultiplayerGameView({
       return () => clearTimeout(t);
     }
   }, [
+    ws,
     ws.status,
     ws.myColor,
     ws.startingFen,
     ws.movesToReplay,
-    startMultiplayerGame
+    startMultiplayerGame,
+    endAnalysis
   ]);
   useEffect(() => {
     if (ws.isSecondaryTab) return;
@@ -386,11 +388,13 @@ export function MultiplayerGameView({
       }
     }
   }, [
+    ws,
     ws.status,
     ws.myColor,
     ws.startingFen,
     ws.movesToReplay,
-    startMultiplayerGame
+    startMultiplayerGame,
+    endAnalysis
   ]);
   useEffect(() => {
     if (sessionRestorePending) return;
@@ -422,7 +426,13 @@ export function MultiplayerGameView({
       saveMultiplayerGame(result, reason, whiteUserId, blackUserId);
     });
     return () => ws.setOnServerGameOver(null);
-  }, [ws.setOnServerGameOver, setGameResult, setGameOver, saveMultiplayerGame]);
+  }, [
+    ws,
+    ws.setOnServerGameOver,
+    setGameResult,
+    setGameOver,
+    saveMultiplayerGame
+  ]);
   useEffect(() => {
     ws.setOnClockSync((whiteTimeMs, blackTimeMs, activeClock) => {
       const toSeconds = (ms: number | null) =>
@@ -434,7 +444,7 @@ export function MultiplayerGameView({
       );
     });
     return () => ws.setOnClockSync(null);
-  }, [ws.setOnClockSync, setTimerSnapshot]);
+  }, [ws, ws.setOnClockSync, setTimerSnapshot]);
   const [serverSyncGeneration, setServerSyncGeneration] = useState(0);
   useEffect(() => {
     ws.setOnPositionSync((serverMoves) => {
@@ -442,7 +452,7 @@ export function MultiplayerGameView({
       setServerSyncGeneration((g) => g + 1);
     });
     return () => ws.setOnPositionSync(null);
-  }, [ws.setOnPositionSync]);
+  }, [ws, ws.setOnPositionSync]);
   useEffect(() => {
     if (
       serverSyncGeneration === 0 ||
@@ -463,14 +473,25 @@ export function MultiplayerGameView({
       setPendingMoves(serverMoves);
       setPositionResetKey((k) => k + 1);
     }
-  }, [serverSyncGeneration]);
+  }, [
+    ws,
+    serverSyncGeneration,
+    gameStarted,
+    gameOver,
+    pendingMoves,
+    movesCount,
+    startMultiplayerGame,
+    ws.myColor,
+    ws.startingFen,
+    ws.timeControl
+  ]);
   useEffect(() => {
     if (gameOver && ws.status === 'playing') {
       const myColor = ws.myColor ?? 'white';
       const pgnResult = myColor === 'white' ? '1-0' : '0-1';
       ws.notifyGameOver(pgnResult, 'checkmate');
     }
-  }, [gameOver]);
+  }, [ws, gameOver, ws.status, ws.myColor]);
   const handleFindGame = useCallback(
     async (timeControl: TimeControl, rated: boolean) => {
       isRatedGameRef.current = rated;
@@ -500,7 +521,7 @@ export function MultiplayerGameView({
         rating
       );
     },
-    [ws.joinQueue, variant, session]
+    [ws, variant, session]
   );
   const handleCreateChallenge = useCallback(
     (timeControl: TimeControl, color: ChallengeColor, rated: boolean) => {
@@ -513,11 +534,11 @@ export function MultiplayerGameView({
         session?.user?.image ?? undefined
       );
     },
-    [ws.createChallenge, variant, session]
+    [ws, variant, session]
   );
   const handleCancelSearch = useCallback(() => {
     ws.leaveQueue();
-  }, [ws.leaveQueue]);
+  }, [ws]);
   const handleFindNewGame = useCallback(() => {
     ws.disconnect();
     setPendingMoves(null);
@@ -525,7 +546,7 @@ export function MultiplayerGameView({
     setMyRatingDelta(null);
     setOpponentRatingDelta(null);
     setMatchmakingOpen(true);
-  }, [ws.disconnect]);
+  }, [ws]);
   const handleMovesReplayed = useCallback(() => {
     setPendingMoves(null);
   }, []);

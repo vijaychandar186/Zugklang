@@ -24,5 +24,13 @@ export const customMultiplayerModes: MenuCardItem[] = [
     description:
       'Multiplayer Card Chess — draw a card each turn to unlock the piece you must move.',
     actionText: 'Play Multiplayer'
+  },
+  {
+    href: '/play/custom-multiplayer/tri-d',
+    icon: Icons.rotate3D,
+    title: 'Tri-D Chess',
+    description:
+      "Multiplayer Tri-D Chess — Star Trek's 3D variant across three fixed levels and four movable attack boards.",
+    actionText: 'Play Multiplayer'
   }
 ];

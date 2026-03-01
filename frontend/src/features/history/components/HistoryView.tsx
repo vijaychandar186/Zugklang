@@ -295,12 +295,12 @@ function DataTable<TData, TValue>({
     </div>
   );
 }
-function SortHeader({
+function SortHeader<TData, TValue>({
   label,
   column
 }: {
   label: string;
-  column: Column<any, any>;
+  column: Column<TData, TValue>;
 }) {
   return (
     <button

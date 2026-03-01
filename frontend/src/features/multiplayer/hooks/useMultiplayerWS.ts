@@ -16,7 +16,8 @@ import type {
   OnFourPlayerLobbyStartedFn,
   OnFourPlayerLobbyRejoinedFn,
   OnFourPlayerPlayerReconnectedFn,
-  OnFourPlayerStateSyncFn
+  OnFourPlayerStateSyncFn,
+  OnTriDMoveReceivedFn
 } from '../types';
 const SESSION_KEY = 'zugklang_mp_session';
 const FP_SESSION_KEY = 'zugklang_4p_session';
@@ -159,6 +160,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const onFourPlayerPlayerReconnectedRef =
     useRef<OnFourPlayerPlayerReconnectedFn | null>(null);
   const onFourPlayerStateSyncRef = useRef<OnFourPlayerStateSyncFn | null>(null);
+  const onTriDMoveReceivedRef = useRef<OnTriDMoveReceivedFn | null>(null);
   const roomIdRef = useRef<string | null>(null);
   const isPrimaryRef = useRef(false);
   const latestStateRef = useRef<MultiplayerWSState>(state);
@@ -304,250 +306,256 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     });
     connectPromiseRef.current = promise;
     return promise;
-  }, [startPing, stopPing]);
-  function handleServerMessage(msg: ServerMessage): void {
-    switch (msg.type) {
-      case 'connected':
-        setState((s) => ({ ...s, playerId: msg.playerId }));
-        break;
-      case 'waiting':
-        setState((s) => ({ ...s, status: 'waiting' }));
-        break;
-      case 'queue_left':
-        setState((s) => ({ ...s, status: 'idle' }));
-        break;
-      case 'challenge_created':
-        setState((s) => ({
-          ...s,
-          status: 'waiting',
-          pendingChallengeId: msg.challengeId
-        }));
-        break;
-      case 'challenge_not_found':
-        setState((s) => ({
-          ...s,
-          status: 'error',
-          errorMessage: 'Game link not found or has expired.'
-        }));
-        break;
-      case 'matched': {
-        roomIdRef.current = msg.roomId;
-        saveSession(
-          msg.roomId,
-          state.playerId ?? '',
-          msg.variant,
-          msg.rejoinToken
-        );
-        const isWhiteM = msg.color === 'white';
-        const opponentNameM = isWhiteM
-          ? msg.blackDisplayName
-          : msg.whiteDisplayName;
-        const opponentImageM = isWhiteM ? msg.blackImage : msg.whiteImage;
-        setState((s) => ({
-          ...s,
-          status: 'matched',
-          myColor: msg.color,
-          roomId: msg.roomId,
-          variant: msg.variant,
-          startingFen: msg.startingFen,
-          timeControl: msg.timeControl,
-          drawOffered: false,
-          opponentDisconnected: false,
-          opponentDisconnectedAt: null,
-          abortStartedAt: msg.abortStartedAt,
-          pendingChallengeId: null,
-          movesToReplay: null,
-          rematchOffered: false,
-          rematchDeclined: false,
-          whiteUserId: msg.whiteUserId,
-          blackUserId: msg.blackUserId,
-          opponentName: opponentNameM,
-          opponentImage: opponentImageM
-        }));
-        startPing();
-        break;
-      }
-      case 'rejoined': {
-        roomIdRef.current = msg.roomId;
-        saveSession(
-          msg.roomId,
-          state.playerId ?? '',
-          msg.variant,
-          msg.rejoinToken
-        );
-        const isWhiteR = msg.color === 'white';
-        const opponentNameR = isWhiteR
-          ? msg.blackDisplayName
-          : msg.whiteDisplayName;
-        const opponentImageR = isWhiteR ? msg.blackImage : msg.whiteImage;
-        setState((s) => ({
-          ...s,
-          status: 'rejoined',
-          myColor: msg.color,
-          roomId: msg.roomId,
-          variant: msg.variant,
-          startingFen: msg.startingFen,
-          timeControl: msg.timeControl,
-          drawOffered: false,
-          opponentDisconnected: msg.opponentDisconnectedAt !== null,
-          opponentDisconnectedAt: msg.opponentDisconnectedAt,
-          abortStartedAt: msg.abortStartedAt,
-          pendingChallengeId: null,
-          movesToReplay: msg.moves.length > 0 ? msg.moves : null,
-          opponentLatencyMs: msg.opponentLatencyMs,
-          whiteUserId: msg.whiteUserId,
-          blackUserId: msg.blackUserId,
-          opponentName: opponentNameR,
-          opponentImage: opponentImageR
-        }));
-        startPing();
-        break;
-      }
-      case 'rejoin_failed':
-        clearSession();
-        setState((s) => ({
-          ...s,
-          status: 'idle',
-          errorMessage: null
-        }));
-        break;
-      case 'opponent_move':
-        onOpponentMoveRef.current?.(msg.from, msg.to, msg.promotion);
-        break;
-      case 'game_over':
-        clearSession();
-        setState((s) => ({
-          ...s,
-          status: 'game_over',
-          drawOffered: false,
-          abortStartedAt: null,
-          whiteUserId: msg.whiteUserId,
-          blackUserId: msg.blackUserId
-        }));
-        onServerGameOverRef.current?.(
-          msg.result,
-          msg.reason,
-          msg.whiteUserId,
-          msg.blackUserId
-        );
-        break;
-      case 'clock_sync':
-        onClockSyncRef.current?.(
-          msg.whiteTimeMs,
-          msg.blackTimeMs,
-          msg.activeClock
-        );
-        break;
-      case 'draw_offered':
-        setState((s) => ({ ...s, drawOffered: true }));
-        break;
-      case 'draw_declined':
-        setState((s) => ({ ...s, drawOffered: false }));
-        break;
-      case 'abort_window':
-        setState((s) => ({ ...s, abortStartedAt: msg.startedAt }));
-        break;
-      case 'opponent_disconnected':
-        setState((s) => ({
-          ...s,
-          opponentDisconnected: true,
-          opponentDisconnectedAt: msg.disconnectedAt
-        }));
-        break;
-      case 'opponent_reconnected':
-        setState((s) => ({
-          ...s,
-          opponentDisconnected: false,
-          opponentDisconnectedAt: null
-        }));
-        break;
-      case 'pong':
-        if (pingTimestampRef.current !== null) {
-          const rtt = Date.now() - pingTimestampRef.current;
-          pingTimestampRef.current = null;
-          setState((s) => ({ ...s, latencyMs: rtt }));
-          sendRaw({ type: 'latency_update', latencyMs: rtt });
+  }, [startPing, stopPing, handleServerMessage]);
+  const handleServerMessage = useCallback(
+    (msg: ServerMessage): void => {
+      switch (msg.type) {
+        case 'connected':
+          setState((s) => ({ ...s, playerId: msg.playerId }));
+          break;
+        case 'waiting':
+          setState((s) => ({ ...s, status: 'waiting' }));
+          break;
+        case 'queue_left':
+          setState((s) => ({ ...s, status: 'idle' }));
+          break;
+        case 'challenge_created':
+          setState((s) => ({
+            ...s,
+            status: 'waiting',
+            pendingChallengeId: msg.challengeId
+          }));
+          break;
+        case 'challenge_not_found':
+          setState((s) => ({
+            ...s,
+            status: 'error',
+            errorMessage: 'Game link not found or has expired.'
+          }));
+          break;
+        case 'matched': {
+          roomIdRef.current = msg.roomId;
+          saveSession(
+            msg.roomId,
+            latestStateRef.current.playerId ?? '',
+            msg.variant,
+            msg.rejoinToken
+          );
+          const isWhiteM = msg.color === 'white';
+          const opponentNameM = isWhiteM
+            ? msg.blackDisplayName
+            : msg.whiteDisplayName;
+          const opponentImageM = isWhiteM ? msg.blackImage : msg.whiteImage;
+          setState((s) => ({
+            ...s,
+            status: 'matched',
+            myColor: msg.color,
+            roomId: msg.roomId,
+            variant: msg.variant,
+            startingFen: msg.startingFen,
+            timeControl: msg.timeControl,
+            drawOffered: false,
+            opponentDisconnected: false,
+            opponentDisconnectedAt: null,
+            abortStartedAt: msg.abortStartedAt,
+            pendingChallengeId: null,
+            movesToReplay: null,
+            rematchOffered: false,
+            rematchDeclined: false,
+            whiteUserId: msg.whiteUserId,
+            blackUserId: msg.blackUserId,
+            opponentName: opponentNameM,
+            opponentImage: opponentImageM
+          }));
+          startPing();
+          break;
         }
-        break;
-      case 'opponent_latency':
-        setState((s) => ({ ...s, opponentLatencyMs: msg.latencyMs }));
-        break;
-      case 'rematch_offered':
-        setState((s) => ({
-          ...s,
-          rematchOffered: true,
-          rematchDeclined: false
-        }));
-        break;
-      case 'rematch_declined':
-        setState((s) => ({
-          ...s,
-          rematchDeclined: true,
-          rematchOffered: false
-        }));
-        break;
-      case 'position_sync':
-        onPositionSyncRef.current?.(msg.moves);
-        break;
-      case 'dice_synced':
-        onSyncDiceRef.current?.(msg.pieces);
-        break;
-      case 'card_synced':
-        onSyncCardRef.current?.(msg.rank, msg.suit);
-        break;
-      case 'four_player_lobby_created':
-      case 'four_player_lobby_updated':
-        onFourPlayerLobbyStateRef.current?.({
-          lobbyId: msg.lobbyId,
-          leaderId: msg.leaderId,
-          started: msg.started,
-          timeControl: msg.timeControl,
-          players: msg.players
-        });
-        break;
-      case 'four_player_lobby_started':
-        saveFourPlayerSession(
-          msg.lobbyId,
-          latestStateRef.current.playerId ?? '',
-          msg.rejoinToken
-        );
-        onFourPlayerLobbyStartedRef.current?.(
-          msg.lobbyId,
-          msg.startedAt,
-          msg.timeControl
-        );
-        break;
-      case 'four_player_lobby_rejoined':
-        setState((s) => ({ ...s, playerId: msg.myPlayerId }));
-        saveFourPlayerSession(msg.lobbyId, msg.myPlayerId, msg.rejoinToken);
-        onFourPlayerLobbyRejoinedRef.current?.(
-          {
+        case 'rejoined': {
+          roomIdRef.current = msg.roomId;
+          saveSession(
+            msg.roomId,
+            latestStateRef.current.playerId ?? '',
+            msg.variant,
+            msg.rejoinToken
+          );
+          const isWhiteR = msg.color === 'white';
+          const opponentNameR = isWhiteR
+            ? msg.blackDisplayName
+            : msg.whiteDisplayName;
+          const opponentImageR = isWhiteR ? msg.blackImage : msg.whiteImage;
+          setState((s) => ({
+            ...s,
+            status: 'rejoined',
+            myColor: msg.color,
+            roomId: msg.roomId,
+            variant: msg.variant,
+            startingFen: msg.startingFen,
+            timeControl: msg.timeControl,
+            drawOffered: false,
+            opponentDisconnected: msg.opponentDisconnectedAt !== null,
+            opponentDisconnectedAt: msg.opponentDisconnectedAt,
+            abortStartedAt: msg.abortStartedAt,
+            pendingChallengeId: null,
+            movesToReplay: msg.moves.length > 0 ? msg.moves : null,
+            opponentLatencyMs: msg.opponentLatencyMs,
+            whiteUserId: msg.whiteUserId,
+            blackUserId: msg.blackUserId,
+            opponentName: opponentNameR,
+            opponentImage: opponentImageR
+          }));
+          startPing();
+          break;
+        }
+        case 'rejoin_failed':
+          clearSession();
+          setState((s) => ({
+            ...s,
+            status: 'idle',
+            errorMessage: null
+          }));
+          break;
+        case 'opponent_move':
+          onOpponentMoveRef.current?.(msg.from, msg.to, msg.promotion);
+          break;
+        case 'game_over':
+          clearSession();
+          setState((s) => ({
+            ...s,
+            status: 'game_over',
+            drawOffered: false,
+            abortStartedAt: null,
+            whiteUserId: msg.whiteUserId,
+            blackUserId: msg.blackUserId
+          }));
+          onServerGameOverRef.current?.(
+            msg.result,
+            msg.reason,
+            msg.whiteUserId,
+            msg.blackUserId
+          );
+          break;
+        case 'clock_sync':
+          onClockSyncRef.current?.(
+            msg.whiteTimeMs,
+            msg.blackTimeMs,
+            msg.activeClock
+          );
+          break;
+        case 'draw_offered':
+          setState((s) => ({ ...s, drawOffered: true }));
+          break;
+        case 'draw_declined':
+          setState((s) => ({ ...s, drawOffered: false }));
+          break;
+        case 'abort_window':
+          setState((s) => ({ ...s, abortStartedAt: msg.startedAt }));
+          break;
+        case 'opponent_disconnected':
+          setState((s) => ({
+            ...s,
+            opponentDisconnected: true,
+            opponentDisconnectedAt: msg.disconnectedAt
+          }));
+          break;
+        case 'opponent_reconnected':
+          setState((s) => ({
+            ...s,
+            opponentDisconnected: false,
+            opponentDisconnectedAt: null
+          }));
+          break;
+        case 'pong':
+          if (pingTimestampRef.current !== null) {
+            const rtt = Date.now() - pingTimestampRef.current;
+            pingTimestampRef.current = null;
+            setState((s) => ({ ...s, latencyMs: rtt }));
+            sendRaw({ type: 'latency_update', latencyMs: rtt });
+          }
+          break;
+        case 'opponent_latency':
+          setState((s) => ({ ...s, opponentLatencyMs: msg.latencyMs }));
+          break;
+        case 'rematch_offered':
+          setState((s) => ({
+            ...s,
+            rematchOffered: true,
+            rematchDeclined: false
+          }));
+          break;
+        case 'rematch_declined':
+          setState((s) => ({
+            ...s,
+            rematchDeclined: true,
+            rematchOffered: false
+          }));
+          break;
+        case 'position_sync':
+          onPositionSyncRef.current?.(msg.moves);
+          break;
+        case 'dice_synced':
+          onSyncDiceRef.current?.(msg.pieces);
+          break;
+        case 'card_synced':
+          onSyncCardRef.current?.(msg.rank, msg.suit);
+          break;
+        case 'four_player_lobby_created':
+        case 'four_player_lobby_updated':
+          onFourPlayerLobbyStateRef.current?.({
             lobbyId: msg.lobbyId,
             leaderId: msg.leaderId,
             started: msg.started,
             timeControl: msg.timeControl,
             players: msg.players
-          },
-          msg.rejoinToken
-        );
-        break;
-      case 'four_player_player_disconnected':
-        break;
-      case 'four_player_player_reconnected':
-        onFourPlayerPlayerReconnectedRef.current?.(msg.playerId);
-        break;
-      case 'four_player_state_synced':
-        onFourPlayerStateSyncRef.current?.(
-          msg.lobbyId,
-          msg.fromPlayerId,
-          msg.state
-        );
-        break;
-      case 'error':
-        setState((s) => ({ ...s, errorMessage: msg.message }));
-        break;
-    }
-  }
+          });
+          break;
+        case 'four_player_lobby_started':
+          saveFourPlayerSession(
+            msg.lobbyId,
+            latestStateRef.current.playerId ?? '',
+            msg.rejoinToken
+          );
+          onFourPlayerLobbyStartedRef.current?.(
+            msg.lobbyId,
+            msg.startedAt,
+            msg.timeControl
+          );
+          break;
+        case 'four_player_lobby_rejoined':
+          setState((s) => ({ ...s, playerId: msg.myPlayerId }));
+          saveFourPlayerSession(msg.lobbyId, msg.myPlayerId, msg.rejoinToken);
+          onFourPlayerLobbyRejoinedRef.current?.(
+            {
+              lobbyId: msg.lobbyId,
+              leaderId: msg.leaderId,
+              started: msg.started,
+              timeControl: msg.timeControl,
+              players: msg.players
+            },
+            msg.rejoinToken
+          );
+          break;
+        case 'four_player_player_disconnected':
+          break;
+        case 'four_player_player_reconnected':
+          onFourPlayerPlayerReconnectedRef.current?.(msg.playerId);
+          break;
+        case 'four_player_state_synced':
+          onFourPlayerStateSyncRef.current?.(
+            msg.lobbyId,
+            msg.fromPlayerId,
+            msg.state
+          );
+          break;
+        case 'trid_move_received':
+          onTriDMoveReceivedRef.current?.(msg.move);
+          break;
+        case 'error':
+          setState((s) => ({ ...s, errorMessage: msg.message }));
+          break;
+      }
+    },
+    [sendRaw, startPing]
+  );
   useEffect(() => {
     if (isPrimaryRef.current && channelRef.current) {
       channelRef.current.postMessage({
@@ -766,6 +774,20 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const setOnSyncCard = useCallback((fn: OnSyncCardFn | null) => {
     onSyncCardRef.current = fn;
   }, []);
+  const sendTriDMoveSync = useCallback(
+    (move: string) => {
+      const roomId = roomIdRef.current;
+      if (!roomId) return;
+      sendRaw({ type: 'sync_trid_move', roomId, move });
+    },
+    [sendRaw]
+  );
+  const setOnTriDMoveReceived = useCallback(
+    (fn: OnTriDMoveReceivedFn | null) => {
+      onTriDMoveReceivedRef.current = fn;
+    },
+    []
+  );
   const createFourPlayerLobby = useCallback(
     async (
       displayName?: string,
@@ -988,6 +1010,8 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     setOnFourPlayerLobbyRejoined,
     setOnFourPlayerPlayerReconnected,
     setOnFourPlayerStateSync,
+    sendTriDMoveSync,
+    setOnTriDMoveReceived,
     disconnect
   };
 }

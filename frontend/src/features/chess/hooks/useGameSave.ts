@@ -76,5 +76,16 @@ export function useGameSave(gameType: GameType) {
     }).catch((err) => {
       console.error('Failed to save game:', err);
     });
-  }, [gameOver, gameId]);
+  }, [
+    gameOver,
+    gameId,
+    gameResult,
+    gameType,
+    moves,
+    playAs,
+    positionHistory,
+    session?.user?.id,
+    timeControl,
+    variant
+  ]);
 }

@@ -2,17 +2,40 @@
 
 ## Postgres (Docker)
 
+Both `zugklang-frontend` and `zugklang-anti-cheat` databases need to exist before running the app.
+
+### With Docker Compose (recommended)
+
+`postgres/init.sql` creates both databases automatically on first container start:
+
 ```bash
+docker-compose -f docker-compose.dev.yaml up --build
+```
+
+### Without Docker Compose (manual)
+
+```bash
+# 1) Pull image
+docker pull postgres:16-alpine
+
+# 2) Run container
 docker run -d --name zugklang-postgres \
   -e POSTGRES_USER=admin \
   -e POSTGRES_PASSWORD=mysecretpassword \
-  -e POSTGRES_DB=mydatabase \
   -p 5432:5432 \
   -v zugklang-pg-data:/var/lib/postgresql/data \
   postgres:16-alpine
-```
 
----
+# 3) Wait for postgres to be ready
+docker exec zugklang-postgres pg_isready -U admin
+
+# 4) Create both databases
+docker exec zugklang-postgres psql -U admin -d postgres -c 'CREATE DATABASE "zugklang-frontend";'
+docker exec zugklang-postgres psql -U admin -d postgres -c 'CREATE DATABASE "zugklang-anti-cheat";'
+
+# 5) Verify
+docker exec zugklang-postgres psql -U admin -d postgres -c "\l"
+```
 
 ## TODO
 
@@ -23,7 +46,7 @@ docker run -d --name zugklang-postgres \
 * [ ] BullMQ setup
 * [ ] Kubernetes setup
 * [ ] GitHub Secrets setup
-* [ ] Fix docker-compose-prod
+* [x] ~~Fix docker-compose-prod~~
 
 ### Payments
 
@@ -59,5 +82,5 @@ docker run -d --name zugklang-postgres \
 ### Frontend
 
 * [x] ~~CSS files cleanup~~
-* [ ] ~~Unit tests setup and coverage for core frontend logic/components~~
-* [ ] ~~Integration tests for key frontend user flows~~
+* [x] ~~Unit tests setup and coverage for core frontend logic/components~~
+* [x] ~~Integration tests for key frontend user flows~~

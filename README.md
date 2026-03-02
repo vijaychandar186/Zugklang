@@ -44,7 +44,10 @@ Zugklang/
 │   │   └── lib/           # Utilities and helpers
 │   └── prisma/            # Database schema and migrations
 ├── backend/
-│   └── ws-server/         # Bun WebSocket server
+│   ├── ws-server/         # Bun WebSocket server
+│   └── anti-cheat/        # Python/FastAPI anti-cheat service (Kaladin CNN)
+├── postgres/
+│   └── init.sql           # Creates zugklang-anti-cheat DB on first postgres start
 ├── docker-compose.dev.yaml
 ├── docker-compose.prod.yaml
 └── nginx.conf
@@ -67,7 +70,8 @@ Create a database and user:
 
 ```sql
 CREATE USER admin WITH PASSWORD 'mysecretpassword';
-CREATE DATABASE mydatabase OWNER admin;
+CREATE DATABASE "zugklang-frontend" OWNER admin;
+CREATE DATABASE "zugklang-anti-cheat" OWNER admin;
 ```
 
 ### 2. Frontend
@@ -82,7 +86,7 @@ cp .env.example .env.local   # or create .env.local manually
 Minimum required variables in `frontend/.env.local`:
 
 ```env
-DATABASE_URL="postgresql://admin:mysecretpassword@localhost:5432/mydatabase"
+DATABASE_URL="postgresql://admin:mysecretpassword@localhost:5432/zugklang-frontend"
 AUTH_URL="http://localhost:3000"
 AUTH_SECRET="any-random-secret"
 AUTH_GITHUB_ID="your-github-oauth-app-id"
@@ -141,10 +145,14 @@ docker run -d \
   --network zugklang-net \
   -e POSTGRES_USER=admin \
   -e POSTGRES_PASSWORD=mysecretpassword \
-  -e POSTGRES_DB=mydatabase \
   -p 5432:5432 \
   -v zugklang-pg-data:/var/lib/postgresql/data \
   postgres:16-alpine
+
+# Wait for postgres to be ready, then create both databases
+docker exec zugklang-postgres pg_isready -U admin
+docker exec zugklang-postgres psql -U admin -d postgres -c 'CREATE DATABASE "zugklang-frontend";'
+docker exec zugklang-postgres psql -U admin -d postgres -c 'CREATE DATABASE "zugklang-anti-cheat";'
 ```
 
 ### 3. WebSocket Server
@@ -171,7 +179,7 @@ docker build -t zugklang-frontend ./frontend -f ./frontend/Dockerfile.dev
 docker run -d \
   --name zugklang-frontend \
   --network zugklang-net \
-  -e DATABASE_URL=postgresql://admin:mysecretpassword@zugklang-postgres:5432/mydatabase \
+  -e DATABASE_URL=postgresql://admin:mysecretpassword@zugklang-postgres:5432/zugklang-frontend \
   -e NEXT_PUBLIC_WS_URL=ws://localhost:8080 \
   -e AUTH_URL=http://localhost:3000 \
   -e AUTH_SECRET=your-secret \
@@ -183,11 +191,25 @@ docker run -d \
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### 5. Anti-Cheat Service
+
+```bash
+# From the project root
+docker build -t zugklang-anti-cheat ./backend/anti-cheat -f ./backend/anti-cheat/Dockerfile
+
+docker run -d \
+  --name zugklang-anti-cheat \
+  --network zugklang-net \
+  -e DATABASE_URL=postgresql://admin:mysecretpassword@zugklang-postgres:5432/zugklang-anti-cheat \
+  -p 8000:8000 \
+  zugklang-anti-cheat ./start.sh prod
+```
+
 ### Cleanup
 
 ```bash
-docker stop zugklang-frontend zugklang-ws zugklang-postgres
-docker rm zugklang-frontend zugklang-ws zugklang-postgres
+docker stop zugklang-frontend zugklang-ws zugklang-anti-cheat zugklang-postgres
+docker rm zugklang-frontend zugklang-ws zugklang-anti-cheat zugklang-postgres
 docker volume rm zugklang-pg-data
 docker network rm zugklang-net
 ```
@@ -202,10 +224,11 @@ This is the recommended approach. Both dev and prod compose files wire up all se
 
 | Service | Dev port | Prod port | Description |
 |---|---|---|---|
-| `postgres` | 5432 | 5432 | PostgreSQL database |
+| `postgres` | 5432 | 5432 | PostgreSQL 16 (hosts both `zugklang-frontend` and `zugklang-anti-cheat` DBs) |
 | `pgadmin` | 5050 | 5050 | pgAdmin 4 web UI |
 | `ws-server` | 8080 | 8080 | WebSocket server |
 | `frontend` | 3000 | — (internal) | Next.js app |
+| `anti-cheat` | 8000 | 8000 | Anti-cheat FastAPI service (Kaladin CNN) |
 | `nginx` | — | 80 | Reverse proxy (prod only) |
 
 ### Development
@@ -290,6 +313,16 @@ docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma db push
 | `PORT` | Yes | Port to listen on (default: 8080) |
 | `ALLOWED_ORIGINS` | No | Comma-separated allowed origins for WS upgrades |
 | `ADMIN_KEY` | No | Secret key for admin HTTP endpoints |
+
+### Anti-Cheat Service
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string for the `zugklang-anti-cheat` database |
+| `LOGGING_LEVEL` | No | Log verbosity: `DEBUG`, `INFO`, `WARNING` (default: `INFO`) |
+| `BATCH_SIZE` | No | Max games per analysis batch (default: 10) |
+| `BATCH_TIMEOUT` | No | Seconds before a batch is flushed (default: 15) |
+| `BATCH_REFRESH_WAITING_TIME` | No | Seconds between queue polls (default: 10) |
 
 ---
 

@@ -20,13 +20,14 @@ This project includes separate Docker configurations for development and product
 
 ## Services
 
-| Service      | Description                        | Dev container name        | Prod container name        |
-|--------------|------------------------------------|---------------------------|----------------------------|
-| `postgres`   | PostgreSQL 16 database             | `zugklang-postgres-dev`   | `zugklang-postgres-prod`   |
-| `pgadmin`    | pgAdmin 4 web UI for the database  | `zugklang-pgadmin-dev`    | `zugklang-pgadmin-prod`    |
-| `ws-server`  | WebSocket backend server           | `zugklang-ws-dev`         | `zugklang-ws-prod`         |
-| `frontend`   | Next.js application                | `zugklang-frontend-dev`   | `zugklang-frontend-prod`   |
-| `nginx`      | Reverse proxy (prod only)          | —                         | `zugklang-nginx-prod`      |
+| Service       | Description                                         | Dev container name           | Prod container name           |
+|---------------|-----------------------------------------------------|------------------------------|-------------------------------|
+| `postgres`    | PostgreSQL 16 (hosts `zugklang-frontend` + `zugklang-anti-cheat` DBs) | `zugklang-postgres-dev` | `zugklang-postgres-prod` |
+| `pgadmin`     | pgAdmin 4 web UI for the database                   | `zugklang-pgadmin-dev`       | `zugklang-pgadmin-prod`       |
+| `ws-server`   | WebSocket backend server                            | `zugklang-ws-dev`            | `zugklang-ws-prod`            |
+| `frontend`    | Next.js application                                 | `zugklang-frontend-dev`      | `zugklang-frontend-prod`      |
+| `anti-cheat`  | Python/FastAPI anti-cheat service (Kaladin CNN)     | `zugklang-anti-cheat-dev`    | `zugklang-anti-cheat-prod`    |
+| `nginx`       | Reverse proxy (prod only)                           | —                            | `zugklang-nginx-prod`         |
 
 All services are connected via the `zugklang-net` bridge network.
 
@@ -51,6 +52,7 @@ docker-compose -f docker-compose.dev.yaml up --build
 
 - **Frontend (Next.js)**: http://localhost:3000
 - **WebSocket Server**: ws://localhost:8080
+- **Anti-Cheat API**: http://localhost:8000
 - **PostgreSQL**: localhost:5432
 - **pgAdmin**: http://localhost:5050
   - Email: `admin@admin.com`
@@ -77,6 +79,7 @@ docker-compose -f docker-compose.prod.yaml up --build
 
 - **Nginx (Reverse Proxy)**: http://localhost:80
 - **WebSocket Server**: ws://localhost:8080
+- **Anti-Cheat API**: http://localhost:8000
 - **PostgreSQL**: localhost:5432 (external)
 - **pgAdmin**: http://localhost:5050
   - Email: `admin@admin.com`
@@ -135,10 +138,10 @@ docker-compose -f docker-compose.prod.yaml build --no-cache
 
 ```bash
 # Development
-docker exec -it zugklang-postgres-dev psql -U admin -d mydatabase
+docker exec -it zugklang-postgres-dev psql -U admin -d zugklang-frontend
 
 # Production
-docker exec -it zugklang-postgres-prod psql -U admin -d mydatabase
+docker exec -it zugklang-postgres-prod psql -U admin -d zugklang-frontend
 ```
 
 ### Run Prisma Commands
@@ -201,7 +204,7 @@ Volume mounts should handle this, but if changes aren't reflected:
 ### Development (`frontend/.env.local`)
 
 ```env
-DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
+DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/zugklang-frontend"
 AUTH_URL="http://localhost:3000"
 AUTH_SECRET="your-secret-key"
 AUTH_GITHUB_ID="your-github-oauth-id"
@@ -211,7 +214,7 @@ AUTH_GITHUB_SECRET="your-github-oauth-secret"
 ### Production (`frontend/.env.production`)
 
 ```env
-DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
+DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/zugklang-frontend"
 NEXT_PUBLIC_WS_URL="wss://your-domain.com"
 AUTH_SECRET="your-secret-key"
 AUTH_GITHUB_ID="your-github-oauth-id"
@@ -222,6 +225,16 @@ AUTH_GITHUB_SECRET="your-github-oauth-secret"
 
 ```env
 ADMIN_KEY="your-admin-key"
+```
+
+### Anti-Cheat Service (`backend/anti-cheat/.env` / `.env.production`)
+
+```env
+DATABASE_URL="postgresql://admin:mysecretpassword@postgres:5432/zugklang-anti-cheat"
+LOGGING_LEVEL=INFO
+BATCH_SIZE=10
+BATCH_TIMEOUT=15
+BATCH_REFRESH_WAITING_TIME=10
 ```
 
 ### Container vs Host URLs

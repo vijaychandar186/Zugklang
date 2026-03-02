@@ -7,13 +7,13 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: mydatabase
     ports:
       - "5432:5432"
     volumes:
       - postgres_dev_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin -d mydatabase"]
+      test: ["CMD-SHELL", "pg_isready -U admin"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -78,7 +78,7 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
+      DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/zugklang-frontend"
       # AUTH_URL, AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET: set in .env.local
     env_file:
       - path: ./frontend/.env.local
@@ -107,7 +107,7 @@ services:
     command: ["sh", "-c", "npx prisma studio --port 5555 --browser none"]
     environment:
       NODE_ENV: development
-      DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/mydatabase"
+      DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/zugklang-frontend"
     env_file:
       - path: ./frontend/.env.local
         required: false
@@ -118,6 +118,26 @@ services:
       - /app/node_modules
       - /app/.next
       - /app/src/generated
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - zugklang-net
+
+  anti-cheat:
+    build:
+      context: ./backend/anti-cheat
+      dockerfile: Dockerfile
+    container_name: zugklang-anti-cheat-dev
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    command: ["./start.sh", "dev"]
+    environment:
+      DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/zugklang-anti-cheat"
+    env_file:
+      - path: ./backend/anti-cheat/.env
+        required: false
     depends_on:
       postgres:
         condition: service_healthy

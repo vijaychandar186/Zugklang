@@ -1,45 +1,105 @@
 import type { BunWS, TimeControl, Room } from '../types';
-import { queues, rooms, issueRejoinToken, revokeRoomTokens } from '../state';
+import {
+  rooms,
+  connectedUserIds,
+  issueRejoinToken,
+  revokeRoomTokens
+} from '../state';
 import { send, removeFromQueues } from '../utils/socket';
+import { sendToUser } from '../utils/routing';
 import { broadcastClock, startRoomClock, stopRoomClock } from '../utils/clock';
 import { getStartingFen } from '../utils/fen';
 import { buildPosition } from '../utils/chess';
 import { logger } from '../utils/logger';
 import { handleResign } from './game';
+import { redis, POD_ID, POD_URL } from '../redis';
 import {
-  ABORT_TIMEOUT_MS,
   ELO_QUEUE_ENABLED,
   RATING_BAND_BASE,
-  RATING_BAND_EXPAND_PER_SEC
+  RATING_BAND_EXPAND_PER_SEC,
+  ROOM_TTL_SEC,
+  QUEUE_PLAYER_TTL_SEC
 } from '../config';
+import { scheduleAbortCheck } from '../bullmq/queues';
 
-/** Current effective rating band (±) for a queued player. */
+interface QueuedPlayerData {
+  userId: string;
+  sessionId: string;
+  rating: number;
+  queuedAt: number;
+  podId: string;
+  displayName: string;
+  userImage: string;
+}
+
+interface RedisQueueEntry {
+  userId: string;
+  sessionId: string;
+  rating: string;
+  queuedAt: string;
+  podId: string;
+  displayName: string;
+  userImage: string;
+}
+
 function ratingBand(queuedAt: number): number {
   const secsWaiting = (Date.now() - queuedAt) / 1000;
   return RATING_BAND_BASE + RATING_BAND_EXPAND_PER_SEC * secsWaiting;
 }
 
-/** Returns true when the two players are close enough in rating to match. */
-function eloCompatible(a: BunWS, b: BunWS): boolean {
+function eloCompatible(
+  myRating: number,
+  myQueuedAt: number,
+  theirRating: number,
+  theirQueuedAt: number
+): boolean {
   if (!ELO_QUEUE_ENABLED) return true;
-  const ratingA = a.data.rating ?? 700;
-  const ratingB = b.data.rating ?? 700;
-  const bandA = ratingBand(a.data.queuedAt ?? Date.now());
-  const bandB = ratingBand(b.data.queuedAt ?? Date.now());
-  // Use the wider of the two bands so a long-waiting player can still match.
+  const bandA = ratingBand(myQueuedAt);
+  const bandB = ratingBand(theirQueuedAt);
   const effectiveBand = Math.max(bandA, bandB);
-  return Math.abs(ratingA - ratingB) <= effectiveBand;
+  return Math.abs(myRating - theirRating) <= effectiveBand;
 }
 
 function timeControlKey(tc: TimeControl): string {
   return `${tc.mode}:${String(tc.minutes)}:${String(tc.increment)}`;
 }
-export function createRoom(
+
+export async function persistRoom(room: Room): Promise<void> {
+  const key = `room:${room.id}`;
+  await redis.hset(key, {
+    status: room.status,
+    variant: room.variant,
+    timeControl: JSON.stringify(room.timeControl),
+    startingFen: room.startingFen,
+    moves: JSON.stringify(room.moves),
+    whiteUserId: room.whiteUserId ?? '',
+    blackUserId: room.blackUserId ?? '',
+    whiteSessionId: room.whiteSessionId,
+    blackSessionId: room.blackSessionId,
+    whiteRating: String(room.whiteRating ?? ''),
+    blackRating: String(room.blackRating ?? ''),
+    whiteDisplayName: room.whiteDisplayName ?? '',
+    blackDisplayName: room.blackDisplayName ?? '',
+    whiteImage: room.whiteImage ?? '',
+    blackImage: room.blackImage ?? '',
+    whiteTimeMs: String(room.whiteTimeMs ?? ''),
+    blackTimeMs: String(room.blackTimeMs ?? ''),
+    activeClock: room.activeClock ?? '',
+    clockLastUpdatedAt: String(room.clockLastUpdatedAt ?? ''),
+    createdAt: String(room.createdAt)
+  });
+  await Promise.all([
+    redis.expire(key, ROOM_TTL_SEC),
+    redis.set(`room:${room.id}:pod`, POD_ID, 'EX', ROOM_TTL_SEC)
+  ]);
+}
+
+export async function createRoom(
   white: BunWS,
   black: BunWS,
   variant: string,
   timeControl: TimeControl
-): void {
+): Promise<void> {
   const roomId = crypto.randomUUID();
   const startingFen = getStartingFen(variant);
   white.data.color = 'white';
@@ -50,6 +110,12 @@ export function createRoom(
     id: roomId,
     white,
     black,
+    whiteUserId: white.data.userId ?? null,
+    blackUserId: black.data.userId ?? null,
+    whiteSessionId: white.data.id,
+    blackSessionId: black.data.id,
+    whiteRating: white.data.rating ?? null,
+    blackRating: black.data.rating ?? null,
     variant,
     timeControl,
     startingFen,
@@ -59,7 +125,6 @@ export function createRoom(
     rematchOfferedBy: null,
     status: 'active',
     createdAt: Date.now(),
-    abortTimer: null,
     abortTimerStartedAt: null,
     whiteDisconnectedAt: null,
     blackDisconnectedAt: null,
@@ -80,102 +145,79 @@ export function createRoom(
     moveTimesBlackMs: []
   };
   rooms.set(roomId, room);
+
+  await persistRoom(room);
+
   room.abortTimerStartedAt = Date.now();
-  room.abortTimer = setTimeout(() => {
-    const r = rooms.get(roomId);
-    if (!r || r.status === 'ended') return;
-    r.abortTimer = null;
-    r.abortTimerStartedAt = null;
-    r.status = 'ended';
-    stopRoomClock(r);
-    revokeRoomTokens(r);
-    const abandonedColor = r.position.turn;
-    const winner = abandonedColor === 'white' ? 'Black' : 'White';
-    const payload = {
-      type: 'game_over',
-      result: `${winner} wins — opponent abandoned`,
-      reason: 'abandoned',
-      winner: winner.toLowerCase(),
-      whiteUserId: r.white.data.userId ?? null,
-      blackUserId: r.black.data.userId ?? null
-    };
-    send(r.white, payload);
-    send(r.black, payload);
-    logger.info('game_auto_aborted', {
-      roomId: roomId.slice(0, 8),
-      moves: r.moves.length
-    });
-  }, ABORT_TIMEOUT_MS);
-  const whiteToken = issueRejoinToken(white.data.id);
-  const blackToken = issueRejoinToken(black.data.id);
-  const whiteUserId = white.data.userId ?? null;
-  const blackUserId = black.data.userId ?? null;
+  await scheduleAbortCheck(roomId, 1);
+
+  const [whiteToken, blackToken] = await Promise.all([
+    issueRejoinToken(white.data.id, roomId),
+    issueRejoinToken(black.data.id, roomId)
+  ]);
+
   const {
+    whiteUserId,
+    blackUserId,
     whiteDisplayName,
     blackDisplayName,
     whiteImage,
     blackImage,
     abortTimerStartedAt
   } = room;
-  send(white, {
+
+  const baseMatched = {
     type: 'matched',
     roomId,
-    color: 'white',
     variant,
     timeControl,
     startingFen,
-    rejoinToken: whiteToken,
     whiteUserId,
     blackUserId,
     whiteDisplayName,
     blackDisplayName,
     whiteImage,
     blackImage,
-    abortStartedAt: abortTimerStartedAt
-  });
-  send(black, {
-    type: 'matched',
-    roomId,
-    color: 'black',
-    variant,
-    timeControl,
-    startingFen,
-    rejoinToken: blackToken,
-    whiteUserId,
-    blackUserId,
-    whiteDisplayName,
-    blackDisplayName,
-    whiteImage,
-    blackImage,
-    abortStartedAt: abortTimerStartedAt
-  });
-  // Anchor both clients on the exact same initial clock snapshot immediately.
-  broadcastClock(room);
+    abortStartedAt: abortTimerStartedAt,
+    ...(POD_URL ? { wsPodUrl: POD_URL } : {})
+  };
+
+  await Promise.all([
+    white.data.userId
+      ? sendToUser(white.data.userId, {
+          ...baseMatched,
+          color: 'white',
+          rejoinToken: whiteToken
+        })
+      : Promise.resolve(),
+    black.data.userId
+      ? sendToUser(black.data.userId, {
+          ...baseMatched,
+          color: 'black',
+          rejoinToken: blackToken
+        })
+      : Promise.resolve()
+  ]);
+
+  await broadcastClock(room);
   startRoomClock(room, (timedOutColor) => {
     const r = rooms.get(roomId);
     if (!r || r.status === 'ended') return;
     r.status = 'ended';
-    if (r.abortTimer !== null) {
-      clearTimeout(r.abortTimer);
-      r.abortTimer = null;
-    }
     stopRoomClock(r);
-    revokeRoomTokens(r);
+    void revokeRoomTokens(r);
     const winner = timedOutColor === 'white' ? 'Black' : 'White';
     const payload = {
       type: 'game_over',
       result: `${winner} wins on time`,
       reason: 'timeout',
       winner: winner.toLowerCase(),
-      whiteUserId: r.white.data.userId ?? null,
-      blackUserId: r.black.data.userId ?? null
+      whiteUserId: r.whiteUserId,
+      blackUserId: r.blackUserId
     };
-    send(r.white, payload);
-    send(r.black, payload);
-    logger.info('game_timeout', {
-      roomId: roomId.slice(0, 8),
-      timedOutColor
-    });
+    if (r.whiteUserId) void sendToUser(r.whiteUserId, payload);
+    if (r.blackUserId) void sendToUser(r.blackUserId, payload);
+    logger.info('game_timeout', { roomId: roomId.slice(0, 8), timedOutColor });
   });
   logger.info('room_created', {
     roomId: roomId.slice(0, 8),
@@ -184,34 +226,38 @@ export function createRoom(
     variant
   });
 }
-function matchPlayers(
+
+async function matchPlayers(
   playerA: BunWS,
+  playerAData: QueuedPlayerData,
   playerB: BunWS,
+  playerBData: QueuedPlayerData,
   variant: string,
   timeControl: TimeControl
-): void {
+): Promise<void> {
   if (
-    playerA.data.userId &&
-    playerB.data.userId &&
-    playerA.data.userId === playerB.data.userId
+    playerAData.userId &&
+    playerBData.userId &&
+    playerAData.userId === playerBData.userId
   ) {
     logger.warn('same_user_match_blocked', {
-      userId: playerA.data.userId.slice(0, 8)
+      userId: playerAData.userId.slice(0, 8)
     });
-    const queueKey = `${variant}:${timeControlKey(timeControl)}`;
-    const queue = queues.get(queueKey) ?? [];
-    queues.set(queueKey, queue);
-    if (!queue.includes(playerA)) queue.push(playerA);
-    if (!queue.includes(playerB)) queue.push(playerB);
+    const queueKey = `queue:${variant}:${timeControlKey(timeControl)}`;
+    await Promise.all([
+      redis.zadd(queueKey, playerAData.queuedAt, playerAData.userId),
+      redis.zadd(queueKey, playerBData.queuedAt, playerBData.userId)
+    ]);
     send(playerA, { type: 'waiting' });
     send(playerB, { type: 'waiting' });
     return;
   }
   const [white, black] =
     Math.random() < 0.5 ? [playerA, playerB] : [playerB, playerA];
-  createRoom(white, black, variant, timeControl);
+  await createRoom(white, black, variant, timeControl);
 }
-export function handleJoinQueue(
+
+export async function handleJoinQueue(
   ws: BunWS,
   msg: {
     variant: string;
@@ -220,52 +266,126 @@ export function handleJoinQueue(
     userImage?: string | null | undefined;
     rating?: number | undefined;
   }
-): void {
+): Promise<void> {
   const { variant, timeControl } = msg;
   if (msg.displayName !== undefined) ws.data.displayName = msg.displayName;
   if (msg.userImage !== undefined) ws.data.userImage = msg.userImage;
-  // Store the player's rating and record when they joined the queue.
   ws.data.rating = msg.rating ?? 700;
   ws.data.queuedAt = Date.now();
-  removeFromQueues(ws);
+
+  await removeFromQueues(ws);
+
   if (ws.data.roomId) {
     const room = rooms.get(ws.data.roomId);
-    if (room?.status === 'active') handleResign(ws);
+    if (room?.status === 'active') await handleResign(ws);
     delete ws.data.roomId;
   }
+
   ws.data.variant = variant;
-  const queueKey = `${variant}:${timeControlKey(timeControl)}`;
-  let queue = queues.get(queueKey);
-  if (!queue) {
-    queue = [];
-    queues.set(queueKey, queue);
+  const queueKey = `queue:${variant}:${timeControlKey(timeControl)}`;
+  ws.data.queueKey = queueKey;
+
+  const myUserId = ws.data.userId;
+  if (!myUserId) {
+    send(ws, { type: 'error', message: 'Not authenticated.' });
+    return;
   }
-  let opponentIdx = -1;
-  for (let i = 0; i < queue.length; i++) {
-    const candidate = queue[i];
-    if (!candidate) continue;
-    // Never match a player against themselves (multi-tab).
+
+  const myData: QueuedPlayerData = {
+    userId: myUserId,
+    sessionId: ws.data.id,
+    rating: ws.data.rating,
+    queuedAt: ws.data.queuedAt,
+    podId: POD_ID,
+    displayName: ws.data.displayName ?? '',
+    userImage: ws.data.userImage ?? ''
+  };
+
+  await redis.hset(
+    `queue:player:${myUserId}`,
+    myData as unknown as Record<string, string>
+  );
+  await redis.expire(`queue:player:${myUserId}`, QUEUE_PLAYER_TTL_SEC);
+
+  const candidates = await redis.zrange(queueKey, 0, -1);
+  let matched = false;
+
+  for (const candidateUserId of candidates) {
+    if (candidateUserId === myUserId) continue;
+
+    const raw = (await redis.hgetall(
+      `queue:player:${candidateUserId}`
+    )) as unknown as RedisQueueEntry | null;
+    if (!raw || !raw.userId) continue;
+
+    const candidateData: QueuedPlayerData = {
+      userId: raw.userId,
+      sessionId: raw.sessionId,
+      rating: Number(raw.rating),
+      queuedAt: Number(raw.queuedAt),
+      podId: raw.podId,
+      displayName: raw.displayName,
+      userImage: raw.userImage
+    };
+
+    if (candidateData.userId === myUserId) continue;
     if (
-      ws.data.userId &&
-      candidate.data.userId &&
-      ws.data.userId === candidate.data.userId
+      !eloCompatible(
+        myData.rating,
+        myData.queuedAt,
+        candidateData.rating,
+        candidateData.queuedAt
+      )
     ) {
       continue;
     }
-    // ELO band check — skip candidates that are too far apart in rating.
-    if (!eloCompatible(ws, candidate)) continue;
-    opponentIdx = i;
+
+    const claimed = await redis.zrem(queueKey, candidateUserId);
+    if (claimed === 0) continue;
+
+    await redis.del(`queue:player:${candidateUserId}`);
+    delete ws.data.queueKey;
+
+    if (candidateData.podId === POD_ID) {
+      const opponentWs = connectedUserIds.get(candidateUserId);
+      if (opponentWs) {
+        await matchPlayers(
+          ws,
+          myData,
+          opponentWs,
+          candidateData,
+          variant,
+          timeControl
+        );
+      }
+    } else {
+      await redis.publish(
+        `ws:pod:${candidateData.podId}:in`,
+        JSON.stringify({
+          type: 'pod_matched',
+          initiatorUserId: myUserId,
+          initiatorPodId: POD_ID,
+          opponentUserId: candidateUserId,
+          variant,
+          timeControl,
+          initiatorData: myData,
+          opponentData: candidateData
+        })
+      );
+      send(ws, { type: 'waiting' });
+    }
+
+    matched = true;
     break;
   }
-  if (opponentIdx >= 0) {
-    const opponent = queue.splice(opponentIdx, 1)[0]!;
-    matchPlayers(ws, opponent, variant, timeControl);
-  } else {
-    queue.push(ws);
+
+  if (!matched) {
+    await redis.zadd(queueKey, ws.data.queuedAt, myUserId);
     send(ws, { type: 'waiting' });
   }
 }
-export function handleLeaveQueue(ws: BunWS): void {
-  removeFromQueues(ws);
+
+export async function handleLeaveQueue(ws: BunWS): Promise<void> {
+  await removeFromQueues(ws);
   send(ws, { type: 'queue_left' });
 }

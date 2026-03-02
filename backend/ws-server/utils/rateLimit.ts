@@ -1,13 +1,14 @@
+import { redis } from '../redis';
 import { RATE_LIMIT_MAX_MESSAGES, RATE_LIMIT_WINDOW_MS } from '../config';
-const messageLog = new Map<string, number[]>();
-export function isRateLimited(id: string): boolean {
-  const now = Date.now();
-  const timestamps = messageLog.get(id) ?? [];
-  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
-  recent.push(now);
-  messageLog.set(id, recent);
-  return recent.length > RATE_LIMIT_MAX_MESSAGES;
+
+const WINDOW_SEC = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+
+export async function isRateLimited(id: string): Promise<boolean> {
+  const key = `ratelimit:ws:${id}:msg`;
+  const count = await redis.incr(key);
+  if (count === 1) await redis.expire(key, WINDOW_SEC);
+  return count > RATE_LIMIT_MAX_MESSAGES;
 }
-export function clearRateLimit(id: string): void {
-  messageLog.delete(id);
-}
+
+/** No-op: Redis keys expire automatically after WINDOW_SEC. */
+export function clearRateLimit(_id: string): void {}

@@ -1,5 +1,5 @@
 import type { Color, Room } from '../types';
-import { send } from './socket';
+import { sendToUser } from './routing';
 
 function clampMs(ms: number): number {
   return Math.max(0, Math.floor(ms));
@@ -53,7 +53,7 @@ export function stopRoomClock(room: Room): void {
   }
 }
 
-export function broadcastClock(room: Room): void {
+export async function broadcastClock(room: Room): Promise<void> {
   const snapshot = projectClock(room);
   const payload = {
     type: 'clock_sync',
@@ -62,8 +62,12 @@ export function broadcastClock(room: Room): void {
     activeClock: snapshot.activeClock,
     serverNow: Date.now()
   };
-  send(room.white, payload);
-  send(room.black, payload);
+  await Promise.all([
+    room.whiteUserId
+      ? sendToUser(room.whiteUserId, payload)
+      : Promise.resolve(),
+    room.blackUserId ? sendToUser(room.blackUserId, payload) : Promise.resolve()
+  ]);
 }
 
 export function startRoomClock(
@@ -88,6 +92,6 @@ export function startRoomClock(
       onTimeout('black');
       return;
     }
-    broadcastClock(room);
+    void broadcastClock(room);
   }, 1000);
 }

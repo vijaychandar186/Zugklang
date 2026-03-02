@@ -77,8 +77,8 @@ function shuffleTeams(lobby: {
   const teams = [...TEAM_ORDER];
   for (let i = teams.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
-    const tmp = teams[i];
-    teams[i] = teams[j];
+    const tmp = teams[i]!;
+    teams[i] = teams[j]!;
     teams[j] = tmp;
   }
 
@@ -355,15 +355,12 @@ export function handleRejoinFourPlayerLobby(
     send(ws, { type: 'error', message: 'You are no longer in this game.' });
     return;
   }
-  // Cancel the abandon timeout
   const timeout = fourPlayerReconnectTimeouts.get(playerId);
   if (timeout) {
     clearTimeout(timeout);
     fourPlayerReconnectTimeouts.delete(playerId);
   }
-  // Revoke old token
   fourPlayerRejoinTokens.delete(msg.rejoinToken);
-  // Transfer display info from old ws slot
   const oldWs = lobby.players[playerIndex]!;
   ws.data.id = playerId;
   if (oldWs.data.displayName !== undefined)
@@ -372,11 +369,8 @@ export function handleRejoinFourPlayerLobby(
     ws.data.userImage = oldWs.data.userImage;
   if (oldWs.data.userId !== undefined) ws.data.userId = oldWs.data.userId;
   ws.data.fourPlayerLobbyId = msg.lobbyId;
-  // Replace old ws with new ws in lobby
   lobby.players[playerIndex] = ws;
-  // Issue new token
   const newToken = issueFourPlayerRejoinToken(playerId);
-  // Send rejoined confirmation to reconnecting player
   const payload = toLobbyPayload(msg.lobbyId);
   if (!payload) return;
   send(ws, {
@@ -385,7 +379,6 @@ export function handleRejoinFourPlayerLobby(
     myPlayerId: playerId,
     rejoinToken: newToken
   });
-  // Notify other players so they re-broadcast state to the rejoined player
   for (const player of lobby.players) {
     if (player.data.id !== playerId) {
       send(player, { type: 'four_player_player_reconnected', playerId });

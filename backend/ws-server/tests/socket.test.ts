@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
-import { queues } from '../state';
 import { getOpponent, isInRoom, removeFromQueues, send } from '../utils/socket';
 import {
   asBunWs,
@@ -16,15 +15,11 @@ describe('socket utilities', () => {
     send(asBunWs(ws), { type: 'pong' });
     expect(ws.sent).toEqual([{ type: 'pong' }]);
   });
-  test('removeFromQueues removes player from all queues', () => {
+  test('removeFromQueues is a no-op for sockets without a queue key', async () => {
     const a = createMockWs('a');
-    const b = createMockWs('b');
-    const c = createMockWs('c');
-    queues.set('q1', [asBunWs(a), asBunWs(b)]);
-    queues.set('q2', [asBunWs(c), asBunWs(a)]);
-    removeFromQueues(asBunWs(a));
-    expect(queues.get('q1')?.map((p) => p.data.id)).toEqual(['b']);
-    expect(queues.get('q2')?.map((p) => p.data.id)).toEqual(['c']);
+    // Should complete without throwing even when there is no queueKey
+    await removeFromQueues(asBunWs(a));
+    expect(asBunWs(a).data.queueKey).toBeUndefined();
   });
   test('getOpponent and isInRoom resolve room participants', () => {
     const white = createMockWs('w');

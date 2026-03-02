@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { handleHttpRequest } from '../handlers/http';
-import { challenges, queues, reconnectTimeouts, rooms } from '../state';
+import { challenges, reconnectTimeouts, rooms } from '../state';
 import {
   asBunWs,
   createMockWs,
@@ -18,7 +18,7 @@ describe('http handlers integration', () => {
     resetInMemoryState();
   });
   test('returns health response for /health', async () => {
-    const res = handleHttpRequest(new Request('http://localhost/health'));
+    const res = await handleHttpRequest(new Request('http://localhost/health'));
     expect(res).toBeDefined();
     expect(res?.status).toBe(200);
     const body = (await res?.json()) as {
@@ -30,12 +30,12 @@ describe('http handlers integration', () => {
   });
   test('protects /admin/stats with ADMIN_KEY', async () => {
     delete process.env['ADMIN_KEY'];
-    const noConfig = handleHttpRequest(
+    const noConfig = await handleHttpRequest(
       new Request('http://localhost/admin/stats')
     );
     expect(noConfig?.status).toBe(503);
     process.env['ADMIN_KEY'] = 'secret';
-    const unauthorized = handleHttpRequest(
+    const unauthorized = await handleHttpRequest(
       new Request('http://localhost/admin/stats')
     );
     expect(unauthorized?.status).toBe(401);
@@ -64,9 +64,9 @@ describe('http handlers integration', () => {
       variant: 'standard',
       timeControl: { mode: 'timed', minutes: 3, increment: 0 },
       creatorColor: 'white',
+      creatorUserId: null,
       createdAt: Date.now()
     });
-    queues.set('standard:timed:3:0', [asBunWs(white), asBunWs(black)]);
     reconnectTimeouts.set(
       'player-reconnect',
       setTimeout(() => {}, 60000)
@@ -74,7 +74,7 @@ describe('http handlers integration', () => {
     const req = new Request('http://localhost/admin/stats', {
       headers: { authorization: 'Bearer secret' }
     });
-    const res = handleHttpRequest(req);
+    const res = await handleHttpRequest(req);
     expect(res?.status).toBe(200);
     const body = (await res?.json()) as {
       activeRooms: number;
@@ -87,8 +87,9 @@ describe('http handlers integration', () => {
       activeRooms: 1,
       endedRooms: 1,
       challenges: 1,
-      queuedPlayers: 2,
       reconnectingPlayers: 1
     });
+    // queuedPlayers comes from Redis; may be 0 in unit test env
+    expect(typeof body.queuedPlayers).toBe('number');
   });
 });

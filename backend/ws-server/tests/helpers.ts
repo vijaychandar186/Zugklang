@@ -4,9 +4,7 @@ import {
   challenges,
   connectedUserIds,
   fourPlayerLobbies,
-  queues,
   reconnectTimeouts,
-  rejoinTokens,
   rooms
 } from '../state';
 import { buildPosition } from '../utils/chess';
@@ -39,13 +37,11 @@ export function resetInMemoryState(): void {
   for (const timeout of reconnectTimeouts.values()) {
     clearTimeout(timeout);
   }
-  queues.clear();
   rooms.clear();
   challenges.clear();
   fourPlayerLobbies.clear();
   reconnectTimeouts.clear();
   connectedUserIds.clear();
-  rejoinTokens.clear();
 }
 export function createTestRoom(params: {
   id: string;
@@ -66,6 +62,14 @@ export function createTestRoom(params: {
     id: params.id,
     white: params.white,
     black: params.black,
+    whiteUserId: params.white.data.userId ?? null,
+    blackUserId: params.black.data.userId ?? null,
+    whiteSessionId: params.white.data.id,
+    blackSessionId: params.black.data.id,
+    whiteRating: null,
+    blackRating: null,
+    moveTimesWhiteMs: [],
+    moveTimesBlackMs: [],
     variant,
     timeControl,
     startingFen,

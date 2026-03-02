@@ -36,7 +36,9 @@ Real-time WebSocket server for Zugklang multiplayer chess. Built with [Bun](http
 - **Auto-abort** — games abort if no move is made within 1 minute of starting
 - **Rejoin tokens** — seamless reconnection after disconnects (30-second window)
 
-State is fully in-memory; no database is required for this service.
+Redis is required for all cross-pod coordination: matchmaking queues, rejoin tokens, challenge metadata, room state snapshots, and pub/sub message routing between pods. BullMQ (backed by Redis) handles durable post-game job delivery (anti-cheat, game records) and pod-crash-resilient abort/abandon timers.
+
+See [`docs/redis.md`](docs/redis.md) and [`docs/bullmq.md`](docs/bullmq.md) for detailed usage.
 
 ---
 
@@ -45,22 +47,42 @@ State is fully in-memory; no database is required for this service.
 ```
 ws-server/
 ├── server.ts          # Entry point (Bun.serve)
-├── state.ts           # In-memory data stores (rooms, queues, challenges, tokens)
+├── config.ts          # All timing/threshold/TTL constants
+├── redis.ts           # ioredis client + POD_ID / POD_URL exports
+├── state.ts           # In-memory stores + Redis-backed rejoin tokens
 ├── types.ts           # TypeScript type definitions
+├── bullmq/
+│   ├── connection.ts  # BullMQ Redis connection options
+│   ├── queues.ts      # Queue singletons + schedule/cancel helpers
+│   ├── types.ts       # Job name constants and payload interfaces
+│   ├── worker.ts      # startWorkers() — registers all 4 workers
+│   └── workers/
+│       ├── antiCheat.ts   # POST game data to Kaladin service
+│       ├── gameRecord.ts  # POST game summary to Next.js API
+│       ├── abortCheck.ts  # Auto-abort if no move made in time
+│       └── abandonCheck.ts # Forfeit game if player doesn't rejoin
 ├── handlers/
 │   ├── http.ts        # HTTP route handler (/health, /stats, /admin)
-│   ├── connection.ts  # WebSocket open/close/ping
-│   ├── queue.ts       # Matchmaking logic
-│   ├── challenge.ts   # Challenge link logic
-│   └── game.ts        # In-game action logic
-└── utils/
-    ├── schemas.ts     # Zod validation schemas
-    ├── socket.ts      # WebSocket send helpers
-    ├── logger.ts      # Logging utilities
-    ├── rateLimit.ts   # Per-client rate limiter
-    ├── chess.ts       # chessops integration
-    ├── fen.ts         # FEN utilities
-    └── validate.ts    # Input validation helpers
+│   ├── connection.ts  # WebSocket open/close — rejoin + disconnect logic
+│   ├── queue.ts       # Matchmaking logic (Redis-backed, multi-pod)
+│   ├── challenge.ts   # Challenge link logic (Redis-backed)
+│   ├── game.ts        # In-game action logic
+│   ├── fourPlayer.ts  # 4-player lobby logic
+│   └── sync.ts        # Dice/card/trid move relay
+├── utils/
+│   ├── auth.ts        # WS token introspection
+│   ├── clock.ts       # Server-side chess clock
+│   ├── routing.ts     # sendToUser — cross-pod routing via Redis pub/sub
+│   ├── schemas.ts     # Zod validation schemas
+│   ├── socket.ts      # WebSocket send helpers
+│   ├── logger.ts      # Logging utilities
+│   ├── rateLimit.ts   # Per-client rate limiter
+│   ├── chess.ts       # chessops integration
+│   ├── fen.ts         # FEN utilities
+│   └── validate.ts    # Input validation helpers
+└── docs/
+    ├── redis.md       # Redis key namespaces, types, TTLs
+    └── bullmq.md      # BullMQ job registry, workers, architecture
 ```
 
 ---
@@ -68,6 +90,7 @@ ws-server/
 ## Requirements
 
 - [Bun](https://bun.sh) v1.x
+- [Redis](https://redis.io) 6+ (required for matchmaking, rejoin tokens, pub/sub, and BullMQ job queues)
 
 ---
 
@@ -75,12 +98,19 @@ ws-server/
 
 Create a `.env.local` file (for local dev) or `.env.production` (for production) in this directory.
 
-| Variable          | Required | Default        | Description                                                                 |
-|-------------------|----------|----------------|-----------------------------------------------------------------------------|
-| `PORT`            | No       | `8080`         | Port the server listens on                                                  |
-| `ALLOWED_ORIGINS` | No       | *(allow all)*  | Comma-separated list of allowed WebSocket origins. Leave unset for local dev |
-| `NEXT_APP_URL`    | No       | `http://localhost:3000` | Frontend base URL used for WS token introspection (`/api/ws-token`) |
-| `ADMIN_KEY`       | Yes      | —              | Bearer token for the `/admin` endpoint. Server returns 503 if not set       |
+| Variable               | Required | Default                   | Description                                                                 |
+|------------------------|----------|---------------------------|-----------------------------------------------------------------------------|
+| `PORT`                 | No       | `8080`                    | Port the server listens on                                                  |
+| `ALLOWED_ORIGINS`      | No       | *(allow all)*             | Comma-separated list of allowed WebSocket origins. Leave unset for local dev |
+| `NEXT_APP_URL`         | No       | `http://localhost:3000`   | Frontend base URL used for WS token introspection (`/api/ws-token`)        |
+| `ADMIN_KEY`            | Yes      | —                         | Bearer token for the `/admin` endpoint. Server returns 503 if not set       |
+| `REDIS_URL`            | No       | `redis://localhost:6379`  | Redis connection URL. Supports `rediss://` for TLS                          |
+| `POD_ID`               | No       | *(random UUID)*           | Unique identifier for this pod/process. Set in k8s/Docker deployments       |
+| `POD_URL`              | No       | —                         | Public WebSocket URL of this pod (e.g. `ws://ws-pod-1:8080`). Included in matched messages so clients can reconnect to the correct pod |
+| `ANTI_CHEAT_URL`       | No       | —                         | Base URL of the Kaladin anti-cheat service. Leave unset to disable          |
+| `GAME_RECORD_URL`      | No       | —                         | Absolute URL of the Next.js game-record endpoint (e.g. `https://your-app.com/api/internal/game-record`) |
+| `INTERNAL_API_SECRET`  | No       | —                         | Bearer token sent to `GAME_RECORD_URL` so the Next.js route can reject external callers |
+| `WORKER_CONCURRENCY`   | No       | `5`                       | Number of concurrent BullMQ job processors per HTTP-delivery queue          |
 
 **`.env.local` example:**
 
@@ -89,6 +119,10 @@ PORT=8080
 ALLOWED_ORIGINS="http://localhost:3000"
 NEXT_APP_URL="http://localhost:3000"
 ADMIN_KEY="your-secret-key-here"
+REDIS_URL="redis://localhost:6379"
+ANTI_CHEAT_URL="http://localhost:8000"
+GAME_RECORD_URL="http://localhost:3000/api/internal/game-record"
+INTERNAL_API_SECRET="your-internal-secret-here"
 ```
 
 **`.env.production` example:**
@@ -98,6 +132,13 @@ PORT=8080
 ALLOWED_ORIGINS="https://yourdomain.com,https://www.yourdomain.com"
 NEXT_APP_URL="https://yourdomain.com"
 ADMIN_KEY="your-secret-key-here"
+REDIS_URL="rediss://user:password@your-redis-host:6380"
+POD_ID="ws-pod-1"
+POD_URL="wss://ws-pod-1.yourdomain.com"
+ANTI_CHEAT_URL="http://anti-cheat:8000"
+GAME_RECORD_URL="https://yourdomain.com/api/internal/game-record"
+INTERNAL_API_SECRET="your-internal-secret-here"
+WORKER_CONCURRENCY="10"
 ```
 
 Generate a secure key:

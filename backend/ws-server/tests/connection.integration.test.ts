@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
 import { handleDisconnect, handleRejoinRoom } from '../handlers/connection';
-import { reconnectTimeouts, rejoinTokens, rooms } from '../state';
+import { issueRejoinToken, reconnectTimeouts, rooms } from '../state';
 import {
   asBunWs,
   createMockWs,
@@ -30,7 +30,7 @@ describe('connection flow integration', () => {
     globalThis.setTimeout = originalSetTimeout;
     resetInMemoryState();
   });
-  test('rejoin succeeds with valid token and replaces room socket', () => {
+  test('rejoin succeeds with valid token and replaces room socket', async () => {
     const oldWhite = createMockWs('white-old', 'u-white');
     const black = createMockWs('black', 'u-black');
     oldWhite.data.color = 'white';
@@ -45,14 +45,13 @@ describe('connection flow integration', () => {
     room.moves = ['e2e4', 'e7e5'];
     room.blackLatencyMs = 42;
     rooms.set(room.id, room);
-    const token = 'aaaa1111-1111-1111-1111-111111111111';
-    rejoinTokens.set(token, 'white-old');
+    // Issue a rejoin token via Redis-backed API (requires Redis in integration env)
+    const token = await issueRejoinToken('white-old', room.id);
     const reconnecting = createMockWs('new-temp', 'u-white');
-    handleRejoinRoom(asBunWs(reconnecting), {
+    await handleRejoinRoom(asBunWs(reconnecting), {
       roomId: room.id,
       rejoinToken: token
     });
-    expect(rejoinTokens.has(token)).toBe(false);
     expect(reconnecting.data.id).toBe('white-old');
     expect(rooms.get(room.id)?.white.data.id).toBe('white-old');
     expect(
@@ -68,9 +67,9 @@ describe('connection flow integration', () => {
     expect(rejoined?.moves).toEqual(['e2e4', 'e7e5']);
     expect(rejoined?.opponentLatencyMs).toBe(42);
   });
-  test('rejoin fails when token is invalid', () => {
+  test('rejoin fails when token is invalid', async () => {
     const ws = createMockWs('p1');
-    handleRejoinRoom(asBunWs(ws), {
+    await handleRejoinRoom(asBunWs(ws), {
       roomId: '11111111-1111-1111-1111-111111111111',
       rejoinToken: 'bbbb1111-1111-1111-1111-111111111111'
     });
@@ -80,7 +79,7 @@ describe('connection flow integration', () => {
     }>(ws.sent, 'rejoin_failed');
     expect(failed?.reason).toBe('invalid_token');
   });
-  test('disconnect schedules abandonment and ends game when timer fires', () => {
+  test('disconnect schedules abandonment and ends game when timer fires', async () => {
     globalThis.setTimeout = ((cb: unknown) => {
       if (typeof cb === 'function') cb();
       return 1 as unknown as ReturnType<typeof setTimeout>;
@@ -97,7 +96,7 @@ describe('connection flow integration', () => {
       black: asBunWs(black)
     });
     rooms.set(room.id, room);
-    handleDisconnect(asBunWs(white));
+    await handleDisconnect(asBunWs(white));
     expect(reconnectTimeouts.size).toBe(1);
     expect(rooms.get(room.id)?.status).toBe('ended');
     const blackDisconnected = findMessage<{

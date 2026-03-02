@@ -1,35 +1,63 @@
-import type { BunWS, Challenge, Room, FourPlayerLobby } from './types';
-export const queues = new Map<string, BunWS[]>();
+import type { BunWS, Room } from './types';
+import { redis } from './redis';
+import { REJOIN_TOKEN_TTL_SEC } from './config';
+
 export const rooms = new Map<string, Room>();
-export const challenges = new Map<string, Challenge>();
-export const fourPlayerLobbies = new Map<string, FourPlayerLobby>();
-export const reconnectTimeouts = new Map<
+export const challenges = new Map<string, import('./types').Challenge>();
+export const fourPlayerLobbies = new Map<
   string,
-  ReturnType<typeof setTimeout>
+  import('./types').FourPlayerLobby
 >();
 export const connectedUserIds = new Map<string, BunWS>();
-export const rejoinTokens = new Map<string, string>();
-export function issueRejoinToken(playerId: string): string {
-  for (const [token, id] of rejoinTokens) {
-    if (id === playerId) {
-      rejoinTokens.delete(token);
-      break;
-    }
+
+export async function issueRejoinToken(
+  playerId: string,
+  roomId: string
+): Promise<string> {
+  // Revoke any existing token for this player first.
+  const existingKey = await redis.get(`ws:rejoin:player:${playerId}`);
+  if (existingKey) {
+    await redis.del(`ws:rejoin:${existingKey}`);
   }
+
   const token = crypto.randomUUID();
-  rejoinTokens.set(token, playerId);
+  const { POD_ID } = await import('./redis');
+  const payload = JSON.stringify({ playerId, roomId, podId: POD_ID });
+  await redis.set(`ws:rejoin:${token}`, payload, 'EX', REJOIN_TOKEN_TTL_SEC);
+  await redis.set(
+    `ws:rejoin:player:${playerId}`,
+    token,
+    'EX',
+    REJOIN_TOKEN_TTL_SEC
+  );
   return token;
 }
-export function revokeRoomTokens(room: Room): void {
-  const whiteId = room.white.data.id;
-  const blackId = room.black.data.id;
-  for (const [token, id] of rejoinTokens) {
-    if (id === whiteId || id === blackId) {
-      rejoinTokens.delete(token);
-    }
-  }
+
+export async function resolveRejoinToken(
+  token: string
+): Promise<{ playerId: string; roomId: string; podId: string } | null> {
+  const raw = await redis.get(`ws:rejoin:${token}`);
+  if (!raw) return null;
+  return JSON.parse(raw) as { playerId: string; roomId: string; podId: string };
 }
-// 4-player lobby rejoin token infrastructure
+
+export async function revokeRoomTokens(room: Room): Promise<void> {
+  const whiteId = room.whiteSessionId;
+  const blackId = room.blackSessionId;
+  const [whiteTok, blackTok] = await Promise.all([
+    redis.get(`ws:rejoin:player:${whiteId}`),
+    redis.get(`ws:rejoin:player:${blackId}`)
+  ]);
+  const delKeys: string[] = [];
+  if (whiteTok) {
+    delKeys.push(`ws:rejoin:${whiteTok}`, `ws:rejoin:player:${whiteId}`);
+  }
+  if (blackTok) {
+    delKeys.push(`ws:rejoin:${blackTok}`, `ws:rejoin:player:${blackId}`);
+  }
+  if (delKeys.length) await redis.del(...delKeys);
+}
+
 export const fourPlayerRejoinTokens = new Map<string, string>(); // token → playerId
 export const fourPlayerReconnectTimeouts = new Map<
   string,

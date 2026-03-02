@@ -1,22 +1,22 @@
-import { beforeEach, describe, expect, test } from 'bun:test';
-import { clearRateLimit, isRateLimited } from '../utils/rateLimit';
+import { describe, expect, test } from 'bun:test';
+import { isRateLimited } from '../utils/rateLimit';
+// Rate limiting is now backed by Redis; these are integration tests.
+// Each test uses a unique client ID to avoid cross-test state pollution.
 describe('rate limiting', () => {
-  const clientId = 'client-1';
-  beforeEach(() => {
-    clearRateLimit(clientId);
-  });
-  test('allows first 30 messages and limits the 31st within the window', () => {
+  test('allows first 30 messages and limits the 31st within the window', async () => {
+    const clientId = `ratelimit-test-${crypto.randomUUID()}`;
     for (let i = 0; i < 30; i++) {
-      expect(isRateLimited(clientId)).toBe(false);
+      expect(await isRateLimited(clientId)).toBe(false);
     }
-    expect(isRateLimited(clientId)).toBe(true);
+    expect(await isRateLimited(clientId)).toBe(true);
   });
-  test('clearRateLimit resets message history', () => {
+  test('different clients are rate limited independently', async () => {
+    const client1 = `ratelimit-test-${crypto.randomUUID()}`;
+    const client2 = `ratelimit-test-${crypto.randomUUID()}`;
     for (let i = 0; i < 31; i++) {
-      isRateLimited(clientId);
+      await isRateLimited(client1);
     }
-    expect(isRateLimited(clientId)).toBe(true);
-    clearRateLimit(clientId);
-    expect(isRateLimited(clientId)).toBe(false);
+    expect(await isRateLimited(client1)).toBe(true);
+    expect(await isRateLimited(client2)).toBe(false);
   });
 });

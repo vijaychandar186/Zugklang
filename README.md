@@ -27,6 +27,8 @@ Zugklang combines a **Next.js frontend** with a **Bun-powered WebSocket server**
 | Backend | Bun, TypeScript, Zod |
 | Chess Logic | chessops, react-chessboard, Fairy Stockfish WASM |
 | Database | PostgreSQL 16 via Prisma ORM |
+| Cache / Pub-Sub | Redis 7 (matchmaking, rejoin tokens, cross-pod routing) |
+| Job Queue | BullMQ (anti-cheat delivery, game records, abort/abandon timers) |
 | Auth | Auth.js v5 + Prisma adapter |
 | Infrastructure | Docker, Nginx, pgAdmin |
 
@@ -63,6 +65,7 @@ Zugklang/
 - **pnpm** — `npm install -g pnpm`
 - **Bun** — [bun.sh](https://bun.sh)
 - **PostgreSQL** 16 running locally
+- **Redis** 6+ running locally (`redis-server` or via Docker)
 
 ### 1. Database
 
@@ -116,6 +119,7 @@ Minimum required variables in `backend/ws-server/.env.local`:
 PORT=8080
 ALLOWED_ORIGINS=http://localhost:3000
 ADMIN_KEY=any-secret-admin-key
+REDIS_URL=redis://localhost:6379
 ```
 
 ```bash
@@ -310,9 +314,16 @@ docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma db push
 
 | Variable | Required | Description |
 |---|---|---|
-| `PORT` | Yes | Port to listen on (default: 8080) |
+| `PORT` | No | Port to listen on (default: 8080) |
 | `ALLOWED_ORIGINS` | No | Comma-separated allowed origins for WS upgrades |
-| `ADMIN_KEY` | No | Secret key for admin HTTP endpoints |
+| `ADMIN_KEY` | Yes | Secret key for admin HTTP endpoints |
+| `REDIS_URL` | No | Redis connection string (default: `redis://localhost:6379`) |
+| `POD_ID` | No | Unique pod identifier; auto-generated if not set |
+| `POD_URL` | No | Public WS URL of this pod for cross-pod reconnection |
+| `ANTI_CHEAT_URL` | No | Anti-cheat service base URL; leave unset to disable |
+| `GAME_RECORD_URL` | No | Next.js game-record endpoint URL |
+| `INTERNAL_API_SECRET` | No | Bearer token for the game-record endpoint |
+| `WORKER_CONCURRENCY` | No | BullMQ worker concurrency per queue (default: 5) |
 
 ### Anti-Cheat Service
 

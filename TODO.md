@@ -72,7 +72,9 @@ docker exec zugklang-postgres psql -U admin -d postgres -c "\l"
 * [x] ~~Dice and card pick sound assets~~
 * [ ] Guest mode
 * [ ] AntiCheat validation
-* [ ] AntiCheat Ruff lint and formatter integration
+* [x] ~~AntiCheat Ruff lint and formatter integration~~
+* [ ] AntiCheat dashboard
+* [ ] AntiCheat metrics
 * [x] ~~Rated/Unrated~~
 * [ ] Invite through email
 * [ ] Elo calculation adjustment

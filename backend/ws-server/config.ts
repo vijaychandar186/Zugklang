@@ -47,4 +47,20 @@ export const RATING_BAND_EXPAND_PER_SEC = 5;
 
 /** Base URL of the Kaladin anti-cheat FastAPI server.
  *  Leave empty to disable (no HTTP calls are made). */
-export const ANTI_CHEAT_URL: string = process.env.ANTI_CHEAT_URL ?? '';
+export const ANTI_CHEAT_URL: string = process.env['ANTI_CHEAT_URL'] ?? '';
+
+// ---------------------------------------------------------------------------
+// Redis TTLs
+// ---------------------------------------------------------------------------
+
+/** Seconds a challenge hash lives in Redis before auto-expiry. */
+export const CHALLENGE_TTL_SEC = 1800;
+
+/** Seconds a rejoin token lives in Redis before auto-expiry. */
+export const REJOIN_TOKEN_TTL_SEC = 3600;
+
+/** Seconds a room hash lives in Redis (refreshed on each move). */
+export const ROOM_TTL_SEC = 7200;
+
+/** Seconds a queued player's metadata hash lives in Redis. */
+export const QUEUE_PLAYER_TTL_SEC = 3600;

@@ -1,12 +1,16 @@
-import { rooms, challenges, queues, reconnectTimeouts } from '../state';
+import { rooms, challenges } from '../state';
+import { redis } from '../redis';
+
 const startedAt = Date.now();
+
 function handleHealth(): Response {
   return Response.json({
     status: 'ok',
     uptime: Math.floor((Date.now() - startedAt) / 1000)
   });
 }
-function handleStats(req: Request): Response {
+
+async function handleStatsAsync(req: Request): Promise<Response> {
   const adminKey = process.env['ADMIN_KEY'];
   if (!adminKey) {
     return new Response('Admin endpoint not configured', { status: 503 });
@@ -20,25 +24,31 @@ function handleStats(req: Request): Response {
     if (room.status === 'active') activeRooms++;
     else endedRooms++;
   }
+  const queueKeys = await redis.keys('queue:*:*:*:*');
   let queuedPlayers = 0;
-  for (const queue of queues.values()) {
-    queuedPlayers += queue.length;
+  for (const key of queueKeys) {
+    queuedPlayers += await redis.zcard(key);
   }
   return Response.json({
     activeRooms,
     endedRooms,
     challenges: challenges.size,
-    queuedPlayers,
-    reconnectingPlayers: reconnectTimeouts.size
+    queuedPlayers
   });
 }
-function handleAdmin(req: Request): Response {
+
+async function handleAdminAsync(req: Request): Promise<Response> {
   const adminKey = process.env['ADMIN_KEY'];
   if (!adminKey) {
     return new Response('Admin endpoint not configured', { status: 503 });
   }
   if (req.headers.get('authorization') !== `Bearer ${adminKey}`) {
     return new Response('Unauthorized', { status: 401 });
+  }
+  const queueKeys = await redis.keys('queue:*:*:*:*');
+  const queuesObj: Record<string, number> = {};
+  for (const key of queueKeys) {
+    queuesObj[key] = await redis.zcard(key);
   }
   return Response.json({
     rooms: [...rooms.values()].map((r) => ({
@@ -54,20 +64,21 @@ function handleAdmin(req: Request): Response {
       creatorColor: c.creatorColor,
       createdAt: c.createdAt
     })),
-    queues: Object.fromEntries(
-      [...queues.entries()].map(([k, v]) => [k, v.length])
-    )
+    queues: queuesObj
   });
 }
-export function handleHttpRequest(req: Request): Response | undefined {
+
+export function handleHttpRequest(
+  req: Request
+): Response | Promise<Response> | undefined {
   const { pathname } = new URL(req.url);
   switch (pathname) {
     case '/health':
       return handleHealth();
     case '/admin/stats':
-      return handleStats(req);
+      return handleStatsAsync(req);
     case '/admin':
-      return handleAdmin(req);
+      return handleAdminAsync(req);
     default:
       return undefined;
   }

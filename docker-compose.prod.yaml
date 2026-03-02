@@ -121,7 +121,7 @@ services:
     restart: always
     ports:
       - "8000:8000"
-    command: ["./start.sh", "prod"]
+    command: ["prod"]
     environment:
       DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/zugklang-anti-cheat"
       REDIS_URL: redis://redis:6379

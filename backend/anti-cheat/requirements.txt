@@ -70,7 +70,7 @@ charset-normalizer==3.4.4 \
     # via requests
 chess==1.11.2 \
     --hash=sha256:a8b43e5678fdb3000695bdaa573117ad683761e5ca38e591c4826eba6d25bb39
-    # via anti-cheat
+    # via zugklang-anti-cheat
 click==8.3.1 \
     --hash=sha256:12ff4785d337a1bb490bb7e9c2b1ee5da3112e94a8622f26a6c77f5d2fc6842a \
     --hash=sha256:981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6
@@ -86,6 +86,7 @@ colorama==0.4.6 ; sys_platform == 'win32' \
     --hash=sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6
     # via
     #   click
+    #   pytest
     #   tqdm
 contourpy==1.3.3 \
     --hash=sha256:083e12155b210502d0bca491432bb04d56dc3432f95a979b429f2848c3dbe880 \
@@ -138,10 +139,10 @@ cycler==0.12.1 \
     --hash=sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30 \
     --hash=sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c
     # via matplotlib
-fastapi==0.134.0 \
-    --hash=sha256:3122b1ea0dbeaab48b5976e80b99ca7eda02be154bf03e126a33220e73255a9a \
-    --hash=sha256:f4e7214f24b2262258492e05c48cf21125e4ffc427e30dd32fb4f74049a3d56a
-    # via anti-cheat
+fastapi==0.135.1 \
+    --hash=sha256:46e2fc5745924b7c840f71ddd277382af29ce1cdb7d5eab5bf697e3fb9999c9e \
+    --hash=sha256:d04115b508d936d254cea545b7312ecaa58a7b3a0f84952535b4c9afae7668cd
+    # via zugklang-anti-cheat
 flatbuffers==25.12.19 \
     --hash=sha256:7634f50c427838bb021c2d66a3d1168e9d199b0607e6329399f04846d42e20b4
     # via tensorflow
@@ -234,6 +235,48 @@ h5py==3.15.1 \
     # via
     #   keras
     #   tensorflow
+hiredis==3.3.0 \
+    --hash=sha256:087e2ef3206361281b1a658b5b4263572b6ba99465253e827796964208680459 \
+    --hash=sha256:105596aad9249634361815c574351f1bd50455dc23b537c2940066c4a9dea685 \
+    --hash=sha256:106e99885d46684d62ab3ec1d6b01573cc0e0083ac295b11aaa56870b536c7ec \
+    --hash=sha256:1799cc66353ad066bfdd410135c951959da9f16bcb757c845aab2f21fc4ef099 \
+    --hash=sha256:1bbc6b8a88bbe331e3ebf6685452cebca6dfe6d38a6d4efc5651d7e363ba28bd \
+    --hash=sha256:298593bb08487753b3afe6dc38bac2532e9bac8dcee8d992ef9977d539cc6776 \
+    --hash=sha256:2cbf71a121996ffac82436b6153290815b746afb010cac19b3290a1644381b07 \
+    --hash=sha256:2f855c678230aed6fc29b962ce1cc67e5858a785ef3a3fd6b15dece0487a2e60 \
+    --hash=sha256:334a3f1d14c253bb092e187736c3384203bd486b244e726319bbb3f7dffa4a20 \
+    --hash=sha256:4059c78a930cbb33c391452ccce75b137d6f89e2eebf6273d75dafc5c2143c03 \
+    --hash=sha256:45d14f745fc177bc05fc24bdf20e2b515e9a068d3d4cce90a0fb78d04c9c9d9a \
+    --hash=sha256:4ddc79afa76b805d364e202a754666cb3c4d9c85153cbfed522871ff55827838 \
+    --hash=sha256:54b14211fbd5930fc696f6fcd1f1f364c660970d61af065a80e48a1fa5464dd6 \
+    --hash=sha256:550f4d1538822fc75ebf8cf63adc396b23d4958bdbbad424521f2c0e3dfcb169 \
+    --hash=sha256:55d8c18fe9a05496c5c04e6eccc695169d89bf358dff964bcad95696958ec05f \
+    --hash=sha256:616868352e47ab355559adca30f4f3859f9db895b4e7bc71e2323409a2add751 \
+    --hash=sha256:69079fb0f0ebb61ba63340b9c4bce9388ad016092ca157e5772eb2818209d930 \
+    --hash=sha256:80638ebeab1cefda9420e9fedc7920e1ec7b4f0513a6b23d58c9d13c882f8065 \
+    --hash=sha256:85b9baf98050e8f43c2826ab46aaf775090d608217baf7af7882596aef74e7f9 \
+    --hash=sha256:8e8a4b8540581dcd1b2b25827a54cfd538e0afeaa1a0e3ca87ad7126965981cc \
+    --hash=sha256:8f88f4f2aceb73329ece86a1cb0794fdbc8e6d614cb5ca2d1023c9b7eb432db8 \
+    --hash=sha256:9ef1dfb0d2c92c3701655e2927e6bbe10c499aba632c7ea57b6392516df3864b \
+    --hash=sha256:a1a67530da714954ed50579f4fe1ab0ddbac9c43643b1721c2cb226a50dde263 \
+    --hash=sha256:a68aaf9ba024f4e28cf23df9196ff4e897bd7085872f3a30644dca07fa787816 \
+    --hash=sha256:a7cbbc6026bf03659f0b25e94bbf6e64f6c8c22f7b4bc52fe569d041de274194 \
+    --hash=sha256:a8def89dd19d4e2e4482b7412d453dec4a5898954d9a210d7d05f60576cedef6 \
+    --hash=sha256:b0fb4bea72fe45ff13e93ddd1352b43ff0749f9866263b5cca759a4c960c776f \
+    --hash=sha256:b442b6ab038a6f3b5109874d2514c4edf389d8d8b553f10f12654548808683bc \
+    --hash=sha256:b7048b4ec0d5dddc8ddd03da603de0c4b43ef2540bf6e4c54f47d23e3480a4fa \
+    --hash=sha256:ba063fdf1eff6377a0c409609cbe890389aefddfec109c2d20fcc19cfdafe9da \
+    --hash=sha256:c135bda87211f7af9e2fd4e046ab433c576cd17b69e639a0f5bb2eed5e0e71a9 \
+    --hash=sha256:c17f77b79031ea4b0967d30255d2ae6e7df0603ee2426ad3274067f406938236 \
+    --hash=sha256:c290da6bc2a57e854c7da9956cd65013483ede935677e84560da3b848f253596 \
+    --hash=sha256:c9e96f63dbc489fc86f69951e9f83dadb9582271f64f6822c47dcffa6fac7e4a \
+    --hash=sha256:e5f86ce5a779319c15567b79e0be806e8e92c18bb2ea9153e136312fafa4b7d6 \
+    --hash=sha256:e799b79f3150083e9702fc37e6243c0bd47a443d6eae3f3077b0b3f510d6a145 \
+    --hash=sha256:f7f80442a32ce51ee5d89aeb5a84ee56189a0e0e875f1a57bbf8d462555ae48f \
+    --hash=sha256:fbdb97a942e66016fff034df48a7a184e2b7dc69f14c4acd20772e156f20d04b \
+    --hash=sha256:fd137b147235447b3d067ec952c5b9b95ca54b71837e1b38dbb2ec03b89f24fc \
+    --hash=sha256:fd8c438d9e1728f0085bf9b3c9484d19ec31f41002311464e75b69550c32ffa8
+    # via redis
 httpcore==1.0.9 \
     --hash=sha256:2d400746a40668fc9dec9810239072b40b4484b640a8c38fd654a024c7a1bf55 \
     --hash=sha256:6e34463af53fd2ab5d807f399a9b45ea31c3dfa2276f15a2c3f00afff6e176e8
@@ -249,6 +292,10 @@ idna==3.11 \
     #   anyio
     #   httpx
     #   requests
+iniconfig==2.3.0 \
+    --hash=sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730 \
+    --hash=sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12
+    # via pytest
 jinja2==3.1.6 \
     --hash=sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d \
     --hash=sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67
@@ -266,7 +313,7 @@ keras==3.13.2 \
 keras-tuner==1.4.8 \
     --hash=sha256:53034e71608051a17c7f764f282e1e54b52c4d69c05a30f1e8891c8e5ea7739f \
     --hash=sha256:809e78538ea5c8e048012ef1d680712d56f28cf9dfa4938a2daace1ab30c4828
-    # via anti-cheat
+    # via zugklang-anti-cheat
 kiwisolver==1.4.9 \
     --hash=sha256:0749fd8f4218ad2e851e11cc4dc05c7cbc0cbc4267bdfdb31782e65aace4ee9c \
     --hash=sha256:0763515d4df10edf6d06a3c19734e2566368980d21ebec439f33f9eb936c07b7 \
@@ -435,7 +482,7 @@ matplotlib==3.10.8 \
     --hash=sha256:e8ea3e2d4066083e264e75c829078f9e149fa119d27e19acd503de65e0b13149 \
     --hash=sha256:eb3823f11823deade26ce3b9f40dcb4a213da7a670013929f31d5f5ed1055b22 \
     --hash=sha256:f89c151aab2e2e23cb3fe0acad1e8b82841fd265379c4cecd0f3fcb34c15e0f6
-    # via anti-cheat
+    # via zugklang-anti-cheat
 mdurl==0.1.2 \
     --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8 \
     --hash=sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba
@@ -529,7 +576,6 @@ numpy==2.4.2 \
     --hash=sha256:fcf92bee92742edd401ba41135185866f7026c502617f422eb432cfeca4fe236 \
     --hash=sha256:fd49860271d52127d61197bb50b64f58454e9f578cb4b2c001a6de8b1f50b0b1
     # via
-    #   anti-cheat
     #   contourpy
     #   h5py
     #   keras
@@ -542,6 +588,7 @@ numpy==2.4.2 \
     #   shap
     #   tensorboard
     #   tensorflow
+    #   zugklang-anti-cheat
 opt-einsum==3.4.0 \
     --hash=sha256:69bb92469f86a1565195ece4ac0323943e83477171b91d24c35afe028a90d7cd \
     --hash=sha256:96ca72f1b886d148241348783498194c577fa30a8faac108586b14f1ba4473ac
@@ -606,6 +653,7 @@ packaging==26.0 \
     #   keras
     #   keras-tuner
     #   matplotlib
+    #   pytest
     #   shap
     #   tensorboard
     #   tensorflow
@@ -644,8 +692,8 @@ pandas==3.0.1 \
     --hash=sha256:d54855f04f8246ed7b6fc96b05d4871591143c46c0b6f4af874764ed0d2d6f06 \
     --hash=sha256:eca8b4510f6763f3d37359c2105df03a7a221a508f30e396a51d0713d462e68a
     # via
-    #   anti-cheat
     #   shap
+    #   zugklang-anti-cheat
 pillow==12.1.1 \
     --hash=sha256:02f84dfad02693676692746df05b89cf25597560db2857363a208e393429f5e9 \
     --hash=sha256:0330d233c1a0ead844fc097a7d16c0abff4c12e856c0b325f231820fee1f39da \
@@ -701,10 +749,14 @@ pillow==12.1.1 \
     # via
     #   matplotlib
     #   tensorboard
+pluggy==1.6.0 \
+    --hash=sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3 \
+    --hash=sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746
+    # via pytest
 prisma==0.15.0 \
     --hash=sha256:5cd6402aa8322625db3fc1152040404e7fc471fe7f8fa3a314fa8a99529ca107 \
     --hash=sha256:de949cc94d3d91243615f22ff64490aa6e2d7cb81aabffce53d92bd3977c09a4
-    # via anti-cheat
+    # via zugklang-anti-cheat
 protobuf==7.34.0 \
     --hash=sha256:3871a3df67c710aaf7bb8d214cc997342e63ceebd940c8c7fc65c9b3d697591a \
     --hash=sha256:4a72a8ec94e7a9f7ef7fe818ed26d073305f347f8b3b5ba31e22f81fd85fca02 \
@@ -772,23 +824,32 @@ pydantic-core==2.41.5 \
 pygments==2.19.2 \
     --hash=sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887 \
     --hash=sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b
-    # via rich
+    # via
+    #   pytest
+    #   rich
 pyparsing==3.3.2 \
     --hash=sha256:850ba148bd908d7e2411587e247a1e4f0327839c40e2e5e6d05a007ecc69911d \
     --hash=sha256:c777f4d763f140633dcb6d8a3eda953bf7a214dc4eff598413c070bcdc117cbc
     # via matplotlib
+pytest==9.0.2 \
+    --hash=sha256:711ffd45bf766d5264d487b917733b453d917afd2b0ad65223959f59089f875b \
+    --hash=sha256:75186651a92bd89611d1d9fc20f0b4345fd827c41ccd5c299a868a05d70edf11
 python-dateutil==2.9.0.post0 \
     --hash=sha256:37dd54208da7e1cd875388217d5e00ebd4179249f90fb72437e91a35459a0ad3 \
     --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
     # via
     #   matplotlib
     #   pandas
-python-dotenv==1.2.1 \
-    --hash=sha256:42667e897e16ab0d66954af0e60a9caa94f0fd4ecf3aaf6d2d260eec1aa36ad6 \
-    --hash=sha256:b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61
+python-dotenv==1.2.2 \
+    --hash=sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a \
+    --hash=sha256:2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3
     # via
-    #   anti-cheat
     #   prisma
+    #   zugklang-anti-cheat
+redis==7.2.1 \
+    --hash=sha256:49e231fbc8df2001436ae5252b3f0f3dc930430239bfeb6da4c7ee92b16e5d33 \
+    --hash=sha256:6163c1a47ee2d9d01221d8456bc1c75ab953cbda18cfbc15e7140e9ba16ca3a5
+    # via zugklang-anti-cheat
 requests==2.32.5 \
     --hash=sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6 \
     --hash=sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf
@@ -799,6 +860,25 @@ rich==14.3.3 \
     --hash=sha256:793431c1f8619afa7d3b52b2cdec859562b950ea0d4b6b505397612db8d5362d \
     --hash=sha256:b8daa0b9e4eef54dd8cf7c86c03713f53241884e814f4e2f5fb342fe520f639b
     # via keras
+ruff==0.15.4 \
+    --hash=sha256:04196ad44f0df220c2ece5b0e959c2f37c777375ec744397d21d15b50a75264f \
+    --hash=sha256:291258c917539e18f6ba40482fe31d6f5ac023994ee11d7bdafd716f2aab8a68 \
+    --hash=sha256:3412195319e42d634470cc97aa9803d07e9d5c9223b99bcb1518f0c725f26ae1 \
+    --hash=sha256:3f1c4893841ff2d54cbda1b2860fa3260173df5ddd7b95d370186f8a5e66a4ac \
+    --hash=sha256:3f83c45911da6f2cd5936c436cf86b9f09f09165f033a99dcf7477e34041cbc3 \
+    --hash=sha256:451a2e224151729b3b6c9ffb36aed9091b2996fe4bdbd11f47e27d8f2e8888ec \
+    --hash=sha256:5a1632c66672b8b4d3e1d1782859e98d6e0b4e70829530666644286600a33992 \
+    --hash=sha256:60d5177e8cfc70e51b9c5fad936c634872a74209f934c1e79107d11787ad5453 \
+    --hash=sha256:65594a2d557d4ee9f02834fcdf0a28daa8b3b9f6cb2cb93846025a36db47ef22 \
+    --hash=sha256:820b8766bd65503b6c30aaa6331e8ef3a6e564f7999c844e9a547c40179e440a \
+    --hash=sha256:917cc68503357021f541e69b35361c99387cdbbf99bd0ea4aa6f28ca99ff5338 \
+    --hash=sha256:a1810931c41606c686bae8b5b9a8072adac2f611bb433c0ba476acba17a332e0 \
+    --hash=sha256:a4386ba2cd6c0f4ff75252845906acc7c7c8e1ac567b7bc3d373686ac8c222ba \
+    --hash=sha256:a8f157f2e583c513c4f5f896163a93198297371f34c04220daf40d133fdd4f7f \
+    --hash=sha256:b2496488bdfd3732747558b6f95ae427ff066d1fcd054daf75f5a50674411e75 \
+    --hash=sha256:c9fb74bab47139c1751f900f857fa503987253c3ef89129b24ed375e72873e85 \
+    --hash=sha256:e9737c8161da79fd7cfec19f1e35620375bd8b2a50c3e77fa3d2c16f574105cc \
+    --hash=sha256:f80c98765949c518142b3a50a5db89343aa90f2c2bf7799de9986498ae6176db
 scikit-learn==1.8.0 \
     --hash=sha256:00d6f1d66fbcf4eba6e356e1420d33cc06c70a45bb1363cd6f6a8e4ebbbdece2 \
     --hash=sha256:0d6ae97234d5d7079dc0040990a6f7aeb97cb7fa7e8945f1999a429b23569e0a \
@@ -826,8 +906,8 @@ scikit-learn==1.8.0 \
     --hash=sha256:fb65db5d7531bccf3a4f6bec3462223bea71384e2cda41da0f10b7c292b9e7c4 \
     --hash=sha256:fe1c011a640a9f0791146011dfd3c7d9669785f9fed2b2a5f9e207536cf5c2fd
     # via
-    #   anti-cheat
     #   shap
+    #   zugklang-anti-cheat
 scipy==1.17.1 \
     --hash=sha256:010f4333c96c9bb1a4516269e33cb5917b08ef2166d5556ca2fd9f082a9e6ea0 \
     --hash=sha256:08b900519463543aa604a06bec02461558a6e1cef8fdbb8098f77a48a83c8118 \
@@ -887,16 +967,16 @@ shap==0.49.1 \
     --hash=sha256:d8dfa5654eccf4d13dcb262a10314a4e0eb1060db842b2ef31e9fb0038168bc1 \
     --hash=sha256:ed3080030a6000d3737841c5770ed555b8a922b794fa0ba5aae1e45655eda1fa \
     --hash=sha256:f4faf61560f73a66f4f26bc027c91f8939201979c4db24949dca305ba0a2ad36
-    # via anti-cheat
+    # via zugklang-anti-cheat
 six==1.17.0 \
     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274 \
     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81
     # via
-    #   anti-cheat
     #   astunparse
     #   google-pasta
     #   python-dateutil
     #   tensorflow
+    #   zugklang-anti-cheat
 slicer==0.0.8 \
     --hash=sha256:2e7553af73f0c0c2d355f4afcc3ecf97c6f2156fcf4593955c3f56cf6c4d6eb7 \
     --hash=sha256:6c206258543aecd010d497dc2eca9d2805860a0b3758673903456b7df7934dc3
@@ -919,8 +999,8 @@ tensorflow==2.20.0 \
     --hash=sha256:5fa3729b0126f75a99882b89fb7d536515721eda8014a63e259e780ba0a37372 \
     --hash=sha256:c25edad45e8cb9e76366f7a8c835279f9169028d610f3b52ce92d332a1b05438
     # via
-    #   anti-cheat
     #   tf-keras
+    #   zugklang-anti-cheat
 termcolor==3.3.0 \
     --hash=sha256:348871ca648ec6a9a983a13ab626c0acce02f515b9e1983332b17af7979521c5 \
     --hash=sha256:cf642efadaf0a8ebbbf4bc7a31cec2f9b5f21a9f726f4ccbb08192c9c26f43a5
@@ -928,7 +1008,7 @@ termcolor==3.3.0 \
 tf-keras==2.20.1 \
     --hash=sha256:3f0e0a34d9a4c8758f24fdc1053e6e335f16ab5534c7d34f1899b8924779760c \
     --hash=sha256:884be5938fb0b2b53b1583c1ae2b660ef87215377c29b5b6a77fd221b472aeaf
-    # via anti-cheat
+    # via zugklang-anti-cheat
 threadpoolctl==3.6.0 \
     --hash=sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb \
     --hash=sha256:8ab8b4aa3491d812b623328249fab5302a68d2d71745c8a4c719a2fcaba9f44e
@@ -971,7 +1051,7 @@ urllib3==2.6.3 \
 uvicorn==0.41.0 \
     --hash=sha256:09d11cf7008da33113824ee5a1c6422d89fbc2ff476540d69a34c87fab8b571a \
     --hash=sha256:29e35b1d2c36a04b9e180d4007ede3bcb32a85fbdfd6c6aeb3f26839de088187
-    # via anti-cheat
+    # via zugklang-anti-cheat
 werkzeug==3.1.6 \
     --hash=sha256:210c6bede5a420a913956b4791a7f4d6843a43b6fcee4dfa08a65e93007d0d25 \
     --hash=sha256:7ddf3357bb9564e407607f988f683d72038551200c704012bb9a4c523d42f131

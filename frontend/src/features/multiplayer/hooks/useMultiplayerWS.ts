@@ -187,126 +187,6 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     sendPing();
     pingTimerRef.current = setInterval(sendPing, PING_INTERVAL_MS);
   }, [sendPing, stopPing]);
-  const connect = useCallback((): Promise<void> => {
-    if (wsRef.current?.readyState === WebSocket.OPEN) {
-      return Promise.resolve();
-    }
-    if (wsRef.current?.readyState === WebSocket.CONNECTING) {
-      return new Promise((resolve, reject) => {
-        wsRef.current!.addEventListener('open', () => resolve(), {
-          once: true
-        });
-        wsRef.current!.addEventListener(
-          'error',
-          () => reject(new Error('WebSocket error')),
-          { once: true }
-        );
-      });
-    }
-    if (wsRef.current) {
-      wsRef.current.onclose = null;
-      wsRef.current.onerror = null;
-      wsRef.current = null;
-    }
-    if (connectPromiseRef.current) return connectPromiseRef.current;
-    setState((s) => ({ ...s, status: 'connecting', errorMessage: null }));
-    const promise = new Promise<void>((resolve, reject) => {
-      fetchWsToken()
-        .then((token) => {
-          if (!token) {
-            setState((s) => ({
-              ...s,
-              status: 'error',
-              errorMessage: 'Sign in required to play multiplayer games.'
-            }));
-            reject(new Error('Unauthenticated'));
-            return;
-          }
-          const wsUrl = `${WS_URL}?token=${encodeURIComponent(token)}`;
-          let ws: WebSocket;
-          try {
-            ws = new WebSocket(wsUrl);
-          } catch {
-            setState((s) => ({
-              ...s,
-              status: 'error',
-              errorMessage: 'Failed to create WebSocket connection'
-            }));
-            reject(new Error('Failed to create WebSocket'));
-            return;
-          }
-          wsRef.current = ws;
-          ws.onopen = () => {
-            isPrimaryRef.current = true;
-            try {
-              localStorage.setItem(LS_ACTIVE_KEY, '1');
-            } catch {}
-            setState((s) => ({ ...s, isSecondaryTab: false }));
-            startPing();
-            resolve();
-          };
-          ws.onerror = () => {
-            setState((s) => ({
-              ...s,
-              status: 'error',
-              errorMessage:
-                'Connection error. Make sure the game server is running.'
-            }));
-            reject(new Error('WebSocket error'));
-          };
-          ws.onclose = (event: CloseEvent) => {
-            isPrimaryRef.current = false;
-            stopPing();
-            if (event.code === 1000 && event.reason === 'Session superseded') {
-              setState((s) => ({
-                ...s,
-                status: 'idle',
-                errorMessage: null,
-                isSecondaryTab: true
-              }));
-              return;
-            }
-            try {
-              localStorage.removeItem(LS_ACTIVE_KEY);
-            } catch {}
-            setState((s) => {
-              if (s.status === 'error') return s;
-              if (
-                s.status === 'playing' ||
-                s.status === 'waiting' ||
-                s.status === 'connecting'
-              ) {
-                return {
-                  ...s,
-                  status: 'error',
-                  errorMessage: 'Connection lost. Please try again.'
-                };
-              }
-              return { ...s, status: 'idle', errorMessage: null };
-            });
-          };
-          ws.onmessage = (event: MessageEvent) => {
-            try {
-              const msg = JSON.parse(event.data as string) as ServerMessage;
-              handleServerMessage(msg);
-            } catch {}
-          };
-        })
-        .catch(() => {
-          setState((s) => ({
-            ...s,
-            status: 'error',
-            errorMessage:
-              'Connection error. Make sure the game server is running.'
-          }));
-          reject(new Error('Token fetch failed'));
-        });
-    }).finally(() => {
-      connectPromiseRef.current = null;
-    });
-    connectPromiseRef.current = promise;
-    return promise;
-  }, [startPing, stopPing, handleServerMessage]);
   const handleServerMessage = useCallback(
     (msg: ServerMessage): void => {
       switch (msg.type) {
@@ -556,6 +436,126 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
     },
     [sendRaw, startPing]
   );
+  const connect = useCallback((): Promise<void> => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      return Promise.resolve();
+    }
+    if (wsRef.current?.readyState === WebSocket.CONNECTING) {
+      return new Promise((resolve, reject) => {
+        wsRef.current!.addEventListener('open', () => resolve(), {
+          once: true
+        });
+        wsRef.current!.addEventListener(
+          'error',
+          () => reject(new Error('WebSocket error')),
+          { once: true }
+        );
+      });
+    }
+    if (wsRef.current) {
+      wsRef.current.onclose = null;
+      wsRef.current.onerror = null;
+      wsRef.current = null;
+    }
+    if (connectPromiseRef.current) return connectPromiseRef.current;
+    setState((s) => ({ ...s, status: 'connecting', errorMessage: null }));
+    const promise = new Promise<void>((resolve, reject) => {
+      fetchWsToken()
+        .then((token) => {
+          if (!token) {
+            setState((s) => ({
+              ...s,
+              status: 'error',
+              errorMessage: 'Sign in required to play multiplayer games.'
+            }));
+            reject(new Error('Unauthenticated'));
+            return;
+          }
+          const wsUrl = `${WS_URL}?token=${encodeURIComponent(token)}`;
+          let ws: WebSocket;
+          try {
+            ws = new WebSocket(wsUrl);
+          } catch {
+            setState((s) => ({
+              ...s,
+              status: 'error',
+              errorMessage: 'Failed to create WebSocket connection'
+            }));
+            reject(new Error('Failed to create WebSocket'));
+            return;
+          }
+          wsRef.current = ws;
+          ws.onopen = () => {
+            isPrimaryRef.current = true;
+            try {
+              localStorage.setItem(LS_ACTIVE_KEY, '1');
+            } catch {}
+            setState((s) => ({ ...s, isSecondaryTab: false }));
+            startPing();
+            resolve();
+          };
+          ws.onerror = () => {
+            setState((s) => ({
+              ...s,
+              status: 'error',
+              errorMessage:
+                'Connection error. Make sure the game server is running.'
+            }));
+            reject(new Error('WebSocket error'));
+          };
+          ws.onclose = (event: CloseEvent) => {
+            isPrimaryRef.current = false;
+            stopPing();
+            if (event.code === 1000 && event.reason === 'Session superseded') {
+              setState((s) => ({
+                ...s,
+                status: 'idle',
+                errorMessage: null,
+                isSecondaryTab: true
+              }));
+              return;
+            }
+            try {
+              localStorage.removeItem(LS_ACTIVE_KEY);
+            } catch {}
+            setState((s) => {
+              if (s.status === 'error') return s;
+              if (
+                s.status === 'playing' ||
+                s.status === 'waiting' ||
+                s.status === 'connecting'
+              ) {
+                return {
+                  ...s,
+                  status: 'error',
+                  errorMessage: 'Connection lost. Please try again.'
+                };
+              }
+              return { ...s, status: 'idle', errorMessage: null };
+            });
+          };
+          ws.onmessage = (event: MessageEvent) => {
+            try {
+              const msg = JSON.parse(event.data as string) as ServerMessage;
+              handleServerMessage(msg);
+            } catch {}
+          };
+        })
+        .catch(() => {
+          setState((s) => ({
+            ...s,
+            status: 'error',
+            errorMessage:
+              'Connection error. Make sure the game server is running.'
+          }));
+          reject(new Error('Token fetch failed'));
+        });
+    }).finally(() => {
+      connectPromiseRef.current = null;
+    });
+    connectPromiseRef.current = promise;
+    return promise;
+  }, [startPing, stopPing, handleServerMessage]);
   useEffect(() => {
     if (isPrimaryRef.current && channelRef.current) {
       channelRef.current.postMessage({

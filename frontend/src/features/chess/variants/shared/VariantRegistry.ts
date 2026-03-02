@@ -1,6 +1,7 @@
 import { ChessVariant } from '@/features/chess/config/variants';
 import type { Move } from '@/lib/chess/chess';
-type HookFunction = (params: unknown) => unknown;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type HookFunction = (params: any) => any;
 export type VariantModule = {
   hooks?: {
     useOverlay?: HookFunction;
@@ -8,9 +9,12 @@ export type VariantModule = {
     useThreats?: HookFunction;
   };
   components?: {
-    Overlay?: React.ComponentType<Record<string, unknown>>;
-    Pocket?: React.ComponentType<Record<string, unknown>>;
-    BoardOverlay?: React.ComponentType<Record<string, unknown>>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Overlay?: React.ComponentType<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Pocket?: React.ComponentType<any>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    BoardOverlay?: React.ComponentType<any>;
   };
   sounds?: {
     onMove?: (move: Move, isCapture: boolean) => void;

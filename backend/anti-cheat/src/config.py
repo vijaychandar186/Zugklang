@@ -19,6 +19,7 @@ config = load_config()
 DATABASE_URL: str = config.get(
     "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/kaladin"
 )
+REDIS_URL: str = config.get("REDIS_URL", "redis://localhost:6379")
 
 LOGGING_LEVEL: str = config.get("LOGGING_LEVEL", "INFO").upper()
 BATCH_TIMEOUT: int = int(config.get("BATCH_TIMEOUT", 30))

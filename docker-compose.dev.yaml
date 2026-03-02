@@ -1,5 +1,22 @@
 services:
 
+  redis:
+    image: redis:8-alpine
+    container_name: zugklang-redis-dev
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - zugklang-net
+
   postgres:
     image: postgres:16-alpine
     container_name: zugklang-postgres-dev
@@ -52,6 +69,7 @@ services:
       # Token introspection: ws-server calls frontend to verify WS auth tokens.
       # No shared secret needed — tokens are one-time UUIDs issued by the frontend.
       NEXT_APP_URL: http://frontend:3000
+      REDIS_URL: redis://redis:6379
       # ALLOWED_ORIGINS: leave unset to allow all origins in dev.
       # Set in ./backend/ws-server/.env.local to restrict (e.g. for Codespaces).
       # ADMIN_KEY: set in .env or override here
@@ -63,6 +81,7 @@ services:
       - ws_node_modules:/usr/src/app/node_modules
     depends_on:
       - frontend
+      - redis
     networks:
       - zugklang-net
 
@@ -79,6 +98,7 @@ services:
     environment:
       NODE_ENV: development
       DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/zugklang-frontend"
+      REDIS_URL: redis://redis:6379
       # AUTH_URL, AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET: set in .env.local
     env_file:
       - path: ./frontend/.env.local
@@ -92,6 +112,8 @@ services:
       - /app/src/generated
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - zugklang-net
@@ -135,17 +157,21 @@ services:
     command: ["./start.sh", "dev"]
     environment:
       DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/zugklang-anti-cheat"
+      REDIS_URL: redis://redis:6379
     env_file:
       - path: ./backend/anti-cheat/.env
         required: false
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - zugklang-net
 
 volumes:
   postgres_dev_data:
+  redis_dev_data:
   ws_node_modules:
   pga_dev_data:
 

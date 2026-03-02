@@ -48,6 +48,7 @@ import {
   handleRejoinFourPlayerLobby
 } from './handlers/fourPlayer';
 import { GC_INTERVAL_MS, GC_ROOM_MAX_AGE_MS } from './config';
+import { redisSub } from './redis';
 const PORT = parseInt(process.env['PORT'] ?? '8080', 10);
 const ALLOWED_ORIGINS =
   process.env['ALLOWED_ORIGINS']
@@ -277,6 +278,29 @@ Bun.serve<SocketData>({
   }
 });
 logger.info('server_started', { port: PORT });
+
+// Subscribe to anti-cheat analysis completion events and forward them to the
+// relevant connected player so the UI can react in real time.
+redisSub.subscribe('analysis:done', (err) => {
+  if (err) logger.error('redis_subscribe_error', { error: String(err) });
+  else logger.info('redis_subscribed', { channel: 'analysis:done' });
+});
+redisSub.on('message', (_channel: string, message: string) => {
+  try {
+    const { username, pred, tc } = JSON.parse(message) as {
+      username: string;
+      pred: number;
+      tc: number;
+    };
+    const ws = connectedUserIds.get(username);
+    if (ws) {
+      ws.send(JSON.stringify({ type: 'analysis_done', pred, tc }));
+    }
+  } catch {
+    logger.warn('redis_message_parse_error', { message });
+  }
+});
+
 setInterval(() => {
   const threshold = Date.now() - GC_ROOM_MAX_AGE_MS;
   let roomsCleaned = 0;

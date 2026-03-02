@@ -1,11 +1,11 @@
 """QueueManager: polls the analysis_queue table, runs batch inference, writes results."""
 from __future__ import annotations
 
+import json
 import logging
-import time
 from copy import deepcopy
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 from prisma import Prisma
 
@@ -19,6 +19,7 @@ from .config import (
 from .db import db_retry, get_db
 from .ml.explainer import load_shap_explainer
 from .ml.prediction import run_inference
+from .redis_client import get_redis
 from .schemas import AnalysisError
 
 import os
@@ -90,6 +91,11 @@ class QueueManager:
 
     @db_retry(log)
     def _fetch_next(self, pending: List[Record]) -> None:
+        # Block on Redis list for up to BATCH_REFRESH_WAIT seconds as a wake-up
+        # signal. Falls through to the DB fetch regardless of whether a message
+        # was received so that stale/retried jobs are still picked up.
+        get_redis().blpop("analysis:queue:notify", timeout=BATCH_REFRESH_WAIT)
+
         cutoff = datetime.utcnow() - timedelta(seconds=10 * BATCH_TIMEOUT)
         record = self.db.analysisqueue.find_first(
             where={
@@ -102,7 +108,6 @@ class QueueManager:
             order={"priority": "desc"},
         )
         if record is None:
-            time.sleep(BATCH_REFRESH_WAIT)
             return
         self.db.analysisqueue.update(
             where={"username": record.username},
@@ -112,6 +117,7 @@ class QueueManager:
 
     @db_retry(log)
     def _write_results(self, completed: List[Record]) -> None:
+        redis = get_redis()
         for doc in completed:
             r = doc.get("_result", {})
             self.db.analysisqueue.update(
@@ -127,6 +133,15 @@ class QueueManager:
                     "insight3": r.get("insight3"),
                 },
             )
+            if r.get("error") is None:
+                redis.publish(
+                    "analysis:done",
+                    json.dumps({
+                        "username": doc["username"],
+                        "pred": r.get("pred"),
+                        "tc": r.get("tc"),
+                    }),
+                )
 
     def _analyse_single(self, doc: Record) -> None:
         self._write_results(self._analyse_batch([doc]))

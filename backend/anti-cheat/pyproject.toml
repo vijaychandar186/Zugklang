@@ -15,6 +15,7 @@ dependencies = [
     "six>=1.17.0",
     "chess>=1.10.0",
     "prisma>=0.15.0",
+    "redis[hiredis]>=5.0",
     "fastapi>=0.134.0",
     "tensorflow>=2.20.0",
     "tf-keras>=2.16.0",

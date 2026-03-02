@@ -25,6 +25,7 @@ from .ml.explainer import load_shap_explainer
 from .ml.prediction import run_inference
 from .ml.training import train_model
 from .queue_manager import QueueManager
+from .redis_client import close_redis, get_redis
 from .schemas import (
     AnalyseRequest,
     AnalyseResponse,
@@ -35,6 +36,7 @@ from .schemas import (
     QueueStatusResponse,
 )
 
+import json
 import os
 
 
@@ -75,6 +77,8 @@ async def lifespan(app: FastAPI):
     _db = init_db()
     log.info("Connected to PostgreSQL via Prisma.")
 
+    get_redis()
+
     for cfg in MODEL_CONFIGS:
         model_dir = os.path.join(MODEL_DIR, f"eval{cfg[0]}_tc{cfg[1]}_days{cfg[2]}") + os.sep
         saved_model_path = os.path.join(model_dir, "model.SavedModel")
@@ -87,6 +91,7 @@ async def lifespan(app: FastAPI):
     yield
     close_db()
     log.info("Database connection closed.")
+    close_redis()
 
 
 # ---------------------------------------------------------------------------
@@ -161,11 +166,21 @@ async def ingest_game_endpoint(data: GameIngestionRequest) -> GameIngestionRespo
     """
     if _db is None:
         raise HTTPException(status_code=503, detail="Database not connected.")
+
+    r = get_redis()
+    rate_key = f"ratelimit:game:{data.game_id}"
+    if r.set(rate_key, 1, nx=True, ex=60) is None:
+        raise HTTPException(status_code=429, detail="Game already being processed.")
+
     try:
         white_n, black_n = ingest_game(data, _db)
         log.info(
             "Ingested game %s | variant=%s | result=%s | white_moves=%d | black_moves=%d",
             data.game_id[:8], data.variant, data.result, white_n, black_n,
+        )
+        r.rpush(
+            "analysis:queue:notify",
+            json.dumps({"white": data.white_username, "black": data.black_username}),
         )
         return GameIngestionResponse(
             stored=True,
@@ -173,6 +188,7 @@ async def ingest_game_endpoint(data: GameIngestionRequest) -> GameIngestionRespo
             black_moves_stored=black_n,
         )
     except Exception as exc:
+        r.delete(rate_key)
         log.error("Game ingestion failed for game %s: %s", data.game_id, exc)
         raise HTTPException(status_code=500, detail="Ingestion failed.")
 

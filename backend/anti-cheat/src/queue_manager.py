@@ -14,15 +14,13 @@ from .config import (
     BATCH_SIZE,
     BATCH_TIMEOUT,
     MODEL_CONFIGS,
-    MODEL_DIR,
+    resolve_model_dir_path,
 )
 from .db import db_retry, get_db
 from .ml.explainer import load_shap_explainer
 from .ml.prediction import run_inference
 from .redis_client import get_redis
 from .schemas import AnalysisError
-
-import os
 
 log = logging.getLogger(__name__)
 
@@ -35,9 +33,7 @@ class QueueManager:
     def __init__(self) -> None:
         self.db: Prisma = get_db()
         self.explainers = {
-            cfg: load_shap_explainer(
-                os.path.join(MODEL_DIR, f"eval{cfg[0]}_tc{cfg[1]}_days{cfg[2]}") + os.sep
-            )
+            cfg: load_shap_explainer(resolve_model_dir_path(cfg[0], cfg[1], cfg[2]))
             for cfg in MODEL_CONFIGS
         }
         log.info("QueueManager initialised.")

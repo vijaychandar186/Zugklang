@@ -18,6 +18,8 @@ from ..config import (
     MODEL_DIR,
     TIME_CONTROLS,
     USE_EVAL,
+    model_artifact_path,
+    resolve_model_dir_path,
 )
 from ..db import load_pickle, db_retry, save_pickle
 from ..insights import (
@@ -58,7 +60,7 @@ def _predict_single_config(
     explainer: Optional[shap.DeepExplainer],
     model_dir: str,
 ) -> pd.DataFrame:
-    model = load_model_for_inference(os.path.join(model_dir, "model.SavedModel"))
+    model = load_model_for_inference(model_artifact_path(model_dir, must_exist=True))
     preds = model.predict(inputs)
     output = pd.DataFrame(
         {"user": users, "tc": tc, "days": days, "label": labels, "pred": np.ravel(preds)})
@@ -88,7 +90,7 @@ def run_predictions(
                 continue
             data = KaladinData(days, tc, use_eval, data_dict)
             explainer = explainers.get((use_eval, tc, days)) if explainers else None
-            model_dir = os.path.join(MODEL_DIR, f"eval{use_eval}_tc{tc}_days{days}") + os.sep
+            model_dir = resolve_model_dir_path(use_eval, tc, days)
             frames.append(_predict_single_config(
                 days, tc, use_eval,
                 data.test_user_list, data.test_inputs, data.test_labels,

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-import os
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -10,7 +9,14 @@ import pandas as pd
 import shap
 import tensorflow as tf
 
-from ..config import DIMENSION_FORMATTER, METRIC_FORMATTER, VARIANT_FORMATTER
+from ..config import (
+    DIMENSION_FORMATTER,
+    METRIC_FORMATTER,
+    VARIANT_FORMATTER,
+    insights_location_path,
+    model_artifact_path,
+    shap_background_path,
+)
 from ..db import load_pickle, save_pickle
 
 log = logging.getLogger(__name__)
@@ -49,8 +55,8 @@ def load_shap_explainer(model_directory: str) -> Optional[shap.DeepExplainer]:
     """
     import tf_keras
 
-    model_path = os.path.join(model_directory, "model.SavedModel")
-    background_path = os.path.join(model_directory, "shap_data.pkl")
+    model_path = model_artifact_path(model_directory, must_exist=True)
+    background_path = shap_background_path(model_directory)
 
     if not os.path.exists(background_path):
         log.warning("No SHAP background data at %s — skipping.", background_path)
@@ -82,13 +88,13 @@ def prepare_shap_background_data(data, model_directory: str) -> None:
     for d, dim in enumerate(ordered_dims):
         for ix, insight in enumerate(sorted(i for i in all_insights if f"_{dim}" in i)):
             location_map[(d, ix)] = insight
-    save_pickle(location_map, os.path.join(model_directory, "insights_location_dct.pkl"))
+    save_pickle(location_map, insights_location_path(model_directory))
 
     n = min(5000, len(data.conv_train_inputs[0]))
     idx = np.random.choice(len(data.conv_train_inputs[0]), n, replace=False)
     save_pickle(
         [branch[idx] for branch in data.train_inputs],
-        os.path.join(model_directory, "shap_data.pkl"),
+        shap_background_path(model_directory),
     )
 
 
@@ -97,7 +103,7 @@ def compute_shap_explanations(
     shap_values: list,
     model_directory: str,
 ) -> pd.DataFrame:
-    location_map = load_pickle(os.path.join(model_directory, "insights_location_dct.pkl"))
+    location_map = load_pickle(insights_location_path(model_directory))
     rows = []
     for d, branch in enumerate(shap_values[0]):
         for n in range(branch.shape[0]):

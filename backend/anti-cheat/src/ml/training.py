@@ -9,7 +9,7 @@ from keras_tuner import Hyperband, Objective
 from matplotlib import pyplot as plt
 from tf_keras.callbacks import EarlyStopping
 
-from ..config import MODEL_DIR
+from ..config import model_artifact_path, model_dir_path, training_history_path
 from .explainer import prepare_shap_background_data
 from .model import KaladinData, KaladinModel
 
@@ -54,9 +54,9 @@ def train_model(days: int, tc: int, use_eval: int) -> None:
         validation_data=(data.test_inputs, data.test_labels),
     )
 
-    out_dir = os.path.join(MODEL_DIR, f"eval{use_eval}_tc{tc}_days{days}") + os.sep
+    out_dir = model_dir_path(use_eval, tc, days)
     os.makedirs(out_dir, exist_ok=True)
-    best_model.save(os.path.join(out_dir, "model.SavedModel"))
+    best_model.save(model_artifact_path(out_dir))
 
     fig, ax = plt.subplots(figsize=(12, 8), dpi=150)
     ax.plot(history.history["val_auc"], label="val_auc")
@@ -64,7 +64,7 @@ def train_model(days: int, tc: int, use_eval: int) -> None:
     ax.set(title="Training history", xlabel="Epoch", ylabel="AUC")
     ax.legend()
     ax.grid(True)
-    fig.savefig(os.path.join(out_dir, "training_history.png"))
+    fig.savefig(training_history_path(out_dir))
     plt.close(fig)
 
     prepare_shap_background_data(data, out_dir)

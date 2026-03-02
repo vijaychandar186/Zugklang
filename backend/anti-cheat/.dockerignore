@@ -1,6 +1,5 @@
 # Exclude everything, then whitelist only what the image needs
 *
-
 !pyproject.toml
 !uv.lock
 !schema.prisma

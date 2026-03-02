@@ -65,8 +65,8 @@ backend/anti-cheat/
 │       ├── training.py   — Train / retrain the CNN
 │       └── explainer.py  — SHAP explainer (insight URL generation)
 ├── model/
-│   ├── eval0_tc2_days180/model.SavedModel/  — Neural network for bullet/blitz
-│   └── eval0_tc6_days180/model.SavedModel/  — Neural network for rapid/classical
+│   ├── bullet_blitz_movetime_days180/saved_model/    — Neural network for bullet/blitz
+│   └── rapid_classical_movetime_days180/saved_model/ — Neural network for rapid/classical
 ├── input_data/
 │   └── use_eval_0/
 │       ├── insight_bin_keys.pkl             — Bucket key mappings (Lichess baseline)

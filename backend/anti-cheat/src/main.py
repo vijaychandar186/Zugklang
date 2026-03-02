@@ -15,9 +15,10 @@ from .config import (
     ANALYSIS_DAYS,
     LOGGING_LEVEL,
     MODEL_CONFIGS,
-    MODEL_DIR,
     TIME_CONTROLS,
     USE_EVAL,
+    model_artifact_path,
+    resolve_model_dir_path,
 )
 from .db import close_db, init_db
 from .ingestion import ingest_game
@@ -80,8 +81,8 @@ async def lifespan(app: FastAPI):
     get_redis()
 
     for cfg in MODEL_CONFIGS:
-        model_dir = os.path.join(MODEL_DIR, f"eval{cfg[0]}_tc{cfg[1]}_days{cfg[2]}") + os.sep
-        saved_model_path = os.path.join(model_dir, "model.SavedModel")
+        model_dir = resolve_model_dir_path(cfg[0], cfg[1], cfg[2])
+        saved_model_path = model_artifact_path(model_dir, must_exist=True)
         if os.path.exists(saved_model_path):
             _explainers[cfg] = load_shap_explainer(model_dir)
             log.info("Loaded explainer for config %s.", cfg)

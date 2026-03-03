@@ -1,6 +1,6 @@
 import { Worker } from 'bullmq';
 import { getConnectionOptions } from './connection';
-import { JobName } from './types';
+import { JobName, queueNameFor } from './types';
 import { processAntiCheat } from './workers/antiCheat';
 import { processGameRecord } from './workers/gameRecord';
 import { processAbortCheck } from './workers/abortCheck';
@@ -12,19 +12,19 @@ export function startWorkers(): Worker[] {
   const concurrency = Number(process.env['WORKER_CONCURRENCY'] ?? 5);
 
   const workers: Worker[] = [
-    new Worker(JobName.ANTI_CHEAT, processAntiCheat, {
+    new Worker(queueNameFor(JobName.ANTI_CHEAT), processAntiCheat, {
       connection,
       concurrency
     }),
-    new Worker(JobName.GAME_RECORD, processGameRecord, {
+    new Worker(queueNameFor(JobName.GAME_RECORD), processGameRecord, {
       connection,
       concurrency
     }),
-    new Worker(JobName.ABORT_CHECK, processAbortCheck, {
+    new Worker(queueNameFor(JobName.ABORT_CHECK), processAbortCheck, {
       connection,
       concurrency: 10
     }),
-    new Worker(JobName.ABANDON_CHECK, processAbandonCheck, {
+    new Worker(queueNameFor(JobName.ABANDON_CHECK), processAbandonCheck, {
       connection,
       concurrency: 10
     })

@@ -5,6 +5,7 @@ import {
   defaultJobOptions,
   timerJobOptions,
   JobName,
+  queueNameFor,
   type JobPayloadMap
 } from './types';
 
@@ -12,16 +13,18 @@ import {
 const registry = new Map<string, Queue<any>>();
 
 function getQueue<N extends JobName>(name: N): Queue<JobPayloadMap[N]> {
-  if (!registry.has(name)) {
+  const queueName = queueNameFor(name);
+
+  if (!registry.has(queueName)) {
     registry.set(
-      name,
-      new Queue<JobPayloadMap[N]>(name, {
+      queueName,
+      new Queue<JobPayloadMap[N]>(queueName, {
         connection: getConnectionOptions(),
         defaultJobOptions
       })
     );
   }
-  return registry.get(name) as Queue<JobPayloadMap[N]>;
+  return registry.get(queueName) as Queue<JobPayloadMap[N]>;
 }
 
 export const antiCheatQueue = (): Queue<

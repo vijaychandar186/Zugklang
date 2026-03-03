@@ -10,6 +10,10 @@ export const JobName = {
 
 export type JobName = (typeof JobName)[keyof typeof JobName];
 
+export function queueNameFor(jobName: JobName): string {
+  return jobName.replaceAll(':', '-');
+}
+
 export interface AntiCheatPayload {
   game_id: string;
   variant: string;

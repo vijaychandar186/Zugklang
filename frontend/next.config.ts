@@ -3,6 +3,10 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'standalone',
+  allowedDevOrigins: [
+    'localhost:3000',
+    'unmellifluently-unforcible-ricky.ngrok-free.dev'
+  ],
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'avatars.githubusercontent.com' },

@@ -12,6 +12,10 @@ Both `zugklang-frontend` and `zugklang-anti-cheat` databases need to exist befor
 docker-compose -f docker-compose.dev.yaml up --build
 ```
 
+```bash
+nohup ngrok http --url=unmellifluently-unforcible-ricky.ngrok-free.dev 3000 >/dev/null 2>&1 &
+```
+
 ### Without Docker Compose (manual)
 
 ```bash

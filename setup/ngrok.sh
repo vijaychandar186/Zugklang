@@ -7,4 +7,3 @@ if [[ -z "${NGROK_AUTHTOKEN:-}" ]]; then
 fi
 
 ngrok config add-authtoken "$NGROK_AUTHTOKEN"
-nohup ngrok http --url=unmellifluently-unforcible-ricky.ngrok-free.dev 3000 >/dev/null 2>&1 &

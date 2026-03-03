@@ -9,8 +9,9 @@
     "ghcr.io/devcontainers-extra/features/prettier:1": {},
     "ghcr.io/devcontainers-extra/features/bun:1": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-    "ghcr.io/devcontainers/features/python:1": {"version": "3.13"},
-    "ghcr.io/va-h/devcontainers-features/uv:1": {}
+    "ghcr.io/devcontainers/features/python:1": {},
+    "ghcr.io/va-h/devcontainers-features/uv:1": {},
+    "ghcr.io/jckimble/devcontainer-features/ngrok:3": {}
     //"ghcr.io/devcontainers/features/git-lfs:1": {}
   },
 
@@ -32,7 +33,7 @@
   },
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "cd frontend && pnpm install && pnpm exec husky ../.husky && cd ../backend/ws-server && bun install && cd ../anti-cheat && uv sync && cd ../../ && git config core.hooksPath .husky && chmod +x .husky/*",
+  "postCreateCommand": "cd frontend && pnpm install && pnpm exec husky ../.husky && cd ../backend/ws-server && bun install && cd ../anti-cheat && uv sync && cd ../../ && git config core.hooksPath .husky && chmod +x .husky/* && chmod +x setup/setup.sh && ./setup/setup.sh",
  // && git lfs pull
   // Configure tool-specific properties.
   "customizations": {

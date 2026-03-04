@@ -150,8 +150,6 @@ services:
       - frontend
       - ws-server
       - pgadmin
-      - prisma-frontend
-      - prisma-anti-cheat
       - anti-cheat
       - redis-commander
     networks:
@@ -163,8 +161,8 @@ services:
       dockerfile: Dockerfile.dev
     container_name: zugklang-prisma-frontend-dev
     restart: unless-stopped
-    expose:
-      - "5555"
+    ports:
+      - "5555:5555"
     command: ["sh", "-c", "npx prisma studio --port 5555 --browser none"]
     environment:
       NODE_ENV: development
@@ -191,9 +189,9 @@ services:
       dockerfile: Dockerfile
     container_name: zugklang-prisma-anti-cheat-dev
     restart: unless-stopped
-    expose:
-      - "5556"
-    command: ["sh", "-c", "uv run prisma studio --port 5556 --browser none"]
+    ports:
+      - "5556:5556"
+    entrypoint: ["sh", "-c", "uv run prisma studio --port 5556 --browser none"]
     environment:
       DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/zugklang-anti-cheat"
     env_file:

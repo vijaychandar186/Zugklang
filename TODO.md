@@ -13,7 +13,11 @@ docker-compose -f docker-compose.dev.yaml up --build
 ```
 
 ```bash
-nohup ngrok http --url=unmellifluently-unforcible-ricky.ngrok-free.dev 3000 >/dev/null 2>&1 &
+nohup ngrok http --url=unmellifluently-unforcible-ricky.ngrok-free.dev 80 >/dev/null 2>&1 &
+```
+
+```bash
+unmellifluently-unforcible-ricky.ngrok-free.dev
 ```
 
 ### Without Docker Compose (manual)

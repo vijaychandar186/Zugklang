@@ -61,16 +61,41 @@ const ALLOWED_ORIGINS =
     ?.split(',')
     .map((s) => s.trim())
     .filter(Boolean) ?? [];
+const ENFORCE_WS_ORIGIN_CHECK =
+  process.env['WS_ENFORCE_ORIGIN_CHECK'] === 'true' ||
+  process.env['NODE_ENV'] === 'production';
+
+function isOriginAllowed(origin: string): boolean {
+  if (ALLOWED_ORIGINS.length === 0) return true;
+  if (ALLOWED_ORIGINS.includes('*')) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+
+  let originHost = '';
+  try {
+    originHost = new URL(origin).host;
+  } catch {
+    return false;
+  }
+
+  return ALLOWED_ORIGINS.some((allowed) => {
+    if (!allowed.startsWith('*.')) return false;
+    const suffix = allowed.slice(2);
+    return originHost === suffix || originHost.endsWith(`.${suffix}`);
+  });
+}
 
 Bun.serve<SocketData>({
   port: PORT,
   async fetch(req, server) {
     const httpResponse = handleHttpRequest(req);
     if (httpResponse) return httpResponse;
-    if (ALLOWED_ORIGINS.length > 0) {
+    if (ENFORCE_WS_ORIGIN_CHECK) {
       const origin = req.headers.get('origin') ?? '';
-      if (!ALLOWED_ORIGINS.includes(origin)) {
-        logger.warn('ws_origin_rejected', { origin });
+      if (!isOriginAllowed(origin)) {
+        logger.warn('ws_origin_rejected', {
+          origin,
+          allowedOriginsCount: ALLOWED_ORIGINS.length
+        });
         return new Response('Forbidden', { status: 403 });
       }
     }

@@ -24,10 +24,10 @@ This project includes separate Docker configurations for development and product
 |---------------|-----------------------------------------------------|------------------------------|-------------------------------|
 | `postgres`    | PostgreSQL 16 (hosts `zugklang-frontend` + `zugklang-anti-cheat` DBs) | `zugklang-postgres-dev` | `zugklang-postgres-prod` |
 | `pgadmin`     | pgAdmin 4 web UI for the database                   | `zugklang-pgadmin-dev`       | `zugklang-pgadmin-prod`       |
-| `ws-server`   | WebSocket backend server                            | `zugklang-ws-dev`            | `zugklang-ws-prod`            |
-| `frontend`    | Next.js application                                 | `zugklang-frontend-dev`      | `zugklang-frontend-prod`      |
+| `ws-server`   | WebSocket backend server (proxied by Nginx in dev) | `zugklang-ws-dev`            | `zugklang-ws-prod`            |
+| `frontend`    | Next.js application (proxied by Nginx in dev)      | `zugklang-frontend-dev`      | `zugklang-frontend-prod`      |
 | `anti-cheat`  | Python/FastAPI anti-cheat service (Kaladin CNN)     | `zugklang-anti-cheat-dev`    | `zugklang-anti-cheat-prod`    |
-| `nginx`       | Reverse proxy (prod only)                           | —                            | `zugklang-nginx-prod`         |
+| `nginx`       | Reverse proxy                                       | `zugklang-nginx-dev`         | `zugklang-nginx-prod`         |
 
 All services are connected via the `zugklang-net` bridge network.
 
@@ -51,7 +51,7 @@ docker-compose -f docker-compose.dev.yaml up --build
 ### Access Points
 
 - **Frontend (Next.js)**: http://localhost:3000
-- **WebSocket Server**: ws://localhost:8080
+- **WebSocket endpoint (via Nginx)**: `ws://localhost:3000/ws`
 - **Anti-Cheat API**: http://localhost:8000
 - **PostgreSQL**: localhost:5432
 - **pgAdmin**: http://localhost:5050
@@ -209,6 +209,7 @@ AUTH_URL="http://localhost:3000"
 AUTH_SECRET="your-secret-key"
 AUTH_GITHUB_ID="your-github-oauth-id"
 AUTH_GITHUB_SECRET="your-github-oauth-secret"
+NEXT_PUBLIC_WS_URL=""
 ```
 
 ### Production (`frontend/.env.production`)

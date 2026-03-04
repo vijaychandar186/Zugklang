@@ -91,8 +91,22 @@ export function loadFourPlayerSession(): {
     return null;
   }
 }
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8080';
+function getDefaultWsUrl(): string {
+  if (typeof window === 'undefined') {
+    return 'ws://localhost:3000/ws';
+  }
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}/ws`;
+}
+
+const configuredWsUrl = process.env.NEXT_PUBLIC_WS_URL?.trim();
+const isLegacyLocalWsUrl =
+  configuredWsUrl === 'ws://localhost:8080' ||
+  configuredWsUrl === 'ws://127.0.0.1:8080';
+const WS_URL =
+  configuredWsUrl && !isLegacyLocalWsUrl ? configuredWsUrl : getDefaultWsUrl();
 const PING_INTERVAL_MS = 25000;
+const REJOIN_DEBOUNCE_MS = 1500;
 async function fetchWsToken(): Promise<string | null> {
   try {
     const res = await fetch('/api/ws-token');
@@ -165,6 +179,11 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   const isPrimaryRef = useRef(false);
   const latestStateRef = useRef<MultiplayerWSState>(state);
   const channelRef = useRef<BroadcastChannel | null>(null);
+  const lastRejoinRef = useRef<{
+    roomId: string;
+    rejoinToken: string;
+    sentAt: number;
+  } | null>(null);
   latestStateRef.current = state;
   const sendRaw = useCallback((msg: object) => {
     const ws = wsRef.current;
@@ -214,6 +233,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           }));
           break;
         case 'matched': {
+          lastRejoinRef.current = null;
           roomIdRef.current = msg.roomId;
           saveSession(
             msg.roomId,
@@ -251,6 +271,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           break;
         }
         case 'rejoined': {
+          lastRejoinRef.current = null;
           roomIdRef.current = msg.roomId;
           saveSession(
             msg.roomId,
@@ -287,6 +308,7 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
           break;
         }
         case 'rejoin_failed':
+          lastRejoinRef.current = null;
           clearSession();
           setState((s) => ({
             ...s,
@@ -591,11 +613,31 @@ export function useMultiplayerWS(): UseMultiplayerWSReturn {
   }, []);
   const rejoin = useCallback(
     async (roomId: string, rejoinToken: string) => {
+      const now = Date.now();
+      const lastRejoin = lastRejoinRef.current;
+      if (
+        lastRejoin &&
+        lastRejoin.roomId === roomId &&
+        lastRejoin.rejoinToken === rejoinToken &&
+        now - lastRejoin.sentAt < REJOIN_DEBOUNCE_MS
+      ) {
+        return;
+      }
+      const current = latestStateRef.current;
+      if (
+        current.roomId === roomId &&
+        (current.status === 'matched' ||
+          current.status === 'rejoined' ||
+          current.status === 'playing')
+      ) {
+        return;
+      }
       try {
         await connect();
       } catch {
         return;
       }
+      lastRejoinRef.current = { roomId, rejoinToken, sentAt: now };
       sendRaw({ type: 'rejoin_room', roomId, rejoinToken });
     },
     [connect, sendRaw]

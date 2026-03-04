@@ -44,7 +44,7 @@ export async function enqueueGameEnd(
   reason: string
 ): Promise<void> {
   const playedAt = new Date().toISOString();
-  const jobId = `room:${room.id}`;
+  const jobId = `room__${room.id}`;
 
   const jobs: Promise<unknown>[] = [];
 
@@ -70,7 +70,7 @@ export async function enqueueGameEnd(
           result,
           played_at: playedAt
         },
-        { jobId: `anti-cheat:${jobId}` }
+        { jobId: `anti-cheat__${jobId}` }
       )
     );
   }
@@ -96,7 +96,7 @@ export async function enqueueGameEnd(
           reason,
           playedAt
         },
-        { jobId: `record:${jobId}` }
+        { jobId: `record__${jobId}` }
       )
     );
   }

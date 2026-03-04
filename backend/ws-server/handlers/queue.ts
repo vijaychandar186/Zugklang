@@ -344,21 +344,32 @@ export async function handleJoinQueue(
     if (claimed === 0) continue;
 
     await redis.del(`queue:player:${candidateUserId}`);
-    delete ws.data.queueKey;
 
     if (candidateData.podId === POD_ID) {
       const opponentWs = connectedUserIds.get(candidateUserId);
-      if (opponentWs) {
-        await matchPlayers(
-          ws,
-          myData,
-          opponentWs,
-          candidateData,
-          variant,
-          timeControl
-        );
+      const opponentReady =
+        opponentWs &&
+        opponentWs.readyState === WebSocket.OPEN &&
+        opponentWs.data.queueKey === queueKey &&
+        !opponentWs.data.roomId;
+      if (!opponentReady) {
+        logger.warn('queue_candidate_stale_local', {
+          candidateUserId: candidateUserId.slice(0, 8),
+          queueKey
+        });
+        continue;
       }
+      delete ws.data.queueKey;
+      await matchPlayers(
+        ws,
+        myData,
+        opponentWs,
+        candidateData,
+        variant,
+        timeControl
+      );
     } else {
+      delete ws.data.queueKey;
       await redis.publish(
         `ws:pod:${candidateData.podId}:in`,
         JSON.stringify({

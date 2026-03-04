@@ -133,7 +133,7 @@ frontend_github_id="$(resolve_value "AUTH_GITHUB_ID" "$FRONTEND_ENV" "AUTH_GITHU
 frontend_github_secret="$(resolve_value "AUTH_GITHUB_SECRET" "$FRONTEND_ENV" "AUTH_GITHUB_SECRET" "")"
 frontend_google_id="$(read_existing_value "$FRONTEND_ENV" "AUTH_GOOGLE_ID" || printf '%s' "")"
 frontend_google_secret="$(read_existing_value "$FRONTEND_ENV" "AUTH_GOOGLE_SECRET" || printf '%s' "")"
-frontend_ws_url="$(read_existing_value "$FRONTEND_ENV" "NEXT_PUBLIC_WS_URL" || printf '%s' "ws://localhost:8080")"
+frontend_ws_url="$(read_existing_value "$FRONTEND_ENV" "NEXT_PUBLIC_WS_URL" || printf '%s' "")"
 
 warn_if_empty_oauth "AUTH_GITHUB" "$frontend_github_id" "$frontend_github_secret"
 

@@ -15,7 +15,7 @@ default_frontend_github_id=""
 default_frontend_github_secret=""
 default_frontend_google_id=""
 default_frontend_google_secret=""
-default_frontend_ws_url="ws://localhost:8080"
+default_frontend_ws_url=""
 
 echo "Generating env files with default values:"
 echo "- $FRONTEND_ENV"

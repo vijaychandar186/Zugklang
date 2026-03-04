@@ -71,7 +71,10 @@ export function MultiplayerGameView({
   const ws = useMultiplayerWS();
   const { data: session } = useSession();
   const [matchmakingOpen, setMatchmakingOpen] = useState(false);
+  const [allowAutoMatchmakingOpen, setAllowAutoMatchmakingOpen] =
+    useState(true);
   const [sessionRestorePending, setSessionRestorePending] = useState(true);
+  const restoreAttemptedRef = useRef(false);
   const [pendingMoves, setPendingMoves] = useState<string[] | null>(null);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
   const {
@@ -297,9 +300,11 @@ export function MultiplayerGameView({
     if (matchmakingOpen && !ws.isSecondaryTab) {
       ws.preConnect();
     }
-  }, [ws, matchmakingOpen, ws.isSecondaryTab]);
+  }, [matchmakingOpen, ws.isSecondaryTab, ws.preConnect]);
   useEffect(() => {
+    if (restoreAttemptedRef.current) return;
     if (typeof window === 'undefined') return;
+    restoreAttemptedRef.current = true;
     const savedSession = loadSession();
     if (savedSession && savedSession.variant === variant) {
       setMatchmakingOpen(false);
@@ -309,6 +314,7 @@ export function MultiplayerGameView({
     setSessionRestorePending(false);
     if (!ws.isSecondaryTab) {
       setMatchmakingOpen(true);
+      setAllowAutoMatchmakingOpen(true);
     }
     if (challengeId) {
       ws.joinChallenge(
@@ -317,7 +323,15 @@ export function MultiplayerGameView({
         session?.user?.image ?? undefined
       );
     }
-  }, [ws, challengeId, session?.user?.name, session?.user?.image, variant]);
+  }, [
+    challengeId,
+    session?.user?.name,
+    session?.user?.image,
+    variant,
+    ws.isSecondaryTab,
+    ws.joinChallenge,
+    ws.rejoin
+  ]);
   useEffect(() => {
     if (!sessionRestorePending) return;
     if (
@@ -401,12 +415,19 @@ export function MultiplayerGameView({
     if (
       ws.status === 'idle' &&
       !matchmakingOpen &&
+      allowAutoMatchmakingOpen &&
       loadSession() === null &&
       !ws.isSecondaryTab
     ) {
       setMatchmakingOpen(true);
     }
-  }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
+  }, [
+    sessionRestorePending,
+    ws.status,
+    ws.isSecondaryTab,
+    matchmakingOpen,
+    allowAutoMatchmakingOpen
+  ]);
   useEffect(() => {
     if (sessionRestorePending) return;
     if (!ws.isSecondaryTab) return;
@@ -520,6 +541,7 @@ export function MultiplayerGameView({
         session?.user?.image ?? undefined,
         rating
       );
+      setAllowAutoMatchmakingOpen(true);
     },
     [ws, variant, session]
   );
@@ -533,6 +555,7 @@ export function MultiplayerGameView({
         session?.user?.name ?? undefined,
         session?.user?.image ?? undefined
       );
+      setAllowAutoMatchmakingOpen(true);
     },
     [ws, variant, session]
   );
@@ -546,6 +569,7 @@ export function MultiplayerGameView({
     setMyRatingDelta(null);
     setOpponentRatingDelta(null);
     setMatchmakingOpen(true);
+    setAllowAutoMatchmakingOpen(true);
   }, [ws]);
   const handleMovesReplayed = useCallback(() => {
     setPendingMoves(null);
@@ -741,6 +765,7 @@ export function MultiplayerGameView({
                   ws.status === 'error')
               ) {
                 setMatchmakingOpen(false);
+                setAllowAutoMatchmakingOpen(false);
               }
             }}
             status={ws.status}

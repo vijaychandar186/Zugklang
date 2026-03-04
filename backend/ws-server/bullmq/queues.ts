@@ -47,15 +47,16 @@ export async function scheduleAbortCheck(
   roomId: string,
   expectedMinMoves: number
 ): Promise<void> {
+  const jobId = `abort__${roomId}`;
   await abortQueue().add(
     JobName.ABORT_CHECK,
     { roomId, expectedMinMoves },
-    { ...timerJobOptions, jobId: `abort:${roomId}`, delay: ABORT_TIMEOUT_MS }
+    { ...timerJobOptions, jobId, delay: ABORT_TIMEOUT_MS }
   );
 }
 
 export async function cancelAbortCheck(roomId: string): Promise<void> {
-  const job = await abortQueue().getJob(`abort:${roomId}`);
+  const job = await abortQueue().getJob(`abort__${roomId}`);
   await job?.remove();
 }
 
@@ -72,19 +73,20 @@ export async function scheduleAbandonCheck(
   roomId: string,
   color: 'white' | 'black'
 ): Promise<void> {
+  const jobId = `abandon__${playerId}`;
   await abandonQueue().add(
     JobName.ABANDON_CHECK,
     { playerId, roomId, color },
     {
       ...timerJobOptions,
-      jobId: `abandon:${playerId}`,
+      jobId,
       delay: ABANDON_TIMEOUT_MS
     }
   );
 }
 
 export async function cancelAbandonCheck(playerId: string): Promise<void> {
-  const job = await abandonQueue().getJob(`abandon:${playerId}`);
+  const job = await abandonQueue().getJob(`abandon__${playerId}`);
   await job?.remove();
 }
 

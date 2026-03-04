@@ -230,10 +230,10 @@ This is the recommended approach. Both dev and prod compose files wire up all se
 |---|---|---|---|
 | `postgres` | 5432 | 5432 | PostgreSQL 16 (hosts both `zugklang-frontend` and `zugklang-anti-cheat` DBs) |
 | `pgadmin` | 5050 | 5050 | pgAdmin 4 web UI |
-| `ws-server` | 8080 | 8080 | WebSocket server |
-| `frontend` | 3000 | — (internal) | Next.js app |
+| `ws-server` | — (internal via Nginx) | 8080 | WebSocket server |
+| `frontend` | — (internal via Nginx) | — (internal) | Next.js app |
 | `anti-cheat` | 8000 | 8000 | Anti-cheat FastAPI service (Kaladin CNN) |
-| `nginx` | — | 80 | Reverse proxy (prod only) |
+| `nginx` | 3000 | 80 | Reverse proxy |
 
 ### Development
 
@@ -245,8 +245,7 @@ docker-compose -f docker-compose.dev.yaml up --build
 
 | URL | Service |
 |---|---|
-| http://localhost:3000 | Frontend |
-| ws://localhost:8080 | WebSocket server |
+| http://localhost:3000 | Frontend + WebSocket (via Nginx) |
 | http://localhost:5050 | pgAdmin (`admin@admin.com` / `admin`) |
 
 Environment variables are loaded from:
@@ -308,7 +307,7 @@ docker-compose -f docker-compose.dev.yaml exec frontend pnpm exec prisma db push
 | `AUTH_SECRET` | Yes | Random secret for NextAuth |
 | `AUTH_GITHUB_ID` | Yes | GitHub OAuth App client ID |
 | `AUTH_GITHUB_SECRET` | Yes | GitHub OAuth App client secret |
-| `NEXT_PUBLIC_WS_URL` | Yes | WebSocket server URL (`ws://` or `wss://`) |
+| `NEXT_PUBLIC_WS_URL` | No | Optional WebSocket override (`ws://`/`wss://`). Leave empty to use same-origin `/ws`. |
 
 ### WebSocket Server
 

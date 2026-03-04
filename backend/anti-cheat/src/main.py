@@ -104,6 +104,7 @@ app = FastAPI(
     description="Chess engine detection via behavioural analysis and machine learning.",
     version="2.0.0",
     lifespan=lifespan,
+    root_path="/anti-cheat",
 )
 
 

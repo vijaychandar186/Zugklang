@@ -247,16 +247,13 @@ export function ChessBoard({
     if (!outcome || outcome.winner === undefined) return null;
     return outcome.winner === 'w' ? 'b' : 'w';
   }, [gameOver, game]);
-  const effectiveBoardOrientation: 'white' | 'black' =
-    variant === 'racingKings'
-      ? 'white'
-      : isPlayMode
-        ? boardFlipped
-          ? playAs === 'white'
-            ? 'black'
-            : 'white'
-          : playAs
-        : boardOrientation;
+  const effectiveBoardOrientation: 'white' | 'black' = isPlayMode
+    ? boardFlipped
+      ? playAs === 'white'
+        ? 'black'
+        : 'white'
+      : playAs
+    : boardOrientation;
   const resolvedOrientation =
     isMounted && hasHydrated
       ? effectiveBoardOrientation

@@ -148,7 +148,8 @@ interface ChessStore extends NavigationSlice, BoardOrientationSlice {
   startMultiplayerGame: (
     color: 'white' | 'black',
     timeControl?: TimeControl,
-    startingFen?: string
+    startingFen?: string,
+    initialBoardFlipped?: boolean
   ) => void;
   resetGame: () => void;
   setGameType: (gameType: GameType) => void;
@@ -389,7 +390,8 @@ export const useChessStore = create<ChessStore>()(
       startMultiplayerGame: (
         color,
         timeControl = DEFAULT_TIME_CONTROL,
-        startingFen
+        startingFen,
+        initialBoardFlipped
       ) => {
         const timers = initializeTimers(timeControl);
         const state = get();
@@ -400,7 +402,7 @@ export const useChessStore = create<ChessStore>()(
           gameType: 'multiplayer',
           game: newGame,
           playAs: color,
-          boardFlipped: false,
+          boardFlipped: initialBoardFlipped ?? false,
           boardOrientation: color,
           gameStarted: true,
           gameOver: false,

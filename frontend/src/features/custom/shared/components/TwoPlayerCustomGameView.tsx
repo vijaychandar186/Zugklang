@@ -43,6 +43,7 @@ interface TwoPlayerCustomGameViewProps {
   topPlayerExtras?: ReactNode;
   bottomPlayerExtras?: ReactNode;
   overlays?: ReactNode;
+  serverOrientation?: 'white' | 'black';
   onPieceDrop?: (args: {
     sourceSquare: string;
     targetSquare: string | null;
@@ -67,9 +68,15 @@ export function TwoPlayerCustomGameView({
   topPlayerExtras,
   bottomPlayerExtras,
   overlays,
+  serverOrientation = 'white',
   onPieceDrop: externalPieceDrop
 }: TwoPlayerCustomGameViewProps) {
   const boardFlipped = useChessStore((s) => s.boardFlipped);
+  // isViewingFromBlack: true when the board is currently showing from black's POV.
+  // For a black player (serverOrientation='black'), not flipped → viewing from black.
+  // For a white player (serverOrientation='white'), flipped → viewing from black.
+  const isViewingFromBlack =
+    serverOrientation === 'black' ? !boardFlipped : boardFlipped;
   const board3dEnabled = useChessStore((s) => s.board3dEnabled);
   const soundEnabled = useChessStore((s) => s.soundEnabled);
   const theme = useBoardTheme();
@@ -118,24 +125,24 @@ export function TwoPlayerCustomGameView({
     return false;
   }
   const isActive = gameStarted && !gameOver && canMove;
-  const orientation = boardFlipped ? ('black' as const) : ('white' as const);
+  const orientation = isViewingFromBlack ? ('black' as const) : ('white' as const);
   const hasTimer = timeControl.mode === 'timed';
-  const topTime = boardFlipped ? whiteTime : blackTime;
-  const bottomTime = boardFlipped ? blackTime : whiteTime;
-  const topColor = boardFlipped ? 'white' : 'black';
-  const bottomColor = boardFlipped ? 'black' : 'white';
+  const topTime = isViewingFromBlack ? whiteTime : blackTime;
+  const bottomTime = isViewingFromBlack ? blackTime : whiteTime;
+  const topColor = isViewingFromBlack ? 'white' : 'black';
+  const bottomColor = isViewingFromBlack ? 'black' : 'white';
   const topTimerActive = activeTimer === topColor && !gameOver;
   const bottomTimerActive = activeTimer === bottomColor && !gameOver;
-  const topCaptured = boardFlipped ? captured.black : captured.white;
-  const bottomCaptured = boardFlipped ? captured.white : captured.black;
-  const topAdvantage = boardFlipped
+  const topCaptured = isViewingFromBlack ? captured.black : captured.white;
+  const bottomCaptured = isViewingFromBlack ? captured.white : captured.black;
+  const topAdvantage = isViewingFromBlack
     ? materialAdvantage > 0
       ? materialAdvantage
       : undefined
     : materialAdvantage < 0
       ? Math.abs(materialAdvantage)
       : undefined;
-  const bottomAdvantage = boardFlipped
+  const bottomAdvantage = isViewingFromBlack
     ? materialAdvantage < 0
       ? Math.abs(materialAdvantage)
       : undefined
@@ -143,13 +150,13 @@ export function TwoPlayerCustomGameView({
       ? materialAdvantage
       : undefined;
   const topInfo: TwoPlayerPlayerInfo = topPlayer ?? {
-    name: boardFlipped ? 'White' : 'Black'
+    name: isViewingFromBlack ? 'White' : 'Black'
   };
   const bottomInfo: TwoPlayerPlayerInfo = bottomPlayer ?? {
-    name: boardFlipped ? 'Black' : 'White'
+    name: isViewingFromBlack ? 'Black' : 'White'
   };
-  const topPieceColor = boardFlipped ? ('white' as const) : ('black' as const);
-  const bottomPieceColor = boardFlipped
+  const topPieceColor = isViewingFromBlack ? ('white' as const) : ('black' as const);
+  const bottomPieceColor = isViewingFromBlack
     ? ('black' as const)
     : ('white' as const);
   return (

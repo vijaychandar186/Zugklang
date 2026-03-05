@@ -62,11 +62,13 @@ interface MultiplayerGameViewProps {
   variant?: ChessVariant;
   initialBoard3dEnabled?: boolean;
   challengeId?: string;
+  fixedBoardOrientation?: 'white';
 }
 export function MultiplayerGameView({
   variant = 'standard',
   initialBoard3dEnabled,
-  challengeId
+  challengeId,
+  fixedBoardOrientation
 }: MultiplayerGameViewProps) {
   const ws = useMultiplayerWS();
   const { data: session } = useSession();
@@ -363,7 +365,8 @@ export function MultiplayerGameView({
       };
       const t = setTimeout(() => {
         endAnalysis();
-        startMultiplayerGame(ws.myColor!, tc, ws.startingFen || undefined);
+        const flipForFixed = fixedBoardOrientation === 'white' && ws.myColor === 'black';
+        startMultiplayerGame(ws.myColor!, tc, ws.startingFen || undefined, flipForFixed);
         ws.setPlaying();
         setMatchmakingOpen(false);
         if (moves && moves.length > 0) {
@@ -380,7 +383,8 @@ export function MultiplayerGameView({
     ws.startingFen,
     ws.movesToReplay,
     startMultiplayerGame,
-    endAnalysis
+    endAnalysis,
+    fixedBoardOrientation
   ]);
   useEffect(() => {
     if (ws.isSecondaryTab) return;
@@ -390,10 +394,12 @@ export function MultiplayerGameView({
       const moves = ws.movesToReplay;
       endAnalysis();
       ws.setPlaying();
+      const flipForFixed = fixedBoardOrientation === 'white' && ws.myColor === 'black';
       startMultiplayerGame(
         ws.myColor,
         ws.timeControl ?? { mode: 'unlimited', minutes: 0, increment: 0 },
-        ws.startingFen || undefined
+        ws.startingFen || undefined,
+        flipForFixed
       );
       setMatchmakingOpen(false);
       if (moves && moves.length > 0) {
@@ -408,7 +414,8 @@ export function MultiplayerGameView({
     ws.startingFen,
     ws.movesToReplay,
     startMultiplayerGame,
-    endAnalysis
+    endAnalysis,
+    fixedBoardOrientation
   ]);
   useEffect(() => {
     if (sessionRestorePending) return;

@@ -107,6 +107,19 @@ function SquareCell({
       onDragStart={(e) => {
         if (!piece) return;
         e.dataTransfer.effectAllowed = 'move';
+        const img = e.currentTarget.querySelector('img');
+        if (img) {
+          const size = squareSize - 4;
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          canvas.style.cssText = `position:fixed;top:-9999px;left:-9999px;`;
+          document.body.appendChild(canvas);
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.drawImage(img, 0, 0, size, size);
+          e.dataTransfer.setDragImage(canvas, size / 2, size / 2);
+          setTimeout(() => document.body.removeChild(canvas), 0);
+        }
         onClick(sq);
       }}
       onDragOver={(e) => e.preventDefault()}

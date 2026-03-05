@@ -190,6 +190,7 @@ export interface CardChessMultiplayerGame {
   whiteTimeSecs: number | null;
   blackTimeSecs: number | null;
   activeClock: 'white' | 'black' | null;
+  serverOrientation: 'white' | 'black';
   topPlayerInfo: TwoPlayerPlayerInfo;
   bottomPlayerInfo: TwoPlayerPlayerInfo;
   topPlayerExtras: ReactNode;
@@ -254,7 +255,9 @@ export function useCardChessMultiplayerGame(
     null
   );
   const [matchmakingOpen, setMatchmakingOpen] = useState(false);
+  const [allowAutoMatchmakingOpen, setAllowAutoMatchmakingOpen] = useState(true);
   const [sessionRestorePending, setSessionRestorePending] = useState(true);
+  const restoreAttemptedRef = useRef(false);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
   const savedRoomIdRef = useRef<string | null>(null);
   const soundEnabled = useChessStore((s) => s.soundEnabled);
@@ -710,7 +713,9 @@ export function useCardChessMultiplayerGame(
     }
   }, [ws, ws.status, ws.myColor, startGameFromFresh]);
   useEffect(() => {
+    if (restoreAttemptedRef.current) return;
     if (typeof window === 'undefined') return;
+    restoreAttemptedRef.current = true;
     const saved = loadSession();
     if (saved && saved.variant === VARIANT) {
       setMatchmakingOpen(false);
@@ -718,7 +723,10 @@ export function useCardChessMultiplayerGame(
       return;
     }
     setSessionRestorePending(false);
-    if (!ws.isSecondaryTab) setMatchmakingOpen(true);
+    if (!ws.isSecondaryTab) {
+      setMatchmakingOpen(true);
+      setAllowAutoMatchmakingOpen(true);
+    }
     if (challengeId) {
       ws.joinChallenge(
         challengeId,
@@ -726,7 +734,7 @@ export function useCardChessMultiplayerGame(
         session?.user?.image ?? undefined
       );
     }
-  }, [ws, challengeId, session?.user?.name, session?.user?.image]);
+  }, [challengeId, session?.user?.name, session?.user?.image, ws.isSecondaryTab, ws.joinChallenge, ws.rejoin]);
   useEffect(() => {
     if (!sessionRestorePending) return;
     if (
@@ -744,12 +752,13 @@ export function useCardChessMultiplayerGame(
     if (
       ws.status === 'idle' &&
       !matchmakingOpen &&
+      allowAutoMatchmakingOpen &&
       loadSession() === null &&
       !ws.isSecondaryTab
     ) {
       setMatchmakingOpen(true);
     }
-  }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
+  }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen, allowAutoMatchmakingOpen]);
   useEffect(() => {
     if (matchmakingOpen && !ws.isSecondaryTab) {
       ws.preConnect();
@@ -782,6 +791,7 @@ export function useCardChessMultiplayerGame(
         session?.user?.image ?? undefined,
         rating
       );
+      setAllowAutoMatchmakingOpen(true);
     },
     [ws, session]
   );
@@ -797,11 +807,13 @@ export function useCardChessMultiplayerGame(
         session?.user?.name ?? undefined,
         session?.user?.image ?? undefined
       );
+      setAllowAutoMatchmakingOpen(true);
     },
     [ws, session]
   );
   const handleFindNewGame = useCallback(() => {
     ws.disconnect();
+    setAllowAutoMatchmakingOpen(true);
     setGameStarted(false);
     setGameOver(false);
     setGameResult(null);
@@ -964,6 +976,7 @@ export function useCardChessMultiplayerGame(
             ws.status === 'error')
         ) {
           setMatchmakingOpen(false);
+          setAllowAutoMatchmakingOpen(false);
         }
       },
       status: ws.status,
@@ -1013,6 +1026,7 @@ export function useCardChessMultiplayerGame(
     whiteTimeSecs,
     blackTimeSecs,
     activeClock,
+    serverOrientation,
     topPlayerInfo,
     bottomPlayerInfo,
     topPlayerExtras,

@@ -2,6 +2,7 @@
 import { TwoPlayerCustomGameView } from '@/features/custom/shared/components/TwoPlayerCustomGameView';
 import { TwoPlayerCustomSidebar } from '@/features/custom/shared/components/TwoPlayerCustomSidebar';
 import { useDiceChessMultiplayerGame } from '../hooks/useDiceChessMultiplayerGame';
+import { useChessActions } from '@/features/chess/stores/useChessStore';
 import { DiceMultiplayerPanel } from './DiceMultiplayerPanel';
 import { DiceRollChart } from './DiceRollChart';
 export function DiceChessMultiplayerView({
@@ -10,6 +11,7 @@ export function DiceChessMultiplayerView({
   challengeId?: string;
 }) {
   const game = useDiceChessMultiplayerGame(challengeId);
+  const { flipBoard } = useChessActions();
   const timeControl = {
     mode: game.activeClock ? ('timed' as const) : ('unlimited' as const),
     minutes: 0,
@@ -29,6 +31,7 @@ export function DiceChessMultiplayerView({
       activeTimer={game.activeClock}
       loserColor={game.loserColor}
       canMove={game.canDrag}
+      serverOrientation={game.serverOrientation}
       topPlayer={game.topPlayerInfo}
       bottomPlayer={game.bottomPlayerInfo}
       topPlayerExtras={game.topPlayerExtras}
@@ -55,7 +58,7 @@ export function DiceChessMultiplayerView({
           onGoToMove={game.goToMove}
           onSetGameOver={() => {}}
           onSetGameResult={() => {}}
-          onFlipBoard={() => {}}
+          onFlipBoard={flipBoard}
           onStartAnalysis={() => {}}
           onEndAnalysis={() => {}}
           multiplayer={game.multiplayerSidebarProps}

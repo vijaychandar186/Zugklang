@@ -203,6 +203,7 @@ export interface TriDChessMultiplayerGame {
   whiteTimeSecs: number | null;
   blackTimeSecs: number | null;
   activeClock: 'white' | 'black' | null;
+  serverOrientation: 'white' | 'black';
   topPlayerInfo: TwoPlayerPlayerInfo;
   bottomPlayerInfo: TwoPlayerPlayerInfo;
   topPlayerExtras: ReactNode;
@@ -273,7 +274,9 @@ export function useTriDChessMultiplayerGame(
   );
 
   const [matchmakingOpen, setMatchmakingOpen] = useState(false);
+  const [allowAutoMatchmakingOpen, setAllowAutoMatchmakingOpen] = useState(true);
   const [sessionRestorePending, setSessionRestorePending] = useState(true);
+  const restoreAttemptedRef = useRef(false);
   const [activeChallengeId, setActiveChallengeId] = useState(challengeId);
   const savedRoomIdRef = useRef<string | null>(null);
   const moveSansRef = useRef<string[]>([]);
@@ -803,7 +806,9 @@ export function useTriDChessMultiplayerGame(
   }, [ws, ws.status, ws.myColor, startGameFromFresh]);
 
   useEffect(() => {
+    if (restoreAttemptedRef.current) return;
     if (typeof window === 'undefined') return;
+    restoreAttemptedRef.current = true;
     const saved = loadSession();
     if (saved && saved.variant === VARIANT) {
       setMatchmakingOpen(false);
@@ -811,7 +816,10 @@ export function useTriDChessMultiplayerGame(
       return;
     }
     setSessionRestorePending(false);
-    if (!ws.isSecondaryTab) setMatchmakingOpen(true);
+    if (!ws.isSecondaryTab) {
+      setMatchmakingOpen(true);
+      setAllowAutoMatchmakingOpen(true);
+    }
     if (challengeId) {
       ws.joinChallenge(
         challengeId,
@@ -819,7 +827,7 @@ export function useTriDChessMultiplayerGame(
         session?.user?.image ?? undefined
       );
     }
-  }, [ws, challengeId, session?.user?.name, session?.user?.image]);
+  }, [challengeId, session?.user?.name, session?.user?.image, ws.isSecondaryTab, ws.joinChallenge, ws.rejoin]);
 
   useEffect(() => {
     if (!sessionRestorePending) return;
@@ -839,12 +847,13 @@ export function useTriDChessMultiplayerGame(
     if (
       ws.status === 'idle' &&
       !matchmakingOpen &&
+      allowAutoMatchmakingOpen &&
       loadSession() === null &&
       !ws.isSecondaryTab
     ) {
       setMatchmakingOpen(true);
     }
-  }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen]);
+  }, [sessionRestorePending, ws.status, ws.isSecondaryTab, matchmakingOpen, allowAutoMatchmakingOpen]);
 
   useEffect(() => {
     if (matchmakingOpen && !ws.isSecondaryTab) ws.preConnect();
@@ -875,6 +884,7 @@ export function useTriDChessMultiplayerGame(
         session?.user?.image ?? undefined,
         rating
       );
+      setAllowAutoMatchmakingOpen(true);
     },
     [ws, session]
   );
@@ -891,12 +901,14 @@ export function useTriDChessMultiplayerGame(
         session?.user?.name ?? undefined,
         session?.user?.image ?? undefined
       );
+      setAllowAutoMatchmakingOpen(true);
     },
     [ws, session]
   );
 
   const handleFindNewGame = useCallback(() => {
     ws.disconnect();
+    setAllowAutoMatchmakingOpen(true);
     const initialState = createInitialState();
     gameStateRef.current = initialState;
     moveSansRef.current = [];
@@ -1057,6 +1069,7 @@ export function useTriDChessMultiplayerGame(
             ws.status === 'error')
         ) {
           setMatchmakingOpen(false);
+          setAllowAutoMatchmakingOpen(false);
         }
       },
       status: ws.status,
@@ -1103,6 +1116,7 @@ export function useTriDChessMultiplayerGame(
     whiteTimeSecs,
     blackTimeSecs,
     activeClock,
+    serverOrientation,
     topPlayerInfo,
     bottomPlayerInfo,
     topPlayerExtras,

@@ -109,6 +109,7 @@ export default async function MultiplayerVariantPage({
         variant={variant}
         initialBoard3dEnabled={board3dEnabled}
         challengeId={challenge}
+        fixedBoardOrientation={variant === 'racingKings' ? 'white' : undefined}
       />
     </PageContainer>
   );

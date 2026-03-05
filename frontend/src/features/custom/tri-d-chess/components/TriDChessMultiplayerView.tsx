@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { useTriDChessMultiplayerGame } from '../hooks/useTriDChessMultiplayerGame';
 import { TriDChessBoard } from './TriDChessBoard';
-import { useChessStore } from '@/features/chess/stores/useChessStore';
+import { useChessStore, useChessActions } from '@/features/chess/stores/useChessStore';
 import { getPieceAssetPath } from '@/features/chess/config/media-themes';
 import type {
   PieceType,
@@ -79,6 +79,7 @@ export function TriDChessMultiplayerView({
   const game = useTriDChessMultiplayerGame(challengeId);
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const storePieceTheme = useChessStore((s) => s.pieceThemeName);
+  const { flipBoard } = useChessActions();
   const [isMounted, setIsMounted] = useState(false);
   useEffect(() => setIsMounted(true), []);
   const pieceTheme = isMounted ? storePieceTheme : initialPieceTheme;
@@ -113,10 +114,12 @@ export function TriDChessMultiplayerView({
   }, []);
 
   const hasTimer = game.whiteTimeSecs !== null || game.blackTimeSecs !== null;
-  const topColor = boardFlipped ? 'white' : 'black';
-  const bottomColor = boardFlipped ? 'black' : 'white';
-  const topTime = boardFlipped ? game.whiteTimeSecs : game.blackTimeSecs;
-  const bottomTime = boardFlipped ? game.blackTimeSecs : game.whiteTimeSecs;
+  const isViewingFromBlack =
+    game.serverOrientation === 'black' ? !boardFlipped : boardFlipped;
+  const topColor = isViewingFromBlack ? 'white' : 'black';
+  const bottomColor = isViewingFromBlack ? 'black' : 'white';
+  const topTime = isViewingFromBlack ? game.whiteTimeSecs : game.blackTimeSecs;
+  const bottomTime = isViewingFromBlack ? game.blackTimeSecs : game.whiteTimeSecs;
   const topTimerActive = game.activeClock === topColor && !game.gameOver;
   const bottomTimerActive = game.activeClock === bottomColor && !game.gameOver;
 
@@ -229,7 +232,7 @@ export function TriDChessMultiplayerView({
               }
               inCheck={game.inCheck && game.isActive}
               turn={game.gameState.turn}
-              flipped={boardFlipped}
+              flipped={isViewingFromBlack}
               onSquareClick={(sq: TriDSquare) =>
                 game.isActive && game.onSquareClick(sq)
               }
@@ -266,7 +269,7 @@ export function TriDChessMultiplayerView({
           onGoToMove={game.goToMove}
           onSetGameOver={() => {}}
           onSetGameResult={() => {}}
-          onFlipBoard={() => {}}
+          onFlipBoard={flipBoard}
           onStartAnalysis={() => {}}
           onEndAnalysis={() => {}}
           multiplayer={game.multiplayerSidebarProps}

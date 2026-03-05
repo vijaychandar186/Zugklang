@@ -15,7 +15,7 @@ processors:
     limit_mib: 200
     spike_limit_mib: 50
   resourcedetection:
-    detectors: [docker, system]
+    detectors: [system]
     timeout: 5s
 
 exporters:
@@ -44,7 +44,7 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, batch, resourcedetection]
+      processors: [memory_limiter, batch]
       exporters: [otlp/tempo]
 
     metrics:

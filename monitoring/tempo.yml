@@ -24,8 +24,7 @@ storage:
       path: /var/tempo/blocks
     wal:
       path: /var/tempo/wal
-    block:
-      retention: 72h  # Keep 3 days of traces
+
 
 query_frontend:
   search:

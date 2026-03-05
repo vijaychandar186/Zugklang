@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import {
   Dialog,
@@ -96,8 +96,6 @@ export function TriDChessView({
 }: {
   initialPieceTheme?: string;
 }) {
-  const boardViewportRef = useRef<HTMLDivElement | null>(null);
-  const [squareSize, setSquareSize] = useState(36);
   const {
     gameState,
     gameStarted,
@@ -170,34 +168,6 @@ export function TriDChessView({
     const isPromotion = !!last.promotion;
     playSound(getSoundType(isCapture, isCheck, isCastle, isPromotion, true));
   }, [gameState.moveHistory, soundEnabled]);
-  useLayoutEffect(() => {
-    const el = boardViewportRef.current;
-    if (!el) return;
-    const compute = () => {
-      const r = el.getBoundingClientRect();
-      const uw = Math.max(0, r.width - 28);
-      const uh = Math.max(0, r.height - 28);
-      if (uw < 160 || uh < 160) return;
-      const next = Math.max(
-        30,
-        Math.min(72, Math.floor((uw - 40) / 8), Math.floor((uh - 84) / 12))
-      );
-      if (Number.isFinite(next)) setSquareSize((p) => (p === next ? p : next));
-    };
-    compute();
-    if (typeof ResizeObserver === 'undefined') return;
-    let raf = 0;
-    const update = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
   const isActive =
     gameStarted &&
     !gameState.isOver &&
@@ -276,30 +246,31 @@ export function TriDChessView({
           className={BOARD_CONTAINER_CLASS}
         >
           <div
-            ref={boardViewportRef}
             className='border-border/30 bg-card flex h-full items-center justify-center rounded-lg border p-3 shadow-md'
+            style={{ containerType: 'size' } as React.CSSProperties}
           >
-            <TriDChessBoard
-              pieces={displayPieces}
-              slots={displaySlots}
-              selectedSquare={isActive ? selected : null}
-              selectedBoardId={isActive ? selectedBoardId : null}
-              highlightedSquares={isActive ? highlightedSquares : new Set()}
-              highlightedSlots={isActive ? highlightedSlots : new Set()}
-              inCheck={inCheck && isActive}
-              turn={gameState.turn}
-              flipped={boardFlipped}
-              onSquareClick={(sq: TriDSquare) => isActive && selectSquare(sq)}
-              onAttackBoardClick={(id: AttackBoardId) =>
-                isActive && selectAttackBoard(id)
-              }
-              onSlotClick={(id: AttackBoardId, slot: AttackBoardSlot) =>
-                isActive && moveAttackBoard(id, slot)
-              }
-              isActive={isActive}
-              squareSize={squareSize}
-              pieceTheme={pieceTheme}
-            />
+            <div style={{ '--sq': 'clamp(30px, min(calc((100cqw - 42px) / 8), calc((100cqh - 86px) / 12)), 72px)' } as React.CSSProperties}>
+              <TriDChessBoard
+                pieces={displayPieces}
+                slots={displaySlots}
+                selectedSquare={isActive ? selected : null}
+                selectedBoardId={isActive ? selectedBoardId : null}
+                highlightedSquares={isActive ? highlightedSquares : new Set()}
+                highlightedSlots={isActive ? highlightedSlots : new Set()}
+                inCheck={inCheck && isActive}
+                turn={gameState.turn}
+                flipped={boardFlipped}
+                onSquareClick={(sq: TriDSquare) => isActive && selectSquare(sq)}
+                onAttackBoardClick={(id: AttackBoardId) =>
+                  isActive && selectAttackBoard(id)
+                }
+                onSlotClick={(id: AttackBoardId, slot: AttackBoardSlot) =>
+                  isActive && moveAttackBoard(id, slot)
+                }
+                isActive={isActive}
+                pieceTheme={pieceTheme}
+              />
+            </div>
           </div>
         </BoardContainer>
       }

@@ -13,7 +13,6 @@ import {
 } from '../engine/types';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
 import { getPieceAssetPath, DEFAULT_PIECE_THEME } from '@/features/chess/config/media-themes';
-const DEFAULT_SQ = 36;
 function isDark(row: number, col: number): boolean {
   return (row + col) % 2 === 1;
 }
@@ -21,20 +20,19 @@ interface PieceImageProps {
   type: string;
   color: 'w' | 'b';
   pieceTheme: string;
-  size: number;
 }
-function PieceImage({ type, color, pieceTheme, size }: PieceImageProps) {
+function PieceImage({ type, color, pieceTheme }: PieceImageProps) {
   const fileName = `${color}${type}`;
   return (
     <Image
       src={getPieceAssetPath(pieceTheme, fileName)}
       alt={`${color}${type}`}
-      width={size}
-      height={size}
+      width={64}
+      height={64}
       unoptimized
       draggable={false}
       className='pointer-events-none object-contain select-none'
-      style={{ width: size, height: size }}
+      style={{ width: 'calc(var(--sq) - 4px)', height: 'calc(var(--sq) - 4px)' }}
     />
   );
 }
@@ -43,7 +41,6 @@ interface SquareProps {
   row: number;
   col: number;
   pieces: PieceMap;
-  squareSize: number;
   pieceTheme: string;
   boardTheme: {
     darkSquareStyle: React.CSSProperties;
@@ -61,7 +58,6 @@ function SquareCell({
   row,
   col,
   pieces,
-  squareSize,
   pieceTheme,
   boardTheme,
   isSelected,
@@ -94,8 +90,8 @@ function SquareCell({
       key={key}
       className='relative flex cursor-pointer items-center justify-center'
       style={{
-        width: squareSize,
-        height: squareSize,
+        width: 'var(--sq)',
+        height: 'var(--sq)',
         ...(highlightStyle
           ? {}
           : dark
@@ -109,7 +105,7 @@ function SquareCell({
         e.dataTransfer.effectAllowed = 'move';
         const img = e.currentTarget.querySelector('img');
         if (img) {
-          const size = squareSize - 4;
+          const size = Math.round(e.currentTarget.getBoundingClientRect().width) - 4;
           const canvas = document.createElement('canvas');
           canvas.width = size;
           canvas.height = size;
@@ -134,7 +130,6 @@ function SquareCell({
           type={piece.type}
           color={piece.color}
           pieceTheme={pieceTheme}
-          size={squareSize - 4}
         />
       )}
     </div>
@@ -144,7 +139,6 @@ interface BoardGridProps {
   boardId: BoardId;
   label: string;
   pieces: PieceMap;
-  squareSize: number;
   pieceTheme: string;
   boardTheme: {
     darkSquareStyle: React.CSSProperties;
@@ -165,7 +159,6 @@ function BoardGrid({
   boardId,
   label,
   pieces,
-  squareSize,
   pieceTheme,
   boardTheme,
   selectedKey,
@@ -224,7 +217,6 @@ function BoardGrid({
                   row={row}
                   col={col}
                   pieces={pieces}
-                  squareSize={squareSize}
                   pieceTheme={pieceTheme}
                   boardTheme={boardTheme}
                   isSelected={selectedKey === k}
@@ -246,14 +238,12 @@ interface SlotDropzoneProps {
   boardId: AttackBoardId;
   slot: AttackBoardSlot;
   isTarget: boolean;
-  squareSize: number;
   onDrop: (boardId: AttackBoardId, slot: AttackBoardSlot) => void;
 }
 function SlotDropzone({
   boardId,
   slot,
   isTarget,
-  squareSize,
   onDrop
 }: SlotDropzoneProps) {
   if (!isTarget) return null;
@@ -261,8 +251,8 @@ function SlotDropzone({
     <div
       className='flex cursor-pointer items-center justify-center rounded border-2 border-dashed text-[9px] font-bold transition-colors'
       style={{
-        width: 2 * squareSize,
-        height: 2 * squareSize,
+        width: 'calc(2 * var(--sq))',
+        height: 'calc(2 * var(--sq))',
         borderColor: 'var(--trid-slot-target)',
         backgroundColor:
           'color-mix(in oklch, var(--trid-slot-target) 20%, transparent)',
@@ -288,7 +278,6 @@ interface TriDChessBoardProps {
   onAttackBoardClick: (boardId: AttackBoardId) => void;
   onSlotClick: (boardId: AttackBoardId, slot: AttackBoardSlot) => void;
   isActive: boolean;
-  squareSize?: number;
   pieceTheme?: string;
 }
 const FIXED_BOARDS: Array<{
@@ -349,10 +338,8 @@ export function TriDChessBoard({
   onAttackBoardClick,
   onSlotClick,
   isActive,
-  squareSize = DEFAULT_SQ,
   pieceTheme = DEFAULT_PIECE_THEME
 }: TriDChessBoardProps) {
-  const sq = Math.max(28, squareSize);
   const boardTheme = useBoardTheme();
   const inCheckColor: 'w' | 'b' | null = inCheck ? turn : null;
   const selectedKey = selectedSquare ? squareKey(selectedSquare) : null;
@@ -375,7 +362,6 @@ export function TriDChessBoard({
               boardId={boardId}
               label={info.label}
               pieces={pieces}
-              squareSize={sq}
               pieceTheme={pieceTheme}
               boardTheme={boardTheme}
               selectedKey={selectedKey}
@@ -393,7 +379,7 @@ export function TriDChessBoard({
         })()
       ) : (
         <div
-          style={{ width: 2 * sq + 2 }}
+          style={{ width: 'calc(2 * var(--sq) + 2px)' }}
           className='flex flex-col items-center gap-0.5'
         >
           <span className='text-[10px] opacity-0'>—</span>
@@ -402,11 +388,10 @@ export function TriDChessBoard({
               boardId={selectedBoardId}
               slot={slot}
               isTarget={true}
-              squareSize={sq}
               onDrop={onSlotClick}
             />
           ) : (
-            <div style={{ width: 2 * sq + 2, height: 2 * sq + 2 }} />
+            <div style={{ width: 'calc(2 * var(--sq) + 2px)', height: 'calc(2 * var(--sq) + 2px)' }} />
           )}
         </div>
       );
@@ -426,8 +411,7 @@ export function TriDChessBoard({
       onSquareClick,
       flipped,
       onAttackBoardClick,
-      onSlotClick,
-      sq
+      onSlotClick
     ]
   );
   const renderSideColumn = useCallback(
@@ -458,7 +442,6 @@ export function TriDChessBoard({
             boardId={id}
             label={label}
             pieces={pieces}
-            squareSize={sq}
             pieceTheme={pieceTheme}
             boardTheme={boardTheme}
             selectedKey={selectedKey}

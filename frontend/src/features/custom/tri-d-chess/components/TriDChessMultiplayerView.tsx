@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useLayoutEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import Image from 'next/image';
 import {
   Dialog,
@@ -74,8 +74,6 @@ export function TriDChessMultiplayerView({
   challengeId?: string;
   initialPieceTheme?: string;
 }) {
-  const boardViewportRef = useRef<HTMLDivElement | null>(null);
-  const [squareSize, setSquareSize] = useState(36);
   const game = useTriDChessMultiplayerGame(challengeId);
   const boardFlipped = useChessStore((s) => s.boardFlipped);
   const storePieceTheme = useChessStore((s) => s.pieceThemeName);
@@ -84,34 +82,6 @@ export function TriDChessMultiplayerView({
   useEffect(() => setIsMounted(true), []);
   const pieceTheme = isMounted ? storePieceTheme : initialPieceTheme;
 
-  useLayoutEffect(() => {
-    const el = boardViewportRef.current;
-    if (!el) return;
-    const compute = () => {
-      const r = el.getBoundingClientRect();
-      const uw = Math.max(0, r.width - 28);
-      const uh = Math.max(0, r.height - 28);
-      if (uw < 160 || uh < 160) return;
-      const next = Math.max(
-        30,
-        Math.min(72, Math.floor((uw - 40) / 8), Math.floor((uh - 84) / 12))
-      );
-      if (Number.isFinite(next)) setSquareSize((p) => (p === next ? p : next));
-    };
-    compute();
-    if (typeof ResizeObserver === 'undefined') return;
-    let raf = 0;
-    const update = () => {
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(compute);
-    };
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => {
-      ro.disconnect();
-      if (raf) cancelAnimationFrame(raf);
-    };
-  }, []);
 
   const hasTimer = game.whiteTimeSecs !== null || game.blackTimeSecs !== null;
   const isViewingFromBlack =
@@ -216,36 +186,37 @@ export function TriDChessMultiplayerView({
           className={BOARD_CONTAINER_CLASS}
         >
           <div
-            ref={boardViewportRef}
             className='border-border/30 bg-card flex h-full items-center justify-center rounded-lg border p-3 shadow-md'
+            style={{ containerType: 'size' } as React.CSSProperties}
           >
-            <TriDChessBoard
-              pieces={displayPieces}
-              slots={displaySlots}
-              selectedSquare={game.isActive ? game.selected : null}
-              selectedBoardId={game.isActive ? game.selectedBoardId : null}
-              highlightedSquares={
-                game.isActive ? game.highlightedSquares : new Set()
-              }
-              highlightedSlots={
-                game.isActive ? game.highlightedSlots : new Set()
-              }
-              inCheck={game.inCheck && game.isActive}
-              turn={game.gameState.turn}
-              flipped={isViewingFromBlack}
-              onSquareClick={(sq: TriDSquare) =>
-                game.isActive && game.onSquareClick(sq)
-              }
-              onAttackBoardClick={(id: AttackBoardId) =>
-                game.isActive && game.onAttackBoardClick(id)
-              }
-              onSlotClick={(id: AttackBoardId, slot: AttackBoardSlot) =>
-                game.isActive && game.onSlotClick(id, slot)
-              }
-              isActive={game.isActive}
-              squareSize={squareSize}
-              pieceTheme={pieceTheme}
-            />
+            <div style={{ '--sq': 'clamp(30px, min(calc((100cqw - 42px) / 8), calc((100cqh - 86px) / 12)), 72px)' } as React.CSSProperties}>
+              <TriDChessBoard
+                pieces={displayPieces}
+                slots={displaySlots}
+                selectedSquare={game.isActive ? game.selected : null}
+                selectedBoardId={game.isActive ? game.selectedBoardId : null}
+                highlightedSquares={
+                  game.isActive ? game.highlightedSquares : new Set()
+                }
+                highlightedSlots={
+                  game.isActive ? game.highlightedSlots : new Set()
+                }
+                inCheck={game.inCheck && game.isActive}
+                turn={game.gameState.turn}
+                flipped={isViewingFromBlack}
+                onSquareClick={(sq: TriDSquare) =>
+                  game.isActive && game.onSquareClick(sq)
+                }
+                onAttackBoardClick={(id: AttackBoardId) =>
+                  game.isActive && game.onAttackBoardClick(id)
+                }
+                onSlotClick={(id: AttackBoardId, slot: AttackBoardSlot) =>
+                  game.isActive && game.onSlotClick(id, slot)
+                }
+                isActive={game.isActive}
+                pieceTheme={pieceTheme}
+              />
+            </div>
           </div>
         </BoardContainer>
       }

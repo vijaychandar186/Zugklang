@@ -30,9 +30,11 @@ exporters:
     endpoint: "0.0.0.0:8889"
     namespace: zugklang
 
-  # Logs → Grafana Loki
-  loki:
-    endpoint: http://loki:3100/loki/api/v1/push
+  # Logs → Grafana Loki (via OTLP — loki exporter removed in otel-collector-contrib 0.97+)
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+    tls:
+      insecure: true
 
   # Debug logging (disable in prod if too verbose)
   debug:
@@ -53,7 +55,7 @@ service:
     logs:
       receivers: [otlp]
       processors: [memory_limiter, batch]
-      exporters: [loki]
+      exporters: [otlphttp/loki]
 
   # debug exporter intentionally excluded from all pipelines in production
 
@@ -61,4 +63,9 @@ service:
     logs:
       level: "warn"
     metrics:
-      address: 0.0.0.0:8888
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888

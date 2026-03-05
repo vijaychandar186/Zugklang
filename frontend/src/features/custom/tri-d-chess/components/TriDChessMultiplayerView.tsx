@@ -10,7 +10,7 @@ import {
 import { useTriDChessMultiplayerGame } from '../hooks/useTriDChessMultiplayerGame';
 import { TriDChessBoard } from './TriDChessBoard';
 import { useChessStore, useChessActions } from '@/features/chess/stores/useChessStore';
-import { getPieceAssetPath } from '@/features/chess/config/media-themes';
+import { getPieceAssetPath, DEFAULT_PIECE_THEME } from '@/features/chess/config/media-themes';
 import type {
   PieceType,
   AttackBoardId,
@@ -69,7 +69,7 @@ const BOARD_CONTAINER_CLASS =
 
 export function TriDChessMultiplayerView({
   challengeId,
-  initialPieceTheme = 'classic'
+  initialPieceTheme = DEFAULT_PIECE_THEME
 }: {
   challengeId?: string;
   initialPieceTheme?: string;

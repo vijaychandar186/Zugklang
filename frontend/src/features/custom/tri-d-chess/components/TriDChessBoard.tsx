@@ -12,7 +12,7 @@ import {
   BOARD_SIZES
 } from '../engine/types';
 import { useBoardTheme } from '@/features/chess/hooks/useSquareInteraction';
-import { getPieceAssetPath } from '@/features/chess/config/media-themes';
+import { getPieceAssetPath, DEFAULT_PIECE_THEME } from '@/features/chess/config/media-themes';
 const DEFAULT_SQ = 36;
 function isDark(row: number, col: number): boolean {
   return (row + col) % 2 === 1;
@@ -350,7 +350,7 @@ export function TriDChessBoard({
   onSlotClick,
   isActive,
   squareSize = DEFAULT_SQ,
-  pieceTheme = 'classic'
+  pieceTheme = DEFAULT_PIECE_THEME
 }: TriDChessBoardProps) {
   const sq = Math.max(28, squareSize);
   const boardTheme = useBoardTheme();

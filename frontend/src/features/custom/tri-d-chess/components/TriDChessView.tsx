@@ -10,7 +10,7 @@ import {
 import { useTriDChessStore } from '../store/useTriDChessStore';
 import { TriDChessBoard } from './TriDChessBoard';
 import { useChessStore } from '@/features/chess/stores/useChessStore';
-import { getPieceAssetPath } from '@/features/chess/config/media-themes';
+import { getPieceAssetPath, DEFAULT_PIECE_THEME } from '@/features/chess/config/media-themes';
 import { playSound, getSoundType } from '@/features/game/utils/sounds';
 import type {
   PieceType,
@@ -92,7 +92,7 @@ function PromotionDialog({
 const BOARD_CONTAINER_CLASS =
   'lg:h-[min(70vw,calc(100dvh-180px),820px)] xl:h-[min(68vw,calc(100dvh-180px),920px)] 2xl:h-[min(66vw,calc(100dvh-180px),1020px)] [&>[data-board-container]]:h-full';
 export function TriDChessView({
-  initialPieceTheme = 'classic'
+  initialPieceTheme = DEFAULT_PIECE_THEME
 }: {
   initialPieceTheme?: string;
 }) {

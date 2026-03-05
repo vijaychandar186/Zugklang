@@ -6,6 +6,7 @@ import { CardChessView } from '@/features/custom/card-chess/components/CardChess
 import { DiceChessView } from '@/features/custom/dice-chess/components/DiceChessView';
 import { FourPlayerView } from '@/features/custom/four-player/components/FourPlayerView';
 import { TriDChessView } from '@/features/custom/tri-d-chess/components/TriDChessView';
+import { DEFAULT_PIECE_THEME } from '@/features/chess/config/media-themes';
 type CustomVariantSlug = 'card-chess' | 'dice-chess' | 'four-player' | 'tri-d';
 const VARIANT_META: Record<
   CustomVariantSlug,
@@ -64,7 +65,7 @@ export default async function CustomVariantPage({
   const { variant } = await params;
   if (!isValidSlug(variant)) notFound();
   const cookieStore = await cookies();
-  const pieceTheme = cookieStore.get('pieceTheme')?.value ?? 'classic';
+  const pieceTheme = cookieStore.get('pieceTheme')?.value ?? DEFAULT_PIECE_THEME;
   return (
     <PageContainer scrollable={true}>
       {variant === 'card-chess' && <CardChessView />}

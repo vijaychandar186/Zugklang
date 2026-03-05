@@ -20,6 +20,20 @@ nohup ngrok http --url=unmellifluently-unforcible-ricky.ngrok-free.dev 80 >/dev/
 unmellifluently-unforcible-ricky.ngrok-free.dev
 ```
 
+```bash
+# Root .env
+cp environment/.env.sample .env
+
+# Frontend
+cp environment/frontend/.env.production.sample frontend/.env.production
+
+# WS Server
+cp environment/ws-server/.env.production.sample backend/ws-server/.env.production
+
+# Anti-cheat
+cp environment/anti-cheat/.env.production.sample backend/anti-cheat/.env.production
+```
+
 ### Without Docker Compose (manual)
 
 ```bash

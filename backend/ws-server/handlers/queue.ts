@@ -245,8 +245,8 @@ async function matchPlayers(
     });
     const queueKey = `queue:${variant}:${timeControlKey(timeControl)}`;
     await Promise.all([
-      redis.zadd(queueKey, playerAData.queuedAt, playerAData.userId),
-      redis.zadd(queueKey, playerBData.queuedAt, playerBData.userId)
+      redis.zadd(queueKey, playerAData.rating, playerAData.userId),
+      redis.zadd(queueKey, playerBData.rating, playerBData.userId)
     ]);
     send(playerA, { type: 'waiting' });
     send(playerB, { type: 'waiting' });
@@ -307,7 +307,20 @@ export async function handleJoinQueue(
   );
   await redis.expire(`queue:player:${myUserId}`, QUEUE_PLAYER_TTL_SEC);
 
-  const candidates = await redis.zrange(queueKey, 0, -1);
+  // Use rating as ZRANGEBYSCORE bound to avoid O(n) full-queue scan.
+  // Expand by the max possible band at this instant (own band) so we don't
+  // miss candidates whose band already covers us.
+  const currentBand = ratingBand(myData.queuedAt);
+  const minScore = myData.rating - currentBand;
+  const maxScore = myData.rating + currentBand;
+  const candidates = await redis.zrangebyscore(
+    queueKey,
+    minScore,
+    maxScore,
+    'LIMIT',
+    0,
+    20
+  );
   let matched = false;
 
   for (const candidateUserId of candidates) {
@@ -391,7 +404,7 @@ export async function handleJoinQueue(
   }
 
   if (!matched) {
-    await redis.zadd(queueKey, ws.data.queuedAt, myUserId);
+    await redis.zadd(queueKey, myData.rating, myUserId);
     send(ws, { type: 'waiting' });
   }
 }

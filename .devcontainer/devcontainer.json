@@ -40,7 +40,8 @@
     "vscode": {
       "extensions": [
         "esbenp.prettier-vscode",
-        "charliermarsh.ruff"
+        "charliermarsh.ruff",
+        "GitHub.vscode-github-actions"
       ]
     }
   }

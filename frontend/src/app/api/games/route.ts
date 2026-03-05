@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db/db';
 import { updateRatings, type GlickoPlayer } from '@/lib/ratings/glicko2';
 import { getTimeCategory } from '@/lib/ratings/timeCategory';
 import { normalizeFlagCode } from '@/features/settings/flags';
+import { checkRateLimit } from '@/lib/redis';
 interface SaveGameBody {
   roomId?: string;
   moves: string[];
@@ -85,6 +86,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const userId = session.user.id;
+    const allowed = await checkRateLimit(`rl:games:post:${userId}`, 10, 60);
+    if (!allowed) {
+      return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+    }
     let body: SaveGameBody;
     try {
       body = (await req.json()) as SaveGameBody;

@@ -1,5 +1,23 @@
-import { rooms, challenges } from '../state';
+import { rooms, challenges, connectedUserIds } from '../state';
 import { redis } from '../redis';
+import { renderMetrics, setGauge } from '../utils/metrics';
+
+async function scanKeys(pattern: string): Promise<string[]> {
+  const keys: string[] = [];
+  let cursor = '0';
+  do {
+    const [nextCursor, batch] = await redis.scan(
+      cursor,
+      'MATCH',
+      pattern,
+      'COUNT',
+      100
+    );
+    cursor = nextCursor;
+    keys.push(...batch);
+  } while (cursor !== '0');
+  return keys;
+}
 
 const startedAt = Date.now();
 
@@ -24,7 +42,7 @@ async function handleStatsAsync(req: Request): Promise<Response> {
     if (room.status === 'active') activeRooms++;
     else endedRooms++;
   }
-  const queueKeys = await redis.keys('queue:*:*:*:*');
+  const queueKeys = await scanKeys('queue:*:*:*:*');
   let queuedPlayers = 0;
   for (const key of queueKeys) {
     queuedPlayers += await redis.zcard(key);
@@ -45,7 +63,7 @@ async function handleAdminAsync(req: Request): Promise<Response> {
   if (req.headers.get('authorization') !== `Bearer ${adminKey}`) {
     return new Response('Unauthorized', { status: 401 });
   }
-  const queueKeys = await redis.keys('queue:*:*:*:*');
+  const queueKeys = await scanKeys('queue:*:*:*:*');
   const queuesObj: Record<string, number> = {};
   for (const key of queueKeys) {
     queuesObj[key] = await redis.zcard(key);
@@ -68,6 +86,28 @@ async function handleAdminAsync(req: Request): Promise<Response> {
   });
 }
 
+async function handleMetrics(): Promise<Response> {
+  let activeRooms = 0;
+  let endedRooms = 0;
+  for (const room of rooms.values()) {
+    if (room.status === 'active') activeRooms++;
+    else endedRooms++;
+  }
+  const queueKeys = await scanKeys('queue:*:*:*:*');
+  let queuedPlayers = 0;
+  for (const key of queueKeys) {
+    queuedPlayers += await redis.zcard(key);
+  }
+  setGauge('ws_connected_players', connectedUserIds.size);
+  setGauge('ws_active_rooms', activeRooms);
+  setGauge('ws_ended_rooms', endedRooms);
+  setGauge('ws_open_challenges', challenges.size);
+  setGauge('ws_queued_players', queuedPlayers);
+  return new Response(renderMetrics(), {
+    headers: { 'Content-Type': 'text/plain; version=0.0.4' }
+  });
+}
+
 export function handleHttpRequest(
   req: Request
 ): Response | Promise<Response> | undefined {
@@ -75,6 +115,8 @@ export function handleHttpRequest(
   switch (pathname) {
     case '/health':
       return handleHealth();
+    case '/metrics':
+      return handleMetrics();
     case '/admin/stats':
       return handleStatsAsync(req);
     case '/admin':

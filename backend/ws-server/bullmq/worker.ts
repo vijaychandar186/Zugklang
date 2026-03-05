@@ -1,4 +1,5 @@
 import { Worker } from 'bullmq';
+import * as Sentry from '@sentry/bun';
 import { getConnectionOptions } from './connection';
 import { JobName, queueNameFor } from './types';
 import { processAntiCheat } from './workers/antiCheat';
@@ -32,13 +33,20 @@ export function startWorkers(): Worker[] {
 
   for (const worker of workers) {
     worker.on('failed', (job, err) => {
+      const attemptsLeft = (job?.opts.attempts ?? 1) - (job?.attemptsMade ?? 0);
       logger.warn('job_failed', {
         queue: worker.name,
         jobId: job?.id,
         attempt: job?.attemptsMade,
-        attemptsLeft: (job?.opts.attempts ?? 1) - (job?.attemptsMade ?? 0),
+        attemptsLeft,
         error: err.message
       });
+      // Report to Sentry only on final failure (no retries left)
+      if (attemptsLeft <= 0) {
+        Sentry.captureException(err, {
+          tags: { queue: worker.name, jobId: job?.id ?? 'unknown' }
+        });
+      }
     });
 
     worker.on('completed', (job) => {
@@ -47,6 +55,7 @@ export function startWorkers(): Worker[] {
 
     worker.on('error', (err) => {
       logger.warn('worker_error', { queue: worker.name, error: err.message });
+      Sentry.captureException(err, { tags: { queue: worker.name } });
     });
   }
 

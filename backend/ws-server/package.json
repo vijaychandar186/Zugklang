@@ -32,6 +32,13 @@
     "typescript-eslint": "^8.56.0"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.213.0",
+    "@opentelemetry/instrumentation-http": "^0.213.0",
+    "@opentelemetry/resources": "^2.6.0",
+    "@opentelemetry/sdk-node": "^0.213.0",
+    "@opentelemetry/semantic-conventions": "^1.40.0",
+    "@sentry/bun": "^10.42.0",
     "bullmq": "^5.70.1",
     "chessops": "^0.15.0",
     "ioredis": "^5.10.0",

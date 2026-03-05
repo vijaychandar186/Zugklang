@@ -119,7 +119,7 @@ services:
       DATABASE_URL: "postgresql://admin:mysecretpassword@postgres:5432/zugklang-frontend"
       REDIS_URL: redis://redis:6379
       # AUTH_URL, AUTH_SECRET, AUTH_GITHUB_ID, AUTH_GITHUB_SECRET: set in .env.local
-    command: ["sh", "-c", "pnpm prisma db push && pnpm exec next dev"]
+    command: ["sh", "-c", "pnpm prisma migrate dev && pnpm exec next dev"]
     env_file:
       - path: ./frontend/.env.local
         required: false

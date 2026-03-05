@@ -1,0 +1,13 @@
+relay:
+  # Must match a registered relay in the Sentry UI (or set to "managed" mode after registration)
+  mode: managed
+  upstream: "http://sentry-web:9000/"
+  host: 0.0.0.0
+  port: 3000
+
+logging:
+  level: WARN
+  format: json
+
+limits:
+  max_concurrent_requests: 100

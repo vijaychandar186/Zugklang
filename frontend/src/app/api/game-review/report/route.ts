@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import analyse from '@/lib/analysis/analysis';
+import { checkRateLimit } from '@/lib/redis';
+import { auth } from '@/lib/auth/auth';
+
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (session?.user?.id) {
+      const allowed = await checkRateLimit(
+        `rl:game-review:${session.user.id}`,
+        5,
+        60
+      );
+      if (!allowed) {
+        return NextResponse.json({ message: 'Rate limit exceeded.' }, { status: 429 });
+      }
+    }
     const body = await req.json();
     const { positions } = body;
     if (!positions) {

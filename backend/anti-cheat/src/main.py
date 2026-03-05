@@ -3,16 +3,30 @@ from __future__ import annotations
 
 import logging
 import logging.handlers
+import os
 import sys
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Dict
 
-from fastapi import BackgroundTasks, FastAPI, HTTPException
+import sentry_sdk
+from fastapi import BackgroundTasks, FastAPI, HTTPException, Security
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.redis import RedisIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from .config import (
     ANALYSIS_DAYS,
+    INTERNAL_API_SECRET,
     LOGGING_LEVEL,
     MODEL_CONFIGS,
     TIME_CONTROLS,
@@ -38,7 +52,6 @@ from .schemas import (
 )
 
 import json
-import os
 
 
 # ---------------------------------------------------------------------------
@@ -57,6 +70,58 @@ def _setup_logger(name: str, level: str) -> logging.Logger:
 
 log = _setup_logger(__name__, LOGGING_LEVEL)
 logging.getLogger("tensorflow").setLevel(logging.ERROR)
+
+
+# ---------------------------------------------------------------------------
+# Sentry + OpenTelemetry initialisation
+# ---------------------------------------------------------------------------
+
+def _init_observability() -> None:
+    """Initialise Sentry error tracking and OTel distributed tracing."""
+    _node_env = os.environ.get("NODE_ENV", "production")
+    _sentry_dsn = os.environ.get("SENTRY_DSN")
+
+    if _sentry_dsn:
+        sentry_sdk.init(
+            dsn=_sentry_dsn,
+            environment=_node_env,
+            release=os.environ.get("SENTRY_RELEASE"),
+            traces_sample_rate=0.1 if _node_env == "production" else 1.0,
+            sample_rate=1.0,
+            integrations=[
+                FastApiIntegration(),
+                RedisIntegration(),
+                SqlalchemyIntegration(),
+                LoggingIntegration(
+                    level=logging.WARNING,      # Capture WARNING+ as breadcrumbs
+                    event_level=logging.ERROR,  # Send ERROR+ as Sentry events
+                ),
+            ],
+            # Don't send PII (user IPs etc.) to Sentry
+            send_default_pii=False,
+        )
+        log.info("Sentry initialised (env=%s).", _node_env)
+
+    _otel_endpoint = os.environ.get(
+        "OTEL_EXPORTER_OTLP_ENDPOINT", "http://otel-collector:4318"
+    )
+    provider = TracerProvider(
+        resource=Resource.create({
+            "service.name": "zugklang-anti-cheat",
+            "service.version": "2.0.0",
+            "deployment.environment": _node_env,
+        })
+    )
+    provider.add_span_processor(
+        BatchSpanProcessor(
+            OTLPSpanExporter(endpoint=f"{_otel_endpoint}/v1/traces")
+        )
+    )
+    trace.set_tracer_provider(provider)
+    log.info("OpenTelemetry tracer initialised (endpoint=%s).", _otel_endpoint)
+
+
+_init_observability()
 
 
 # ---------------------------------------------------------------------------
@@ -107,6 +172,21 @@ app = FastAPI(
     root_path="/anti-cheat",
 )
 
+# Instrument FastAPI with OTel — must happen after app creation
+FastAPIInstrumentor.instrument_app(app)
+
+_bearer = HTTPBearer()
+
+
+def _require_internal_auth(
+    credentials: HTTPAuthorizationCredentials = Security(_bearer),
+) -> None:
+    """Validate the shared INTERNAL_API_SECRET bearer token."""
+    if not INTERNAL_API_SECRET:
+        raise HTTPException(status_code=503, detail="Internal auth not configured.")
+    if credentials.credentials != INTERNAL_API_SECRET:
+        raise HTTPException(status_code=401, detail="Unauthorized.")
+
 
 # ---------------------------------------------------------------------------
 # Routes
@@ -127,7 +207,8 @@ async def queue_status() -> QueueStatusResponse:
     return QueueStatusResponse(pending=pending, processed_today=processed)
 
 
-@app.post("/analyse", response_model=AnalyseResponse, tags=["Analysis"])
+@app.post("/analyse", response_model=AnalyseResponse, tags=["Analysis"],
+          dependencies=[Security(_require_internal_auth)])
 async def analyse_users(request: AnalyseRequest) -> AnalyseResponse:
     if not request.users:
         raise HTTPException(status_code=422, detail="User list must not be empty.")
@@ -161,7 +242,8 @@ async def analyse_users(request: AnalyseRequest) -> AnalyseResponse:
     )
 
 
-@app.post("/game", response_model=GameIngestionResponse, tags=["Ingestion"])
+@app.post("/game", response_model=GameIngestionResponse, tags=["Ingestion"],
+          dependencies=[Security(_require_internal_auth)])
 async def ingest_game_endpoint(data: GameIngestionRequest) -> GameIngestionResponse:
     """Called by the WS server when a game ends.
     Replays the game, computes per-move Kaladin fields, and stores rows in PostgreSQL.
@@ -195,13 +277,15 @@ async def ingest_game_endpoint(data: GameIngestionRequest) -> GameIngestionRespo
         raise HTTPException(status_code=500, detail="Ingestion failed.")
 
 
-@app.post("/queue/start", tags=["Queue"])
+@app.post("/queue/start", tags=["Queue"],
+          dependencies=[Security(_require_internal_auth)])
 async def start_queue_worker(background_tasks: BackgroundTasks) -> JSONResponse:
     background_tasks.add_task(QueueManager().start)
     return JSONResponse({"message": "Queue worker started in background."})
 
 
-@app.post("/train", tags=["Model"])
+@app.post("/train", tags=["Model"],
+          dependencies=[Security(_require_internal_auth)])
 async def trigger_training(background_tasks: BackgroundTasks) -> JSONResponse:
     def _run():
         for _, tc, days in MODEL_CONFIGS:

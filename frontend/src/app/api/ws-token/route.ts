@@ -1,33 +1,19 @@
 import { auth } from '@/lib/auth/auth';
-const pendingTokens = new Map<
-  string,
-  {
-    userId: string;
-    expiresAt: number;
-  }
->();
-const TOKEN_TTL_MS = 60000;
-setInterval(
-  () => {
-    const now = Date.now();
-    for (const [token, entry] of pendingTokens) {
-      if (now > entry.expiresAt) pendingTokens.delete(token);
-    }
-  },
-  5 * 60 * 1000
-);
+import { redis } from '@/lib/redis';
+
+const TOKEN_TTL_SEC = 60;
+
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
     return new Response('Unauthorized', { status: 401 });
   }
   const token = crypto.randomUUID();
-  pendingTokens.set(token, {
-    userId: session.user.id,
-    expiresAt: Date.now() + TOKEN_TTL_MS
-  });
+  // NX ensures each token slot is only written once; EX auto-expires after 60s.
+  await redis.set(`ws:pending:${token}`, session.user.id, 'EX', TOKEN_TTL_SEC, 'NX');
   return Response.json({ token });
 }
+
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as {
     token?: string;
@@ -36,14 +22,10 @@ export async function POST(req: Request) {
   if (!token) {
     return new Response('Missing token', { status: 400 });
   }
-  const entry = pendingTokens.get(token);
-  if (!entry) {
-    return new Response('Invalid token', { status: 401 });
+  // GETDEL is atomic: fetches and deletes in one round-trip (one-time use).
+  const userId = await redis.getdel(`ws:pending:${token}`);
+  if (!userId) {
+    return new Response('Invalid or expired token', { status: 401 });
   }
-  if (Date.now() > entry.expiresAt) {
-    pendingTokens.delete(token);
-    return new Response('Token expired', { status: 401 });
-  }
-  pendingTokens.delete(token);
-  return Response.json({ userId: entry.userId });
+  return Response.json({ userId });
 }

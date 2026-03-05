@@ -20,6 +20,7 @@ DATABASE_URL: str = config.get(
 )
 REDIS_URL: str = config.get("REDIS_URL", "redis://localhost:6379")
 
+INTERNAL_API_SECRET: str = config.get("INTERNAL_API_SECRET", "")
 LOGGING_LEVEL: str = config.get("LOGGING_LEVEL", "INFO").upper()
 BATCH_TIMEOUT: int = int(config.get("BATCH_TIMEOUT", 30))
 BATCH_SIZE: int = int(config.get("BATCH_SIZE", 50))

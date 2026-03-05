@@ -1,3 +1,5 @@
+// OTel + Sentry MUST be first — patches internals before any other module loads
+import './utils/instrumentation';
 import type { SocketData } from './types';
 import type { BunWS } from './types';
 import { verifyWsToken } from './utils/auth';
@@ -11,6 +13,7 @@ import {
 import { send } from './utils/socket';
 import { isRateLimited } from './utils/rateLimit';
 import { logger } from './utils/logger';
+import { incCounter } from './utils/metrics';
 import { handleHttpRequest } from './handlers/http';
 import {
   handleJoinQueue,
@@ -66,7 +69,10 @@ const ENFORCE_WS_ORIGIN_CHECK =
   process.env['NODE_ENV'] === 'production';
 
 function isOriginAllowed(origin: string): boolean {
-  if (ALLOWED_ORIGINS.length === 0) return true;
+  // Fail-closed in production: if no origins are configured, deny all.
+  if (ALLOWED_ORIGINS.length === 0) {
+    return process.env['NODE_ENV'] !== 'production';
+  }
   if (ALLOWED_ORIGINS.includes('*')) return true;
   if (ALLOWED_ORIGINS.includes(origin)) return true;
 
@@ -104,6 +110,7 @@ Bun.serve<SocketData>({
     const userId = token ? await verifyWsToken(token) : null;
     if (!userId) {
       logger.warn('ws_auth_rejected', { hasToken: !!token });
+      incCounter('ws_auth_failures_total');
       return new Response('Unauthorized', { status: 401 });
     }
     const id = crypto.randomUUID();

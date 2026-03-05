@@ -7,6 +7,7 @@ import {
   fourPlayerLobbies,
   fourPlayerReconnectTimeouts
 } from '../state';
+import { ABANDON_TIMEOUT_MS } from '../config';
 import { cancelAbandonCheck, scheduleAbandonCheck } from '../bullmq/queues';
 import { send, removeFromQueues } from '../utils/socket';
 import { sendToUser } from '../utils/routing';

@@ -4,8 +4,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl libatomic1
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv (pinned version for reproducibility)
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:$PATH"
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh \
+    && mv /root/.local/bin/uv /usr/local/bin/uv
 
 # Create non-root user
 RUN groupadd --system kaladin && useradd --system --gid kaladin --home /app kaladin

@@ -6,7 +6,7 @@
 import * as Sentry from '@sentry/bun';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { Resource } from '@opentelemetry/resources';
+import { resourceFromAttributes } from '@opentelemetry/resources';
 import { ATTR_SERVICE_NAME, ATTR_SERVICE_VERSION } from '@opentelemetry/semantic-conventions';
 
 const OTEL_ENDPOINT =
@@ -33,7 +33,7 @@ Sentry.init({
 // OpenTelemetry SDK
 // ---------------------------------------------------------------------------
 const sdk = new NodeSDK({
-  resource: new Resource({
+  resource: resourceFromAttributes({
     [ATTR_SERVICE_NAME]: SERVICE_NAME,
     [ATTR_SERVICE_VERSION]: '1.0.0',
     'deployment.environment': NODE_ENV,

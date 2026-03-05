@@ -16,6 +16,6 @@ EXPOSE $PORT
 USER bun
 
 HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:${PORT}/health 2>/dev/null || exit 1
+  CMD bun --eval "const r = await fetch('http://localhost:' + (process.env.PORT || 8080) + '/health'); if (!r.ok) process.exit(1);" || exit 1
 
 ENTRYPOINT ["bun", "server.ts"]

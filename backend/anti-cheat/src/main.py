@@ -11,7 +11,7 @@ from typing import Dict
 
 import sentry_sdk
 from fastapi import BackgroundTasks, FastAPI, HTTPException, Security
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, PlainTextResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
@@ -22,7 +22,6 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 from .config import (
     ANALYSIS_DAYS,
@@ -91,7 +90,6 @@ def _init_observability() -> None:
             integrations=[
                 FastApiIntegration(),
                 RedisIntegration(),
-                SqlalchemyIntegration(),
                 LoggingIntegration(
                     level=logging.WARNING,      # Capture WARNING+ as breadcrumbs
                     event_level=logging.ERROR,  # Send ERROR+ as Sentry events
@@ -195,6 +193,38 @@ def _require_internal_auth(
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check() -> HealthResponse:
     return HealthResponse(status="ok")
+
+
+@app.get("/metrics", response_class=PlainTextResponse, tags=["System"])
+async def metrics() -> PlainTextResponse:
+    """Expose minimal Prometheus metrics for service liveness and queue depth."""
+    pending_queue = 0
+    db_ok = 1
+    if _db is not None:
+        try:
+            pending_queue = _db.analysisqueue.count(where={"respondedAt": None})
+        except Exception:
+            # Keep /metrics scrapeable even when DB schema is not initialized yet.
+            db_ok = 0
+            pending_queue = 0
+    else:
+        db_ok = 0
+
+    body = (
+        "# HELP anti_cheat_up Whether the anti-cheat API process is running.\n"
+        "# TYPE anti_cheat_up gauge\n"
+        "anti_cheat_up 1\n"
+        "# HELP anti_cheat_db_ok Whether anti-cheat DB queue metrics are available.\n"
+        "# TYPE anti_cheat_db_ok gauge\n"
+        f"anti_cheat_db_ok {db_ok}\n"
+        "# HELP anti_cheat_pending_queue Pending anti-cheat analysis queue items.\n"
+        "# TYPE anti_cheat_pending_queue gauge\n"
+        f"anti_cheat_pending_queue {pending_queue}\n"
+    )
+    return PlainTextResponse(
+        content=body,
+        media_type="text/plain; version=0.0.4; charset=utf-8",
+    )
 
 
 @app.get("/queue/status", response_model=QueueStatusResponse, tags=["Queue"])

@@ -12,6 +12,10 @@ RUN groupadd --system kaladin && useradd --system --gid kaladin --home /app kala
 
 WORKDIR /app
 
+# Ensure runtime caches are written to a non-root, writable location.
+ENV HOME=/app
+ENV XDG_CACHE_HOME=/app/.cache
+
 # Install dependencies (cached layer)
 COPY pyproject.toml uv.lock ./
 RUN uv sync --no-dev

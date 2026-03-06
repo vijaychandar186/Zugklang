@@ -128,6 +128,7 @@ _init_observability()
 
 _explainers: Dict = {}
 _db = None
+_analysis_queue_available = True
 
 
 # ---------------------------------------------------------------------------
@@ -198,15 +199,17 @@ async def health_check() -> HealthResponse:
 @app.get("/metrics", response_class=PlainTextResponse, tags=["System"])
 async def metrics() -> PlainTextResponse:
     """Expose minimal Prometheus metrics for service liveness and queue depth."""
+    global _analysis_queue_available
     pending_queue = 0
     db_ok = 1
-    if _db is not None:
+    if _db is not None and _analysis_queue_available:
         try:
             pending_queue = _db.analysisqueue.count(where={"respondedAt": None})
         except Exception:
             # Keep /metrics scrapeable even when DB schema is not initialized yet.
             db_ok = 0
             pending_queue = 0
+            _analysis_queue_available = False
     else:
         db_ok = 0
 

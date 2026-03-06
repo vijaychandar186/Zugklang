@@ -229,8 +229,12 @@ services:
     image: prometheuscommunity/postgres-exporter:latest
     container_name: zugklang-postgres-exporter-prod
     restart: always
+    command:
+      - '--config.file=/etc/postgres_exporter.yml'
     environment:
       DATA_SOURCE_NAME: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/postgres?sslmode=disable"
+    volumes:
+      - ./monitoring/postgres_exporter.yml:/etc/postgres_exporter.yml:ro
     expose:
       - "9187"
     depends_on:

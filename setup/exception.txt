@@ -1,0 +1,4 @@
+# One script filename per line.
+# setup/setup.sh skips any matching .sh file listed here.
+
+bootstrap-env.sh

@@ -1,0 +1,497 @@
+# Self-hosted Sentry stack — run independently from the main app stack.
+#
+# SETUP (first-time only):
+#   1. Copy and fill secrets:
+#        cp sentry/.env.sentry.example sentry/.env.sentry
+#   2. Generate a secret key:
+#        docker compose -f docker-compose.sentry.yaml run --rm sentry-web config generate-secret-key
+#   3. Start everything (sentry-init + snuba-init run automatically on first boot):
+#        docker compose -f docker-compose.sentry.yaml up -d
+#   4. Create an admin user:
+#        docker compose -f docker-compose.sentry.yaml run --rm sentry-web createuser \
+#          --email admin@example.com --password <pass> --superuser
+#
+# ACCESS: http://<host>:9000  (or proxy behind nginx/Caddy on your preferred domain)
+#
+# UPDATE (rolling upgrade):
+#   docker compose -f docker-compose.sentry.yaml pull
+#   docker compose -f docker-compose.sentry.yaml up -d
+#   (sentry-init re-runs upgrade --noinput idempotently on each compose up)
+
+# ---------------------------------------------------------------------------
+# Shared base — infrastructure image / config only.
+# Application services use x-sentry-app (adds sentry-init dependency).
+# ---------------------------------------------------------------------------
+x-sentry-base: &sentry-base
+  image: getsentry/sentry:25.3.0
+  restart: unless-stopped
+  env_file:
+    - ./sentry/.env.sentry
+  environment:
+    SENTRY_CONF: /etc/sentry
+  volumes:
+    - ./sentry/sentry.conf.py:/etc/sentry/sentry.conf.py:ro
+    - ./sentry/config.yml:/etc/sentry/config.yml:ro
+    - sentry_data:/data
+  depends_on:
+    sentry-postgres:
+      condition: service_healthy
+    sentry-redis:
+      condition: service_healthy
+    sentry-kafka:
+      condition: service_started
+    sentry-clickhouse:
+      condition: service_healthy
+    sentry-memcached:
+      condition: service_started
+  networks:
+    - sentry-net
+
+# Application services additionally wait for one-time DB + Kafka initialisation.
+x-sentry-app: &sentry-app
+  <<: *sentry-base
+  depends_on:
+    sentry-postgres:
+      condition: service_healthy
+    sentry-redis:
+      condition: service_healthy
+    sentry-kafka:
+      condition: service_started
+    sentry-clickhouse:
+      condition: service_healthy
+    sentry-memcached:
+      condition: service_started
+    sentry-init:
+      condition: service_completed_successfully
+
+services:
+  # ---------------------------------------------------------------------------
+  # One-time init: run DB migrations + create Kafka topics via sentry upgrade.
+  # Uses service_healthy for Kafka so topics can be created.
+  # ---------------------------------------------------------------------------
+  sentry-init:
+    image: getsentry/sentry:25.3.0
+    container_name: sentry-init
+    command: upgrade --noinput --verbosity 0
+    restart: on-failure
+    env_file:
+      - ./sentry/.env.sentry
+    environment:
+      SENTRY_CONF: /etc/sentry
+    volumes:
+      - ./sentry/sentry.conf.py:/etc/sentry/sentry.conf.py:ro
+      - ./sentry/config.yml:/etc/sentry/config.yml:ro
+      - sentry_data:/data
+    depends_on:
+      sentry-postgres:
+        condition: service_healthy
+      sentry-redis:
+        condition: service_healthy
+      sentry-kafka:
+        condition: service_healthy
+      sentry-clickhouse:
+        condition: service_healthy
+      sentry-memcached:
+        condition: service_started
+    networks:
+      - sentry-net
+
+  # One-time init: run Snuba ClickHouse schema migrations.
+  snuba-init:
+    image: getsentry/snuba:25.3.0
+    container_name: sentry-snuba-init
+    command: migrations migrate --force
+    restart: on-failure
+    environment:
+      SNUBA_SETTINGS: docker
+      CLICKHOUSE_HOST: sentry-clickhouse
+      DEFAULT_BROKERS: sentry-kafka:9092
+      REDIS_HOST: sentry-redis
+      LOG_LEVEL: WARNING
+    depends_on:
+      sentry-clickhouse:
+        condition: service_healthy
+      sentry-kafka:
+        condition: service_healthy
+      sentry-redis:
+        condition: service_healthy
+    networks:
+      - sentry-net
+
+  # ---------------------------------------------------------------------------
+  # Infrastructure
+  # ---------------------------------------------------------------------------
+  sentry-postgres:
+    image: postgres:14-alpine
+    container_name: sentry-postgres
+    restart: unless-stopped
+    env_file:
+      - ./sentry/.env.sentry
+    environment:
+      POSTGRES_USER: sentry
+      POSTGRES_PASSWORD: ${SENTRY_POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: sentry
+    volumes:
+      - sentry_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sentry"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - DAC_READ_SEARCH
+      - FOWNER
+      - CHOWN
+
+  sentry-redis:
+    image: redis:7-alpine
+    container_name: sentry-redis
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - sentry_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+
+  sentry-memcached:
+    image: memcached:1.6-alpine
+    container_name: sentry-memcached
+    restart: unless-stopped
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  sentry-zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    container_name: sentry-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_4LW_COMMANDS_WHITELIST: ruok
+      ZOOKEEPER_LOG4J_ROOT_LOGLEVEL: WARN
+      ZOOKEEPER_TOOLS_LOG4J_LOGLEVEL: WARN
+    volumes:
+      - sentry_zookeeper_data:/var/lib/zookeeper/data
+      - sentry_zookeeper_log:/var/lib/zookeeper/log
+    healthcheck:
+      test: ["CMD-SHELL", "echo srvr | nc localhost 2181 | grep -q '^Mode:'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+
+  sentry-kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: sentry-kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: sentry-zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://sentry-kafka:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_LOG_RETENTION_HOURS: 24
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=WARN,kafka.producer.async.DefaultEventHandler=WARN,state.change.logger=WARN"
+      KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
+      KAFKA_TOOLS_LOG4J_LOGLEVEL: WARN
+      CONFLUENT_SUPPORT_METRICS_ENABLE: 'false'
+    volumes:
+      - sentry_kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/127.0.0.1/9092'"]
+      interval: 15s
+      timeout: 30s
+      retries: 20
+      start_period: 120s
+    depends_on:
+      sentry-zookeeper:
+        condition: service_healthy
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+
+  sentry-clickhouse:
+    image: altinity/clickhouse-server:23.8.11.29.altinitystable
+    container_name: sentry-clickhouse
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - sentry_clickhouse_data:/var/lib/clickhouse
+      - ./sentry/clickhouse/config.xml:/etc/clickhouse-server/config.d/sentry.xml:ro
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+
+  # ---------------------------------------------------------------------------
+  # Snuba — ClickHouse query layer for Sentry
+  # ---------------------------------------------------------------------------
+  snuba-api:
+    image: getsentry/snuba:25.3.0
+    container_name: sentry-snuba-api
+    restart: unless-stopped
+    environment:
+      SNUBA_SETTINGS: docker
+      CLICKHOUSE_HOST: sentry-clickhouse
+      DEFAULT_BROKERS: sentry-kafka:9092
+      REDIS_HOST: sentry-redis
+      UWSGI_MAX_REQUESTS: 10000
+      UWSGI_DISABLE_LOGGING: 'true'
+      LOG_LEVEL: WARNING
+    depends_on:
+      sentry-clickhouse:
+        condition: service_healthy
+      sentry-kafka:
+        condition: service_healthy
+      sentry-redis:
+        condition: service_healthy
+      snuba-init:
+        condition: service_completed_successfully
+      # sentry upgrade (sentry-init) creates the Kafka topics that snuba consumers need.
+      sentry-init:
+        condition: service_completed_successfully
+    expose:
+      - "1218"
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+
+  snuba-consumer:
+    image: getsentry/snuba:25.3.0
+    container_name: sentry-snuba-consumer
+    restart: unless-stopped
+    command: rust-consumer --storage errors --consumer-group snuba-consumers --auto-offset-reset=latest --no-strict-offset-reset
+    environment:
+      SNUBA_SETTINGS: docker
+      CLICKHOUSE_HOST: sentry-clickhouse
+      DEFAULT_BROKERS: sentry-kafka:9092
+      REDIS_HOST: sentry-redis
+      LOG_LEVEL: WARNING
+    depends_on:
+      snuba-api:
+        condition: service_started
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+
+  snuba-outcomes-consumer:
+    image: getsentry/snuba:25.3.0
+    container_name: sentry-snuba-outcomes-consumer
+    restart: unless-stopped
+    command: rust-consumer --storage outcomes_raw --consumer-group snuba-consumers --auto-offset-reset=earliest --no-strict-offset-reset
+    environment:
+      SNUBA_SETTINGS: docker
+      CLICKHOUSE_HOST: sentry-clickhouse
+      DEFAULT_BROKERS: sentry-kafka:9092
+      REDIS_HOST: sentry-redis
+      LOG_LEVEL: WARNING
+    depends_on:
+      snuba-api:
+        condition: service_started
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+
+  snuba-sessions-consumer:
+    image: getsentry/snuba:25.3.0
+    container_name: sentry-snuba-sessions-consumer
+    restart: unless-stopped
+    command: rust-consumer --storage replays --consumer-group snuba-consumers --auto-offset-reset=latest --no-strict-offset-reset
+    environment:
+      SNUBA_SETTINGS: docker
+      CLICKHOUSE_HOST: sentry-clickhouse
+      DEFAULT_BROKERS: sentry-kafka:9092
+      REDIS_HOST: sentry-redis
+      LOG_LEVEL: WARNING
+    depends_on:
+      snuba-api:
+        condition: service_started
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+
+  snuba-transactions-consumer:
+    image: getsentry/snuba:25.3.0
+    container_name: sentry-snuba-transactions-consumer
+    restart: unless-stopped
+    command: rust-consumer --storage transactions --consumer-group snuba-consumers --auto-offset-reset=latest --no-strict-offset-reset
+    environment:
+      SNUBA_SETTINGS: docker
+      CLICKHOUSE_HOST: sentry-clickhouse
+      DEFAULT_BROKERS: sentry-kafka:9092
+      REDIS_HOST: sentry-redis
+      LOG_LEVEL: WARNING
+    depends_on:
+      snuba-api:
+        condition: service_started
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+
+  # ---------------------------------------------------------------------------
+  # Relay — ingest endpoint that receives events from SDKs
+  # ---------------------------------------------------------------------------
+  relay:
+    image: getsentry/relay:25.3.0
+    container_name: sentry-relay
+    restart: unless-stopped
+    command: run --config /work/.relay
+    volumes:
+      - ./sentry/relay:/work/.relay:ro
+    depends_on:
+      - sentry-web
+      - sentry-kafka
+    expose:
+      - "3000"
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+
+  # ---------------------------------------------------------------------------
+  # Sentry application services
+  # ---------------------------------------------------------------------------
+  sentry-web:
+    <<: *sentry-app
+    container_name: sentry-web
+    command: run web -b 0.0.0.0:9000
+    expose:
+      - "9000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket,sys; s=socket.socket(); sys.exit(s.connect_ex(('127.0.0.1',9000)))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  sentry-worker:
+    <<: *sentry-app
+    container_name: sentry-worker
+    command: run worker -c 2
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1G
+
+  sentry-cron:
+    <<: *sentry-app
+    container_name: sentry-cron
+    command: run cron
+
+  # Ingest events (errors) from SDKs via Kafka.
+  sentry-ingest-consumer-events:
+    <<: *sentry-app
+    container_name: sentry-ingest-consumer-events
+    command: run consumer ingest-events --consumer-group ingest-consumer --auto-offset-reset=latest --no-strict-offset-reset
+
+  # Ingest transactions (performance) from SDKs via Kafka.
+  sentry-ingest-consumer-transactions:
+    <<: *sentry-app
+    container_name: sentry-ingest-consumer-transactions
+    command: run consumer ingest-transactions --consumer-group ingest-consumer --auto-offset-reset=latest --no-strict-offset-reset
+
+  sentry-post-process-forwarder-errors:
+    <<: *sentry-app
+    container_name: sentry-post-process-forwarder-errors
+    command: run consumer post-process-forwarder-errors --consumer-group post-process-forwarder --synchronize-commit --no-strict-offset-reset
+
+  sentry-post-process-forwarder-transactions:
+    <<: *sentry-app
+    container_name: sentry-post-process-forwarder-transactions
+    command: run consumer post-process-forwarder-transactions --consumer-group post-process-forwarder --synchronize-commit --no-strict-offset-reset
+
+  sentry-subscription-consumer-events:
+    <<: *sentry-app
+    container_name: sentry-subscription-consumer-events
+    command: run consumer events-subscription-results --consumer-group events-subscription-results --auto-offset-reset=latest --no-strict-offset-reset
+
+  sentry-subscription-consumer-transactions:
+    <<: *sentry-app
+    container_name: sentry-subscription-consumer-transactions
+    command: run consumer transactions-subscription-results --consumer-group transactions-subscription-results --auto-offset-reset=latest --no-strict-offset-reset
+
+  # ---------------------------------------------------------------------------
+  # nginx — expose Sentry web on port 9000
+  # ---------------------------------------------------------------------------
+  sentry-nginx:
+    image: nginx:alpine
+    container_name: sentry-nginx
+    restart: unless-stopped
+    ports:
+      - "9000:80"
+    volumes:
+      - ./sentry/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      sentry-web:
+        condition: service_started
+    networks:
+      - sentry-net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETUID
+      - SETGID
+
+volumes:
+  sentry_postgres_data:
+  sentry_redis_data:
+  sentry_zookeeper_data:
+  sentry_zookeeper_log:
+  sentry_kafka_data:
+  sentry_clickhouse_data:
+  sentry_data:
+
+networks:
+  sentry-net:
+    driver: bridge

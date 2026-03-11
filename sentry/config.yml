@@ -1,0 +1,7 @@
+system.secret-key: "${SENTRY_SECRET_KEY}"
+system.url-prefix: "${SENTRY_URL_PREFIX}"
+
+# Authentication
+auth.allow-registration: false
+
+# Relay

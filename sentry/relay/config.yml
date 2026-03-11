@@ -1,0 +1,13 @@
+relay:
+  # Proxy mode avoids registration/credential bootstrap for simple self-hosted setups.
+  mode: proxy
+  upstream: "http://sentry-web:9000/"
+  host: 0.0.0.0
+  port: 3000
+
+logging:
+  level: WARN
+  format: json
+
+limits:
+  max_concurrent_requests: 100

@@ -1,0 +1,19 @@
+export const VARIANT_LABELS: Record<string, string> = {
+  standard: 'Standard',
+  fischerRandom: '960',
+  atomic: 'Atomic',
+  racingKings: 'Racing Kings',
+  horde: 'Horde',
+  threeCheck: '3-Check',
+  antichess: 'Antichess',
+  kingOfTheHill: 'KOTH',
+  crazyhouse: 'Crazyhouse',
+  checkersChess: 'Chess with Checkers',
+  'dice-chess': 'Dice Chess',
+  'card-chess': 'Card Chess',
+  'four-player': '4-Player Chess',
+  'tri-d': 'Tri-D Chess'
+};
+export function formatVariantLabel(variant: string): string {
+  return VARIANT_LABELS[variant] ?? variant;
+}

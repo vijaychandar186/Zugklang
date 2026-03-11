@@ -1,0 +1,56 @@
+[project]
+name = "zugklang-anti-cheat"
+version = "0.1.0"
+description = "FastAPI-based chess anti-cheat service using behavioral ML analysis"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "keras-tuner>=1.4.8",
+    "matplotlib>=3.10.8",
+    "numpy>=2.4.2",
+    "pandas>=3.0.1",
+    "python-dotenv>=1.2.1",
+    "scikit-learn>=1.8.0",
+    "shap>=0.49.1",
+    "six>=1.17.0",
+    "chess>=1.10.0",
+    "prisma>=0.15.0",
+    "fastapi>=0.134.0",
+    "tensorflow>=2.20.0",
+    "tf-keras>=2.16.0",
+    "uvicorn>=0.41.0",
+    "redis[hiredis]>=7.2.1",
+    "dotenv>=0.9.9",
+    "sentry-sdk[fastapi]>=2.22.0",
+    "opentelemetry-sdk>=1.30.0",
+    "opentelemetry-instrumentation-fastapi>=0.51b0",
+    "opentelemetry-exporter-otlp-proto-http>=1.30.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "httpx>=0.27",
+    "ruff>=0.15.4",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # Pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+
+[tool.ruff.format]
+docstring-code-format = true

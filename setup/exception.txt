@@ -2,3 +2,4 @@
 # setup/setup.sh skips any matching .sh file listed here.
 
 bootstrap-env.sh
+compose-prod.sh

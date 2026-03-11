@@ -3,7 +3,7 @@
 target=${1:-dev} # dev | prod
 
 # Ensure Prisma query engine binary exists for this runtime before DB connect.
-prisma py fetch --schema schema.prisma
+prisma py fetch
 prisma db push --schema schema.prisma --skip-generate
 
 if [ "$target" = "prod" ]

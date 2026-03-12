@@ -5,6 +5,8 @@ target=${1:-dev} # dev | prod
 # Ensure Prisma query engine binary exists for this runtime before DB connect.
 prisma py fetch
 prisma db push --schema schema.prisma --skip-generate
+# Generate Prisma client for prisma-client-py (required at runtime).
+prisma generate --schema schema.prisma
 
 if [ "$target" = "prod" ]
 then

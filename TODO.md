@@ -64,8 +64,8 @@ docker exec zugklang-postgres psql -U admin -d postgres -c "\l"
 ### Infrastructure
 
 * [x] ~~Stockfish 18 integration~~
-* [ ] Redis setup
-* [ ] BullMQ setup
+* [x] ~~Redis setup~~
+* [x] ~~BullMQ setup~~
 * [ ] Kubernetes setup
 * [ ] GitHub Secrets setup
 * [x] ~~Fix docker-compose-prod~~
@@ -76,10 +76,10 @@ docker exec zugklang-postgres psql -U admin -d postgres -c "\l"
 
 ### Observability
 
-* [ ] OpenTelemetry setup
-* [ ] Prometheus setup
-* [ ] Grafana setup
-* [ ] Sentry integration
+* [x] ~~OpenTelemetry setup~~
+* [x] ~~Prometheus setup~~
+* [x] ~~Grafana setup~~
+* [x] ~~Sentry integration~~
 
 ### Features
 
@@ -99,9 +99,9 @@ docker exec zugklang-postgres psql -U admin -d postgres -c "\l"
 * [ ] AntiCheat metrics
 * [x] ~~Rated/Unrated~~
 * [ ] Invite through email
-* [ ] Elo calculation adjustment
+* [x] ~~Elo calculation adjustment~~
 * [x] ~~Three Dimensional Chess~~
-* [ ] Update dev dockerfile to use prisma dev postgres server
+* [x] ~~Update dev dockerfile to use prisma dev postgres server~~
 
 ### Frontend
 

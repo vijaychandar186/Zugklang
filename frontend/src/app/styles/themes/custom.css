@@ -1,0 +1,15 @@
+:root[data-scheme='custom'] {
+  --primary: var(--custom-color, oklch(0.216 0.006 56.043));
+  --primary-foreground: var(--custom-foreground, #ffffff);
+  --ring: var(--custom-color, oklch(0.709 0.01 56.259));
+  --sidebar-primary: var(--custom-color, oklch(0.216 0.006 56.043));
+  --sidebar-primary-foreground: var(--custom-foreground, #ffffff);
+}
+
+:root[data-scheme='custom'].dark {
+  --primary: var(--custom-color, oklch(0.923 0.003 48.717));
+  --primary-foreground: var(--custom-foreground, #ffffff);
+  --ring: var(--custom-color, oklch(0.553 0.013 58.071));
+  --sidebar-primary: var(--custom-color, oklch(0.488 0.243 264.376));
+  --sidebar-primary-foreground: var(--custom-foreground, #ffffff);
+}

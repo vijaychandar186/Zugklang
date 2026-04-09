@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: Anticheat PostgreSQL
+    uid: anticheat-postgres
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: zugklang-anti-cheat
+    user: "${GF_DATABASE_USER}"
+    secureJsonData:
+      password: "${GF_DATABASE_PASSWORD}"
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1600
+      timescaledb: false
+    editable: false

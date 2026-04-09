@@ -1,0 +1,12 @@
+# Exclude everything, then whitelist only what the image needs
+*
+!pyproject.toml
+!uv.lock
+!schema.prisma
+!src/
+!src/**
+!model/
+!model/**
+!.env.base
+!start.sh
+!generate_synthetic_artifacts.py

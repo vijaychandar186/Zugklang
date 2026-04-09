@@ -1,0 +1,108 @@
+name: WS Server CI
+
+on:
+  pull_request:
+    paths:
+      - 'backend/ws-server/**'
+      - '.github/workflows/ws-server-ci.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/ws-server/**'
+      - '.github/workflows/ws-server-ci.yml'
+
+jobs:
+  ws-server-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/ws-server
+
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Secret scan
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Typecheck
+        run: bunx tsc --noEmit
+
+      - name: Run tests
+        run: RUN_WS_E2E=1 bun test
+
+      - name: Enforce coverage threshold
+        run: ./scripts/check-coverage.sh 85
+
+  ws-server-load:
+    runs-on: ubuntu-latest
+    needs: ws-server-tests
+    defaults:
+      run:
+        working-directory: backend/ws-server
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Start ws-server
+        run: |
+          PORT=8080 ADMIN_KEY=ci-admin-key bun run start > /tmp/ws-server.log 2>&1 &
+          echo $! > /tmp/ws-server.pid
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:8080/health > /dev/null; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          echo "ws-server failed to start"
+          cat /tmp/ws-server.log || true
+          exit 1
+
+      - name: k6 smoke
+        run: k6 run ./load/k6-health-smoke.ts
+
+      - name: k6 stress
+        run: k6 run ./load/k6-health-stress.ts
+
+      - name: Stop ws-server
+        if: always()
+        run: |
+          if [ -f /tmp/ws-server.pid ]; then
+            kill "$(cat /tmp/ws-server.pid)" || true
+          fi

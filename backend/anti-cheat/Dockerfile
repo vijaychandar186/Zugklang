@@ -11,7 +11,9 @@ RUN uv sync --no-dev --frozen
 # Pre-fetch Prisma query engine and generate Python client at build time
 # so container startup does not need to download Node.js or engine binaries.
 # PATH must include .venv/bin so prisma generate can locate the prisma-client-py generator.
-RUN export PATH="/app/.venv/bin:$PATH" && prisma py fetch && prisma generate --schema schema.prisma
+RUN export PATH="/app/.venv/bin:$PATH" && prisma py fetch && prisma generate --schema schema.prisma \
+    && find /app/.cache -type d -name "node_modules" -exec rm -rf {} + 2>/dev/null; \
+    find /app/.cache -name "package.json" -o -name "package-lock.json" | xargs rm -f 2>/dev/null; true
 COPY src/ src/
 COPY model/ model/
 COPY .env.base ./

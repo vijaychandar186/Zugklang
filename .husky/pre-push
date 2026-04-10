@@ -1,1 +1,1 @@
-(cd frontend && sh .husky/pre-push)
+pnpm run build

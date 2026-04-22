@@ -100,7 +100,9 @@ export function ImportDialog({
               variant='secondary'
               size='sm'
               onClick={() =>
-                setInput('1. e4 e5 2. Nf3 Nc6 3. Bb5 a6 4. Ba4 Nf6 5. O-O Be7')
+                setInput(
+                  '1. e4 e5 2. Nf3 Nc6 3. Bc4 Nf6 4. Ng5 d5 5. exd5 Nxd5 6. Nxf7 Kxf7 7. Qf3+ Kg8 8. Bxd5+ Be6 9. Bxe6#'
+                )
               }
             >
               Sample PGN
@@ -121,7 +123,11 @@ export function ImportDialog({
             <Button
               variant='secondary'
               size='sm'
-              onClick={() => setInput('e4 e5 Nf3 Nc6 Bb5 a6')}
+              onClick={() =>
+                setInput(
+                  'e4 e5 Nf3 Nc6 Bc4 Nf6 Ng5 d5 exd5 Nxd5 Nxf7 Kxf7 Qf3 Kg8 Bxd5 Be6 Bxe6'
+                )
+              }
             >
               Sample Moves
             </Button>

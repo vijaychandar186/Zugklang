@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Icons } from '@/components/Icons';
 import { Textarea } from '@/components/ui/textarea';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Dialog,
   DialogContent,
@@ -69,18 +70,20 @@ export function ImportDialog({
   }, [onOpenChange]);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='sm:max-w-[600px]'>
+      <DialogContent className='flex max-h-[90vh] flex-col sm:max-w-[600px]'>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <div className='space-y-4 py-4'>
-          <Textarea
-            placeholder={placeholder}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className='min-h-[200px] font-mono text-sm'
-          />
+          <ScrollArea className='h-[300px] rounded-md border'>
+            <Textarea
+              placeholder={placeholder}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              className='min-h-[300px] resize-none border-0 font-mono text-sm focus-visible:ring-0'
+            />
+          </ScrollArea>
           <div className='flex flex-wrap gap-2'>
             <Button
               variant='secondary'

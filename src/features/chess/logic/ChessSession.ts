@@ -110,7 +110,19 @@ export class ChessSession {
   loadPgn(pgn: string): boolean {
     const success = this.game.loadPgn(pgn);
     if (success) {
-      this._moves = this.game.history();
+      const moves = this.game.history();
+      // Replay moves from start to rebuild per-move FEN history
+      const tempGame = new Chess(STARTING_FEN, variantToRules(this._variant));
+      this._history = [tempGame.fen()];
+      for (const san of moves) {
+        try {
+          tempGame.move(san);
+          this._history.push(tempGame.fen());
+        } catch {
+          break;
+        }
+      }
+      this._moves = moves;
     }
     return success;
   }

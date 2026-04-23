@@ -1,4 +1,4 @@
-FROM python:3.13-slim AS build
+FROM python:3.14-slim AS build
 RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir uv==0.8.22
@@ -23,7 +23,7 @@ COPY generate_synthetic_artifacts.py ./
 RUN .venv/bin/python generate_synthetic_artifacts.py
 RUN chmod +x start.sh
 
-FROM python:3.13-slim
+FROM python:3.14-slim
 RUN apt-get update && apt-get install -y --no-install-recommends libatomic1 \
     && rm -rf /var/lib/apt/lists/*
 RUN groupadd --system kaladin && useradd --system --gid kaladin --home /app kaladin
